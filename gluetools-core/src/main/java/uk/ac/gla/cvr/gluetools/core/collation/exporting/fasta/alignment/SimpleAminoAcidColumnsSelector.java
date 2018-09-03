@@ -27,6 +27,8 @@ package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment;
 
 import java.util.List;
 
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
@@ -67,22 +69,28 @@ public class SimpleAminoAcidColumnsSelector implements IAminoAcidAlignmentColumn
 	}
 
 	@Override
-	public void checkCoding(CommandContext cmdContext) {
+	public void checkAminoAcidSelector(CommandContext cmdContext) {
 		Feature referredToFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(this.aaRegionSelector.getFeatureName()));
 		if(!referredToFeature.codesAminoAcids()) {
 			throw new AlignmentColumnsSelectorException(AlignmentColumnsSelectorException.Code.INVALID_SELECTOR, 
 					"Region selector refers to feature "+referredToFeature.getName()+" which is not an amino acid coding feature");
 		}
 	}
+	
+	@Override
+	public List<LabeledCodon> selectLabeledCodons(CommandContext cmdContext) {
+		return this.aaRegionSelector.selectLabeledCodons(cmdContext, relatedRefName);
+	}
 
 	@Override
-	public String generateAminoAcidAlmtRowString(CommandContext cmdContext,
-			List<ReferenceSegment> featureRefSegs, ReferenceSegment minMaxSeg,
-			Alignment alignment, AlignmentMember almtMember) {
+	public List<LabeledQueryAminoAcid> generateAminoAcidAlmtRow(
+			CommandContext cmdContext,
+			List<LabeledCodon> selectedLabeledCodons, Alignment alignment,
+			AlignmentMember almtMember) {
 		ReferenceSequence relatedRef = alignment.getRelatedRef(cmdContext, getRelatedRefName());
 		Translator translator = new CommandContextTranslator(cmdContext);
 		return this.aaRegionSelector
-					.generateAminoAcidAlmtRowString(cmdContext, relatedRef, translator, featureRefSegs, minMaxSeg, almtMember);
+					.generateAminoAcidAlmtRow(cmdContext, relatedRef, translator, selectedLabeledCodons, almtMember);
 	}
 
 	

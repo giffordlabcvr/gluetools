@@ -25,10 +25,13 @@
 */
 package uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAminoAcidAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter.SimpleDataObjectNameInstantiator;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -99,26 +102,44 @@ public class AlignmentColumnsSelector extends ModulePlugin<AlignmentColumnsSelec
 	}
 
 	@Override
-	public void checkCoding(CommandContext cmdContext) {
+	public void checkAminoAcidSelector(CommandContext cmdContext) {
 		for(RegionSelector regionSelector: this.regionSelectors) {
-			regionSelector.checkCoding(cmdContext);
+			regionSelector.checkAminoAcidSelector(cmdContext);
 		}
 	}
 
 	@Override
-	public String generateAminoAcidAlmtRowString(CommandContext cmdContext, 
-			List<ReferenceSegment> featureRefSegs, ReferenceSegment minMaxSeg, 
-			Alignment alignment, AlignmentMember almtMember) {
-		StringBuffer fullAlmtRowBuf = new StringBuffer();
+	public List<LabeledCodon> selectLabeledCodons(CommandContext cmdContext) {
+		List<LabeledCodon> selectedLabeledCodons = new ArrayList<LabeledCodon>();
+		String relatedRefName = getRelatedRefName();
+		for(RegionSelector regionSelector: this.regionSelectors) {
+			AminoAcidRegionSelector aaRegionSelector = (AminoAcidRegionSelector) regionSelector;
+			selectedLabeledCodons.addAll(aaRegionSelector.selectLabeledCodons(cmdContext, relatedRefName));
+		}
+		return selectedLabeledCodons;
+	}
+
+	@Override
+	public List<LabeledQueryAminoAcid> generateAminoAcidAlmtRow(
+			CommandContext cmdContext,
+			List<LabeledCodon> selectedLabeledCodons, Alignment alignment,
+			AlignmentMember almtMember) {
+		List<LabeledQueryAminoAcid> lqaas = new ArrayList<LabeledQueryAminoAcid>();
 		ReferenceSequence relatedRef = alignment.getRelatedRef(cmdContext, getRelatedRefName());
 		Translator translator = new CommandContextTranslator(cmdContext);
 		for(RegionSelector regionSelector: this.regionSelectors) {
 			AminoAcidRegionSelector aaRegionSelector = (AminoAcidRegionSelector) regionSelector;
-			String regionSelectorRowString = aaRegionSelector
-					.generateAminoAcidAlmtRowString(cmdContext, relatedRef, translator, featureRefSegs, minMaxSeg, almtMember);
-			fullAlmtRowBuf.append(regionSelectorRowString);
+			lqaas.addAll(aaRegionSelector.generateAminoAcidAlmtRow(cmdContext, relatedRef, translator, selectedLabeledCodons, almtMember));
 		}
-		return fullAlmtRowBuf.toString();
+		return lqaas;
+	}
+
+	@Override
+	public void validate(CommandContext cmdContext) {
+		super.validate(cmdContext);
+		for(RegionSelector regionSelector: this.regionSelectors) {
+			regionSelector.validate(cmdContext, relRefName);
+		}
 	}
 
 	

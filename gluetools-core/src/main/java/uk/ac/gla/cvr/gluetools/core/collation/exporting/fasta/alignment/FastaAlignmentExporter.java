@@ -61,7 +61,7 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 	public static void exportAlignment(
 			CommandContext cmdContext, IAlignmentColumnsSelector alignmentColumnsSelector,
 			Boolean excludeEmptyRows, 
-			AbstractMemberSupplier memberSupplier, AbstractAlmtRowConsumer almtRowConsumer) {
+			AbstractMemberSupplier memberSupplier, AbstractStringAlmtRowConsumer almtRowConsumer) {
 		
 		List<ReferenceSegment> featureRefSegs = initFeatureRefSegs(cmdContext, alignmentColumnsSelector);
 		ReferenceSegment minMaxSeg = initMinMaxSeg(cmdContext, memberSupplier, featureRefSegs);
@@ -120,7 +120,7 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 	private static void createAlignment(CommandContext cmdContext, Boolean excludeEmptyRows,
 			IAlignmentColumnsSelector alignmentColumnsSelector,
 			Alignment alignment, List<AlignmentMember> almtMembers, List<ReferenceSegment> featureRefSegs, 
-			ReferenceSegment minMaxSeg, AbstractAlmtRowConsumer almtRowConsumer) {
+			ReferenceSegment minMaxSeg, AbstractStringAlmtRowConsumer almtRowConsumer) {
 		int minRefNt_final = minMaxSeg.getRefStart();
 		int maxRefNt_final = minMaxSeg.getRefEnd();
 
@@ -169,7 +169,7 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 			IAlignmentColumnsSelector alignmentColumnsSelector,
 			boolean excludeEmptyRows, AbstractMemberSupplier memberSupplier) {
 		Map<Map<String,String>, DNASequence> pkMapToRowDnaSeq = new LinkedHashMap<Map<String,String>, DNASequence>();
-		exportAlignment(cmdContext, alignmentColumnsSelector, excludeEmptyRows, memberSupplier, new AbstractAlmtRowConsumer() {
+		exportAlignment(cmdContext, alignmentColumnsSelector, excludeEmptyRows, memberSupplier, new AbstractStringAlmtRowConsumer() {
 			@Override
 			public void consumeAlmtRow(CommandContext cmdContext, AlignmentMember almtMember, String alignmentRowString) {
 				pkMapToRowDnaSeq.put(almtMember.pkMap(), FastaUtils.ntStringToSequence(alignmentRowString));

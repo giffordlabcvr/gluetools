@@ -52,7 +52,7 @@ public abstract class BaseFastaAlignmentExportCommand<R extends CommandResult> e
 
 	protected void exportAlignment(CommandContext cmdContext, PrintWriter printWriter, FastaAlignmentExporter fastaAlmtExporter) {
 		QueryMemberSupplier memberSupplier = new QueryMemberSupplier(delegate.getAlignmentName(), delegate.getRecursive(), delegate.getWhereClause());
-		AbstractAlmtRowConsumer almtRowConsumer = new AbstractAlmtRowConsumer() {
+		AbstractStringAlmtRowConsumer almtRowConsumer = new AbstractStringAlmtRowConsumer() {
 			@Override
 			public void consumeAlmtRow(CommandContext cmdContext, AlignmentMember almtMember, String alignmentRowString) {
 				String fastaId = FastaAlignmentExporter.generateFastaId(fastaAlmtExporter.getIdTemplate(), almtMember);
@@ -69,7 +69,7 @@ public abstract class BaseFastaAlignmentExportCommand<R extends CommandResult> e
 	protected Map<String, DNASequence> exportAlignment(CommandContext cmdContext, FastaAlignmentExporter fastaAlmtExporter) {
 		Map<String, DNASequence> ntFastaMap = new LinkedHashMap<String, DNASequence>();
 		QueryMemberSupplier memberSupplier = new QueryMemberSupplier(delegate.getAlignmentName(), delegate.getRecursive(), delegate.getWhereClause());
-		AbstractAlmtRowConsumer almtRowConsumer = new AbstractAlmtRowConsumer() {
+		AbstractStringAlmtRowConsumer almtRowConsumer = new AbstractStringAlmtRowConsumer() {
 			@Override
 			public void consumeAlmtRow(CommandContext cmdContext, AlignmentMember almtMember, String alignmentRowString) {
 				String fastaId = FastaAlignmentExporter.generateFastaId(fastaAlmtExporter.getIdTemplate(), almtMember);

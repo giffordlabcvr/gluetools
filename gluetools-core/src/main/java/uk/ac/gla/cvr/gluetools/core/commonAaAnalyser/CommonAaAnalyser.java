@@ -39,6 +39,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.CodonLabeler;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcidFrequency;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAminoAcidColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.configurableobject.ConfigurableObjectSetFieldCommand;
@@ -108,9 +109,12 @@ public class CommonAaAnalyser extends ModulePlugin<CommonAaAnalyser> {
 		if(memberCount < minSampleSize) {
 			return Collections.emptyList();
 		}
+		SimpleAminoAcidColumnsSelector almtColsSelector = 
+				new SimpleAminoAcidColumnsSelector(acRefName, featureName, null, null);
+
 		List<LabeledAminoAcidFrequency> almtAaFreqs = 
 				AlignmentAminoAcidFrequencyCommand
-					.alignmentAminoAcidFrequencies(cmdContext, alignmentName, acRefName, featureName, whereClause, recursive, null, null);
+					.alignmentAminoAcidFrequencies(cmdContext, alignmentName, whereClause, recursive, almtColsSelector);
 
 		Map<String, CommonAminoAcids> codonLabelToCommonAas = new LinkedHashMap<String, CommonAminoAcids>();
 		almtAaFreqs.forEach(almtAaFreq -> {

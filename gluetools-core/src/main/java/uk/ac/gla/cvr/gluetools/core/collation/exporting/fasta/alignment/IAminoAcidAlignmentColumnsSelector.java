@@ -25,6 +25,10 @@
 */
 package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment;
 
+import gnu.trove.map.TIntIntMap;
+import gnu.trove.map.hash.TIntIntHashMap;
+
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -32,36 +36,69 @@ import java.util.logging.Level;
 
 import org.biojava.nbio.core.sequence.ProteinSequence;
 
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.AbstractMemberSupplier;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
-import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 public interface IAminoAcidAlignmentColumnsSelector extends IAlignmentColumnsSelector {
 
-	public default void generateAlignmentRows(
+	public default void generateStringAlignmentRows(
 			CommandContext cmdContext, Boolean excludeEmptyRows,
-			AbstractMemberSupplier memberSupplier, AbstractAlmtRowConsumer almtRowConsumer) {
-		checkCoding(cmdContext);
+			AbstractMemberSupplier memberSupplier, AbstractStringAlmtRowConsumer stringAlmtRowConsumer) {
+		List<LabeledCodon> selectedLabeledCodons = selectLabeledCodons(cmdContext);
+		selectedLabeledCodons.sort(new Comparator<LabeledCodon>() {
+			@Override
+			public int compare(LabeledCodon o1, LabeledCodon o2) {
+				return Integer.compare(o1.getNtStart(), o2.getNtStart());
+			}
+			
+		});
+		TIntIntMap lcRefNtToRowStringPos = new TIntIntHashMap(selectedLabeledCodons.size());
+		for(int i = 0; i < selectedLabeledCodons.size(); i++) {
+			lcRefNtToRowStringPos.put(selectedLabeledCodons.get(i).getNtStart(), i);
+		}
+		generateLqaaAlignmentRows(cmdContext, excludeEmptyRows, memberSupplier, new AbstractLqaaAlmtRowConsumer() {
+			@Override
+			public void consumeAlmtRow(CommandContext cmdContext,
+					AlignmentMember almtMember, List<LabeledQueryAminoAcid> lqaas) {
+				char[] rowStringChars = new char[selectedLabeledCodons.size()];
+				for(int i = 0; i < rowStringChars.length; i++) {
+					rowStringChars[i] = '-';
+				}
+				for(LabeledQueryAminoAcid lqaa: lqaas) {
+					LabeledAminoAcid labeledAminoAcid = lqaa.getLabeledAminoAcid();
+					int refNtStart = labeledAminoAcid.getLabeledCodon().getNtStart();
+					int rowStringPos = lcRefNtToRowStringPos.get(refNtStart);
+					rowStringChars[rowStringPos] = labeledAminoAcid.getTranslationInfo().getSingleCharTranslation();
+				}
+				stringAlmtRowConsumer.consumeAlmtRow(cmdContext, almtMember, new String(rowStringChars));
+			}
+		});
+		
+	}
+
+	public default void generateLqaaAlignmentRows(CommandContext cmdContext, Boolean excludeEmptyRows,
+			AbstractMemberSupplier memberSupplier, AbstractLqaaAlmtRowConsumer lqaaAlmtRowConsumer) {
+		checkAminoAcidSelector(cmdContext);
 		int numMembers = memberSupplier.countMembers(cmdContext);
 		GlueLogger.getGlueLogger().log(Level.FINE, "processing "+numMembers+" alignment members");
 		int offset = 0;
 		int processed = 0;
 		int batchSize = 500;
-		List<ReferenceSegment> featureRefSegs = selectAlignmentColumns(cmdContext);
-		ReferenceSegment minMaxSeg = IAminoAcidAlignmentColumnsSelector.initMinMaxSeg(featureRefSegs);
+		List<LabeledCodon> selectedLabeledCodons = selectLabeledCodons(cmdContext);
 		while(offset < numMembers) {
 			Alignment alignment = memberSupplier.supplyAlignment(cmdContext);
-
 			List<AlignmentMember> almtMembers = memberSupplier.supplyMembers(cmdContext, offset, batchSize);
-
 			for(AlignmentMember almtMember: almtMembers) {
-				String almtRowString = generateAminoAcidAlmtRowString(cmdContext, featureRefSegs, minMaxSeg, alignment, almtMember);
-				if((!excludeEmptyRows) || !almtRowString.matches("-*")) {
-					almtRowConsumer.consumeAlmtRow(cmdContext, almtMember, almtRowString);
+				List<LabeledQueryAminoAcid> lqaas = generateAminoAcidAlmtRow(cmdContext, selectedLabeledCodons, alignment, almtMember);
+				if((!excludeEmptyRows) || !lqaas.isEmpty()) {
+					lqaaAlmtRowConsumer.consumeAlmtRow(cmdContext, almtMember, lqaas);
 				}
 			}
 			processed += almtMembers.size();
@@ -69,34 +106,24 @@ public interface IAminoAcidAlignmentColumnsSelector extends IAlignmentColumnsSel
 			offset += batchSize;
 			cmdContext.newObjectContext();
 		}
+		
 	}
-
-	public String generateAminoAcidAlmtRowString(CommandContext cmdContext, List<ReferenceSegment> featureRefSegs, ReferenceSegment minMaxSeg, Alignment alignment, AlignmentMember almtMember);
-
-	public static ReferenceSegment initMinMaxSeg(
-			List<ReferenceSegment> featureRefSegs) {
-		int minRefNt = 1;
-		int maxRefNt = 1;
-		if(!featureRefSegs.isEmpty()) {
-			minRefNt = ReferenceSegment.minRefStart(featureRefSegs);
-			maxRefNt = ReferenceSegment.maxRefEnd(featureRefSegs);
-		}
-		ReferenceSegment minMaxSeg = new ReferenceSegment(minRefNt, maxRefNt);
-		return minMaxSeg;
-	}
-
 	
+	public List<LabeledCodon> selectLabeledCodons(CommandContext cmdContext);
+	
+	public List<LabeledQueryAminoAcid> generateAminoAcidAlmtRow(CommandContext cmdContext, List<LabeledCodon> selectedLabeledCodons, Alignment alignment, AlignmentMember almtMember);
+
 	
 	/**
 	 * Checks that any features referred to code amino acids.
 	 */
-	public void checkCoding(CommandContext cmdContext);
+	public void checkAminoAcidSelector(CommandContext cmdContext);
 
 	public default Map<Map<String, String>, ProteinSequence> generateAlignmentMap(
 			CommandContext cmdContext, Boolean excludeEmptyRows,
 			AbstractMemberSupplier memberSupplier) {
 		Map<Map<String, String>, ProteinSequence> memberAlignmentMap = new LinkedHashMap<Map<String,String>, ProteinSequence>();
-		this.generateAlignmentRows(cmdContext, excludeEmptyRows, memberSupplier, new AbstractAlmtRowConsumer() {
+		this.generateStringAlignmentRows(cmdContext, excludeEmptyRows, memberSupplier, new AbstractStringAlmtRowConsumer() {
 			@Override
 			public void consumeAlmtRow(CommandContext cmdContext,
 					AlignmentMember almtMember, String alignmentRowString) {

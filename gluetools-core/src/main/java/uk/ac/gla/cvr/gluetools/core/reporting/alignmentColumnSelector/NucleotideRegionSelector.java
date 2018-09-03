@@ -78,10 +78,6 @@ public class NucleotideRegionSelector extends RegionSelector {
 				.intersection(featureRefSegs, Arrays.asList(new ReferenceSegment(startNtToUse, endNtToUse)), ReferenceSegment.cloneLeftSegMerger());
 	}
 
-	public void checkCoding(CommandContext cmdContext) {
-		throw new AlignmentColumnsSelectorException(AlignmentColumnsSelectorException.Code.INVALID_SELECTOR, "Nucleotide selectors may not be used in this context.");
-	}
-
 	public void setStartNt(Integer startNt) {
 		this.startNt = startNt;
 	}

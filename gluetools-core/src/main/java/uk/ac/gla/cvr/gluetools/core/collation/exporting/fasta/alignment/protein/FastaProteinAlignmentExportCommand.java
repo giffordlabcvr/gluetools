@@ -51,8 +51,9 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 		commandWords={"export"}, 
-		docoptUsages={"<alignmentName> -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd>] [-c] (-w <whereClause> | -a) [-e] [-y <lineFeedStyle>] (-o <fileName> | -p)"},
+		docoptUsages={"<alignmentName> (-s <selectorName> | -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd>]) [-c] (-w <whereClause> | -a) [-e] [-y <lineFeedStyle>] (-o <fileName> | -p)"},
 		docoptOptions={
+			"-s <selectorName>, --selectorName <selectorName>     Columns selector module",
 			"-r <relRefName>, --relRefName <relRefName>           Related reference",
 			"-f <featureName>, --featureName <featureName>        Protein-coding feature",
 			"-l, --labelledCodon                                  Region between codon labels",
@@ -104,6 +105,11 @@ public class FastaProteinAlignmentExportCommand extends BaseFastaProteinAlignmen
 	
 	@CompleterClass
 	public static class Completer extends FastaAlignmentExportCommandDelegate.ExportCompleter {
+		public Completer() {
+			super();
+			registerModuleNameLookup("selectorName", "alignmentColumnsSelector");
+		}
+
 		@Override
 		protected boolean filterFeatureLocation(FeatureLocation fLoc) {
 			return super.filterFeatureLocation(fLoc) &&

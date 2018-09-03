@@ -25,28 +25,28 @@
 */
 package uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector;
 
-import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodonReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
+import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
-import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 
 @PluginClass(elemName="aminoAcidRegionSelector")
@@ -64,12 +64,47 @@ public class AminoAcidRegionSelector extends RegionSelector {
 
 	@Override
 	protected List<ReferenceSegment> selectAlignmentColumnsInternal(CommandContext cmdContext, String relRefName) {
-		return selectAlignmentColumns(cmdContext, relRefName, getFeatureName(), startCodon, endCodon);
+		List<LabeledCodon> selectedLabeledCodons = selectLabeledCodons(cmdContext, relRefName);
+		return refSegsForSelectedLabeledCodons(selectedLabeledCodons);
+		
 	}
 
-	public static List<ReferenceSegment> selectAlignmentColumns(CommandContext cmdContext, String relRefName, String featureName, String startCodon, String endCodon) {
-		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relRefName, featureName));
-		List<ReferenceSegment> featureRefSegs = featureLoc.segmentsAsReferenceSegments();
+	private List<ReferenceSegment> refSegsForSelectedLabeledCodons(
+			List<LabeledCodon> selectedLabeledCodons) {
+		List<ReferenceSegment> selectedRefSegs = new ArrayList<ReferenceSegment>();
+		for(LabeledCodon selectedLabeledCodon: selectedLabeledCodons) {
+			List<LabeledCodonReferenceSegment> lcRefSegments = selectedLabeledCodon.getLcRefSegments();
+			lcRefSegments.forEach(lcRefSeg -> {
+				selectedRefSegs.add(new ReferenceSegment(lcRefSeg.getRefStart(), lcRefSeg.getRefEnd()));
+			});
+		}
+		return ReferenceSegment.mergeAbutting(selectedRefSegs, 
+				ReferenceSegment.mergeAbuttingFunctionReferenceSegment(), 
+				ReferenceSegment.abutsPredicateReferenceSegment());
+	}
+
+	public void setStartCodon(String startCodon) {
+		this.startCodon = startCodon;
+	}
+
+	public void setEndCodon(String endCodon) {
+		this.endCodon = endCodon;
+	}
+
+	public List<LabeledQueryAminoAcid> generateAminoAcidAlmtRow(
+			CommandContext cmdContext, ReferenceSequence relatedRef,
+			Translator translator, List<LabeledCodon> selectedLabeledCodons,
+			AlignmentMember almtMember) {
+		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relatedRef.getName(), getFeatureName()));
+		List<QueryAlignedSegment> memberToAlmtSegs = almtMember.segmentsAsQueryAlignedSegments();
+		List<QueryAlignedSegment> memberToRelatedRef = almtMember.getAlignment().translateToRelatedRef(cmdContext, memberToAlmtSegs, relatedRef);
+		List<ReferenceSegment> selectedRefSegs = refSegsForSelectedLabeledCodons(selectedLabeledCodons);
+		memberToRelatedRef = ReferenceSegment.intersection(memberToRelatedRef, selectedRefSegs, QueryAlignedSegment.cloneLeftSegMerger());
+		return featureLoc.translateQueryNucleotides(cmdContext, translator, memberToRelatedRef, almtMember.getSequence().getSequenceObject());
+	}
+
+	public List<LabeledCodon> selectLabeledCodons(CommandContext cmdContext, String relatedRefName) {
+		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relatedRefName, getFeatureName()));
 		featureLoc.getFeature().checkCodesAminoAcids();
 		LabeledCodon startLabeledCodon;
 		if(startCodon != null) {
@@ -87,60 +122,56 @@ public class AminoAcidRegionSelector extends RegionSelector {
 		if(endLabeledCodon.getNtStart() < startLabeledCodon.getNtStart()) {
 			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Codon with label \""+endCodon+"\" occurs before codon with label \""+startCodon+"\"");
 		}
-		int lcRegionNtStart = startLabeledCodon.getNtStart();
-		int lcRegionNtEnd = endLabeledCodon.getNtStart()+2;
-		return ReferenceSegment
-				.intersection(featureRefSegs, Arrays.asList(new ReferenceSegment(lcRegionNtStart, lcRegionNtEnd)), ReferenceSegment.cloneLeftSegMerger());
-
-	}
-
-	public String generateAminoAcidAlmtRowString(CommandContext cmdContext, ReferenceSequence relatedRef,
-			Translator translator, List<ReferenceSegment> featureRefSegs, 
-			ReferenceSegment minMaxSeg, AlignmentMember almtMember) {
-		
-		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relatedRef.getName(), getFeatureName()));
-		int codon1Start = featureLoc.getCodon1Start(cmdContext);
-
-
-		List<QueryAlignedSegment> memberQaSegs = almtMember.segmentsAsQueryAlignedSegments();
-		Alignment tipAlmt = almtMember.getAlignment();
-		memberQaSegs = tipAlmt.translateToRelatedRef(cmdContext, memberQaSegs, relatedRef);
-		memberQaSegs = ReferenceSegment.intersection(memberQaSegs, featureRefSegs, ReferenceSegment.cloneLeftSegMerger());
-		
-		// important to merge abutting here otherwise you may get gaps if the boundary is within a codon.
-		memberQaSegs = QueryAlignedSegment.mergeAbutting(memberQaSegs, 
-				QueryAlignedSegment.mergeAbuttingFunctionQueryAlignedSegment(), 
-				QueryAlignedSegment.abutsPredicateQueryAlignedSegment());
-
-		
-		memberQaSegs = TranslationUtils.truncateToCodonAligned(codon1Start, memberQaSegs);
-		AbstractSequenceObject seqObj = almtMember.getSequence().getSequenceObject();
-		String memberNTs = seqObj.getNucleotides(cmdContext);
-		StringBuffer alignmentRow = new StringBuffer();
-		int ntIndex = minMaxSeg.getRefStart();
-		for(QueryAlignedSegment seg: memberQaSegs) {
-			while(ntIndex < seg.getRefStart()) {
-				alignmentRow.append("-");
-				ntIndex += 3;
+		List<LabeledCodon> selectedLabeledCodons = featureLoc.getLabeledCodons(cmdContext, startLabeledCodon, endLabeledCodon);
+		List<RegionSelector> excludeRegionSelectors = getExcludeRegionSelectors();
+		if(excludeRegionSelectors != null && !excludeRegionSelectors.isEmpty()) {
+			LinkedHashSet<LabeledCodon> selectedLabeledCodonSet = new LinkedHashSet<LabeledCodon>(selectedLabeledCodons);
+			for(RegionSelector excludeRegionSelector: excludeRegionSelectors) {
+				AminoAcidRegionSelector aaExcludeRegionSelector = (AminoAcidRegionSelector) excludeRegionSelector;
+				selectedLabeledCodonSet.removeAll(aaExcludeRegionSelector.selectLabeledCodons(cmdContext, relatedRefName));
 			}
-			String segNTs = SegmentUtils.base1SubString(memberNTs, seg.getQueryStart(), seg.getQueryEnd());
-			String segAAs = translator.translateToAaString(segNTs);
-			alignmentRow.append(segAAs);
-			ntIndex = seg.getRefEnd()+1;
+			selectedLabeledCodons = new ArrayList<LabeledCodon>(selectedLabeledCodonSet);
 		}
-		while(ntIndex <= minMaxSeg.getRefEnd()) {
-			alignmentRow.append("-");
-			ntIndex += 3;
-		}
-		return alignmentRow.toString();
-	}
-	
-	public void setStartCodon(String startCodon) {
-		this.startCodon = startCodon;
+		return selectedLabeledCodons;
 	}
 
-	public void setEndCodon(String endCodon) {
-		this.endCodon = endCodon;
+	
+	
+
+	@Override
+	public void validate(CommandContext cmdContext, String relRefName) {
+		super.validate(cmdContext, relRefName);
+		Feature referredToFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(this.getFeatureName()));
+		if(!referredToFeature.codesAminoAcids()) {
+			throw new AlignmentColumnsSelectorException(AlignmentColumnsSelectorException.Code.INVALID_SELECTOR, 
+					"Amino acid region selector refers to feature "+referredToFeature.getName()+" which is not an amino acid coding feature");
+		}
+		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relRefName, getFeatureName()));
+		LabeledCodon startLabeledCodon;
+		if(startCodon != null) {
+			startLabeledCodon = featureLoc.getLabeledCodon(cmdContext, startCodon);
+		} else {
+			startLabeledCodon = featureLoc.getLabeledCodons(cmdContext).get(0); 
+		}
+		if(startLabeledCodon == null) {
+			throw new AlignmentColumnsSelectorException(AlignmentColumnsSelectorException.Code.INVALID_SELECTOR, 
+					"Amino acid region selector refers to unknown start codon "+startLabeledCodon);
+		}
+		LabeledCodon endLabeledCodon;
+		if(endCodon != null) {
+			endLabeledCodon = featureLoc.getLabeledCodon(cmdContext, endCodon);
+		} else {
+			List<LabeledCodon> labeledCodons = featureLoc.getLabeledCodons(cmdContext);
+			endLabeledCodon = labeledCodons.get(labeledCodons.size()-1); 
+		}
+		if(endLabeledCodon == null) {
+			throw new AlignmentColumnsSelectorException(AlignmentColumnsSelectorException.Code.INVALID_SELECTOR, 
+					"Amino acid region selector refers to unknown end codon "+endLabeledCodon);
+		}
+
+		
+		
+		
 	}
 
 	

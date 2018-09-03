@@ -518,7 +518,27 @@ public class FeatureLocation extends _FeatureLocation {
 			return labeledQueryAminoAcids;
 		}
 	}
-	
+
+
+	public List<LabeledCodon> getLabeledCodons(CommandContext cmdContext, LabeledCodon startLabeledCodon, LabeledCodon endLabeledCodon) {
+		List<LabeledCodon> selectedLabeledCodons = new ArrayList<LabeledCodon>();
+		List<LabeledCodon> allLabeledCodons = getLabeledCodons(cmdContext);
+		boolean withinSelection = false; 
+		for(LabeledCodon labeledCodon: allLabeledCodons) {
+			if(labeledCodon.getCodonLabel().equals(startLabeledCodon.getCodonLabel())) {
+				withinSelection = true;
+			}
+			if(withinSelection) {
+				selectedLabeledCodons.add(labeledCodon);
+			}
+			if(labeledCodon.getCodonLabel().equals(endLabeledCodon.getCodonLabel())) {
+				withinSelection = false;
+			}
+		}
+		return selectedLabeledCodons;
+	}
+
+
 
 }
 

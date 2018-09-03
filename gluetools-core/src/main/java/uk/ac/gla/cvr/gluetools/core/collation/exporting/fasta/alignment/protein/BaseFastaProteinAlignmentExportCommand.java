@@ -32,7 +32,7 @@ import java.util.Map;
 import org.biojava.nbio.core.sequence.ProteinSequence;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.AbstractAlmtRowConsumer;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.AbstractStringAlmtRowConsumer;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExportCommandDelegate;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAminoAcidAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.QueryMemberSupplier;
@@ -50,7 +50,7 @@ public abstract class BaseFastaProteinAlignmentExportCommand<R extends CommandRe
 	
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		delegate.configure(pluginConfigContext, configElem, true);
+		delegate.configure(pluginConfigContext, configElem, false);
 	}
 
 	protected FastaAlignmentExportCommandDelegate getDelegate() {
@@ -60,7 +60,7 @@ public abstract class BaseFastaProteinAlignmentExportCommand<R extends CommandRe
 	protected void exportProteinAlignment(CommandContext cmdContext, FastaProteinAlignmentExporter almtExporter, PrintWriter printWriter) {
 		QueryMemberSupplier queryMemberSupplier = new QueryMemberSupplier(delegate.getAlignmentName(), delegate.getRecursive(), delegate.getWhereClause());
 
-		AbstractAlmtRowConsumer almtRowConsumer = new AbstractAlmtRowConsumer() {
+		AbstractStringAlmtRowConsumer almtRowConsumer = new AbstractStringAlmtRowConsumer() {
 			@Override
 			public void consumeAlmtRow(CommandContext cmdContext, AlignmentMember almtMember, String alignmentRowString) {
 				String fastaId = FastaProteinAlignmentExporter.generateFastaId(almtExporter.getIdTemplate(), almtMember);
@@ -69,7 +69,7 @@ public abstract class BaseFastaProteinAlignmentExportCommand<R extends CommandRe
 			}
 		};
 		IAminoAcidAlignmentColumnsSelector alignmentColumnsSelector = delegate.getAminoAcidAlignmentColumnsSelector(cmdContext);
-		alignmentColumnsSelector.generateAlignmentRows(cmdContext, delegate.getExcludeEmptyRows(), queryMemberSupplier, almtRowConsumer);
+		alignmentColumnsSelector.generateStringAlignmentRows(cmdContext, delegate.getExcludeEmptyRows(), queryMemberSupplier, almtRowConsumer);
 	}
 	
 	
@@ -77,7 +77,7 @@ public abstract class BaseFastaProteinAlignmentExportCommand<R extends CommandRe
 		Map<String, ProteinSequence> proteinFastaMap = new LinkedHashMap<String, ProteinSequence>();
 		QueryMemberSupplier queryMemberSupplier = new QueryMemberSupplier(delegate.getAlignmentName(), delegate.getRecursive(), delegate.getWhereClause());
 
-		AbstractAlmtRowConsumer almtRowConsumer = new AbstractAlmtRowConsumer() {
+		AbstractStringAlmtRowConsumer almtRowConsumer = new AbstractStringAlmtRowConsumer() {
 			@Override
 			public void consumeAlmtRow(CommandContext cmdContext, AlignmentMember almtMember, String alignmentRowString) {
 				String fastaId = FastaProteinAlignmentExporter.generateFastaId(almtExporter.getIdTemplate(), almtMember);
@@ -85,7 +85,7 @@ public abstract class BaseFastaProteinAlignmentExportCommand<R extends CommandRe
 			}
 		};
 		IAminoAcidAlignmentColumnsSelector aminoAcidAlignmentColumnsSelector = delegate.getAminoAcidAlignmentColumnsSelector(cmdContext);
-		aminoAcidAlignmentColumnsSelector.generateAlignmentRows(cmdContext, delegate.getExcludeEmptyRows(),
+		aminoAcidAlignmentColumnsSelector.generateStringAlignmentRows(cmdContext, delegate.getExcludeEmptyRows(),
 				queryMemberSupplier, almtRowConsumer);
 		return proteinFastaMap;
 	}

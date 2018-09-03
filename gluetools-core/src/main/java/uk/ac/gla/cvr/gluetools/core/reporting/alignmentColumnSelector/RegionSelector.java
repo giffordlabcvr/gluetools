@@ -87,15 +87,14 @@ public abstract class RegionSelector implements Plugin {
 		}
 	}
 
-	public void checkCoding(CommandContext cmdContext) {
-		Feature referredToFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(this.featureName));
-		if(!referredToFeature.codesAminoAcids()) {
+	public final void checkAminoAcidSelector(CommandContext cmdContext) {
+		if(!(this instanceof AminoAcidRegionSelector)) {
 			throw new AlignmentColumnsSelectorException(AlignmentColumnsSelectorException.Code.INVALID_SELECTOR, 
-					"Region selector refers to feature "+referredToFeature.getName()+" which is not an amino acid coding feature");
+					"Alingment columns selector contains non-amino-acid region selector");
 		}
 		List<RegionSelector> excludeRegionSelectors = getExcludeRegionSelectors();
 		if(excludeRegionSelectors != null) {
-			excludeRegionSelectors.forEach(ers -> ers.checkCoding(cmdContext));
+			excludeRegionSelectors.forEach(ers -> ers.checkAminoAcidSelector(cmdContext));
 		}
 	}
 	public String getFeatureName() {
@@ -104,6 +103,13 @@ public abstract class RegionSelector implements Plugin {
 
 	public void setFeatureName(String featureName) {
 		this.featureName = featureName;
+	}
+
+	public void validate(CommandContext cmdContext, String relRefName) {
+		List<RegionSelector> excludeRegionSelectors = getExcludeRegionSelectors();
+		if(excludeRegionSelectors != null) {
+			excludeRegionSelectors.forEach(ers -> ers.validate(cmdContext, relRefName));
+		}
 	}
 
 }

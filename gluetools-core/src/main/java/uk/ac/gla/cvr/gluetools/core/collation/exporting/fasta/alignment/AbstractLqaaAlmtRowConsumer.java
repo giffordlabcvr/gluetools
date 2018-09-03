@@ -25,11 +25,14 @@
 */
 package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment;
 
+import java.util.List;
+
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 
-public abstract class AbstractAlmtRowConsumer {
+public abstract class AbstractLqaaAlmtRowConsumer {
 
-	public abstract void consumeAlmtRow(CommandContext cmdContext, AlignmentMember almtMember, String alignmentRowString);
-	
+	public abstract void consumeAlmtRow(CommandContext cmdContext, AlignmentMember almtMember, List<LabeledQueryAminoAcid> lqaas);
+
 }

@@ -43,8 +43,9 @@ import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManager;
 
 @CommandClass( 
 		commandWords={"web-export"}, 
-		docoptUsages={"<alignmentName> -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd>] [-c] (-w <whereClause> | -a) [-e] -o <fileName>"},
+		docoptUsages={"<alignmentName> (-s <selectorName> | -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd>]) [-c] (-w <whereClause> | -a) [-e] -o <fileName>"},
 		docoptOptions={
+			"-s <selectorName>, --selectorName <selectorName>     Columns selector module",
 			"-r <relRefName>, --relRefName <relRefName>           Related reference",
 			"-f <featureName>, --featureName <featureName>        Protein-coding feature",
 			"-l, --labelledCodon                                  Region between codon labels",

@@ -35,7 +35,7 @@ import java.util.function.Function;
 import org.apache.cayenne.exp.Expression;
 import org.biojava.nbio.core.sequence.ProteinSequence;
 
-import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.AbstractAlmtRowConsumer;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.AbstractStringAlmtRowConsumer;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAminoAcidColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.consensus.AbstractConsensusGenerator;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.QueryMemberSupplier;
@@ -67,8 +67,8 @@ public class AminoAcidConsensusGenerator extends AbstractConsensusGenerator<Amin
 			String consensusID, LineFeedStyle lineFeedStyle) {
 		QueryMemberSupplier queryMemberSupplier = new QueryMemberSupplier(alignmentName, recursive, whereClause);
 		Map<Map<String,String>, String> memberPkMapToAlmtRow = new LinkedHashMap<Map<String, String>, String>();
-		alignmentColumnsSelector.generateAlignmentRows(cmdContext, false, queryMemberSupplier,  
-				new AbstractAlmtRowConsumer() {
+		alignmentColumnsSelector.generateStringAlignmentRows(cmdContext, false, queryMemberSupplier,  
+				new AbstractStringAlmtRowConsumer() {
 					@Override
 					public void consumeAlmtRow(CommandContext cmdContext, AlignmentMember almtMember,
 							String alignmentRowString) {

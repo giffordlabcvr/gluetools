@@ -103,5 +103,11 @@ public class FastaAlignmentExportCommand extends BaseFastaAlignmentExportCommand
 	}
 	
 	@CompleterClass
-	public static class Completer extends FastaAlignmentExportCommandDelegate.ExportCompleter {}
+	public static class Completer extends FastaAlignmentExportCommandDelegate.ExportCompleter {
+		public Completer() {
+			super();
+			registerModuleNameLookup("selectorName", "alignmentColumnsSelector");
+		}
+
+	}
 }

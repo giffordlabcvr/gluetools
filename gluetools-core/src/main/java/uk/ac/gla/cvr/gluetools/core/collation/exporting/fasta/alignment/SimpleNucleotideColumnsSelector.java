@@ -59,7 +59,7 @@ public class SimpleNucleotideColumnsSelector implements IAlignmentColumnsSelecto
 	}
 
 	@Override
-	public void checkCoding(CommandContext cmdContext) {
+	public void checkAminoAcidSelector(CommandContext cmdContext) {
 		throw new AlignmentColumnsSelectorException(AlignmentColumnsSelectorException.Code.INVALID_SELECTOR, 
 				"Nucleotide selector may not select amino acid columns");
 	}

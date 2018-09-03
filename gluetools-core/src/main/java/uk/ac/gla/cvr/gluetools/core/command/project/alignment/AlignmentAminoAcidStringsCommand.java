@@ -25,6 +25,9 @@
 */
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 
+import gnu.trove.map.TIntIntMap;
+import gnu.trove.map.hash.TIntIntHashMap;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -38,7 +41,10 @@ import org.apache.cayenne.exp.Expression;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.AminoAcidStringFrequency;
-import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.AbstractAlmtRowConsumer;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.AbstractLqaaAlmtRowConsumer;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAminoAcidAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAminoAcidColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.QueryMemberSupplier;
@@ -60,7 +66,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AlignmentColumnsSelector;
-import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 
 @CommandClass(
@@ -73,7 +78,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 		"-a <almtColsSelector>, --almtColsSelector <almtColsSelector>  Alignment columns selector module",
 		"-f <featureName>, --featureName <featureName>                 Coding feature to translate",
 		"-r <relRefName>, --relRefName <relRefName>                    Related reference sequence",
-		"-s, --shortForm                                               Elide discontiguities with slash",
+		"-s, --slashDiscontiguities                                    Elide discontiguities with slash",
 		"-x, --excludeAnyGap                                           Exclude if any residue missing",
 		"-g, --excludeAllGap                                           Exclude if all residues missing",
 		},
@@ -82,11 +87,11 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 		"This allows discontiguous regions to be selected. In this case the module may only use amino acid region selectors. "+
 		"If the --shortForm option is used, then any unselected regions are elided in the output using '/'. "+
 		"The second possibility is to specifically identify a single contiguous genome region. In this case, "+
-		"if this alignment is constrained, <relRefName> names a reference sequence constraining an ancestor alignment "
-		+ "of this alignment. If unconstrained, <relRefName> names a reference sequence which is a member of this alignment. "+
+		"if this alignment is constrained, <relRefName> names a reference sequence constraining an ancestor alignment "+
+		"of this alignment. If unconstrained, <relRefName> names a reference sequence which is a member of this alignment. "+
 		"The <featureName> arguments names a feature which has a location defined on the named reference. "+
-		"The <lcStart> and <lcEnd> arguments specify labeled codons, the returned set of strings will be within this region, "
-		+ "including the endpoints.",
+		"The <lcStart> and <lcEnd> arguments specify labeled codons, the returned set of strings will be within this region, "+
+		"including the endpoints.",
 		metaTags = {}	
 )
 public class AlignmentAminoAcidStringsCommand extends AlignmentModeCommand<AlignmentAminoAcidStringsResult> {
@@ -96,7 +101,7 @@ public class AlignmentAminoAcidStringsCommand extends AlignmentModeCommand<Align
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String ALMT_COLS_SELECTOR = "almtColsSelector";
 	public static final String FEATURE_NAME = "featureName";
-	public static final String SHORT_FORM = "shortForm";
+	public static final String SLASH_DISCONTIGUITIES = "slashDiscontiguities";
 	public static final String REL_REF_NAME = "relRefName";
 	public static final String LC_START = "lcStart";
 	public static final String LC_END = "lcEnd";
@@ -107,7 +112,7 @@ public class AlignmentAminoAcidStringsCommand extends AlignmentModeCommand<Align
 	private Optional<Expression> whereClause;
 	private String almtColsSelectorModuleName;
 	private String featureName;
-	private Boolean shortForm;
+	private Boolean slashDiscontiguities;
 	private String relRefName;
 	private String lcStart;
 	private String lcEnd;
@@ -123,17 +128,16 @@ public class AlignmentAminoAcidStringsCommand extends AlignmentModeCommand<Align
 		this.whereClause = Optional.ofNullable(PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false));
 		this.almtColsSelectorModuleName = PluginUtils.configureStringProperty(configElem, ALMT_COLS_SELECTOR, false);
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, false);
-		this.shortForm = PluginUtils.configureBooleanProperty(configElem, SHORT_FORM, true);
+		this.slashDiscontiguities = PluginUtils.configureBooleanProperty(configElem, SLASH_DISCONTIGUITIES, true);
 		this.relRefName = PluginUtils.configureStringProperty(configElem, REL_REF_NAME, false);
 		this.lcStart = PluginUtils.configureStringProperty(configElem, LC_START, false);
 		this.lcEnd = PluginUtils.configureStringProperty(configElem, LC_END, false);
-		this.shortForm = PluginUtils.configureBooleanProperty(configElem, SHORT_FORM, true);
 		this.excludeAnyGap = PluginUtils.configureBooleanProperty(configElem, EXCLUDE_ANY_GAP, true);
 		this.excludeAllGap = PluginUtils.configureBooleanProperty(configElem, EXCLUDE_ALL_GAP, true);
 
 		if(this.almtColsSelectorModuleName == null) {
-			if(this.shortForm) {
-				throw new CommandException(Code.COMMAND_USAGE_ERROR, "The --shortForm option may only be used when a columns selector is specified");
+			if(this.slashDiscontiguities) {
+				throw new CommandException(Code.COMMAND_USAGE_ERROR, "The --slashDiscontiguities option may only be used when a columns selector is specified");
 			}
 			if(this.relRefName == null || this.lcStart == null || this.lcEnd == null) {
 				throw new CommandException(Code.COMMAND_USAGE_ERROR, "All the arguments for a specific contiguous genome region must be supplied");
@@ -154,7 +158,7 @@ public class AlignmentAminoAcidStringsCommand extends AlignmentModeCommand<Align
 		
 		if(almtColsSelectorModuleName != null) {
 			AlignmentColumnsSelector almtColsSelector = Module.resolveModulePlugin(cmdContext, AlignmentColumnsSelector.class, almtColsSelectorModuleName);
-			almtColsSelector.checkCoding(cmdContext);
+			almtColsSelector.checkAminoAcidSelector(cmdContext);
 			iAlmtColsSelector = almtColsSelector;
 		} else {
 			alignment.getRelatedRef(cmdContext, relRefName); // check related Ref.
@@ -166,7 +170,7 @@ public class AlignmentAminoAcidStringsCommand extends AlignmentModeCommand<Align
 					new SimpleAminoAcidColumnsSelector(relRefName, featureName, lcStart, lcEnd);
 		}
 		resultRowData = alignmentAminoAcidStrings(cmdContext, getAlignmentName(), whereClause,
-				recursive, shortForm, 
+				recursive, slashDiscontiguities, 
 				excludeAnyGap, excludeAllGap, iAlmtColsSelector);
 		return new AlignmentAminoAcidStringsResult(resultRowData);
 	}
@@ -174,52 +178,66 @@ public class AlignmentAminoAcidStringsCommand extends AlignmentModeCommand<Align
 	private static List<AminoAcidStringFrequency> alignmentAminoAcidStrings(
 			CommandContext cmdContext, String almtName,
 			Optional<Expression> whereClause, Boolean recursive,
-			Boolean shortForm, Boolean excludeAnyGap, Boolean excludeAllGap, 
+			Boolean slashDiscontiguities, Boolean excludeAnyGap, Boolean excludeAllGap, 
 			IAminoAcidAlignmentColumnsSelector almtColsSelector) {
 		AAStringInfo aaStringInfo = new AAStringInfo();
 		QueryMemberSupplier queryMemberSupplier = new QueryMemberSupplier(almtName, recursive, whereClause);
 
-		final List<ReferenceSegment> refSegs;
-		if(shortForm) {
-			refSegs = almtColsSelector.selectAlignmentColumns(cmdContext);
-		} else {
-			refSegs = null;
+		List<LabeledCodon> selectedLabeledCodons = almtColsSelector.selectLabeledCodons(cmdContext);
+		TIntIntMap lcRefNtToRowStringPos = new TIntIntHashMap(selectedLabeledCodons.size());
+		List<Integer> discontiguityPositions = new ArrayList<Integer>();
+		LabeledCodon lastLabeledCodon = null;
+		int stringPos = 0;
+		for(int i = 0; i < selectedLabeledCodons.size(); i++) {
+			LabeledCodon labeledCodon = selectedLabeledCodons.get(i);
+			if(lastLabeledCodon != null && slashDiscontiguities && labeledCodon.getNtStart() != lastLabeledCodon.getNtEnd()+1) {
+				discontiguityPositions.add(stringPos);
+				stringPos++;
+			}
+			lcRefNtToRowStringPos.put(labeledCodon.getNtStart(), stringPos);
+			stringPos++;
+			lastLabeledCodon = labeledCodon;
 		}
+		final int stringLength = stringPos;
 		
-		AbstractAlmtRowConsumer almtRowConsumer = new AbstractAlmtRowConsumer() {
+		AbstractLqaaAlmtRowConsumer almtRowConsumer = new AbstractLqaaAlmtRowConsumer() {
 			@Override
-			public void consumeAlmtRow(CommandContext cmdContext, AlignmentMember almtMember, String alignmentRowString) {
-				alignmentRowString = alignmentRowString.replace('X', '-');
-				if(shortForm) {
-					StringBuffer elidedStringBuffer = new StringBuffer();
-					int minRefStart = ReferenceSegment.minRefStart(refSegs);
-					for(int i = 0; i < refSegs.size(); i++) {
-						if(i > 0) {
-							elidedStringBuffer.append("/");
-						}
-						int aaCharStart = (refSegs.get(i).getRefStart() - minRefStart) / 3;
-						int aaCharEnd = aaCharStart + refSegs.get(i).getCurrentLength() / 3;
-						elidedStringBuffer.append(alignmentRowString.substring(aaCharStart, aaCharEnd));
-					}
-					alignmentRowString = elidedStringBuffer.toString();
+			public void consumeAlmtRow(CommandContext cmdContext, AlignmentMember almtMember, List<LabeledQueryAminoAcid> lqaas) {
+				char[] stringChars = new char[stringLength];
+				for(int i = 0; i < stringLength; i++) {
+					stringChars[i] = '-';
 				}
-				if(excludeAnyGap && alignmentRowString.contains("-")) {
+				for(int discontPos: discontiguityPositions) {
+					stringChars[discontPos] = '/';
+				}
+				for(LabeledQueryAminoAcid lqaa: lqaas) {
+					LabeledAminoAcid labeledAminoAcid = lqaa.getLabeledAminoAcid();
+					int refNtStart = labeledAminoAcid.getLabeledCodon().getNtStart();
+					int stringPos = lcRefNtToRowStringPos.get(refNtStart);
+					stringChars[stringPos] = labeledAminoAcid.getTranslationInfo().getSingleCharTranslation();
+				}
+				String string = new String(stringChars);
+				if(excludeAnyGap && string.contains("-")) {
 					return;
 				}
-				if(excludeAllGap && alignmentRowString.matches("^[-/]*$")) {
+				if(excludeAllGap && string.matches("^[-/]*$")) {
 					return;
 				}
-				aaStringInfo.registerString(alignmentRowString);
+				aaStringInfo.registerString(string);
 			}
 		};
-		almtColsSelector.generateAlignmentRows(cmdContext, false, queryMemberSupplier, almtRowConsumer);
+		almtColsSelector.generateLqaaAlignmentRows(cmdContext, false, queryMemberSupplier, almtRowConsumer);
 		
 		ArrayList<AminoAcidStringFrequency> aasfList = aaStringInfo.toAASFList();
 		
 		Collections.sort(aasfList, new Comparator<AminoAcidStringFrequency>() {
 			@Override
 			public int compare(AminoAcidStringFrequency o1, AminoAcidStringFrequency o2) {
-				return Double.compare(o2.getPctMembers(), o1.getPctMembers());
+				int comp = Double.compare(o2.getPctMembers(), o1.getPctMembers());
+				if(comp == 0) {
+					return o1.getAminoAcidString().compareTo(o2.getAminoAcidString());
+				}
+				return comp;
 			}
 		});
 		return aasfList;

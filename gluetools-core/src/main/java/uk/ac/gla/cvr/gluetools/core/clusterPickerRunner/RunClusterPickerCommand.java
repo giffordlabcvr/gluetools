@@ -37,7 +37,7 @@ import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.clusterPickerRunner.ClusterPickerException.Code;
-import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.AbstractAlmtRowConsumer;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.AbstractStringAlmtRowConsumer;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.QueryMemberSupplier;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -102,7 +102,7 @@ public class RunClusterPickerCommand extends ModulePluginCommand<ClusterPickerRe
 		Map<String, DNASequence> alignmentMap = new LinkedHashMap<String, DNASequence>();
 		
 		FastaAlignmentExporter.exportAlignment(cmdContext, null, false, 
-				queryMemberSupplier, new AbstractAlmtRowConsumer() {
+				queryMemberSupplier, new AbstractStringAlmtRowConsumer() {
 					@Override
 					public void consumeAlmtRow(CommandContext cmdContext,
 							AlignmentMember almtMember, String alignmentRowString) {

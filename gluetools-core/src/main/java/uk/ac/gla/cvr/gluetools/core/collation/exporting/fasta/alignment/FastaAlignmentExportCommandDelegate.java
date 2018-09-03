@@ -164,7 +164,7 @@ public class FastaAlignmentExportCommandDelegate {
 		return allMembers;
 	}
 
-	public String getAcRefName() {
+	public String getRelRefName() {
 		return relRefName;
 	}
 
@@ -279,7 +279,7 @@ public class FastaAlignmentExportCommandDelegate {
 
 	public IAminoAcidAlignmentColumnsSelector getAminoAcidAlignmentColumnsSelector(CommandContext cmdContext) {
 		if(selectorName != null) {
-			return Module.resolveModulePlugin(cmdContext, AlignmentColumnsSelector.class, selectorName);
+			return Module.resolveModulePlugin(cmdContext, IAminoAcidAlignmentColumnsSelector.class, selectorName);
 		} else if(relRefName != null && featureName != null) {
 			return new SimpleAminoAcidColumnsSelector(relRefName, featureName, lcStart, lcEnd);
 		} else {
