@@ -45,6 +45,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc.FeatureLocAminoAcidCommand;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.AlignerException;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.AlignerException.Code;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.SupportsComputeConstrained;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.AbstractBlastAligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.codonAwareBlast.CodonAwareBlastAligner.CodonAwareBlastAlignerResult;
@@ -98,8 +99,12 @@ public class CodonAwareBlastAligner extends AbstractBlastAligner<CodonAwareBlast
 		String featureName = getFeatureName();
 		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(refName, featureName), true);
 		
-		if(featureLoc == null && allowFeatureToBeMissing) {
-			return new CodonAwareBlastAlignerResult(Collections.emptyMap());
+		if(featureLoc == null) {
+			if(allowFeatureToBeMissing) {
+				return new CodonAwareBlastAlignerResult(Collections.emptyMap());
+			} else {
+				throw new AlignerException(Code.MISSING_FEATURE_LOCATION, refName, featureName);
+			}
 		}
 		
 		List<LabeledAminoAcid> featureLocAminoAcids = FeatureLocAminoAcidCommand.featureLocAminoAcids(cmdContext, featureLoc);
