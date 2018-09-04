@@ -1,5 +1,8 @@
 package uk.ac.gla.cvr.gluetools.core.webVisualisationUtils;
 
+import gnu.trove.map.TIntCharMap;
+import gnu.trove.map.hash.TIntCharHashMap;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -20,6 +23,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SimpleNucleotideContentPr
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.AllColumnsAlignment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
@@ -36,6 +40,7 @@ import uk.ac.gla.cvr.gluetools.core.webVisualisationUtils.pojos.RefNtContentAnno
 import uk.ac.gla.cvr.gluetools.core.webVisualisationUtils.pojos.RefNtIndexAnnotation;
 import uk.ac.gla.cvr.gluetools.core.webVisualisationUtils.pojos.VisualisationAnnotationRow;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 @CommandClass(
 		commandWords={"visualise-feature"}, 
@@ -61,10 +66,8 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		CommandDocument qaSegsCmdDoc = PluginUtils.configureCommandDocumentProperty(configElem, QUERY_TO_REF_SEGMENTS, true);
-		qaSegsCmdDoc.getArray("alignedSegment").getItems().forEach(item -> {
-			queryToRefSegments.add(new QueryAlignedSegment((CommandObject) item));
-		});
+		List<Element> queryToRefSegElems = GlueXmlUtils.findChildElements(configElem, QUERY_TO_REF_SEGMENTS);
+		this.queryToRefSegments = PluginFactory.createPlugins(pluginConfigContext, QueryAlignedSegment.class, queryToRefSegElems);
 		this.referenceName = PluginUtils.configureStringProperty(configElem, REFERENCE_NAME, true);
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
 		this.queryNucleotides = PluginUtils.configureStringProperty(configElem, QUERY_NUCLEOTIDES, true);
@@ -103,6 +106,9 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 		// calculate width of display alignment
 		int displayNtWidth = QueryAlignedSegment.maxQueryEnd(uToRefFeatureLocSegs)-displayNtOffset;
 
+		char[] refNtsInUSpace = new char[displayNtWidth];
+		TIntCharMap refNtToRefAa = new TIntCharHashMap();
+		
 		VisualisationAnnotationRow refNtContentRow = new VisualisationAnnotationRow();
 		refNtContentRow.annotationType = "refNtContent";
 		VisualisationAnnotationRow refNtIndexRow = new VisualisationAnnotationRow();
@@ -123,6 +129,11 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 			refEndAnnotation.displayNtPos = seg.getRefEnd()-displayNtOffset;
 			refEndAnnotation.ntIndex = seg.getQueryEnd();
 			refNtIndexRow.annotations.add(refEndAnnotation);
+			int uIndex = seg.getRefStart()-displayNtOffset;
+			for(int refNtIndex = seg.getQueryStart(); refNtIndex <= seg.getQueryEnd(); refNtIndex++) {
+				refNtsInUSpace[uIndex-1] = FastaUtils.nt(referenceNucleotides, refNtIndex);
+				uIndex++;
+			}
 		});
 
 
@@ -143,6 +154,19 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 			QueryNtContentAnnotation queryNtContent = new QueryNtContentAnnotation();
 			queryNtContent.displayNtPos = seg.getRefStart()-displayNtOffset;
 			queryNtContent.ntContent = FastaUtils.subSequence(queryNucleotides, seg.getQueryStart(), seg.getQueryEnd()).toString();
+			int uIndex = seg.getRefStart()-displayNtOffset;
+			int displayPos = queryNtContent.displayNtPos;
+			for(int queryNtIndex = seg.getQueryStart(); queryNtIndex <= seg.getQueryEnd(); queryNtIndex++) {
+				char refNt = refNtsInUSpace[uIndex-1];
+				char queryNt = FastaUtils.nt(queryNucleotides, queryNtIndex);
+				if(refNt != 0 && refNt != queryNt) {
+					queryNtContent.ntDisplayPosDifferences.add(displayPos);
+				}
+				uIndex++;
+				displayPos++;
+			}
+			
+			
 			queryNtContentRow.annotations.add(queryNtContent);
 			QueryNtIndexAnnotation queryStartAnnotation = new QueryNtIndexAnnotation();
 			queryStartAnnotation.displayNtPos = seg.getRefStart()-displayNtOffset;
@@ -185,6 +209,7 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 				refAaContentAnnotation.ntWidth = labeledCodon.getNtLength();
 				refAaContentAnnotation.displayNtPos = displayNtPos;
 				refAaRow.annotations.add(refAaContentAnnotation);
+				refNtToRefAa.put(labeledCodon.getNtStart(), refAaContentAnnotation.aa.charAt(0));
 			}
 			queryAaRow = new VisualisationAnnotationRow();
 			queryAaRow.annotationType = "queryAa";
@@ -206,6 +231,12 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 				queryAaContentAnnotation.ntWidth = labeledCodon.getNtLength();
 				queryAaContentAnnotation.displayNtPos = displayNtPos;
 				queryAaRow.annotations.add(queryAaContentAnnotation);
+				
+				char refAa = refNtToRefAa.get(labeledCodon.getNtStart());
+				if(refAa != 0 && refAa != queryAaContentAnnotation.aa.charAt(0)) {
+					queryAaContentAnnotation.differentFromRef = true;
+				}
+				
 			}
 		
 		}
