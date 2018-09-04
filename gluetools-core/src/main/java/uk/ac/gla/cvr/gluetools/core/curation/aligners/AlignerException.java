@@ -32,6 +32,7 @@ public class AlignerException extends GlueException {
 	public enum Code implements GlueErrorCode {
 		
 		CANNOT_ALIGN_AGAINST_DISCONTIGUOUS_FEATURE_LOCATION("refName", "featureName"),
+		MISSING_FEATURE_LOCATION("refName", "featureName"),
 		FEATURE_NAME_REQUIRED();
 
 		private String[] argNames;
