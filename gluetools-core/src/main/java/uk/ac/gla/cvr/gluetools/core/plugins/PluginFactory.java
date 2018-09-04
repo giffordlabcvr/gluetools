@@ -100,10 +100,10 @@ public class PluginFactory<P extends Plugin> {
 	public P instantiateFromElement(Element element) {
 		String elementName = element.getNodeName();
 		PluginClassInfo pluginTypeInfo = elemNameToPluginClassInfo.get(elementName);
-		Class<? extends P> pluginClass = pluginTypeInfo.getTheClass();
-		if(pluginClass == null) {
+		if(pluginTypeInfo == null) {
 			throw new PluginFactoryException(Code.UNKNOWN_ELEMENT_NAME, thisFactoryName, elementName);
 		}
+		Class<? extends P> pluginClass = pluginTypeInfo.getTheClass();
 		P plugin = instantiatePlugin(element, pluginClass);
 		if(pluginTypeInfo.isDeprecated()) {
 			String deprecationWarning = "Plugin element \""+elementName+"\" is deprecated";
