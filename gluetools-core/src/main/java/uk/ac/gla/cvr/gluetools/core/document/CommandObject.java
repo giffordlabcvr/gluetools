@@ -25,8 +25,10 @@
 */
 package uk.ac.gla.cvr.gluetools.core.document;
 
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -154,7 +156,16 @@ public class CommandObject extends CommandValue implements CommandArrayItem, Com
 		if(fieldValue == null) {
 			return fieldValue;
 		} else if(fieldValue instanceof CommandArray) {
-			return ((CommandArray) fieldValue).getItems();
+			List<CommandArrayItem> items = ((CommandArray) fieldValue).getItems();
+			List<Object> renderedItems = new ArrayList<Object>(items.size());
+			for(CommandArrayItem item: items) {
+				if(item instanceof SimpleCommandValue) {
+					renderedItems.add(((SimpleCommandValue) item).getValue());
+				} else {
+					renderedItems.add(item);
+				}
+			}
+			return renderedItems;
 		} else if(fieldValue instanceof CommandObject) {
 			return ((CommandObject) fieldValue);
 		} else if(fieldValue instanceof SimpleCommandValue) {
