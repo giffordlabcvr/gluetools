@@ -213,7 +213,7 @@ public class PojoDocumentUtils {
 			commandArray.addString((String) elem);
 		} else if(elemType.equals(Double.class)) {
 			commandArray.addDouble((Double) elem);
-		} if(elemType.equals(Float.class)) {
+		} else if(elemType.equals(Float.class)) {
 			commandArray.addDouble(((Float) elem).doubleValue());
 		} else if(elemType.equals(Boolean.class)) {
 			commandArray.addBoolean((Boolean) elem);
