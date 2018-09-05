@@ -20,7 +20,10 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.PojoCommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SimpleNucleotideContentProvider;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
@@ -47,37 +50,40 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @CommandClass(
 		commandWords={"visualise-feature"}, 
-		description = "Produce feature visualisation document based on query-aligned segments", 
+		description = "Produce feature visualisation document based on pairwise alignment with target reference", 
 		docoptUsages = { },
-		furtherHelp = "Given query-aligned segments between some query sequence and a named reference sequence, "
+		furtherHelp = "Given query-aligned segments between some query sequence and a target reference sequence, "
 				+ "and nucleotide content for the query sequence, produce a document for visualising the "
-				+ "specified feature in both the query and reference, with an integrated coordinate 'u-space', "
-				+" allowing indels. 'Details' marking up the query sequence may also be supplied, "
+				+ "specified feature in both the query and a 'comparison' reference, with an integrated "
+				+ "coordinate 'u-space', allowing indels. 'Details' marking up the query sequence may also be supplied, "
 				+ "these are returned, transformed into the integrated 'u-space'."
 				,
 		metaTags = { CmdMeta.inputIsComplex }
 )
 public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResult<FeatureVisualisation>, VisualisationUtility> {
 
-	private static final String REFERENCE_NAME = "referenceName";
+	private static final String TARGET_REFERENCE_NAME = "targetReferenceName";
+	private static final String COMPARISON_REFERENCE_NAME = "comparisonReferenceName";
 	private static final String FEATURE_NAME = "featureName";
-	private static final String QUERY_TO_REF_SEGMENTS = "queryToRefSegments";
+	private static final String QUERY_TO_TARGET_REF_SEGMENTS = "queryToTargetRefSegments";
 	private static final String QUERY_NUCLEOTIDES = "queryNucleotides";
 	private static final String QUERY_DETAILS = "queryDetails";
 
-	private String referenceName;
+	private String targetReferenceName;
+	private String comparisonReferenceName;
 	private String featureName;
-	private List<QueryAlignedSegment> queryToRefSegments = new ArrayList<QueryAlignedSegment>();
+	private List<QueryAlignedSegment> queryToTargetRefSegments = new ArrayList<QueryAlignedSegment>();
 	private String queryNucleotides;
 	private List<Detail> queryDetails;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		List<Element> queryToRefSegElems = PluginUtils.findConfigElements(configElem, QUERY_TO_REF_SEGMENTS);
-		this.referenceName = PluginUtils.configureStringProperty(configElem, REFERENCE_NAME, true);
+		this.targetReferenceName = PluginUtils.configureStringProperty(configElem, TARGET_REFERENCE_NAME, true);
+		this.comparisonReferenceName = PluginUtils.configureStringProperty(configElem, COMPARISON_REFERENCE_NAME, true);
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
-		this.queryToRefSegments = PluginFactory.createPlugins(pluginConfigContext, QueryAlignedSegment.class, queryToRefSegElems);
+		List<Element> queryToTargetRefSegElems = PluginUtils.findConfigElements(configElem, QUERY_TO_TARGET_REF_SEGMENTS);
+		this.queryToTargetRefSegments = PluginFactory.createPlugins(pluginConfigContext, QueryAlignedSegment.class, queryToTargetRefSegElems);
 		this.queryNucleotides = PluginUtils.configureStringProperty(configElem, QUERY_NUCLEOTIDES, true);
 		List<Element> queryDetailElems = PluginUtils.findConfigElements(configElem, QUERY_DETAILS);
 		this.queryDetails = PluginFactory.createPlugins(pluginConfigContext, Detail.class, queryDetailElems);
@@ -87,10 +93,14 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 	@Override
 	protected PojoCommandResult<FeatureVisualisation> execute(CommandContext cmdContext, VisualisationUtility modulePlugin) {
 		
-		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(this.referenceName, this.featureName));
+		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(this.comparisonReferenceName, this.featureName));
+		ReferenceSequence comparisonReference = featureLoc.getReferenceSequence();
 		String referenceNucleotides = 
-				featureLoc.getReferenceSequence().getSequence().getSequenceObject().getNucleotides(cmdContext);
+				comparisonReference.getSequence().getSequenceObject().getNucleotides(cmdContext);
 
+		ReferenceSequence targetReference = 
+				GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(targetReferenceName));
+		
 		Translator translator = new CommandContextTranslator(cmdContext);
 
 		
@@ -98,7 +108,19 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 		int refLength = referenceNucleotides.length();
 		AllColumnsAlignment<String> allColumnsAlmt = new AllColumnsAlignment<String>("reference", refLength);
 
-		allColumnsAlmt.addRow("query", "reference", queryToRefSegments, queryNucleotides.length());
+		String linkingAlmtName = modulePlugin.getLinkingAlignmentName();
+		Alignment linkingAlmt = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(linkingAlmtName));
+
+		AlignmentMember targetRefLinkingAlmtMember = targetReference.getLinkingAlignmentMembership(linkingAlmtName);
+		List<QueryAlignedSegment> targetRefToLinkingAlmt = targetRefLinkingAlmtMember.segmentsAsQueryAlignedSegments();
+		
+		List<QueryAlignedSegment> targetRefToComparisonRef = 
+				linkingAlmt.translateToRelatedRef(cmdContext, targetRefToLinkingAlmt, comparisonReference);
+		
+		List<QueryAlignedSegment> queryToComparisonRef = QueryAlignedSegment
+				.translateSegments(queryToTargetRefSegments, targetRefToComparisonRef);
+		
+		allColumnsAlmt.addRow("query", "reference", queryToComparisonRef, queryNucleotides.length());
 
 		allColumnsAlmt.rationalise();
 
@@ -251,7 +273,7 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 			queryAaRow.annotationType = "queryAa";
 
 			List<LabeledQueryAminoAcid> queryLqaas = 
-					featureLoc.translateQueryNucleotides(cmdContext, translator, queryToRefSegments, 
+					featureLoc.translateQueryNucleotides(cmdContext, translator, queryToComparisonRef, 
 							new SimpleNucleotideContentProvider(queryNucleotides));
 			
 			for(LabeledQueryAminoAcid queryLqaa: queryLqaas) {
@@ -278,8 +300,8 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 		}
 
 		FeatureVisualisation featureVisualisation = new FeatureVisualisation();
-		featureVisualisation.referenceName = featureLoc.getReferenceSequence().getName();
-		featureVisualisation.referenceDisplayName = featureLoc.getReferenceSequence().getRenderedName();
+		featureVisualisation.comparisonReferenceName = comparisonReference.getName();
+		featureVisualisation.comparisonReferenceDisplayName = comparisonReference.getRenderedName();
 		featureVisualisation.featureName = featureLoc.getFeature().getName();
 		featureVisualisation.featureDisplayName = featureLoc.getFeature().getRenderedName();
 		featureVisualisation.displayNtWidth = displayNtWidth;

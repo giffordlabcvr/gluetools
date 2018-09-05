@@ -11,10 +11,10 @@ import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentListField;
 public class FeatureVisualisation {
 
 	@PojoDocumentField
-	public String referenceName;
+	public String comparisonReferenceName;
 
 	@PojoDocumentField
-	public String referenceDisplayName;
+	public String comparisonReferenceDisplayName;
 
 	@PojoDocumentField
 	public String featureName;
