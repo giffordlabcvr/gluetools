@@ -9,4 +9,8 @@ public abstract class NtIndexAnnotation extends VisualisationAnnotation {
 
 	@PojoDocumentField
 	public Integer ntIndex;
+
+	@PojoDocumentField
+	public Boolean endOfSegment;
+
 }

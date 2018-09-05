@@ -134,10 +134,23 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 			RefNtIndexAnnotation refStartAnnotation = new RefNtIndexAnnotation();
 			refStartAnnotation.displayNtPos = seg.getRefStart()-displayNtOffset;
 			refStartAnnotation.ntIndex = seg.getQueryStart();
+			refStartAnnotation.endOfSegment = true;
 			refNtIndexRow.annotations.add(refStartAnnotation);
+			
+			for(int ntIndex = seg.getQueryStart()+1; ntIndex < seg.getQueryEnd(); ntIndex++) {
+				if(ntIndex % 10 == 0) {
+					RefNtIndexAnnotation regularAnnotation = new RefNtIndexAnnotation();
+					regularAnnotation.displayNtPos = (ntIndex+seg.getQueryToReferenceOffset())-displayNtOffset;
+					regularAnnotation.ntIndex = ntIndex;
+					regularAnnotation.endOfSegment = false;
+					refNtIndexRow.annotations.add(regularAnnotation);
+				}
+			}
+			
 			RefNtIndexAnnotation refEndAnnotation = new RefNtIndexAnnotation();
 			refEndAnnotation.displayNtPos = seg.getRefEnd()-displayNtOffset;
 			refEndAnnotation.ntIndex = seg.getQueryEnd();
+			refEndAnnotation.endOfSegment = true;
 			refNtIndexRow.annotations.add(refEndAnnotation);
 			int uIndex = seg.getRefStart()-displayNtOffset;
 			for(int refNtIndex = seg.getQueryStart(); refNtIndex <= seg.getQueryEnd(); refNtIndex++) {
@@ -181,10 +194,23 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 			QueryNtIndexAnnotation queryStartAnnotation = new QueryNtIndexAnnotation();
 			queryStartAnnotation.displayNtPos = seg.getRefStart()-displayNtOffset;
 			queryStartAnnotation.ntIndex = seg.getQueryStart();
+			queryStartAnnotation.endOfSegment = true;
 			queryNtIndexRow.annotations.add(queryStartAnnotation);
+			
+			for(int ntIndex = seg.getQueryStart()+1; ntIndex < seg.getQueryEnd(); ntIndex++) {
+				if(ntIndex % 10 == 0) {
+					QueryNtIndexAnnotation regularAnnotation = new QueryNtIndexAnnotation();
+					regularAnnotation.displayNtPos = (ntIndex+seg.getQueryToReferenceOffset())-displayNtOffset;
+					regularAnnotation.ntIndex = ntIndex;
+					regularAnnotation.endOfSegment = false;
+					queryNtIndexRow.annotations.add(regularAnnotation);
+				}
+			}
+			
 			QueryNtIndexAnnotation queryEndAnnotation = new QueryNtIndexAnnotation();
 			queryEndAnnotation.displayNtPos = seg.getRefEnd()-displayNtOffset;
 			queryEndAnnotation.ntIndex = seg.getQueryEnd();
+			queryEndAnnotation.endOfSegment = true;
 			queryNtIndexRow.annotations.add(queryEndAnnotation);
 		});
 
