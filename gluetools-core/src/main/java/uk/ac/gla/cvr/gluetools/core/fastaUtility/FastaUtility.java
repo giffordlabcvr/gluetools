@@ -43,6 +43,7 @@ public class FastaUtility extends ModulePlugin<FastaUtility>{
 		registerModulePluginCmdClass(SaveAminoAcidFastaCommand.class);
 		setCmdGroup(new CommandGroup("string-operations", "Operations on FASTA strings", 91, false));
 		registerModulePluginCmdClass(ReverseComplementFastaStringCommand.class);
+		registerModulePluginCmdClass(Base64ToNucleotideFastaCommand.class);
 	}
 
 }
