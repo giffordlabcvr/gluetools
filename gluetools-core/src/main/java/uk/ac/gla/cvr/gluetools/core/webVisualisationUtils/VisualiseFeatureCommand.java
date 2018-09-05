@@ -15,22 +15,26 @@ import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.PojoCommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SimpleNucleotideContentProvider;
-import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
-import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.AllColumnsAlignment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegmentTree;
 import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 import uk.ac.gla.cvr.gluetools.core.webVisualisationUtils.pojos.CodonLabelAnnotation;
+import uk.ac.gla.cvr.gluetools.core.webVisualisationUtils.pojos.DetailAnnotation;
+import uk.ac.gla.cvr.gluetools.core.webVisualisationUtils.pojos.DetailAnnotationRow;
+import uk.ac.gla.cvr.gluetools.core.webVisualisationUtils.pojos.DetailAnnotationSegment;
 import uk.ac.gla.cvr.gluetools.core.webVisualisationUtils.pojos.FeatureVisualisation;
 import uk.ac.gla.cvr.gluetools.core.webVisualisationUtils.pojos.QueryAaContentAnnotation;
 import uk.ac.gla.cvr.gluetools.core.webVisualisationUtils.pojos.QueryNtContentAnnotation;
@@ -40,15 +44,17 @@ import uk.ac.gla.cvr.gluetools.core.webVisualisationUtils.pojos.RefNtContentAnno
 import uk.ac.gla.cvr.gluetools.core.webVisualisationUtils.pojos.RefNtIndexAnnotation;
 import uk.ac.gla.cvr.gluetools.core.webVisualisationUtils.pojos.VisualisationAnnotationRow;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
-import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 @CommandClass(
 		commandWords={"visualise-feature"}, 
 		description = "Produce feature visualisation document based on query-aligned segments", 
 		docoptUsages = { },
-		furtherHelp = "Given query-aligned segments between some query sequence and a reference sequence, "
+		furtherHelp = "Given query-aligned segments between some query sequence and a named reference sequence, "
 				+ "and nucleotide content for the query sequence, produce a document for visualising the "
-				+ "specified feature in the query.",
+				+ "specified feature in both the query and reference, with an integrated coordinate 'u-space', "
+				+" allowing indels. 'Details' marking up the query sequence may also be supplied, "
+				+ "these are returned, transformed into the integrated 'u-space'."
+				,
 		metaTags = { CmdMeta.inputIsComplex }
 )
 public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResult<FeatureVisualisation>, VisualisationUtility> {
@@ -57,20 +63,24 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 	private static final String FEATURE_NAME = "featureName";
 	private static final String QUERY_TO_REF_SEGMENTS = "queryToRefSegments";
 	private static final String QUERY_NUCLEOTIDES = "queryNucleotides";
+	private static final String QUERY_DETAILS = "queryDetails";
 
 	private String referenceName;
 	private String featureName;
 	private List<QueryAlignedSegment> queryToRefSegments = new ArrayList<QueryAlignedSegment>();
 	private String queryNucleotides;
+	private List<Detail> queryDetails;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		List<Element> queryToRefSegElems = GlueXmlUtils.findChildElements(configElem, QUERY_TO_REF_SEGMENTS);
-		this.queryToRefSegments = PluginFactory.createPlugins(pluginConfigContext, QueryAlignedSegment.class, queryToRefSegElems);
+		List<Element> queryToRefSegElems = PluginUtils.findConfigElements(configElem, QUERY_TO_REF_SEGMENTS);
 		this.referenceName = PluginUtils.configureStringProperty(configElem, REFERENCE_NAME, true);
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
+		this.queryToRefSegments = PluginFactory.createPlugins(pluginConfigContext, QueryAlignedSegment.class, queryToRefSegElems);
 		this.queryNucleotides = PluginUtils.configureStringProperty(configElem, QUERY_NUCLEOTIDES, true);
+		List<Element> queryDetailElems = PluginUtils.findConfigElements(configElem, QUERY_DETAILS);
+		this.queryDetails = PluginFactory.createPlugins(pluginConfigContext, Detail.class, queryDetailElems);
 	}
 
 
@@ -109,9 +119,9 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 		char[] refNtsInUSpace = new char[displayNtWidth];
 		TIntCharMap refNtToRefAa = new TIntCharHashMap();
 		
-		VisualisationAnnotationRow refNtContentRow = new VisualisationAnnotationRow();
+		VisualisationAnnotationRow<RefNtContentAnnotation> refNtContentRow = new VisualisationAnnotationRow<RefNtContentAnnotation>();
 		refNtContentRow.annotationType = "refNtContent";
-		VisualisationAnnotationRow refNtIndexRow = new VisualisationAnnotationRow();
+		VisualisationAnnotationRow<RefNtIndexAnnotation> refNtIndexRow = new VisualisationAnnotationRow<RefNtIndexAnnotation>();
 		refNtIndexRow.annotationType = "refNtIndex";
 
 		List<QueryAlignedSegment> refToUFeatureLocSegs = QueryAlignedSegment.invertList(uToRefFeatureLocSegs);
@@ -146,9 +156,9 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 				ReferenceSegment.intersection(queryToUSegs, Arrays.asList(new ReferenceSegment(uFeatureStart, uFeatureEnd)), 
 						ReferenceSegment.cloneLeftSegMerger());
 
-		VisualisationAnnotationRow queryNtContentRow = new VisualisationAnnotationRow();
+		VisualisationAnnotationRow<QueryNtContentAnnotation> queryNtContentRow = new VisualisationAnnotationRow<QueryNtContentAnnotation>();
 		queryNtContentRow.annotationType = "queryNtContent";
-		VisualisationAnnotationRow queryNtIndexRow = new VisualisationAnnotationRow();
+		VisualisationAnnotationRow<QueryNtIndexAnnotation> queryNtIndexRow = new VisualisationAnnotationRow<QueryNtIndexAnnotation>();
 		queryNtIndexRow.annotationType = "queryNtIndex";
 		queryToUFeatureLocSegs.forEach(seg -> {
 			QueryNtContentAnnotation queryNtContent = new QueryNtContentAnnotation();
@@ -178,15 +188,15 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 			queryNtIndexRow.annotations.add(queryEndAnnotation);
 		});
 
-		VisualisationAnnotationRow codonLabelRow = null;
-		VisualisationAnnotationRow refAaRow = null;
-		VisualisationAnnotationRow queryAaRow = null;
+		VisualisationAnnotationRow<CodonLabelAnnotation> codonLabelRow = null;
+		VisualisationAnnotationRow<RefAaContentAnnotation> refAaRow = null;
+		VisualisationAnnotationRow<QueryAaContentAnnotation> queryAaRow = null;
 		
 		if(featureLoc.getFeature().codesAminoAcids()) {
-			codonLabelRow = new VisualisationAnnotationRow();
+			codonLabelRow = new VisualisationAnnotationRow<>();
 			codonLabelRow.annotationType = "codonLabel";
 
-			refAaRow = new VisualisationAnnotationRow();
+			refAaRow = new VisualisationAnnotationRow<>();
 			refAaRow.annotationType = "refAa";
 
 			List<LabeledQueryAminoAcid> refLqaas = featureLoc.getReferenceAminoAcidContent(cmdContext);
@@ -211,7 +221,7 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 				refAaRow.annotations.add(refAaContentAnnotation);
 				refNtToRefAa.put(labeledCodon.getNtStart(), refAaContentAnnotation.aa.charAt(0));
 			}
-			queryAaRow = new VisualisationAnnotationRow();
+			queryAaRow = new VisualisationAnnotationRow<QueryAaContentAnnotation>();
 			queryAaRow.annotationType = "queryAa";
 
 			List<LabeledQueryAminoAcid> queryLqaas = 
@@ -261,6 +271,59 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 		featureVisualisation.annotationRows.add(queryNtContentRow);
 		featureVisualisation.annotationRows.add(queryNtIndexRow);
 		
+		List<DetailAnnotation> detailAnnotations = new ArrayList<DetailAnnotation>();
+		for(Detail detail: queryDetails) {
+			String detailId = detail.getId();
+			
+			DetailAnnotation detailAnnotation = new DetailAnnotation();
+			detailAnnotation.detailId = detailId;
+			for(DetailSegment detailSegment: detail.getDetailSegments()) {
+				String segmentId = detailSegment.getId();
+				QueryAlignedSegment detailSegmentToSelf = 
+						new QueryAlignedSegment(detailSegment.getRefStart(), detailSegment.getRefEnd(), 
+								detailSegment.getRefStart(), detailSegment.getRefEnd());
+				List<QueryAlignedSegment> detailSegmentsToU = 
+						QueryAlignedSegment.translateSegments(Arrays.asList(detailSegmentToSelf), queryToUFeatureLocSegs);
+				if(detailSegmentsToU.isEmpty()) {
+					throw new CommandException(Code.COMMAND_FAILED_ERROR, "Segment "+segmentId+" in detail "+detailId+" does not map to visualisation u-space.");
+				}
+				for(QueryAlignedSegment detailSegmentToU: detailSegmentsToU) {
+					DetailAnnotationSegment detailAnnotationSegment = new DetailAnnotationSegment();
+					detailAnnotationSegment.segmentId = segmentId;
+					detailAnnotationSegment.displayNtStart = detailSegmentToU.getRefStart() - displayNtOffset;
+					detailAnnotationSegment.displayNtEnd = detailSegmentToU.getRefEnd() - displayNtOffset;
+					detailAnnotation.segments.add(detailAnnotationSegment);
+				}
+				detailAnnotation.minRefStart = ReferenceSegment.minRefStart(detailAnnotation.segments);
+				detailAnnotation.maxRefEnd = ReferenceSegment.maxRefEnd(detailAnnotation.segments);
+			}
+			detailAnnotations.add(detailAnnotation);
+		}
+		List<ReferenceSegmentTree<DetailAnnotation>> trackTrees = new ArrayList<ReferenceSegmentTree<DetailAnnotation>>();
+		for(DetailAnnotation detailAnnotation: detailAnnotations) {
+			boolean addedToTrack = false;
+			for(ReferenceSegmentTree<DetailAnnotation> trackTree: trackTrees) {
+				List<DetailAnnotation> overlapping = new ArrayList<DetailAnnotation>();
+				trackTree.findOverlapping(detailAnnotation.getRefStart(), detailAnnotation.getRefEnd(), overlapping);
+				if(overlapping.isEmpty()) {
+					trackTree.add(detailAnnotation);
+					addedToTrack = true;
+					break;
+				}
+			}
+			if(!addedToTrack) {
+				ReferenceSegmentTree<DetailAnnotation> newTrackTree = new ReferenceSegmentTree<DetailAnnotation>();
+				newTrackTree.add(detailAnnotation);
+				trackTrees.add(newTrackTree);
+			}
+		}
+		for(int i = 0; i < trackTrees.size(); i++) {
+			DetailAnnotationRow detailAnnotationRow = new DetailAnnotationRow();
+			detailAnnotationRow.annotationType = "detail";
+			detailAnnotationRow.trackNumber = i;
+			trackTrees.get(i).findOverlapping(1, displayNtWidth, detailAnnotationRow.annotations);
+			featureVisualisation.annotationRows.add(detailAnnotationRow);
+		}		
 		return new PojoCommandResult<FeatureVisualisation>(featureVisualisation);
 		
 	}

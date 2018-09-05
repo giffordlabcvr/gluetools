@@ -8,11 +8,11 @@ import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentField;
 import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentListField;
 
 @PojoDocumentClass
-public class VisualisationAnnotationRow {
+public class VisualisationAnnotationRow<V extends VisualisationAnnotation> {
 
 	@PojoDocumentField
 	public String annotationType;
 	
 	@PojoDocumentListField(itemClass = VisualisationAnnotation.class)
-	public List<VisualisationAnnotation> annotations = new ArrayList<VisualisationAnnotation>();
+	public List<V> annotations = new ArrayList<V>();
 }

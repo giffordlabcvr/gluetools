@@ -374,11 +374,11 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 		return intersectionSegments;
 	}
 	
-	public static Integer minRefStart(List<? extends IReferenceSegment> segList) {
+	public static Integer minRefStart(List<? extends IReadOnlyReferenceSegment> segList) {
 		return segList.stream().map(s -> s.getRefStart()).min(Integer::compare).orElse(null);
 	}
 
-	public static Integer maxRefEnd(List<? extends IReferenceSegment> segList) {
+	public static Integer maxRefEnd(List<? extends IReadOnlyReferenceSegment> segList) {
 		return segList.stream().map(s -> s.getRefEnd()).max(Integer::compare).orElse(null);
 	}
 

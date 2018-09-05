@@ -33,23 +33,14 @@ import java.util.function.Supplier;
 import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
 
 
-public interface IReferenceSegment {
+public interface IReferenceSegment extends IReadOnlyReferenceSegment {
 
 	public static final String REF_START = "refStart";
 	public static final String REF_END = "refEnd";
 
-
-	public Integer getRefStart();
-
-	public Integer getRefEnd();
-	
 	public void setRefStart(Integer refStart);
 	
 	public void setRefEnd(Integer refEnd);
-	
-	public default int getCurrentLength() {
-		return 1+(getRefEnd() - getRefStart());
-	}
 	
 	public static void checkTruncateLength(IReferenceSegment segment, int length) {
 		int currentLength = segment.getCurrentLength();
@@ -73,19 +64,6 @@ public interface IReferenceSegment {
 		setRefEnd(getRefEnd()-length);
 	}
 
-	public default boolean overlaps(int refStart, int refEnd) {
-		if(getRefStart() <= refStart && getRefEnd() >= refEnd) {
-			return true;
-		}
-		if(getRefStart() >= refStart && getRefStart() <= refEnd) {
-			return true;
-		}
-		if(getRefEnd() >= refStart && getRefEnd() <= refEnd) {
-			return true;
-		}
-		return false;
-	}
-	
 	public IReferenceSegment clone();
 	
 	

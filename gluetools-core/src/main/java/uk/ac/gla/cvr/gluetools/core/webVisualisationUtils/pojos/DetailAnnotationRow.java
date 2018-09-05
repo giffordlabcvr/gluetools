@@ -4,14 +4,9 @@ import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentClass;
 import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentField;
 
 @PojoDocumentClass
-public class CodonLabelAnnotation extends VisualisationAnnotation {
-
-	@PojoDocumentField 
-	public Integer displayNtPos;
+public class DetailAnnotationRow extends VisualisationAnnotationRow<DetailAnnotation> {
 
 	@PojoDocumentField
-	public String label;
-
-	@PojoDocumentField
-	public Integer ntWidth;
+	public Integer trackNumber;
+	
 }

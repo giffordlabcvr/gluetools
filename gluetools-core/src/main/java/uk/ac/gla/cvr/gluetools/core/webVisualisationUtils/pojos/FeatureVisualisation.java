@@ -26,5 +26,5 @@ public class FeatureVisualisation {
 	public Integer displayNtWidth;
 	
 	@PojoDocumentListField(itemClass = VisualisationAnnotationRow.class)
-	public List<VisualisationAnnotationRow> annotationRows = new ArrayList<VisualisationAnnotationRow>();
+	public List<VisualisationAnnotationRow<?>> annotationRows = new ArrayList<VisualisationAnnotationRow<?>>();
 }

@@ -32,7 +32,7 @@ import java.util.Random;
 import java.util.stream.Collectors;
 
 
-public class ReferenceSegmentTree<S extends IReferenceSegment> {
+public class ReferenceSegmentTree<S extends IReadOnlyReferenceSegment> {
 
 	private Node root = null;
 	
