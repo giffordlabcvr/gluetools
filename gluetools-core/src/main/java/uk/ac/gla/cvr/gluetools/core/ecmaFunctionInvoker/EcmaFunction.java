@@ -26,6 +26,7 @@
 package uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker;
 
 import java.util.List;
+import java.util.Optional;
 
 import jdk.nashorn.api.scripting.JSObject;
 import jdk.nashorn.api.scripting.NashornException;
@@ -51,8 +52,10 @@ public class EcmaFunction implements Plugin {
 
 	public static final String NAME = "name";
 	public static final String PARAMETER = "parameter";
+	public static final String CONSUMES_BINARY = "consumesBinary";
 
 	private String name;
+	private Boolean consumesBinary;
 	private List<EcmaFunctionParameter> parameters;
 	private EcmaFunctionResultType<?> resultType;
 	
@@ -62,6 +65,7 @@ public class EcmaFunction implements Plugin {
 		EcmaFunctionResultTypeFactory resultTypeFactory = PluginFactory.get(EcmaFunctionResultTypeFactory.creator);
 
 		name = PluginUtils.configureStringProperty(configElem, NAME, true);
+		consumesBinary = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, CONSUMES_BINARY, false)).orElse(false);
 		parameters = PluginFactory.createPlugins(pluginConfigContext, EcmaFunctionParameter.class, 
 				PluginUtils.findConfigElements(configElem, PARAMETER));
 		String alternateElemsXPath = GlueXmlUtils.alternateElemsXPath(resultTypeFactory.getElementNames());
@@ -77,6 +81,10 @@ public class EcmaFunction implements Plugin {
 		return name;
 	}
 
+	protected Boolean consumesBinary() {
+		return consumesBinary;
+	}
+
 	public List<EcmaFunctionParameter> getParameters() {
 		return parameters;
 	}
@@ -87,6 +95,12 @@ public class EcmaFunction implements Plugin {
 					EcmaFunctionInvokerException.Code.INCORRECT_NUMBER_OF_ARGUMENTS, 
 						ecmaFunctionInvoker.getModuleName(), getName(), 
 						Integer.toString(getParameters().size()), Integer.toString(arguments.size()));
+		}
+		if(consumesBinary) {
+			if(getParameters().size() == 0 || !getParameters().get(0).getName().equals("base64")) {
+				throw new EcmaFunctionInvokerException(Code.FUNCTION_INVOCATION_EXCEPTION, ecmaFunctionInvoker.getModuleName(), getName(), 
+						"EcmaFunction with consumesBinary set to true must define first parameter named 'base64'.");
+			}
 		}
 		NashornContext nashornContext = cmdContext.getNashornContext();
 		nashornContext.setScriptContext(ecmaFunctionInvoker.ensureScriptContext(cmdContext));

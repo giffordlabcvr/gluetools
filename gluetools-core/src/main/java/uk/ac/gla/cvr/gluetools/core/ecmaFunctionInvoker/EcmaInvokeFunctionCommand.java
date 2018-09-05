@@ -40,12 +40,10 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker.paramCompleter.EcmaFunctionParamCompleter;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass(
 		commandWords={"invoke-function"}, 
@@ -55,25 +53,16 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		metaTags = { },
 		furtherHelp = ""
 )
-public class EcmaInvokeFunctionCommand extends ModulePluginCommand<CommandResult, EcmaFunctionInvoker> implements ProvidedProjectModeCommand {
+public class EcmaInvokeFunctionCommand extends EcmaFunctionCommand implements ProvidedProjectModeCommand {
 
-	public static final String FUNCTION_NAME = "functionName";
-	public static final String ARGUMENT = "argument";
-	
-	
-	private String functionName;
-	private List<String> arguments;
-	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		this.functionName = PluginUtils.configureStringProperty(configElem, FUNCTION_NAME, true);
-		this.arguments = PluginUtils.configureStringsProperty(configElem, ARGUMENT);
 	}
 
 	@Override
 	protected CommandResult execute(CommandContext cmdContext, EcmaFunctionInvoker ecmaFunctionInvoker) {
-		return ecmaFunctionInvoker.invokeFunction(cmdContext, this.functionName, this.arguments);
+		return ecmaFunctionInvoker.invokeFunction(cmdContext, getFunctionName(), getArguments());
 	}
 
 	@CompleterClass
