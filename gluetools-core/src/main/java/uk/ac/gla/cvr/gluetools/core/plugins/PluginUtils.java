@@ -386,7 +386,7 @@ public class PluginUtils {
 			throw new PluginConfigException(Code.TOO_MANY_CONFIG_ELEMENTS, configElem.getNodeName(), xPathExpression, size, max);
 		}
 		if(min != null && size < min) {
-			throw new PluginConfigException(Code.TOO_FEW_CONFIG_ELEMENTS, configElem.getNodeName(), xPathExpression, size, max);
+			throw new PluginConfigException(Code.TOO_FEW_CONFIG_ELEMENTS, configElem.getNodeName(), xPathExpression, size, min);
 		}
 		configSubElems.forEach(elem -> setValidConfig(configElem, elem));
 		return configSubElems;
