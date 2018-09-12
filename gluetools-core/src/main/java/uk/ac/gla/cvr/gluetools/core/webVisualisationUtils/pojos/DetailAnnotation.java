@@ -7,7 +7,6 @@ import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentClass;
 import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentField;
 import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentListField;
 import uk.ac.gla.cvr.gluetools.core.segments.IReadOnlyReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 @PojoDocumentClass
 public class DetailAnnotation extends VisualisationAnnotation implements IReadOnlyReferenceSegment {

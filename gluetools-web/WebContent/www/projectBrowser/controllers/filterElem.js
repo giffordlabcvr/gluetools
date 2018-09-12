@@ -20,6 +20,7 @@ projectBrowser.controller('filterElemCtrl',function($scope){
 	
 	$scope.setFilterElemProperty = function(filterProperty) {
 		$scope.filterElemProperty = filterProperty;
+		console.log("filterProperty",filterProperty);
 		if($scope.filterElemProperty.filterHints.generateCustomDefault != null) {
 			$scope.filterElem.custom = $scope.filterElemProperty.filterHints.generateCustomDefault();
 		}

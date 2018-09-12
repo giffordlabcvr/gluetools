@@ -7,7 +7,7 @@ console.log("userAgent.browser.name", userAgent.browser.name);
 console.log("userAgent.browser.version", userAgent.browser.version);
 
 var projectBrowser = angular.module('projectBrowser', 
-		['glueWS', 'ui.bootstrap','dialogs.main','ngFileSaver','angularSpinner','glueWebToolConfig',
+		['angularFileUpload', 'glueWS', 'ui.bootstrap','dialogs.main','ngFileSaver','angularSpinner','glueWebToolConfig',
 		    'angulartics',
 		    'angulartics.google.analytics']);
 

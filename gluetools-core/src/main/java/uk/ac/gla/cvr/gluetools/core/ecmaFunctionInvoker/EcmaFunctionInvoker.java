@@ -71,6 +71,7 @@ public class EcmaFunctionInvoker extends ModulePlugin<EcmaFunctionInvoker> {
 	public EcmaFunctionInvoker() {
 		super();
 		registerModulePluginCmdClass(EcmaInvokeFunctionCommand.class);
+		registerModulePluginCmdClass(EcmaInvokeConsumesBinaryFunctionCommand.class);
 	}
 
 

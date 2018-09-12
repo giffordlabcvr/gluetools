@@ -48,13 +48,18 @@ projectBrowser.service("filterUtils", ['$filter', function($filter) {
 			           {operator:"isnotnull", displayName:"is not null", useNullProperty:true, hasOperand:false, cayenneOperator:"!= null"}
 				],
 			"Boolean" : [
-			           {operator:"true", displayName:"is true", hasOperand:false, cayenneOperator:" = true"}, 
-			           {operator:"false", displayName:"is false", hasOperand:false, cayenneOperator:" = false"}, 
-			           {operator:"isnull", displayName:"is null", useNullProperty:true, hasOperand:false, cayenneOperator:"= null"},
-			           {operator:"isnotnull", displayName:"is not null", useNullProperty:true, hasOperand:false, cayenneOperator:"!= null"}
-			],
+				           {operator:"true", displayName:"is true", hasOperand:false, cayenneOperator:" = true"}, 
+				           {operator:"false", displayName:"is false", hasOperand:false, cayenneOperator:" = false"}, 
+				           {operator:"isnull", displayName:"is null", useNullProperty:true, hasOperand:false, cayenneOperator:"= null"},
+				           {operator:"isnotnull", displayName:"is not null", useNullProperty:true, hasOperand:false, cayenneOperator:"!= null"}
+				],
 			"FeaturePresence" : [
-			]
+			],
+			"CustomBoolean" : [
+				           {operator:"true", displayName:"is true", hasOperand:false}, 
+				           {operator:"false", displayName:"is false", hasOperand:false}
+				],
+			
 		};
 	
 	this.getFilterOperatorsForType = function() {

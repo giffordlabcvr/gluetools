@@ -90,17 +90,21 @@ public class EcmaFunction implements Plugin {
 	}
 
 	public CommandResult invoke(CommandContext cmdContext, EcmaFunctionInvoker ecmaFunctionInvoker, List<String> arguments) {
-		if(arguments.size() != getParameters().size()) {
-			throw new EcmaFunctionInvokerException(
-					EcmaFunctionInvokerException.Code.INCORRECT_NUMBER_OF_ARGUMENTS, 
-						ecmaFunctionInvoker.getModuleName(), getName(), 
-						Integer.toString(getParameters().size()), Integer.toString(arguments.size()));
-		}
 		if(consumesBinary) {
 			if(getParameters().size() == 0 || !getParameters().get(0).getName().equals("base64")) {
 				throw new EcmaFunctionInvokerException(Code.FUNCTION_INVOCATION_EXCEPTION, ecmaFunctionInvoker.getModuleName(), getName(), 
 						"EcmaFunction with consumesBinary set to true must define first parameter named 'base64'.");
 			}
+		}
+		int expectedArgumentsSize = getParameters().size();
+		if(consumesBinary) {
+			expectedArgumentsSize++;
+		}
+		if(arguments.size() != expectedArgumentsSize) {
+			throw new EcmaFunctionInvokerException(
+					EcmaFunctionInvokerException.Code.INCORRECT_NUMBER_OF_ARGUMENTS, 
+						ecmaFunctionInvoker.getModuleName(), getName(), 
+						Integer.toString(getParameters().size()), Integer.toString(arguments.size()));
 		}
 		NashornContext nashornContext = cmdContext.getNashornContext();
 		nashornContext.setScriptContext(ecmaFunctionInvoker.ensureScriptContext(cmdContext));
