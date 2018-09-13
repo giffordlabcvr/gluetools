@@ -35,6 +35,7 @@ public class WebFilesManagerException extends GlueException {
 		INVALID_ROOT_PATH("rootPath"),
 		WEB_FILES_MANAGER_NOT_ENABLED,
 		SUBDIR_CREATION_FAILED("subDirPath"),
+		INITIALISATION_FAILED("errorTxt"),
 		FILE_CREATION_FAILED("filePath"),
 		FILE_APPEND_FAILED("filePath"),
 		FILE_SIZE_FAILED("filePath");

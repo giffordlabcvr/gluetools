@@ -28,6 +28,7 @@ package uk.ac.gla.cvr.gluetools.utils;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.util.UUID;
 
 import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtilsException.Code;
@@ -59,18 +60,21 @@ public class FreemarkerUtils {
 		} 
 	}
 
-	
-	public static String processTemplate(Template template, Object templateModel) {
-		StringWriter result = new StringWriter();
+	public static void processTemplate(Writer writer, Template template, Object templateModel) {
 		try {
-			Environment env = template.createProcessingEnvironment(templateModel, result);
+			Environment env = template.createProcessingEnvironment(templateModel, writer);
 			env.process();
 		} catch (TemplateException e) {
 			throw new FreemarkerUtilsException(e, Code.FREEMARKER_TEMPLATE_FAILED, e.getLocalizedMessage());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-		return result.toString();
+	}
+	
+	public static String processTemplate(Template template, Object templateModel) {
+		StringWriter stringWriter = new StringWriter();
+		processTemplate(stringWriter, template, templateModel);
+		return stringWriter.toString();
 	}
 
 	// pretty sure this can be replaced by Configuration.getObjectWrapper().wrap(renderableObject)?

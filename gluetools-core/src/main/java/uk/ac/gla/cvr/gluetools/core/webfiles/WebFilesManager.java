@@ -48,17 +48,51 @@ public class WebFilesManager implements Runnable {
 
 	private static final int HOURS_UNTIL_EXPIRY = 48;
 	private Path webFilesRootDir;
+	private Path webPagesDir;
+	private Path downloadsDir;
 	public boolean keepRunning;
+	//private Map<String, WebFilesSubDirProperties> uuidToSubDirProperties = new LinkedHashMap<String, WebFilesSubDirProperties>();
 
+	public enum WebFileType {
+		WEB_PAGE("webPages"),
+		DOWNLOAD("downloads");
+		
+		private String dirName;
+
+		private WebFileType(String dirName) {
+			this.dirName = dirName;
+		}
+		
+		public String dirName() {
+			return dirName;
+		};
+	}
+	
 	public WebFilesManager(String webFilesRootDirString) {
 		super();
 		try {
 			this.webFilesRootDir = Paths.get(webFilesRootDirString);
+			this.webPagesDir = webFilesRootDir.resolve(WebFileType.WEB_PAGE.dirName);
+			this.downloadsDir = webFilesRootDir.resolve(WebFileType.DOWNLOAD.dirName);
 		} catch(InvalidPathException ipe) {
 			throw new WebFilesManagerException(ipe, Code.INVALID_ROOT_PATH, webFilesRootDirString);
 		}
 		if(!Files.exists(webFilesRootDir) || !Files.isDirectory(webFilesRootDir)) {
 			throw new WebFilesManagerException(Code.INVALID_ROOT_PATH, webFilesRootDir.toString());
+		}
+		try {
+			if(!Files.exists(downloadsDir)) {
+				Files.createDirectory(downloadsDir);
+			}
+		} catch(IOException ioe) {
+			throw new WebFilesManagerException(ioe, Code.INITIALISATION_FAILED, "Unable to create downloads directory: "+ioe.getLocalizedMessage());
+		}
+		try {
+			if(!Files.exists(webPagesDir)) {
+				Files.createDirectory(webPagesDir);
+			}
+		} catch(IOException ioe) {
+			throw new WebFilesManagerException(ioe, Code.INITIALISATION_FAILED, "Unable to create webPages directory: "+ioe.getLocalizedMessage());
 		}
 		this.keepRunning = true;
 		
@@ -80,7 +114,7 @@ public class WebFilesManager implements Runnable {
 	@Override
 	public void run() {
 		while(getKeepRunning()) {
-			try(Stream<Path> subDirsStream = Files.list(webFilesRootDir)) {
+			try(Stream<Path> subDirsStream = Stream.concat(Files.list(webPagesDir), Files.list(downloadsDir))) {
 				subDirsStream
 				.filter(p -> Files.isDirectory(p))
 				.forEach(subDir -> {
@@ -226,9 +260,9 @@ public class WebFilesManager implements Runnable {
 		return expiryFileVisitor.livePaths == 0;
 	}
 	
-	public String createSubDir() {
+	public String createSubDir(WebFileType webFileType) {
 		String subDirUuid = UUID.randomUUID().toString();
-		Path subDirPath = webFilesRootDir.resolve(Paths.get(subDirUuid));
+		Path subDirPath = getTypeDir(webFileType).resolve(Paths.get(subDirUuid));
 		try {
 			Files.createDirectory(subDirPath);
 		} catch(Exception e) {
@@ -237,8 +271,8 @@ public class WebFilesManager implements Runnable {
 		return subDirUuid;
 	}
 	
-	public void createWebFileResource(String subDirUuid, String fileName) {
-		Path subDirPath = webFilesRootDir.resolve(Paths.get(subDirUuid));
+	public void createWebFileResource(WebFileType webFileType, String subDirUuid, String fileName) {
+		Path subDirPath = getTypeDir(webFileType).resolve(Paths.get(subDirUuid));
 		Path filePath = subDirPath.resolve(Paths.get(fileName));
 		try {
 			Files.createFile(filePath);
@@ -247,8 +281,8 @@ public class WebFilesManager implements Runnable {
 		}
 	}
 
-	public OutputStream appendToWebFileResource(String subDirUuid, String fileName) {
-		Path subDirPath = webFilesRootDir.resolve(Paths.get(subDirUuid));
+	public OutputStream appendToWebFileResource(WebFileType webFileType, String subDirUuid, String fileName) {
+		Path subDirPath = getTypeDir(webFileType).resolve(Paths.get(subDirUuid));
 		Path filePath = subDirPath.resolve(Paths.get(fileName));
 		try {
 			return Files.newOutputStream(filePath, StandardOpenOption.APPEND);
@@ -257,15 +291,15 @@ public class WebFilesManager implements Runnable {
 		}
 	}
 
-	public String getSizeString(String subDirUuid, String fileName) {
-		long size = getSize(subDirUuid, fileName);
+	public String getSizeString(WebFileType webFileType, String subDirUuid, String fileName) {
+		long size = getSize(webFileType, subDirUuid, fileName);
 		return humanReadableByteCount(size, true);
 	}
 
 
 
-	public long getSize(String subDirUuid, String fileName) {
-		Path subDirPath = webFilesRootDir.resolve(Paths.get(subDirUuid));
+	public long getSize(WebFileType webFileType, String subDirUuid, String fileName) {
+		Path subDirPath = getTypeDir(webFileType).resolve(Paths.get(subDirUuid));
 		Path filePath = subDirPath.resolve(Paths.get(fileName));
 		long size;
 		try {
@@ -284,7 +318,15 @@ public class WebFilesManager implements Runnable {
 	    return String.format("%.1f %sB", bytes / Math.pow(unit, exp), pre);
 	}
 
-
+	public Path getTypeDir(WebFileType webFileType) {
+		if(webFileType == WebFileType.DOWNLOAD) {
+			return downloadsDir;
+		}
+		if(webFileType == WebFileType.WEB_PAGE) {
+			return webPagesDir;
+		}
+		return null;
+	}
 
 	public Path getWebFilesRootDir() {
 		return webFilesRootDir;

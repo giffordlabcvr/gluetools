@@ -38,8 +38,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManager;
+import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManager.WebFileType;
 
-@WebServlet("/glue_web_files/*")
+@WebServlet("/glue_web_files/downloads/*")
 public class GlueWebFilesServlet extends HttpServlet {
 
     @Override
@@ -48,8 +49,8 @@ public class GlueWebFilesServlet extends HttpServlet {
     {
         String filename = URLDecoder.decode(request.getPathInfo().substring(1), "UTF-8");
         WebFilesManager webFilesManager = GluetoolsEngine.getInstance().getWebFilesManager();
-		Path webFilesRootDir = webFilesManager.getWebFilesRootDir();
-		Path requestedFile = webFilesRootDir.resolve(filename);
+		Path downloadsDir = webFilesManager.getTypeDir(WebFileType.DOWNLOAD);
+		Path requestedFile = downloadsDir.resolve(filename);
         response.setHeader("Content-Type", "application/octet-stream"); // force download
         response.setHeader("Content-Length", Long.toString(Files.size(requestedFile)));
         response.setHeader("Content-Disposition", "attachment; filename=\"" + requestedFile.getFileName() + "\"");

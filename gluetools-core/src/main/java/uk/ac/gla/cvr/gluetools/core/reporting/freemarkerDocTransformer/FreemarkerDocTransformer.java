@@ -25,6 +25,7 @@
 */
 package uk.ac.gla.cvr.gluetools.core.reporting.freemarkerDocTransformer;
 
+import java.io.Writer;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -62,6 +63,7 @@ public class FreemarkerDocTransformer extends ModulePlugin<FreemarkerDocTransfor
 		super();
 		addSimplePropertyName(TEMPLATE_FILE_NAME);
 		registerModulePluginCmdClass(TransformToFileCommand.class);
+		registerModulePluginCmdClass(TransformToWebFileCommand.class);
 	}
 
 	@Override
@@ -76,6 +78,17 @@ public class FreemarkerDocTransformer extends ModulePlugin<FreemarkerDocTransfor
 	}
 	
 	public byte[] renderToBytes(CommandContext cmdContext, CommandDocument commandDocument) {
+		Map<String, Object> rootModel = initRootModel(cmdContext, commandDocument);
+		return FreemarkerUtils.processTemplate(template, rootModel).getBytes();
+	}
+
+	public void renderToWriter(CommandContext cmdContext, CommandDocument commandDocument, Writer writer) {
+		Map<String, Object> rootModel = initRootModel(cmdContext, commandDocument);
+		FreemarkerUtils.processTemplate(writer, template, rootModel);
+	}
+
+	private Map<String, Object> initRootModel(CommandContext cmdContext,
+			CommandDocument commandDocument) {
 		if(template == null) {
 			byte[] templateBytes = getResource(cmdContext, templateFileName);
 			Configuration freemarkerConfiguration = cmdContext.getGluetoolsEngine().getFreemarkerConfiguration();
@@ -89,7 +102,7 @@ public class FreemarkerDocTransformer extends ModulePlugin<FreemarkerDocTransfor
 		rootModel.put("getResourceAsBase64", new GetResourceAsBase64Method(cmdContext));
 		rootModel.put("getResourceAsString", new GetResourceAsStringMethod(cmdContext));
 		rootModel.put(commandDocument.getRootName(), cmdDocModel);
-		return FreemarkerUtils.processTemplate(template, rootModel).getBytes();
+		return rootModel;
 	}
 
 	public abstract class GetResourceMethod implements TemplateMethodModelEx {

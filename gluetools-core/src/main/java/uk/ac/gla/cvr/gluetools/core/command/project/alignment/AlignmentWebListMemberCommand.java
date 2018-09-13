@@ -46,6 +46,7 @@ import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManager;
+import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManager.WebFileType;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 
@@ -95,8 +96,8 @@ public class AlignmentWebListMemberCommand extends AlignmentBaseListMemberComman
 	@Override
 	public CommandWebFileResult execute(CommandContext cmdContext) {
 		WebFilesManager webFilesManager = cmdContext.getGluetoolsEngine().getWebFilesManager();
-		String subDirUuid = webFilesManager.createSubDir();
-		webFilesManager.createWebFileResource(subDirUuid, fileName);
+		String subDirUuid = webFilesManager.createSubDir(WebFileType.DOWNLOAD);
+		webFilesManager.createWebFileResource(WebFileType.DOWNLOAD, subDirUuid, fileName);
 		
 		AbstractListCTableDelegate delegate = super.getListCTableDelegate();
 		
@@ -111,7 +112,7 @@ public class AlignmentWebListMemberCommand extends AlignmentBaseListMemberComman
 			delegate.setFetchLimit(Optional.of(batchSize));
 			delegate.setPageSize(batchSize);
 			ListResult batchResult = delegate.execute(cmdContext);
-			try(OutputStream outputStream = webFilesManager.appendToWebFileResource(subDirUuid, fileName)) {
+			try(OutputStream outputStream = webFilesManager.appendToWebFileResource(WebFileType.DOWNLOAD, subDirUuid, fileName)) {
 				BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(outputStream, 65536);
 				boolean renderHeaders = (offset == 0);
 				batchResult.renderResult(new OutputStreamCommandResultRenderingContext(bufferedOutputStream, outputFormat, lineFeedStyle, renderHeaders));
@@ -123,7 +124,7 @@ public class AlignmentWebListMemberCommand extends AlignmentBaseListMemberComman
 			offset += batchSize;
 			cmdContext.newObjectContext();
 		}
-		String webFileSizeString = webFilesManager.getSizeString(subDirUuid, fileName);
-		return new CommandWebFileResult("webListMemberResult", subDirUuid, fileName, webFileSizeString);
+		String webFileSizeString = webFilesManager.getSizeString(WebFileType.DOWNLOAD, subDirUuid, fileName);
+		return new CommandWebFileResult("webListMemberResult", WebFileType.DOWNLOAD, subDirUuid, fileName, webFileSizeString);
 	}
 }

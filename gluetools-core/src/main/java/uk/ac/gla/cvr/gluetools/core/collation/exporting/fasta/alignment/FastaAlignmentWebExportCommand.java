@@ -40,6 +40,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandWebFileResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManager;
+import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManager.WebFileType;
 
 @CommandClass( 
 		commandWords={"web-export"}, 
@@ -76,18 +77,18 @@ public class FastaAlignmentWebExportCommand extends BaseFastaAlignmentExportComm
 	@Override
 	public CommandWebFileResult execute(CommandContext cmdContext, FastaAlignmentExporter fastaAlmtExporter) {
 		WebFilesManager webFilesManager = cmdContext.getGluetoolsEngine().getWebFilesManager();
-		String subDirUuid = webFilesManager.createSubDir();
-		webFilesManager.createWebFileResource(subDirUuid, fileName);
+		String subDirUuid = webFilesManager.createSubDir(WebFileType.DOWNLOAD);
+		webFilesManager.createWebFileResource(WebFileType.DOWNLOAD, subDirUuid, fileName);
 
-		try(OutputStream outputStream = webFilesManager.appendToWebFileResource(subDirUuid, fileName)) {
+		try(OutputStream outputStream = webFilesManager.appendToWebFileResource(WebFileType.DOWNLOAD, subDirUuid, fileName)) {
 			PrintWriter printWriter = new PrintWriter(new BufferedOutputStream(outputStream, 65536));
 			super.exportAlignment(cmdContext, printWriter, fastaAlmtExporter);
 		} catch(Exception e) {
 			throw new CommandException(e, Code.COMMAND_FAILED_ERROR, "Write to web file resource "+subDirUuid+"/"+fileName+" failed: "+e.getMessage());
 		}
-		String webFileSizeString = webFilesManager.getSizeString(subDirUuid, fileName);
+		String webFileSizeString = webFilesManager.getSizeString(WebFileType.DOWNLOAD, subDirUuid, fileName);
 		
-		return new CommandWebFileResult("fastaAlignmentWebExportResult", subDirUuid, fileName, webFileSizeString);
+		return new CommandWebFileResult("fastaAlignmentWebExportResult", WebFileType.DOWNLOAD, subDirUuid, fileName, webFileSizeString);
 	}
 	
 }
