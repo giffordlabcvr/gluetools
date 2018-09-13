@@ -51,7 +51,6 @@ public class WebFilesManager implements Runnable {
 	private Path webPagesDir;
 	private Path downloadsDir;
 	public boolean keepRunning;
-	//private Map<String, WebFilesSubDirProperties> uuidToSubDirProperties = new LinkedHashMap<String, WebFilesSubDirProperties>();
 
 	public enum WebFileType {
 		WEB_PAGE("webPages"),
