@@ -97,14 +97,11 @@ public class EcmaFunction implements Plugin {
 			}
 		}
 		int expectedArgumentsSize = getParameters().size();
-		if(consumesBinary) {
-			expectedArgumentsSize++;
-		}
 		if(arguments.size() != expectedArgumentsSize) {
 			throw new EcmaFunctionInvokerException(
 					EcmaFunctionInvokerException.Code.INCORRECT_NUMBER_OF_ARGUMENTS, 
 						ecmaFunctionInvoker.getModuleName(), getName(), 
-						Integer.toString(getParameters().size()), Integer.toString(arguments.size()));
+						Integer.toString(expectedArgumentsSize), Integer.toString(arguments.size()));
 		}
 		NashornContext nashornContext = cmdContext.getNashornContext();
 		nashornContext.setScriptContext(ecmaFunctionInvoker.ensureScriptContext(cmdContext));
