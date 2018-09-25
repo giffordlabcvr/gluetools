@@ -286,8 +286,14 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 				LabeledCodon labeledCodon = labeledAminoAcid.getLabeledCodon();
 				QueryAaContentAnnotation queryAaContentAnnotation = new QueryAaContentAnnotation();
 				queryAaContentAnnotation.aa = labeledAminoAcid.getAminoAcid();
+				
 				queryAaContentAnnotation.ntWidth = labeledCodon.getNtLength();
 				queryAaContentAnnotation.displayNtPos = displayNtPos;
+				
+				String definiteAasString = labeledAminoAcid.getTranslationInfo().getDefiniteAasString();
+				if(definiteAasString.length() > 1) {
+					queryAaContentAnnotation.multipleAas = Arrays.asList(definiteAasString.split(""));
+				}
 				queryAaRow.annotations.add(queryAaContentAnnotation);
 				
 				char refAa = refNtToRefAa.get(labeledCodon.getNtStart());
@@ -333,7 +339,7 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 				List<QueryAlignedSegment> detailSegmentsToU = 
 						QueryAlignedSegment.translateSegments(Arrays.asList(detailSegmentToSelf), queryToUFeatureLocSegs);
 				if(detailSegmentsToU.isEmpty()) {
-					throw new CommandException(Code.COMMAND_FAILED_ERROR, "Segment "+segmentId+" in detail "+detailId+" does not map to visualisation u-space.");
+					continue;
 				}
 				for(QueryAlignedSegment detailSegmentToU: detailSegmentsToU) {
 					DetailAnnotationSegment detailAnnotationSegment = new DetailAnnotationSegment();
@@ -345,7 +351,9 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 				detailAnnotation.minRefStart = ReferenceSegment.minRefStart(detailAnnotation.segments);
 				detailAnnotation.maxRefEnd = ReferenceSegment.maxRefEnd(detailAnnotation.segments);
 			}
-			detailAnnotations.add(detailAnnotation);
+			if(!detailAnnotation.segments.isEmpty()) {
+				detailAnnotations.add(detailAnnotation);
+			}
 		}
 		List<ReferenceSegmentTree<DetailAnnotation>> trackTrees = new ArrayList<ReferenceSegmentTree<DetailAnnotation>>();
 		for(DetailAnnotation detailAnnotation: detailAnnotations) {
