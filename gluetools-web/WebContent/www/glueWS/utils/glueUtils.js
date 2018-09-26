@@ -21,7 +21,6 @@ function tableResultAsObjectList(tableResult) {
 }
 
 function featureTreeToFeatureList(featureTree) {
-	console.log("invoking featureTreeToFeatureList");
 	var featureList = [];
 	if(featureTree.features != null) { 
 		for(var i = 0; i < featureTree.features.length; i++) {
@@ -39,7 +38,6 @@ function featureTreeToFeatureList(featureTree) {
 			}
 		}
 	}
-	console.log("featureList", featureList);
 	return featureList;
 } 
 

@@ -37,7 +37,6 @@ glueWS.factory('glueWS', function ($http, glueWebToolConfig, $analytics, dialogs
 		},
 		runGlueCommand: function(modePath, command, glueHeaders) {
 			glueHeaders = glueHeaders || {};
-			console.log("glueHeaders", glueHeaders);
 			// logging all glue requests might be overkill? 
 			// we could have a boolean used by the client indicating whether
 			// to log it.
