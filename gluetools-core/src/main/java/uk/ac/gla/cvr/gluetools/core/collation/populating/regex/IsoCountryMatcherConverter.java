@@ -15,6 +15,9 @@ public class IsoCountryMatcherConverter implements MatcherConverter {
 	@Override
 	public String matchAndConvert(String input) {
 		IsoCountry bestCountry = IsoCountry.parseCountry(input);
+		if(bestCountry == null) {
+			return null;
+		}
 		String output;
 		switch(codeStyle) {
 		case OFFICIAL:
