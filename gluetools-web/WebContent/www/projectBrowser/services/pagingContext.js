@@ -189,7 +189,7 @@ projectBrowser.service("pagingContext", ['dialogs', 'glueWebToolConfig', 'filter
 			var glueWhereClause = pagingContext.getGlueWhereClause();
 			if(glueWhereClause != null) {
 				if(cmdParams.whereClause != null) {
-					cmdParams.whereClause = cmdParams.whereClause + " and " + glueWhereClause;
+					cmdParams.whereClause = "("+ cmdParams.whereClause + ") and " + glueWhereClause;
 				} else {
 					cmdParams.whereClause = glueWhereClause;
 				}
