@@ -58,6 +58,7 @@ public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
 		registerModulePluginCmdClass(FastaSequenceVariationScanCommand.class);
 		registerModulePluginCmdClass(FastaSequenceStringVariationScanCommand.class);
 		registerModulePluginCmdClass(FastaSequenceStringPlusAlignmentVariationScanCommand.class);
+		registerModulePluginCmdClass(FastaSequenceAlignmentFeatureCoverageCommand.class);
 		addSimplePropertyName(ALIGNER_MODULE_NAME);
 
 	}
