@@ -139,7 +139,7 @@ public class AlignmentAminoAcidStringsCommand extends AlignmentModeCommand<Align
 			if(this.slashDiscontiguities) {
 				throw new CommandException(Code.COMMAND_USAGE_ERROR, "The --slashDiscontiguities option may only be used when a columns selector is specified");
 			}
-			if(this.relRefName == null || this.lcStart == null || this.lcEnd == null) {
+			if(this.relRefName == null || this.featureName == null || this.lcStart == null || this.lcEnd == null) {
 				throw new CommandException(Code.COMMAND_USAGE_ERROR, "All the arguments for a specific contiguous genome region must be supplied");
 			}
 		} else {

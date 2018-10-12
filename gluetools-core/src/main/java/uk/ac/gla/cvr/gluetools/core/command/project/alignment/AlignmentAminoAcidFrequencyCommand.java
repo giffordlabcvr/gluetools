@@ -121,11 +121,11 @@ public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<Ali
 		this.lcStart = PluginUtils.configureStringProperty(configElem, LC_START, false);
 		this.lcEnd = PluginUtils.configureStringProperty(configElem, LC_END, false);
 		if(this.almtColsSelectorModuleName == null) {
-			if(this.relRefName == null || this.lcStart == null || this.lcEnd == null) {
-				throw new CommandException(Code.COMMAND_USAGE_ERROR, "All the arguments for a specific contiguous genome region must be supplied");
+			if(this.relRefName == null || this.featureName == null) {
+				throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either a columns selector module or a feature location must be specified");
 			}
 		} else {
-			if(this.relRefName != null || this.featureName != null || this.lcStart != null || this.lcEnd != null) {
+			if(this.relRefName != null || this.featureName != null || this.labelledCodon || this.lcStart != null || this.lcEnd != null) {
 				throw new CommandException(Code.COMMAND_USAGE_ERROR, "If a columns selector module is specified, arguments for a specific contiguous genome region may not be used");
 			}
 		}
