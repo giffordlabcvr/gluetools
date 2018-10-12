@@ -23,7 +23,7 @@
 #    Rob Gifford: robert.gifford@glasgow.ac.uk
 delete project example
 
-create project example "An example GLUE project based on hepatitis E virus" --minVersion 1.1.13
+create project example "An example GLUE project based on hepatitis E virus" --minVersion 1.1.4
 
 run file glue/exampleSchemaExtensions.glue
  
