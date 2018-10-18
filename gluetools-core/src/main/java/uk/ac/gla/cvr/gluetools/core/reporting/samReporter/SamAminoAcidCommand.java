@@ -359,6 +359,7 @@ public class SamAminoAcidCommand extends ReferenceLinkedSamReporterCommand<SamAm
 		public Completer() {
 			super();
 			registerEnumLookup("samRefSense", SamRefSense.class);
+			registerVariableInstantiator("samRefName", new SamRefNameInstantiator());
 		}
 	}
 

@@ -25,17 +25,27 @@
 */
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
-import htsjdk.samtools.SAMSequenceRecord;
-import htsjdk.samtools.SamReader;
-
 import java.io.IOException;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
+import htsjdk.samtools.SAMSequenceRecord;
+import htsjdk.samtools.SamReader;
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
+import uk.ac.gla.cvr.gluetools.core.command.Command;
+import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
+import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleMode;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
+import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
@@ -136,4 +146,39 @@ public abstract class BaseSamReporterCommand<R extends CommandResult> extends Mo
 		return new SamRefInfo(samRefIndex, samRefName, samRefLength);
 	}
 
+	protected static class SamRefNameInstantiator extends AdvancedCmdCompleter.VariableInstantiator {
+		@SuppressWarnings("rawtypes")
+		@Override
+		public List<CompletionSuggestion> instantiate(ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass,
+				Map<String, Object> bindings, String prefix) {
+			String samBamPath = (String) bindings.get("fileName");
+			if(samBamPath == null) {
+				return null;
+			}
+			CommandMode<?> commandMode = cmdContext.peekCommandMode();
+			if(!(commandMode instanceof ModuleMode)) {
+				return null;
+			}
+			ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
+			try {
+				String moduleName = ((ModuleMode) commandMode).getModuleName();
+				Module module = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(moduleName));
+				SamReporter samReporter = (SamReporter) module.getModulePlugin(cmdContext);
+				try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, samBamPath, 
+						samReporter.getSamReaderValidationStringency())) {
+		        	List<SAMSequenceRecord> samSequenceRecords = samReader.getFileHeader().getSequenceDictionary().getSequences();
+		        	return samSequenceRecords.stream()
+		        			.map(ssr -> new CompletionSuggestion(ssr.getSequenceName(), true))
+		        			.collect(Collectors.toList());
+				} catch (Exception e) {
+					return null;
+				}
+			} catch(Exception e) {
+				return null;
+			}
+		}
+	}
+
+	
+	
 }

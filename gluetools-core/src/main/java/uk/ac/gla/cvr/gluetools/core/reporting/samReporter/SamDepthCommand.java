@@ -35,6 +35,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceAminoAcidCommand;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.BaseSamReporterCommand.SamRefNameInstantiator;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
 
 @CommandClass(
@@ -109,6 +110,8 @@ public class SamDepthCommand extends SamBaseNucleotideCommand<SamDepthResult> im
 		public Completer() {
 			super();
 			registerEnumLookup("samRefSense", SamRefSense.class);
+			registerVariableInstantiator("samRefName", new SamRefNameInstantiator());
+
 		}
 	}
 	

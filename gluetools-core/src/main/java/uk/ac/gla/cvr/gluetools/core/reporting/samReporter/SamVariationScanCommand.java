@@ -60,6 +60,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceAminoAcidCommand;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.BaseSamReporterCommand.SamRefNameInstantiator;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamFileSession;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamVariationScanCommand.VariationContext;
@@ -418,6 +419,7 @@ public class SamVariationScanCommand extends ReferenceLinkedSamReporterCommand<S
 		public Completer() {
 			super();
 			registerEnumLookup("samRefSense", SamRefSense.class);
+			registerVariableInstantiator("samRefName", new SamRefNameInstantiator());
 		}
 	}
 

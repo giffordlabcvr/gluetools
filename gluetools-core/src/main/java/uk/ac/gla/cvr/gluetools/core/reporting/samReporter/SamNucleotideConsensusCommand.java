@@ -47,6 +47,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.NucleotideFastaCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.BaseSamReporterCommand.SamRefNameInstantiator;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamFileSession;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
@@ -134,6 +135,7 @@ public class SamNucleotideConsensusCommand extends BaseSamReporterCommand<Comman
 			registerPathLookup("outputFileName", false);
 			registerEnumLookup("lineFieldStyle", LineFeedStyle.class);
 			registerEnumLookup("samRefSense", SamRefSense.class);
+			registerVariableInstantiator("samRefName", new SamRefNameInstantiator());
 		}
 	}
 }

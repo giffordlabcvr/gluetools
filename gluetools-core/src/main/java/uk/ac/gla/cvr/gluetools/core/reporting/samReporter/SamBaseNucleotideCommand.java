@@ -293,7 +293,7 @@ public abstract class SamBaseNucleotideCommand<R extends CommandResult> extends 
 	}
 
 
-
+	private static class Boo {}
 
 	public static class BaseNucleotideContext {
 		SamReporter samReporter;
