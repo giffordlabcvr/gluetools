@@ -137,16 +137,11 @@ public class SamDepthCommand extends SamBaseNucleotideCommand
 
 	
 	@CompleterClass
-	public static class Completer extends FastaSequenceAminoAcidCommand.Completer {
+	public static class Completer extends ReferenceLinkedSamReporterCommand.Completer {
 		public Completer() {
 			super();
-			registerEnumLookup("samRefSense", SamRefSense.class);
-			registerVariableInstantiator("samRefName", new SamRefNameInstantiator());
-
 		}
 	}
-
-
 
 	@Override
 	protected Supplier<SamDepthCommandContext> getContextSupplier(SamRecordFilter samRecordFilter, SamRefInfo samRefInfo, SamRefSense samRefSense, List<QueryAlignedSegment> samRefToRelatedRefSegs, SamReporter samReporter) {
@@ -170,8 +165,6 @@ public class SamDepthCommand extends SamBaseNucleotideCommand
 
 	@Override
 	public void initContextForReader(SamDepthCommandContext context, SamReader reader) {
-		// TODO Auto-generated method stub
-		
 	}
 
 

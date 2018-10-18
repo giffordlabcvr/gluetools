@@ -354,11 +354,9 @@ public class SamAminoAcidCommand extends ReferenceLinkedSamReporterCommand<SamAm
 
 	
 	@CompleterClass
-	public static class Completer extends FastaSequenceAminoAcidCommand.Completer {
+	public static class Completer extends ReferenceLinkedSamReporterCommand.Completer {
 		public Completer() {
 			super();
-			registerEnumLookup("samRefSense", SamRefSense.class);
-			registerVariableInstantiator("samRefName", new SamRefNameInstantiator());
 		}
 	}
 

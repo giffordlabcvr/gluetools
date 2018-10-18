@@ -409,15 +409,11 @@ public class SamVariationScanCommand extends ReferenceLinkedSamReporterCommand<S
 		Map<String, VariationInfo> variationNameToInfo;
 
 	}
-
-	
 	
 	@CompleterClass
-	public static class Completer extends FastaSequenceAminoAcidCommand.Completer {
+	public static class Completer extends ReferenceLinkedSamReporterCommand.Completer {
 		public Completer() {
 			super();
-			registerEnumLookup("samRefSense", SamRefSense.class);
-			registerVariableInstantiator("samRefName", new SamRefNameInstantiator());
 		}
 	}
 

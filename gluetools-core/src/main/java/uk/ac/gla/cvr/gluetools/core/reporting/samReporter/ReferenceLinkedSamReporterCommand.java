@@ -30,23 +30,32 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import org.apache.cayenne.query.SelectQuery;
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter.VariableInstantiator;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamFileSession;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 // SAM reporter command which links the SAM reads to a GLUE reference before performing
 // some kind of analysis.
@@ -143,5 +152,57 @@ public abstract class ReferenceLinkedSamReporterCommand<R extends CommandResult>
 	protected String getLinkingAlmtName() {
 		return linkingAlmtName;
 	}
+	
+	public static class Completer extends BaseSamReporterCommand.Completer {
+		public Completer() {
+			super();
+			registerDataObjectNameLookup("relRefName", ReferenceSequence.class, ReferenceSequence.NAME_PROPERTY);
+			registerVariableInstantiator("featureName", new VariableInstantiator() {
+				@Override
+				public List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext,
+						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
+						String prefix) {
+					String relRefName = (String) bindings.get("relRefName");
+					if(relRefName != null) {
+						ReferenceSequence relatedRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(relRefName), true);
+						if(relatedRef != null) {
+							return relatedRef.getFeatureLocations().stream()
+									.map(fLoc -> new CompletionSuggestion(fLoc.getFeature().getName(), true))
+									.collect(Collectors.toList());
+						}
+					}
+					return null;
+				}
+			});
+			registerDataObjectNameLookup("targetRefName", ReferenceSequence.class, ReferenceSequence.NAME_PROPERTY);
+			registerVariableInstantiator("linkingAlmtName", new VariableInstantiator() {
+				@Override
+				public List<CompletionSuggestion> instantiate(
+						ConsoleCommandContext cmdContext,
+						@SuppressWarnings("rawtypes") Class<? extends Command> cmdClass, Map<String, Object> bindings,
+						String prefix) {
+					String targetRefName = (String) bindings.get("targetRefName");
+					if(targetRefName != null) {
+						ReferenceSequence targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(targetRefName), true);
+						if(targetRef != null) {
+							return targetRef.getSequence().getAlignmentMemberships().stream()
+									.map(am -> am.getAlignment())
+									.map(a -> new CompletionSuggestion(a.getName(), true))
+									.collect(Collectors.toList());
+						}
+					} else {
+						List<Alignment> almts = GlueDataObject
+								.query(cmdContext, Alignment.class, new SelectQuery(Alignment.class));
+						return almts.stream()
+								.map(a -> new CompletionSuggestion(a.getName(), true))
+								.collect(Collectors.toList());
+					}
+					return null;
+				}
+			});
+		}
+	}
+	
 	
 }

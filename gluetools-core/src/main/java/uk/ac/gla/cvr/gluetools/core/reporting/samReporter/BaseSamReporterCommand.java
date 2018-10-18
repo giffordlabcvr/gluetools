@@ -47,6 +47,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.BaseSamReporterCommand.SamRefNameInstantiator;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
 
 public abstract class BaseSamReporterCommand<R extends CommandResult> extends ModulePluginCommand<R, SamReporter> {
@@ -178,6 +179,15 @@ public abstract class BaseSamReporterCommand<R extends CommandResult> extends Mo
 		}
 	}
 
-	
+	public static class Completer extends AdvancedCmdCompleter {
+
+		public Completer() {
+			super();
+			registerPathLookup("fileName", false);
+			registerEnumLookup("samRefSense", SamRefSense.class);
+			registerVariableInstantiator("samRefName", new SamRefNameInstantiator());
+		}
+		
+	}
 	
 }

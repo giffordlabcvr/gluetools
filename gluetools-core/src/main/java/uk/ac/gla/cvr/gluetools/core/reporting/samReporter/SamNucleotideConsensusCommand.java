@@ -126,14 +126,11 @@ public class SamNucleotideConsensusCommand extends BaseSamReporterCommand<Comman
 	}
 
 	@CompleterClass
-	public static class Completer extends AdvancedCmdCompleter {
+	public static class Completer extends BaseSamReporterCommand.Completer {
 		public Completer() {
 			super();
-			registerPathLookup("fileName", false);
 			registerPathLookup("outputFileName", false);
 			registerEnumLookup("lineFieldStyle", LineFeedStyle.class);
-			registerEnumLookup("samRefSense", SamRefSense.class);
-			registerVariableInstantiator("samRefName", new SamRefNameInstantiator());
 		}
 	}
 }
