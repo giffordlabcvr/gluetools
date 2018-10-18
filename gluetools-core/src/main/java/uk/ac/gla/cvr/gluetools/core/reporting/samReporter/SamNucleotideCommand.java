@@ -45,13 +45,16 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 @CommandClass(
 		commandWords={"nucleotide"}, 
 		description = "Summarise nucleotides in a SAM/BAM file", 
-		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] -r <relRefName> -f <featureName> (-p | [-l] -t <targetRefName>) -a <linkingAlmtName> [-q <minQScore>] [-g <minMapQ>] [-d <minDepth>]" },
+		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] ( -e <selectorName> | -r <relRefName> -f <featureName> [-c <lcStart> <lcEnd> | -o <ntStart> <ntEnd>] ) (-p | [-l] -t <targetRefName>) -a <linkingAlmtName> [-q <minQScore>] [-g <minMapQ>] [-d <minDepth>]" },
 				docoptOptions = { 
 						"-i <fileName>, --fileName <fileName>                       SAM/BAM input file",
 						"-n <samRefSense>, --samRefSense <samRefSense>              SAM ref seq sense",
 						"-s <samRefName>, --samRefName <samRefName>                 Specific SAM ref seq",
+						"-e <selectorName>, --selectorName <selectorName>           Column selector module",
 						"-r <relRefName>, --relRefName <relRefName>                 Related reference sequence",
 						"-f <featureName>, --featureName <featureName>              Feature",
+						"-c, --labelledCodon                                        Region between codon labels",
+						"-o, --ntRegion                                             Specific nucleotide region",
 						"-p, --maxLikelihoodPlacer                                  Use ML placer module",
 						"-l, --autoAlign                                            Auto-align consensus",
 						"-t <targetRefName>, --targetRefName <targetRefName>        Target GLUE reference",

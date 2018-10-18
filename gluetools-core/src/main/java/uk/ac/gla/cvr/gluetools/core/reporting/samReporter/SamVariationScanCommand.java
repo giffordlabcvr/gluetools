@@ -46,6 +46,8 @@ import htsjdk.samtools.ValidationStringency;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
@@ -58,7 +60,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceAminoAcidCommand;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamFileSession;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamVariationScanCommand.VariationContext;
@@ -150,6 +151,16 @@ public class SamVariationScanCommand extends ReferenceLinkedSamReporterCommand<S
 	
 		this.minPresentPct = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, MIN_PRESENT_PCT, 0.0, true, 100.0, true, false)).orElse(0.0);
 		this.minAbsentPct = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, MIN_ABSENT_PCT, 0.0, true, 100.0, true, false)).orElse(0.0);
+		if(this.getFeatureName() == null || this.getRelatedRefName() == null) {
+			throw new CommandException(Code.COMMAND_USAGE_ERROR, "The <relRefName> and <featureName> arguments must be specified");
+		}
+		if(this.getLabelledCodon()) {
+			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Illegal option --labeledCodon");
+		}
+		if(this.getNtRegion()) {
+			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Illegal option --ntRegion");
+		}
+	
 	}
 
 

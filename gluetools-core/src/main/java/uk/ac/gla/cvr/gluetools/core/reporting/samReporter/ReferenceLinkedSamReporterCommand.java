@@ -36,33 +36,46 @@ import org.apache.cayenne.query.SelectQuery;
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAlignmentColumnsSelector;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAminoAcidAlignmentColumnsSelector;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAminoAcidColumnsSelector;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleNucleotideColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
-import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
-import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter.VariableInstantiator;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
+import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamFileSession;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
-import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 // SAM reporter command which links the SAM reads to a GLUE reference before performing
 // some kind of analysis.
 public abstract class ReferenceLinkedSamReporterCommand<R extends CommandResult> extends BaseSamReporterCommand<R> {
 
+	public static final String SELECTOR_NAME = "selectorName";
 	public static final String REL_REF_NAME = "relRefName";
 	public static final String FEATURE_NAME = "featureName";
+	public static final String LABELLED_CODON = "labelledCodon";
+	public static final String LC_START = "lcStart";
+	public static final String LC_END = "lcEnd";
+	public static final String NT_REGION = "ntRegion";
+	public static final String NT_START = "ntStart";
+	public static final String NT_END = "ntEnd";
+
 
 	public static final String MAX_LIKELIHOOD_PLACER = "maxLikelihoodPlacer";
 	
@@ -73,6 +86,15 @@ public abstract class ReferenceLinkedSamReporterCommand<R extends CommandResult>
 	private String relRefName;
 	private String featureName;
 
+	
+	private String selectorName;
+	private Boolean labelledCodon;
+	private String lcStart;
+	private String lcEnd;
+	private Boolean ntRegion;
+	private Integer ntStart;
+	private Integer ntEnd;
+	
 	private boolean maxLikelihoodPlacer;
 
 	private boolean autoAlign;
@@ -83,8 +105,15 @@ public abstract class ReferenceLinkedSamReporterCommand<R extends CommandResult>
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		this.relRefName = PluginUtils.configureStringProperty(configElem, REL_REF_NAME, true);
-		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
+		this.selectorName = PluginUtils.configureStringProperty(configElem, SELECTOR_NAME, false);
+		this.relRefName = PluginUtils.configureStringProperty(configElem, REL_REF_NAME, false);
+		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, false);
+		this.labelledCodon = PluginUtils.configureBooleanProperty(configElem, LABELLED_CODON, true);
+		this.lcStart = PluginUtils.configureStringProperty(configElem, LC_START, false);
+		this.lcEnd = PluginUtils.configureStringProperty(configElem, LC_END, false);
+		this.ntRegion = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, NT_REGION, false)).orElse(false);
+		this.ntStart = PluginUtils.configureIntProperty(configElem, NT_START, false);
+		this.ntEnd = PluginUtils.configureIntProperty(configElem, NT_END, false);
 		this.maxLikelihoodPlacer = PluginUtils.configureBooleanProperty(configElem, MAX_LIKELIHOOD_PLACER, false);
 		this.autoAlign = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, AUTO_ALIGN, false)).orElse(false);
 		this.targetRefName = PluginUtils.configureStringProperty(configElem, TARGET_REF_NAME, false);
@@ -96,6 +125,54 @@ public abstract class ReferenceLinkedSamReporterCommand<R extends CommandResult>
 		if(targetRefName != null && maxLikelihoodPlacer) {
 			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Cannot specify both --maxLikelihoodPlacer and <targetRefName>");
 		}
+		if(selectorName != null && ( relRefName != null || featureName != null )) {
+			usageError1a();
+		}
+		if(selectorName == null && relRefName == null || featureName == null ) {
+			usageError1b();
+		}
+		if(relRefName != null && featureName == null || relRefName == null && featureName != null) {
+			usageError2();
+		}
+		if(selectorName != null && ( ntRegion || labelledCodon )) {
+			usageError3a();
+		}
+		if(labelledCodon && (lcStart == null || lcEnd == null)) {
+			usageError4();
+		}
+		if(ntRegion && labelledCodon) {
+			usageError5();
+		}
+		if(ntRegion && (ntStart == null || ntEnd == null)) {
+			usageError6();
+		}
+		
+	}
+
+	private void usageError1a() {
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "If <selectorName> is used then <relRefName> and <featureName> may not be used");
+	}
+
+	private void usageError1b() {
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <selectorName> or both <relRefName> and <featureName> must be specified");
+	}
+
+	private void usageError2() {
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either both <relRefName> and <featureName> must be specified or neither");
+	}
+
+	private void usageError3a() {
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "If <selectorName> is used then neither --ntRegion or --labelledCodon may be specified");
+	}
+
+	private void usageError4() {
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "If --labelledCodon is used, both <lcStart> and <lcEnd> must be specified");
+	}
+ 	private void usageError5() {
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either --ntRegion or --labelledCodon may be specified, but not both");
+	}
+ 	private void usageError6() {
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "If --ntRegion is used, both <ntStart> and <ntEnd> must be specified");
 	}
 
 	
@@ -156,6 +233,7 @@ public abstract class ReferenceLinkedSamReporterCommand<R extends CommandResult>
 	public static class Completer extends BaseSamReporterCommand.Completer {
 		public Completer() {
 			super();
+			registerModuleNameLookup("selectorName", "alignmentColumnsSelector");
 			registerDataObjectNameLookup("relRefName", ReferenceSequence.class, ReferenceSequence.NAME_PROPERTY);
 			registerVariableInstantiator("featureName", new VariableInstantiator() {
 				@Override
@@ -204,5 +282,40 @@ public abstract class ReferenceLinkedSamReporterCommand<R extends CommandResult>
 		}
 	}
 	
+	public IAlignmentColumnsSelector getNucleotideAlignmentColumnsSelector(CommandContext cmdContext) {
+		if(selectorName != null) {
+			return Module.resolveModulePlugin(cmdContext, AlignmentColumnsSelector.class, selectorName);
+		} else if(relRefName != null && featureName != null && ntStart != null && ntEnd != null) {
+			return new SimpleNucleotideColumnsSelector(relRefName, featureName, ntStart, ntEnd);
+		} else if(relRefName != null && featureName != null && lcStart != null && lcEnd != null) {
+			FeatureLocation featureLocation = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relRefName, featureName));
+			Map<String, LabeledCodon> labelToLabeledCodon = featureLocation.getLabelToLabeledCodon(cmdContext);
+			int refStart = labelToLabeledCodon.get(lcStart).getNtStart();
+			int refEnd = labelToLabeledCodon.get(lcEnd).getNtStart()+2;
+			return new SimpleNucleotideColumnsSelector(relRefName, featureName, refStart, refEnd);
+		} else if(relRefName != null && featureName != null) {
+			return new SimpleNucleotideColumnsSelector(relRefName, featureName, null, null);
+		} else {
+			return null;
+		}
+	}
+
+	public IAminoAcidAlignmentColumnsSelector getAminoAcidAlignmentColumnsSelector(CommandContext cmdContext) {
+		if(selectorName != null) {
+			return Module.resolveModulePlugin(cmdContext, IAminoAcidAlignmentColumnsSelector.class, selectorName);
+		} else if(relRefName != null && featureName != null) {
+			return new SimpleAminoAcidColumnsSelector(relRefName, featureName, lcStart, lcEnd);
+		} else {
+			return null;
+		}
+	}
+
+	protected Boolean getLabelledCodon() {
+		return labelledCodon;
+	}
+
+	protected Boolean getNtRegion() {
+		return ntRegion;
+	}
 	
 }

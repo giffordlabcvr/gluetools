@@ -139,7 +139,7 @@ public class FastaAlignmentExportCommandDelegate {
 	}
 
 	private void usageError3a() {
-		throw new CommandException(Code.COMMAND_USAGE_ERROR, "If <selectorModuleName> is used then nither --ntRegion or --labelledCodon may be specified");
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "If <selectorName> is used then neither --ntRegion or --labelledCodon may be specified");
 	}
 
 	private void usageError4() {
