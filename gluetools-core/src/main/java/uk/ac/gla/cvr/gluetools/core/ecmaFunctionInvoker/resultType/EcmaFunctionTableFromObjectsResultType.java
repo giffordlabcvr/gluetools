@@ -28,10 +28,9 @@ package uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker.resultType;
 import java.util.ArrayList;
 import java.util.List;
 
-import jdk.nashorn.api.scripting.ScriptObjectMirror;
-
 import org.w3c.dom.Element;
 
+import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker.EcmaFunctionInvoker;
 import uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker.EcmaFunctionInvokerException;
 import uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker.EcmaFunctionInvokerException.Code;

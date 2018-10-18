@@ -33,10 +33,10 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+import freemarker.template.Configuration;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
-import freemarker.template.Configuration;
 
 
 public class TestRegexExtractorFormatter {

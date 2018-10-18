@@ -25,10 +25,9 @@
 */
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
-import htsjdk.samtools.SAMSequenceRecord;
-
 import java.util.List;
 
+import htsjdk.samtools.SAMSequenceRecord;
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 
 public class ListSamReferenceResult extends BaseTableResult<SAMSequenceRecord> {

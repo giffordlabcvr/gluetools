@@ -30,6 +30,8 @@ import java.util.List;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
+import freemarker.template.Template;
+import freemarker.template.TemplateModel;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -44,8 +46,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.CayenneUtils;
 import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtils;
-import freemarker.template.Template;
-import freemarker.template.TemplateModel;
 
 @PluginClass(elemName="treeTransformer",
 		description="Renames leaf nodes in a Newick file")

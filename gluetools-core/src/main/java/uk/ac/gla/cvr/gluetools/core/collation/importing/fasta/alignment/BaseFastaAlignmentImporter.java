@@ -37,6 +37,8 @@ import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
+import freemarker.core.ParseException;
+import freemarker.template.Template;
 import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.alignment.FastaAlignmentImporterException.Code;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.regex.RegexExtractorFormatter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -53,8 +55,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.CayenneUtils;
-import freemarker.core.ParseException;
-import freemarker.template.Template;
 
 public abstract class BaseFastaAlignmentImporter<I extends BaseFastaAlignmentImporter<I>> extends ModulePlugin<I> {
 

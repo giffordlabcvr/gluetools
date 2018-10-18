@@ -33,11 +33,10 @@ import java.util.Map;
 
 import javax.script.ScriptContext;
 
-import jdk.nashorn.api.scripting.JSObject;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import jdk.nashorn.api.scripting.JSObject;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;

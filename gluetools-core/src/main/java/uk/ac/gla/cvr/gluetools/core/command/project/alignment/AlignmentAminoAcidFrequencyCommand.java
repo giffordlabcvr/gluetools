@@ -25,13 +25,6 @@
 */
 package uk.ac.gla.cvr.gluetools.core.command.project.alignment;
 
-import gnu.trove.map.TCharIntMap;
-import gnu.trove.map.TIntObjectMap;
-import gnu.trove.map.hash.TCharIntHashMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
-import gnu.trove.procedure.TCharIntProcedure;
-import gnu.trove.procedure.TIntObjectProcedure;
-
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -40,6 +33,12 @@ import java.util.Optional;
 import org.apache.cayenne.exp.Expression;
 import org.w3c.dom.Element;
 
+import gnu.trove.map.TCharIntMap;
+import gnu.trove.map.TIntObjectMap;
+import gnu.trove.map.hash.TCharIntHashMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.procedure.TCharIntProcedure;
+import gnu.trove.procedure.TIntObjectProcedure;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcidFrequency;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;

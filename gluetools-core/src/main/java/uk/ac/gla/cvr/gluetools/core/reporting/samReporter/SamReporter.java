@@ -25,9 +25,6 @@
 */
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
-import htsjdk.samtools.SAMRecord;
-import htsjdk.samtools.ValidationStringency;
-
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -39,6 +36,8 @@ import java.util.logging.Level;
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
+import htsjdk.samtools.SAMRecord;
+import htsjdk.samtools.ValidationStringency;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;

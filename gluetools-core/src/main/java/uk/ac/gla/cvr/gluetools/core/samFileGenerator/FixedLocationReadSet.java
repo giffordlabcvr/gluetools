@@ -25,18 +25,17 @@
 */
 package uk.ac.gla.cvr.gluetools.core.samFileGenerator;
 
+import java.util.Arrays;
+import java.util.List;
+
+import org.w3c.dom.Element;
+
 import htsjdk.samtools.Cigar;
 import htsjdk.samtools.CigarElement;
 import htsjdk.samtools.CigarOperator;
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SAMFileWriter;
 import htsjdk.samtools.SAMRecord;
-
-import java.util.Arrays;
-import java.util.List;
-
-import org.w3c.dom.Element;
-
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;

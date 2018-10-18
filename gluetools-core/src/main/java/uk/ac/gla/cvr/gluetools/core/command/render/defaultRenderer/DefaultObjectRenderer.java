@@ -27,6 +27,8 @@ package uk.ac.gla.cvr.gluetools.core.command.render.defaultRenderer;
 
 import java.io.IOException;
 
+import freemarker.template.Template;
+import freemarker.template.TemplateModel;
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.render.RenderObjectException;
@@ -37,8 +39,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.reporting.objectRenderer.IObjectRenderer;
 import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtils;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
-import freemarker.template.Template;
-import freemarker.template.TemplateModel;
 
 public class DefaultObjectRenderer implements IObjectRenderer {
 

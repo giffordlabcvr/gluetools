@@ -1,11 +1,10 @@
 package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
-import htsjdk.samtools.SAMRecord;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import htsjdk.samtools.SAMRecord;
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;

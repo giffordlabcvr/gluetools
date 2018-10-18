@@ -37,17 +37,17 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import uk.ac.gla.cvr.gluetools.core.document.CommandArray;
-import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
-import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
-import uk.ac.gla.cvr.gluetools.utils.RenderUtils;
-
 import com.brsanthu.dataexporter.model.AlignType;
 import com.brsanthu.dataexporter.model.Row;
 import com.brsanthu.dataexporter.model.StringColumn;
 import com.brsanthu.dataexporter.output.texttable.TextTableExportOptions;
 import com.brsanthu.dataexporter.output.texttable.TextTableExportStyle;
 import com.brsanthu.dataexporter.output.texttable.TextTableExporter;
+
+import uk.ac.gla.cvr.gluetools.core.document.CommandArray;
+import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
+import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
+import uk.ac.gla.cvr.gluetools.utils.RenderUtils;
 
 public class BaseTableResult<D> extends CommandResult {
 

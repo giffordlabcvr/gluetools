@@ -29,7 +29,7 @@ import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 
-public class SamNucleotideResult extends BaseTableResult<NucleotideReadCount> {
+public class SamNucleotideResult extends BaseTableResult<SamNucleotideResidueCount> {
 
 	public static final String 
 		SAM_REFERENCE_NT = "samRefNt",
@@ -40,7 +40,7 @@ public class SamNucleotideResult extends BaseTableResult<NucleotideReadCount> {
 		READS_WITH_T = "readsWithT";
 
 
-	public SamNucleotideResult(List<NucleotideReadCount> rowData) {
+	public SamNucleotideResult(List<SamNucleotideResidueCount> rowData) {
 		super("samNucleotidesResult", 
 				rowData,
 				column(SAM_REFERENCE_NT, nrc -> nrc.getSamRefNt()),

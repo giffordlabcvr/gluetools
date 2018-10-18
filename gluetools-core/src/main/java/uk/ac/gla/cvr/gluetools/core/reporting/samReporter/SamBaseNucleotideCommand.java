@@ -25,14 +25,7 @@
 */
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
-import gnu.trove.map.TIntObjectMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
-import htsjdk.samtools.SAMRecord;
-import htsjdk.samtools.SamReader;
-import htsjdk.samtools.ValidationStringency;
-
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -41,6 +34,11 @@ import java.util.stream.Collectors;
 
 import org.biojava.nbio.core.sequence.DNASequence;
 
+import gnu.trove.map.TIntObjectMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
+import htsjdk.samtools.SAMRecord;
+import htsjdk.samtools.SamReader;
+import htsjdk.samtools.ValidationStringency;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
@@ -60,9 +58,9 @@ import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.StringUtils;
 
-public abstract class SamBaseNucleotideCommand<R extends CommandResult> extends ReferenceLinkedSamReporterCommand<R> 
+public abstract class SamBaseNucleotideCommand<R extends CommandResult, C extends SamBaseNucleotideCommandContext, IR extends SamBaseNucleotideCommandInterimResult> extends ReferenceLinkedSamReporterCommand<R> 
 	implements ProvidedProjectModeCommand, 
-	SamPairedParallelProcessor<SamBaseNucleotideCommand.BaseNucleotideContext, SamBaseNucleotideCommand.BaseNucleotideResult>{
+	SamPairedParallelProcessor<C, IR>{
 
 
 	@Override
@@ -128,50 +126,29 @@ public abstract class SamBaseNucleotideCommand<R extends CommandResult> extends 
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
-			Supplier<BaseNucleotideContext> contextSupplier = () -> {
-				BaseNucleotideContext context = new BaseNucleotideContext();
-				context.samRecordFilter = samRecordFilter;
-				context.samRefInfo = samRefInfo;
-				context.samRefSense = samRefSense;
-				context.samRefToRelatedRefSegs = QueryAlignedSegment.cloneList(samRefToRelatedRefSegs);
-				context.samReporter = samReporter;
-				context.relatedRefNtToInfo = new TIntObjectHashMap<NucleotideReadCount>();
-				for(QueryAlignedSegment samRefToRelatedRefSeg: context.samRefToRelatedRefSegs) {
-					for(int samRefNt = samRefToRelatedRefSeg.getQueryStart(); samRefNt <= samRefToRelatedRefSeg.getQueryEnd(); samRefNt++) {
-						int relatedRefNt = samRefNt+samRefToRelatedRefSeg.getQueryToReferenceOffset();
-						int resultSamRefNt = samRefNt;
-						if(context.samRefSense.equals(SamRefSense.REVERSE_COMPLEMENT)) {
-							// we want to report results in the SAM file's own coordinates.
-							resultSamRefNt = ReferenceSegment.reverseLocationSense(context.samRefInfo.getSamRefLength(), samRefNt);
-						}
-						context.relatedRefNtToInfo.put(relatedRefNt, new NucleotideReadCount(resultSamRefNt, relatedRefNt));
-					}
-				}
-				return context;
-			};
-			BaseNucleotideResult mergedResult = SamUtils.pairedParallelSamIterate(contextSupplier, consoleCmdContext, samFileSession, validationStringency, this);
+			Supplier<C> contextSupplier = getContextSupplier(samRecordFilter, samRefInfo, samRefSense, samRefToRelatedRefSegs, samReporter);
+			IR mergedResult = SamUtils.pairedParallelSamIterate(contextSupplier, consoleCmdContext, samFileSession, validationStringency, this);
 			
-			List<NucleotideReadCount> nucleotideReadCounts = new ArrayList<NucleotideReadCount>(mergedResult.relatedRefNtToInfo.valueCollection());
-
-			return formResult(nucleotideReadCounts, samReporter);
+			return formResult(mergedResult, samReporter);
+			
 		}
 	}
 
+	protected abstract Supplier<C> getContextSupplier(SamRecordFilter samRecordFilter, SamRefInfo samRefInfo, SamRefSense samRefSense, List<QueryAlignedSegment> samRefToRelatedRefSegs, SamReporter samReporter);
 	
-	
-	private TIntObjectMap<BaseWithQuality> getRelatedRefNtToBaseWithQuality(BaseNucleotideContext context, SAMRecord samRecord) {
+	private TIntObjectMap<BaseWithQuality> getRelatedRefNtToBaseWithQuality(SamBaseNucleotideCommandContext context, SAMRecord samRecord) {
 		TIntObjectMap<BaseWithQuality> relatedRefNtToBaseWithQuality = new TIntObjectHashMap<BaseWithQuality>();
 		
-		List<QueryAlignedSegment> readToSamRefSegs = context.samReporter.getReadToSamRefSegs(samRecord);
+		List<QueryAlignedSegment> readToSamRefSegs = context.getSamReporter().getReadToSamRefSegs(samRecord);
 		String readString = samRecord.getReadString().toUpperCase();
 		String qualityString = samRecord.getBaseQualityString();
-		if(context.samRefSense.equals(SamRefSense.REVERSE_COMPLEMENT)) {
-			readToSamRefSegs = QueryAlignedSegment.reverseSense(readToSamRefSegs, readString.length(), context.samRefInfo.getSamRefLength());
+		if(context.getSamRefSense().equals(SamRefSense.REVERSE_COMPLEMENT)) {
+			readToSamRefSegs = QueryAlignedSegment.reverseSense(readToSamRefSegs, readString.length(), context.getSamRefInfo().getSamRefLength());
 			readString = FastaUtils.reverseComplement(readString);
 			qualityString = StringUtils.reverseString(qualityString);
 		}
 
-		List<QueryAlignedSegment> readToRelatedRefSegs = QueryAlignedSegment.translateSegments(readToSamRefSegs, context.samRefToRelatedRefSegs);
+		List<QueryAlignedSegment> readToRelatedRefSegs = QueryAlignedSegment.translateSegments(readToSamRefSegs, context.getSamRefToRelatedRefSegs());
 
 
 		for(QueryAlignedSegment readToRelatedRefSeg: readToRelatedRefSegs) {
@@ -183,7 +160,7 @@ public abstract class SamBaseNucleotideCommand<R extends CommandResult> extends 
 			for(int i = 0; i < readNts.length(); i++) {
 				char qualityChar = readQuality.charAt(i);
 				int qScore = SamUtils.qualityCharToQScore(qualityChar);
-				if(qScore < getMinQScore(context.samReporter)) {
+				if(qScore < getMinQScore(context.getSamReporter())) {
 					continue;
 				}
 				char readChar = readNts.charAt(i);
@@ -206,14 +183,14 @@ public abstract class SamBaseNucleotideCommand<R extends CommandResult> extends 
 	
 	
 	@Override
-	public void initContextForReader(BaseNucleotideContext context, SamReader reader) {
+	public void initContextForReader(SamBaseNucleotideCommandContext context, SamReader reader) {
 	}
 
 	@Override
-	public void processPair(BaseNucleotideContext context, SAMRecord record1, SAMRecord record2) {
-		if(!context.samRecordFilter.recordPasses(record1)) {
+	public final void processPair(C context, SAMRecord record1, SAMRecord record2) {
+		if(!context.getSamRecordFilter().recordPasses(record1)) {
     		processSingleton(context, record2);
-		} else if(!context.samRecordFilter.recordPasses(record2)) {
+		} else if(!context.getSamRecordFilter().recordPasses(record2)) {
     		processSingleton(context, record1);
     	} else {
     		TIntObjectMap<BaseWithQuality> relatedRefNtToBaseWithQuality1 = getRelatedRefNtToBaseWithQuality(context, record1);
@@ -225,95 +202,48 @@ public abstract class SamBaseNucleotideCommand<R extends CommandResult> extends 
     		for(int relatedRefNt: relatedRefNtToBaseWithQuality1.keys()) {
     			BaseWithQuality baseWithQuality1 = relatedRefNtToBaseWithQuality1.get(relatedRefNt);
     			BaseWithQuality baseWithQuality2 = relatedRefNtToBaseWithQuality2.remove(relatedRefNt);
-				NucleotideReadCount refNtInfo = context.relatedRefNtToInfo.get(relatedRefNt);
     			if(baseWithQuality2 == null) {
-    				updateRefNtInfo(refNtInfo, baseWithQuality1.base);
+    				processReadBase(context, record1.getReadName(), relatedRefNt, baseWithQuality1.base);
     			} else {
     				int read1qual = baseWithQuality1.quality;
     				int read2qual = baseWithQuality2.quality;
     				if(read1qual < read2qual) {
-        				updateRefNtInfo(refNtInfo, baseWithQuality2.base);
+    					processReadBase(context, record2.getReadName(), relatedRefNt, baseWithQuality2.base);
     				} else if(read1qual > read2qual) {
-        				updateRefNtInfo(refNtInfo, baseWithQuality1.base);
+    					processReadBase(context, record1.getReadName(), relatedRefNt, baseWithQuality1.base);
     				} else if(read1MapQ != 255 && read2MapQ != 255 && read1MapQ < read2MapQ) {
-        				updateRefNtInfo(refNtInfo, baseWithQuality2.base);
+    					processReadBase(context, record2.getReadName(), relatedRefNt,  baseWithQuality2.base);
     				} else if(read1MapQ != 255 && read2MapQ != 255 && read1MapQ > read2MapQ) {
-        				updateRefNtInfo(refNtInfo, baseWithQuality1.base);
+    					processReadBase(context, record1.getReadName(), relatedRefNt, baseWithQuality1.base);
     				} else if(readNameHashCoinFlip == 0) {
-        				updateRefNtInfo(refNtInfo, baseWithQuality1.base);
+    					processReadBase(context, record1.getReadName(), relatedRefNt, baseWithQuality1.base);
     				} else {
-        				updateRefNtInfo(refNtInfo, baseWithQuality2.base);
+    					processReadBase(context, record2.getReadName(), relatedRefNt, baseWithQuality2.base);
     				}
     			}
     		}
     		for(int relatedRefNt: relatedRefNtToBaseWithQuality2.keys()) {
-				NucleotideReadCount refNtInfo = context.relatedRefNtToInfo.get(relatedRefNt);
-				updateRefNtInfo(refNtInfo, relatedRefNtToBaseWithQuality2.get(relatedRefNt).base);
+    			processReadBase(context, record2.getReadName(), relatedRefNt, relatedRefNtToBaseWithQuality2.get(relatedRefNt).base);
     		}
     	}
 	}
 
 	@Override
-	public void processSingleton(BaseNucleotideContext context, SAMRecord samRecord) {
-		if(!context.samRecordFilter.recordPasses(samRecord)) {
+	public final void processSingleton(C context, SAMRecord samRecord) {
+		if(!context.getSamRecordFilter().recordPasses(samRecord)) {
 			return;
 		}
     	TIntObjectMap<BaseWithQuality> relatedRefNtToBaseWithQuality = getRelatedRefNtToBaseWithQuality(context, samRecord);
 		for(int relatedRefNt: relatedRefNtToBaseWithQuality.keys()) {
-			NucleotideReadCount refNtInfo = context.relatedRefNtToInfo.get(relatedRefNt);
-			updateRefNtInfo(refNtInfo, relatedRefNtToBaseWithQuality.get(relatedRefNt).base);
+			processReadBase(context, samRecord.getReadName(), relatedRefNt, relatedRefNtToBaseWithQuality.get(relatedRefNt).base);
 		}
 	}
 
-	@Override
-	public BaseNucleotideResult contextResult(BaseNucleotideContext context) {
-		BaseNucleotideResult result = new BaseNucleotideResult();
-		result.relatedRefNtToInfo = context.relatedRefNtToInfo;
-		return result;
-	}
 
-	@Override
-	public BaseNucleotideResult reduceResults(BaseNucleotideResult result1, BaseNucleotideResult result2) {
-		BaseNucleotideResult mergedResult = new BaseNucleotideResult();
-		mergedResult.relatedRefNtToInfo = new TIntObjectHashMap<NucleotideReadCount>();
-		
-		for(int key: result1.relatedRefNtToInfo.keys()) {
-			NucleotideReadCount count1 = result1.relatedRefNtToInfo.get(key);
-			NucleotideReadCount count2 = result2.relatedRefNtToInfo.get(key);
-			
-			NucleotideReadCount mergedCount = new NucleotideReadCount(count1.getSamRefNt(), count1.getRelatedRefNt());
-			mergedCount.readsWithA = count1.readsWithA + count2.readsWithA;
-			mergedCount.readsWithC = count1.readsWithC + count2.readsWithC;
-			mergedCount.readsWithG = count1.readsWithG + count2.readsWithG;
-			mergedCount.readsWithT = count1.readsWithT + count2.readsWithT;
-			mergedCount.totalContributingReads = count1.totalContributingReads + count2.totalContributingReads;
-			mergedResult.relatedRefNtToInfo.put(key, mergedCount);
-		}
-		return mergedResult;
-	}
-
-
-	private static class Boo {}
-
-	public static class BaseNucleotideContext {
-		SamReporter samReporter;
-		SamRefInfo samRefInfo;
-		List<QueryAlignedSegment> samRefToRelatedRefSegs;
-		SamRefSense samRefSense;
-		SamRecordFilter samRecordFilter;
-		TIntObjectMap<NucleotideReadCount> relatedRefNtToInfo;
-	}
-
-	public static class BaseNucleotideResult {
-		TIntObjectMap<NucleotideReadCount> relatedRefNtToInfo;
-	}
-
-	protected abstract R formResult(List<NucleotideReadCount> nucleotideReadCounts, SamReporter samReporter);
+	protected abstract R formResult(IR mergedResult, SamReporter samReporter);
 	
-	protected void updateRefNtInfo(NucleotideReadCount refNtInfo, char readChar) {
-		refNtInfo.totalContributingReads++;
-	}
-
+	protected abstract void processReadBase(C context, String readName, int relatedRefNt, char base);
+	
 	
 	@CompleterClass
 	public static class Completer extends FastaSequenceAminoAcidCommand.Completer {}

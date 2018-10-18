@@ -25,18 +25,23 @@
 */
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import gnu.trove.map.hash.TIntObjectHashMap;
+import htsjdk.samtools.SamReader;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceAminoAcidCommand;
-import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.BaseSamReporterCommand.SamRefNameInstantiator;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 @CommandClass(
 		commandWords={"depth"}, 
@@ -85,26 +90,52 @@ import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSens
 					"(default value is derived from the module config)",
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class SamDepthCommand extends SamBaseNucleotideCommand<SamDepthResult> implements ProvidedProjectModeCommand{
+public class SamDepthCommand extends SamBaseNucleotideCommand
+	<SamDepthResult, SamDepthCommandContext, SamDepthCommandInterimResult> 
+	implements ProvidedProjectModeCommand{
 
-
+	
 	@Override
 	protected SamDepthResult formResult(
-			List<NucleotideReadCount> nucleotideReadCounts, SamReporter samReporter) {
+			SamDepthCommandInterimResult mergedResult, SamReporter samReporter) {
+		
+		List<SamContributingReadsCount> contributingReadsCounts= new ArrayList<SamContributingReadsCount>(mergedResult.getRelatedRefNtToInfo().valueCollection());
         int minDepth = getMinDepth(samReporter);
-		nucleotideReadCounts = nucleotideReadCounts.stream()
-        		.filter(nrc -> nrc.totalContributingReads >= minDepth)
+        contributingReadsCounts = contributingReadsCounts.stream()
+        		.filter(nrc -> nrc.getTotalContributingReads() >= minDepth)
         		.collect(Collectors.toList());
         
-        Comparator<NucleotideReadCount> comparator = new Comparator<NucleotideReadCount>() {
+        Comparator<SamContributingReadsCount> comparator = new Comparator<SamContributingReadsCount>() {
 			@Override
-			public int compare(NucleotideReadCount nrc1, NucleotideReadCount nrc2) {
+			public int compare(SamContributingReadsCount nrc1, SamContributingReadsCount nrc2) {
 				return Integer.compare(nrc1.getRelatedRefNt(), nrc2.getRelatedRefNt());
 			}};
-		Collections.sort(nucleotideReadCounts, comparator);
- 		return new SamDepthResult(nucleotideReadCounts);
+		Collections.sort(contributingReadsCounts, comparator);
+ 		return new SamDepthResult(contributingReadsCounts);
 	}
 
+	
+	@Override
+	public SamDepthCommandInterimResult contextResult(SamDepthCommandContext context) {
+		return new SamDepthCommandInterimResult(context.getRelatedRefNtToInfo());
+	}
+
+	@Override
+	public SamDepthCommandInterimResult reduceResults(SamDepthCommandInterimResult result1, SamDepthCommandInterimResult result2) {
+		SamDepthCommandInterimResult mergedResult = new SamDepthCommandInterimResult(new TIntObjectHashMap<SamContributingReadsCount>());
+		for(int key: result1.getRelatedRefNtToInfo().keys()) {
+			SamContributingReadsCount count1 = result1.getRelatedRefNtToInfo().get(key);
+			SamContributingReadsCount count2 = result2.getRelatedRefNtToInfo().get(key);
+			
+			SamContributingReadsCount mergedCount = new SamContributingReadsCount(count1.getSamRefNt(), count1.getRelatedRefNt());
+			mergedCount.setTotalContributingReads(count1.getTotalContributingReads() + count2.getTotalContributingReads());
+			mergedResult.getRelatedRefNtToInfo().put(key, mergedCount);
+		}
+		return mergedResult;
+	}
+
+
+	
 	@CompleterClass
 	public static class Completer extends FastaSequenceAminoAcidCommand.Completer {
 		public Completer() {
@@ -114,5 +145,40 @@ public class SamDepthCommand extends SamBaseNucleotideCommand<SamDepthResult> im
 
 		}
 	}
+
+
+
+	@Override
+	protected Supplier<SamDepthCommandContext> getContextSupplier(SamRecordFilter samRecordFilter, SamRefInfo samRefInfo, SamRefSense samRefSense, List<QueryAlignedSegment> samRefToRelatedRefSegs, SamReporter samReporter) {
+		return () -> {
+			SamDepthCommandContext context = new SamDepthCommandContext(samReporter, samRefInfo, QueryAlignedSegment.cloneList(samRefToRelatedRefSegs), samRefSense, samRecordFilter);
+			for(QueryAlignedSegment samRefToRelatedRefSeg: context.getSamRefToRelatedRefSegs()) {
+				for(int samRefNt = samRefToRelatedRefSeg.getQueryStart(); samRefNt <= samRefToRelatedRefSeg.getQueryEnd(); samRefNt++) {
+					int relatedRefNt = samRefNt+samRefToRelatedRefSeg.getQueryToReferenceOffset();
+					int resultSamRefNt = samRefNt;
+					if(context.getSamRefSense().equals(SamRefSense.REVERSE_COMPLEMENT)) {
+						// we want to report results in the SAM file's own coordinates.
+						resultSamRefNt = ReferenceSegment.reverseLocationSense(context.getSamRefInfo().getSamRefLength(), samRefNt);
+					}
+					context.getRelatedRefNtToInfo().put(relatedRefNt, new SamContributingReadsCount(resultSamRefNt, relatedRefNt));
+				}
+			}
+			return context;
+		};
+	}
+
+
+	@Override
+	public void initContextForReader(SamDepthCommandContext context, SamReader reader) {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+	@Override
+	protected void processReadBase(SamDepthCommandContext context, String readName, int relatedRefNt, char base) {
+		context.getRelatedRefNtToInfo().get(relatedRefNt).incrementTotalContributingReads();
+	}
+
 	
 }

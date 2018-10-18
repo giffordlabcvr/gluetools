@@ -1,11 +1,10 @@
 package uk.ac.gla.cvr.gluetools.core.samFileGenerator;
 
-import htsjdk.samtools.SAMRecord;
-
 import java.util.Optional;
 
 import org.w3c.dom.Element;
 
+import htsjdk.samtools.SAMRecord;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;

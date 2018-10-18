@@ -50,6 +50,12 @@ import org.apache.cayenne.exp.ExpressionException;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
+import freemarker.core.ParseException;
+import freemarker.template.SimpleScalar;
+import freemarker.template.Template;
+import freemarker.template.TemplateException;
+import freemarker.template.TemplateHashModel;
+import freemarker.template.TemplateModel;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.project.CreateSequenceCommand;
@@ -74,12 +80,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.CayenneUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
-import freemarker.core.ParseException;
-import freemarker.template.SimpleScalar;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import freemarker.template.TemplateHashModel;
-import freemarker.template.TemplateModel;
 
 @PluginClass(elemName=DigsImporter.ELEM_NAME, 
 		includeInWebDocs=false)

@@ -1,5 +1,9 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
+import java.util.EnumSet;
+import java.util.List;
+import java.util.function.Supplier;
+
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import htsjdk.samtools.AlignmentBlock;
@@ -7,11 +11,6 @@ import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.SAMSequenceRecord;
 import htsjdk.samtools.SamReader;
 import htsjdk.samtools.ValidationStringency;
-
-import java.util.EnumSet;
-import java.util.List;
-import java.util.function.Supplier;
-
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamFileSession;

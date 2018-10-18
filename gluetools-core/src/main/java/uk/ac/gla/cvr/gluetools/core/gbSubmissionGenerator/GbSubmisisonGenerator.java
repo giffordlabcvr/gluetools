@@ -31,6 +31,8 @@ import java.util.Optional;
 
 import org.w3c.dom.Element;
 
+import freemarker.template.Template;
+import freemarker.template.TemplateModel;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.featureProvider.FeatureProvider;
 import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.featureProvider.FeatureProviderFactory;
@@ -43,8 +45,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
-import freemarker.template.Template;
-import freemarker.template.TemplateModel;
 
 
 @PluginClass(elemName="gbSubmisisonGenerator",

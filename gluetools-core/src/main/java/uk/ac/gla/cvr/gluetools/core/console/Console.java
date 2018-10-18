@@ -42,14 +42,13 @@ import java.util.Map;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
-import jline.console.ConsoleReader;
-import jline.console.history.MemoryHistory;
-
 import org.apache.commons.lang.StringUtils;
 import org.docopt.Docopt;
 import org.docopt.DocoptExitException;
 import org.w3c.dom.Document;
 
+import jline.console.ConsoleReader;
+import jline.console.history.MemoryHistory;
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 import uk.ac.gla.cvr.gluetools.core.GlueException.GlueErrorCode;
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;

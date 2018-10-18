@@ -25,13 +25,12 @@
 */
 package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
-import htsjdk.samtools.SAMRecord;
-
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import htsjdk.samtools.SAMRecord;
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;

@@ -47,14 +47,14 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import freemarker.core.ParseException;
+import freemarker.template.Configuration;
+import freemarker.template.Template;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
 import uk.ac.gla.cvr.gluetools.utils.CayenneUtils;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
-import freemarker.core.ParseException;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
 
 // TODO stop using XPaths when it's just a simple property lookup.
 public class PluginUtils {

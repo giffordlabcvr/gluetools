@@ -25,15 +25,6 @@
 */
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
-import gnu.trove.map.TCharIntMap;
-import gnu.trove.map.TIntObjectMap;
-import gnu.trove.map.hash.TCharIntHashMap;
-import gnu.trove.map.hash.TIntObjectHashMap;
-import gnu.trove.procedure.TCharIntProcedure;
-import htsjdk.samtools.SAMRecord;
-import htsjdk.samtools.SamReader;
-import htsjdk.samtools.ValidationStringency;
-
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -46,6 +37,14 @@ import java.util.stream.Collectors;
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
+import gnu.trove.map.TCharIntMap;
+import gnu.trove.map.TIntObjectMap;
+import gnu.trove.map.hash.TCharIntHashMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
+import gnu.trove.procedure.TCharIntProcedure;
+import htsjdk.samtools.SAMRecord;
+import htsjdk.samtools.SamReader;
+import htsjdk.samtools.ValidationStringency;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodonReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;

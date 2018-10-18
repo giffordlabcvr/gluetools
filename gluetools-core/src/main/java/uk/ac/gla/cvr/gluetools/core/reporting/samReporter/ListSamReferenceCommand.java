@@ -25,14 +25,13 @@
 */
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
-import htsjdk.samtools.SAMSequenceRecord;
-import htsjdk.samtools.SamReader;
-
 import java.io.IOException;
 import java.util.List;
 
 import org.w3c.dom.Element;
 
+import htsjdk.samtools.SAMSequenceRecord;
+import htsjdk.samtools.SamReader;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;

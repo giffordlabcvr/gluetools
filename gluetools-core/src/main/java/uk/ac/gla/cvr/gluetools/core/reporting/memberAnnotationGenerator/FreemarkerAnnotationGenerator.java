@@ -4,13 +4,13 @@ import java.util.Optional;
 
 import org.w3c.dom.Element;
 
+import freemarker.template.Configuration;
+import freemarker.template.Template;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtils;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
 
 @PluginClass(elemName="freemarkerAnnotationGenerator")
 public class FreemarkerAnnotationGenerator extends MemberAnnotationGenerator {

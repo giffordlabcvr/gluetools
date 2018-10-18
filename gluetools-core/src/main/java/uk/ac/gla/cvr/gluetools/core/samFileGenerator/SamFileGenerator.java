@@ -25,15 +25,14 @@
 */
 package uk.ac.gla.cvr.gluetools.core.samFileGenerator;
 
-import htsjdk.samtools.SAMFileHeader;
-import htsjdk.samtools.SAMFileWriter;
-import htsjdk.samtools.SAMSequenceRecord;
-
 import java.util.List;
 import java.util.Optional;
 
 import org.w3c.dom.Element;
 
+import htsjdk.samtools.SAMFileHeader;
+import htsjdk.samtools.SAMFileWriter;
+import htsjdk.samtools.SAMSequenceRecord;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;

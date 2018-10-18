@@ -28,11 +28,10 @@ package uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker;
 import java.util.List;
 import java.util.Optional;
 
-import jdk.nashorn.api.scripting.JSObject;
-import jdk.nashorn.api.scripting.NashornException;
-
 import org.w3c.dom.Element;
 
+import jdk.nashorn.api.scripting.JSObject;
+import jdk.nashorn.api.scripting.NashornException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.scripting.NashornContext;

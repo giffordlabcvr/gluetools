@@ -40,6 +40,7 @@ import org.apache.cayenne.configuration.server.ServerRuntime;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import freemarker.template.Configuration;
 import uk.ac.gla.cvr.gluetools.core.classloader.GlueClassLoader;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.config.DatabaseConfiguration;
@@ -61,7 +62,6 @@ import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManagerException;
 import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesUtils;
 import uk.ac.gla.cvr.gluetools.programs.mafft.MafftUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
-import freemarker.template.Configuration;
 
 public class GluetoolsEngine implements Plugin {
 

@@ -10,6 +10,8 @@ import java.util.Optional;
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.w3c.dom.Element;
 
+import freemarker.template.Configuration;
+import freemarker.template.Template;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
@@ -33,8 +35,6 @@ import uk.ac.gla.cvr.gluetools.core.reporting.memberAnnotationGenerator.MemberAn
 import uk.ac.gla.cvr.gluetools.core.treerenderer.PhyloExporter;
 import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
-import freemarker.template.Configuration;
-import freemarker.template.Template;
 
 
 @PluginClass(elemName="nexusExporter", 

@@ -25,12 +25,11 @@
 */
 package uk.ac.gla.cvr.gluetools.core.samFileGenerator;
 
+import java.io.OutputStream;
+
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SAMFileWriter;
 import htsjdk.samtools.SAMFileWriterFactory;
-
-import java.io.OutputStream;
-
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;

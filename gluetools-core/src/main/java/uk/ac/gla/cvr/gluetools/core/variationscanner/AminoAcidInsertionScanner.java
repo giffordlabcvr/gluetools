@@ -25,12 +25,11 @@
 */
 package uk.ac.gla.cvr.gluetools.core.variationscanner;
 
-import gnu.trove.map.TIntObjectMap;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
+import gnu.trove.map.TIntObjectMap;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;

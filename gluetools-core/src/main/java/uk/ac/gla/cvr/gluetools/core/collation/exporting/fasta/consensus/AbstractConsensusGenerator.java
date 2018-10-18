@@ -25,12 +25,11 @@
 */
 package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.consensus;
 
-import gnu.trove.map.hash.TCharIntHashMap;
-import gnu.trove.procedure.TCharIntProcedure;
-
 import java.util.List;
 import java.util.function.Function;
 
+import gnu.trove.map.hash.TCharIntHashMap;
+import gnu.trove.procedure.TCharIntProcedure;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;

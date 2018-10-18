@@ -27,6 +27,8 @@ package uk.ac.gla.cvr.gluetools.core.reporting.objectRenderer.freemarker;
 
 import org.w3c.dom.Element;
 
+import freemarker.template.Template;
+import freemarker.template.TemplateModel;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
@@ -34,8 +36,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.objectRenderer.ObjectRenderer;
 import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtils;
-import freemarker.template.Template;
-import freemarker.template.TemplateModel;
 
 @PluginClass(elemName="freemarkerObjectRenderer",
 		description="Uses FreeMarker to query data begining from a specific object, to assemble a JSON or XML document")

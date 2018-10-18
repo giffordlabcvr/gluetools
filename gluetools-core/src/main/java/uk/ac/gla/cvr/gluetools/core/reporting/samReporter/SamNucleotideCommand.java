@@ -25,18 +25,22 @@
 */
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import gnu.trove.map.hash.TIntObjectHashMap;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceAminoAcidCommand;
-import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.BaseSamReporterCommand.SamRefNameInstantiator;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 @CommandClass(
 		commandWords={"nucleotide"}, 
@@ -85,40 +89,88 @@ import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSens
 					"(default value is derived from the module config)",
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class SamNucleotideCommand extends SamBaseNucleotideCommand<SamNucleotideResult> implements ProvidedProjectModeCommand{
+public class SamNucleotideCommand extends SamBaseNucleotideCommand
+	<SamNucleotideResult, SamNucleotideCommandContext, SamNucleotideCommandInterimResult>
+	implements ProvidedProjectModeCommand{
 
 
-	protected void updateRefNtInfo(NucleotideReadCount refNtInfo, char readChar) {
-		super.updateRefNtInfo(refNtInfo, readChar);
-		if(readChar == 'A') {
-			refNtInfo.readsWithA++;
-		} else if(readChar == 'C') {
-			refNtInfo.readsWithC++;
-		} else if(readChar == 'G') {
-			refNtInfo.readsWithG++;
-		} else if(readChar == 'T') {
-			refNtInfo.readsWithT++;
+	@Override
+	protected void processReadBase(SamNucleotideCommandContext context, String readName, int relatedRefNt, char base) {
+		SamNucleotideResidueCount residueCount = context.getRelatedRefNtToInfo().get(relatedRefNt);
+		if(base == 'A') {
+			residueCount.incrementReadsWithA();
+		} else if(base == 'C') {
+			residueCount.incrementReadsWithC();
+		} else if(base == 'G') {
+			residueCount.incrementReadsWithG();
+		} else if(base == 'T') {
+			residueCount.incrementReadsWithT();
 		}
 	}
 
-	
 	@Override
 	protected SamNucleotideResult formResult(
-			List<NucleotideReadCount> nucleotideReadCounts, SamReporter samReporter) {
-        int minDepth = getMinDepth(samReporter);
+			SamNucleotideCommandInterimResult mergedResult, SamReporter samReporter) {
+		List<SamNucleotideResidueCount> nucleotideReadCounts = new ArrayList<SamNucleotideResidueCount>(mergedResult.getRelatedRefNtToInfo().valueCollection());
+
+		int minDepth = getMinDepth(samReporter);
 		nucleotideReadCounts = nucleotideReadCounts.stream()
-        		.filter(nrc -> nrc.totalContributingReads >= minDepth)
+        		.filter(nrc -> nrc.getTotalContributingReads() >= minDepth)
         		.collect(Collectors.toList());
         
-        Comparator<NucleotideReadCount> comparator = new Comparator<NucleotideReadCount>() {
+        Comparator<SamNucleotideResidueCount> comparator = new Comparator<SamNucleotideResidueCount>() {
 			@Override
-			public int compare(NucleotideReadCount nrc1, NucleotideReadCount nrc2) {
+			public int compare(SamNucleotideResidueCount nrc1, SamNucleotideResidueCount nrc2) {
 				return Integer.compare(nrc1.getRelatedRefNt(), nrc2.getRelatedRefNt());
 			}};
 		Collections.sort(nucleotideReadCounts, comparator);
  		return new SamNucleotideResult(nucleotideReadCounts);
 	}
 
+	@Override
+	public SamNucleotideCommandInterimResult contextResult(SamNucleotideCommandContext context) {
+		return new SamNucleotideCommandInterimResult(context.getRelatedRefNtToInfo());
+	}
+
+	@Override
+	public SamNucleotideCommandInterimResult reduceResults(SamNucleotideCommandInterimResult result1, SamNucleotideCommandInterimResult result2) {
+		SamNucleotideCommandInterimResult mergedResult = new SamNucleotideCommandInterimResult(new TIntObjectHashMap<SamNucleotideResidueCount>());
+		
+		for(int key: result1.getRelatedRefNtToInfo().keys()) {
+			SamNucleotideResidueCount count1 = result1.getRelatedRefNtToInfo().get(key);
+			SamNucleotideResidueCount count2 = result2.getRelatedRefNtToInfo().get(key);
+			
+			SamNucleotideResidueCount mergedCount = new SamNucleotideResidueCount(count1.getSamRefNt(), count1.getRelatedRefNt());
+			mergedCount.setReadsWithA(count1.getReadsWithA() + count2.getReadsWithA());
+			mergedCount.setReadsWithC(count1.getReadsWithC() + count2.getReadsWithC());
+			mergedCount.setReadsWithG(count1.getReadsWithG() + count2.getReadsWithG());
+			mergedCount.setReadsWithT(count1.getReadsWithT() + count2.getReadsWithT());
+			mergedResult.getRelatedRefNtToInfo().put(key, mergedCount);
+		}
+		return mergedResult;
+	}
+
+	@Override
+	protected Supplier<SamNucleotideCommandContext> getContextSupplier(SamRecordFilter samRecordFilter, SamRefInfo samRefInfo, SamRefSense samRefSense, List<QueryAlignedSegment> samRefToRelatedRefSegs, SamReporter samReporter) {
+		return () -> {
+			SamNucleotideCommandContext context = new SamNucleotideCommandContext(samReporter, samRefInfo, QueryAlignedSegment.cloneList(samRefToRelatedRefSegs), samRefSense, samRecordFilter);
+			for(QueryAlignedSegment samRefToRelatedRefSeg: context.getSamRefToRelatedRefSegs()) {
+				for(int samRefNt = samRefToRelatedRefSeg.getQueryStart(); samRefNt <= samRefToRelatedRefSeg.getQueryEnd(); samRefNt++) {
+					int relatedRefNt = samRefNt+samRefToRelatedRefSeg.getQueryToReferenceOffset();
+					int resultSamRefNt = samRefNt;
+					if(context.getSamRefSense().equals(SamRefSense.REVERSE_COMPLEMENT)) {
+						// we want to report results in the SAM file's own coordinates.
+						resultSamRefNt = ReferenceSegment.reverseLocationSense(context.getSamRefInfo().getSamRefLength(), samRefNt);
+					}
+					context.getRelatedRefNtToInfo().put(relatedRefNt, new SamNucleotideResidueCount(resultSamRefNt, relatedRefNt));
+				}
+			}
+			return context;
+		};
+	}
+
+
+	
 	@CompleterClass
 	public static class Completer extends FastaSequenceAminoAcidCommand.Completer {
 		public Completer() {

@@ -1,14 +1,13 @@
 package uk.ac.gla.cvr.gluetools.core.webVisualisationUtils;
 
-import gnu.trove.map.TIntCharMap;
-import gnu.trove.map.hash.TIntCharHashMap;
-
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 import org.w3c.dom.Element;
 
+import gnu.trove.map.TIntCharMap;
+import gnu.trove.map.hash.TIntCharHashMap;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;

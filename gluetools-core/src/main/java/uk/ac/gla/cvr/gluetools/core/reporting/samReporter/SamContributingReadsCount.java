@@ -25,24 +25,38 @@
 */
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
-import java.util.List;
-
-import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
-
-public class SamDepthResult extends BaseTableResult<SamContributingReadsCount> {
-
-	public static final String 
-		SAM_REFERENCE_NT = "samRefNt",
-		AC_REFERENCE_NT = "acRefNt",
-		DEPTH = "depth";
-
-
-	public SamDepthResult(List<SamContributingReadsCount> rowData) {
-		super("samDepthResult", 
-				rowData,
-				column(SAM_REFERENCE_NT, nrc -> nrc.getSamRefNt()),
-				column(AC_REFERENCE_NT, nrc -> nrc.getRelatedRefNt()), 
-				column(DEPTH, nrc -> nrc.getTotalContributingReads()));
+public class SamContributingReadsCount {
+	private int samRefNt;
+	private int relatedRefNt;
+	
+	private int totalContributingReads;
+	
+	public SamContributingReadsCount(int samRefNt, int acRefNt) {
+		super();
+		this.samRefNt = samRefNt;
+		this.relatedRefNt = acRefNt;
 	}
 
+	public int getTotalContributingReads() {
+		return totalContributingReads;
+	}
+	
+	public int getSamRefNt() {
+		return samRefNt;
+	}
+
+	public int getRelatedRefNt() {
+		return relatedRefNt;
+	}
+
+	public void incrementTotalContributingReads() {
+		totalContributingReads++;
+	}
+
+	public void setTotalContributingReads(int totalContributingReads) {
+		this.totalContributingReads = totalContributingReads;
+	}
+	
+	
+	
 }

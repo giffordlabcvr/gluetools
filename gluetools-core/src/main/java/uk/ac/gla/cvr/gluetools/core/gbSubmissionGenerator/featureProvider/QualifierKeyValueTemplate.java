@@ -2,13 +2,13 @@ package uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.featureProvider;
 
 import org.w3c.dom.Element;
 
+import freemarker.template.Template;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtils;
-import freemarker.template.Template;
 
 public class QualifierKeyValueTemplate implements Plugin {
 

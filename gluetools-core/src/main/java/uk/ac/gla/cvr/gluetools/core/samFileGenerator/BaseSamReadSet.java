@@ -25,12 +25,11 @@
 */
 package uk.ac.gla.cvr.gluetools.core.samFileGenerator;
 
+import org.w3c.dom.Element;
+
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SAMFileWriter;
 import htsjdk.samtools.SAMRecord;
-
-import org.w3c.dom.Element;
-
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;

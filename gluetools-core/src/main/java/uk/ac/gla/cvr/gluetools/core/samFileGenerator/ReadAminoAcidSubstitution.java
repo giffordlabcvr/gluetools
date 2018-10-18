@@ -1,12 +1,11 @@
 package uk.ac.gla.cvr.gluetools.core.samFileGenerator;
 
-import htsjdk.samtools.AlignmentBlock;
-import htsjdk.samtools.SAMRecord;
-
 import java.util.List;
 
 import org.w3c.dom.Element;
 
+import htsjdk.samtools.AlignmentBlock;
+import htsjdk.samtools.SAMRecord;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;

@@ -25,26 +25,22 @@
 */
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
-public class NucleotideReadCount {
+public class SamNucleotideResidueCount {
 	private int samRefNt;
 	private int relatedRefNt;
 	
-	int readsWithA;
-	int readsWithC;
-	int readsWithT;
-	int readsWithG;
-	int totalContributingReads;
+	private int readsWithA;
+	private int readsWithC;
+	private int readsWithT;
+	private int readsWithG;
+
 	
-	public NucleotideReadCount(int samRefNt, int acRefNt) {
+	public SamNucleotideResidueCount(int samRefNt, int acRefNt) {
 		super();
 		this.samRefNt = samRefNt;
 		this.relatedRefNt = acRefNt;
 	}
 
-	public int getTotalContributingReads() {
-		return totalContributingReads;
-	}
-	
 	public int getSamRefNt() {
 		return samRefNt;
 	}
@@ -67,6 +63,43 @@ public class NucleotideReadCount {
 
 	public int getReadsWithG() {
 		return readsWithG;
+	}
+
+	
+	public void incrementReadsWithA() {
+		readsWithA++;
+	}
+
+	public void incrementReadsWithC() {
+		readsWithC++;
+	}
+
+	public void incrementReadsWithT() {
+		readsWithT++;
+	}
+
+	public void incrementReadsWithG() {
+		readsWithG++;
+	}
+
+	public void setReadsWithA(int readsWithA) {
+		this.readsWithA = readsWithA;
+	}
+
+	public void setReadsWithC(int readsWithC) {
+		this.readsWithC = readsWithC;
+	}
+
+	public void setReadsWithT(int readsWithT) {
+		this.readsWithT = readsWithT;
+	}
+
+	public void setReadsWithG(int readsWithG) {
+		this.readsWithG = readsWithG;
+	}
+
+	public int getTotalContributingReads() {
+		return getReadsWithA() + getReadsWithC() + getReadsWithG() + getReadsWithT();
 	}
 	
 }
