@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 import org.biojava.nbio.core.sequence.DNASequence;
 
@@ -39,7 +38,10 @@ import gnu.trove.map.hash.TIntObjectHashMap;
 import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.SamReader;
 import htsjdk.samtools.ValidationStringency;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
@@ -47,7 +49,6 @@ import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
-import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceAminoAcidCommand;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
@@ -88,9 +89,12 @@ public abstract class SamBaseNucleotideCommand<R extends CommandResult, C extend
 
 			Alignment linkingAlmt = GlueDataObject.lookup(cmdContext, Alignment.class, 
 					Alignment.pkMap(getLinkingAlmtName()));
-			ReferenceSequence relatedRef = linkingAlmt.getRelatedRef(cmdContext, getRelatedRefName());
-
-			FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(getRelatedRefName(), getFeatureName()), false);
+			
+			IAlignmentColumnsSelector almtColsSelector = getNucleotideAlignmentColumnsSelector(cmdContext);
+			if(almtColsSelector == null) {
+				throw new CommandException(Code.COMMAND_FAILED_ERROR, "Unable to resolve alignment columns selector");
+			}
+			ReferenceSequence relatedRef = linkingAlmt.getRelatedRef(cmdContext, almtColsSelector.getRelatedRefName());
 
 			List<QueryAlignedSegment> samRefToTargetRefSegs = getSamRefToTargetRefSegs(cmdContext, samReporter, samFileSession, consoleCmdContext, targetRef, consensusSequence);
 
@@ -105,11 +109,11 @@ public abstract class SamBaseNucleotideCommand<R extends CommandResult, C extend
 			// translate segments to related reference
 			List<QueryAlignedSegment> samRefToRelatedRefSegsFull = linkingAlmt.translateToRelatedRef(cmdContext, samRefToLinkingAlmtSegs, relatedRef);
 
-			// trim down to the feature area.
-			List<ReferenceSegment> featureRefSegs = featureLoc.getSegments().stream()
-					.map(seg -> seg.asReferenceSegment()).collect(Collectors.toList());
+			// trim down to the selected area.
+			List<ReferenceSegment> selectedRefSegs = almtColsSelector.selectAlignmentColumns(cmdContext);
+			
 			List<QueryAlignedSegment> samRefToRelatedRefSegs = 
-					ReferenceSegment.intersection(samRefToRelatedRefSegsFull, featureRefSegs, ReferenceSegment.cloneLeftSegMerger());
+					ReferenceSegment.intersection(samRefToRelatedRefSegsFull, selectedRefSegs, ReferenceSegment.cloneLeftSegMerger());
 
 			SamRefSense samRefSense = getSamRefSense(samReporter);
 
@@ -126,15 +130,15 @@ public abstract class SamBaseNucleotideCommand<R extends CommandResult, C extend
 			} catch (IOException e) {
 				throw new RuntimeException(e);
 			}
-			Supplier<C> contextSupplier = getContextSupplier(samRecordFilter, samRefInfo, samRefSense, samRefToRelatedRefSegs, samReporter);
+			Supplier<C> contextSupplier = getContextSupplier(samRecordFilter, samRefInfo, samRefSense, samRefToRelatedRefSegs, selectedRefSegs, samReporter);
 			IR mergedResult = SamUtils.pairedParallelSamIterate(contextSupplier, consoleCmdContext, samFileSession, validationStringency, this);
 			
-			return formResult(mergedResult, samReporter);
+			return formResult(cmdContext, mergedResult, samReporter);
 			
 		}
 	}
 
-	protected abstract Supplier<C> getContextSupplier(SamRecordFilter samRecordFilter, SamRefInfo samRefInfo, SamRefSense samRefSense, List<QueryAlignedSegment> samRefToRelatedRefSegs, SamReporter samReporter);
+	protected abstract Supplier<C> getContextSupplier(SamRecordFilter samRecordFilter, SamRefInfo samRefInfo, SamRefSense samRefSense, List<QueryAlignedSegment> samRefToRelatedRefSegs, List<ReferenceSegment> selectedRefSegs, SamReporter samReporter);
 	
 	private TIntObjectMap<BaseWithQuality> getRelatedRefNtToBaseWithQuality(SamBaseNucleotideCommandContext context, SAMRecord samRecord) {
 		TIntObjectMap<BaseWithQuality> relatedRefNtToBaseWithQuality = new TIntObjectHashMap<BaseWithQuality>();
@@ -149,7 +153,6 @@ public abstract class SamBaseNucleotideCommand<R extends CommandResult, C extend
 		}
 
 		List<QueryAlignedSegment> readToRelatedRefSegs = QueryAlignedSegment.translateSegments(readToSamRefSegs, context.getSamRefToRelatedRefSegs());
-
 
 		for(QueryAlignedSegment readToRelatedRefSeg: readToRelatedRefSegs) {
 			Integer queryStart = readToRelatedRefSeg.getQueryStart();
@@ -240,7 +243,7 @@ public abstract class SamBaseNucleotideCommand<R extends CommandResult, C extend
 	}
 
 
-	protected abstract R formResult(IR mergedResult, SamReporter samReporter);
+	protected abstract R formResult(CommandContext cmdContext, IR mergedResult, SamReporter samReporter);
 	
 	protected abstract void processReadBase(C context, String readName, int relatedRefNt, char base);
 	

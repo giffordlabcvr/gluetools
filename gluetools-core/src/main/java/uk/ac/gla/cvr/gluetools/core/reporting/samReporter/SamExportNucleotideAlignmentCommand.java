@@ -25,28 +25,39 @@
 */
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
 
-import gnu.trove.map.hash.TIntObjectHashMap;
+import org.biojava.nbio.core.sequence.DNASequence;
+import org.w3c.dom.Element;
+
 import htsjdk.samtools.SamReader;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.NucleotideFastaCommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 @CommandClass(
-		commandWords={"depth"}, 
+		commandWords={"export", "nucleotide-alignment"}, 
 		description = "Summarise depth in a SAM/BAM file", 
-		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] ( -e <selectorName> | -r <relRefName> -f <featureName> [-c <lcStart> <lcEnd> | -o <ntStart> <ntEnd>] ) (-p | [-l] -t <targetRefName>) -a <linkingAlmtName> [-q <minQScore>] [-g <minMapQ>][-d <minDepth>]" },
+		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] ( -e <selectorName> | -r <relRefName> -f <featureName> [-c <lcStart> <lcEnd> | -o <ntStart> <ntEnd>] ) (-p | [-l] -t <targetRefName>) -a <linkingAlmtName> [-q <minQScore>] [-g <minMapQ>][-d <minDepth>] [-y <lineFeedStyle>] (-O <outputFileName> | -P)" },
 				docoptOptions = { 
 						"-i <fileName>, --fileName <fileName>                       SAM/BAM input file",
 						"-n <samRefSense>, --samRefSense <samRefSense>              SAM ref seq sense",
@@ -62,10 +73,13 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 						"-a <linkingAlmtName>, --linkingAlmtName <linkingAlmtName>  Linking alignment",
 						"-q <minQScore>, --minQScore <minQScore>                    Minimum Phred quality score",
 						"-g <minMapQ>, --minMapQ <minMapQ>                          Minimum mapping quality score",
-						"-d <minDepth>, --minDepth <minDepth>                       Minimum depth"
+						"-d <minDepth>, --minDepth <minDepth>                       Minimum depth",
+						"-O <outputFileName>, --outputFileName <outputFileName>     Output file name",
+						"-P, --preview                                              Preview",
+						"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>        LF or CRLF",
 				},
 				furtherHelp = 
-					"This command summarises read depth in a SAM/BAM file. "+
+					"This command exports a FASTA nucleotide alignment from a SAM/BAM file. "+
 					"If <samRefName> is supplied, the reads are limited to those which are aligned to the "+
 					"specified reference sequence named in the SAM/BAM file. If <samRefName> is omitted, it is assumed that the input "+
 					"file only names a single reference sequence.\n"+
@@ -93,87 +107,91 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 					"(default value is derived from the module config)",
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class SamDepthCommand extends SamBaseNucleotideCommand
-	<SamDepthResult, SamDepthCommandContext, SamDepthCommandInterimResult> 
+public class SamExportNucleotideAlignmentCommand extends SamBaseNucleotideCommand
+	<CommandResult, SamExportNucleotideAlignmentCommandContext, SamExportNucleotideAlignmentInterimResult> 
 	implements ProvidedProjectModeCommand{
 
+	public static final String PREVIEW = "preview";
+	public static final String OUTPUT_FILE_NAME = "outputFileName";
+	public static final String LINE_FEED_STYLE = "lineFeedStyle";
 	
-	@Override
-	protected SamDepthResult formResult(
-			CommandContext cmdContext, SamDepthCommandInterimResult mergedResult, SamReporter samReporter) {
-		
-		List<SamContributingReadsCount> contributingReadsCounts= new ArrayList<SamContributingReadsCount>(mergedResult.getRelatedRefNtToInfo().valueCollection());
-        int minDepth = getMinDepth(samReporter);
-        contributingReadsCounts = contributingReadsCounts.stream()
-        		.filter(nrc -> nrc.getTotalContributingReads() >= minDepth)
-        		.collect(Collectors.toList());
-        
-        Comparator<SamContributingReadsCount> comparator = new Comparator<SamContributingReadsCount>() {
-			@Override
-			public int compare(SamContributingReadsCount nrc1, SamContributingReadsCount nrc2) {
-				return Integer.compare(nrc1.getRelatedRefNt(), nrc2.getRelatedRefNt());
-			}};
-		Collections.sort(contributingReadsCounts, comparator);
- 		return new SamDepthResult(contributingReadsCounts);
-	}
+	private Boolean preview;
+	private String outputFileName;
+	private LineFeedStyle lineFeedStyle;
 
 	
 	@Override
-	public SamDepthCommandInterimResult contextResult(SamDepthCommandContext context) {
-		return new SamDepthCommandInterimResult(context.getRelatedRefNtToInfo());
-	}
-
-	@Override
-	public SamDepthCommandInterimResult reduceResults(SamDepthCommandInterimResult result1, SamDepthCommandInterimResult result2) {
-		SamDepthCommandInterimResult mergedResult = new SamDepthCommandInterimResult(new TIntObjectHashMap<SamContributingReadsCount>());
-		for(int key: result1.getRelatedRefNtToInfo().keys()) {
-			SamContributingReadsCount count1 = result1.getRelatedRefNtToInfo().get(key);
-			SamContributingReadsCount count2 = result2.getRelatedRefNtToInfo().get(key);
-			
-			SamContributingReadsCount mergedCount = new SamContributingReadsCount(count1.getSamRefNt(), count1.getRelatedRefNt());
-			mergedCount.setTotalContributingReads(count1.getTotalContributingReads() + count2.getTotalContributingReads());
-			mergedResult.getRelatedRefNtToInfo().put(key, mergedCount);
+	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
+		super.configure(pluginConfigContext, configElem);
+		lineFeedStyle = Optional.ofNullable(PluginUtils.configureEnumProperty(LineFeedStyle.class, configElem, LINE_FEED_STYLE, false)).orElse(LineFeedStyle.LF);
+		outputFileName = PluginUtils.configureStringProperty(configElem, OUTPUT_FILE_NAME, false);
+		preview = PluginUtils.configureBooleanProperty(configElem, PREVIEW, true);
+		if((outputFileName == null && !preview) || (outputFileName != null && preview)) {
+			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <outputFileName> or <preview> must be specified, but not both");
 		}
-		return mergedResult;
+	}
+
+	@Override
+	protected CommandResult formResult(
+			CommandContext cmdContext, SamExportNucleotideAlignmentInterimResult mergedResult, SamReporter samReporter) {
+		
+		Map<String, DNASequence> fastaMap = mergedResult.getFastaMap();
+		if(preview) {
+			return new NucleotideFastaCommandResult(fastaMap);
+		} else {
+			ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
+			consoleCmdContext.saveBytes(outputFileName, FastaUtils.mapToFasta(fastaMap, lineFeedStyle));
+			return new OkResult();
+
+		}
+	}
+
+	
+	@Override
+	public SamExportNucleotideAlignmentInterimResult contextResult(SamExportNucleotideAlignmentCommandContext context) {
+		return new SamExportNucleotideAlignmentInterimResult(context.getFastaMap());
+	}
+
+	@Override
+	public SamExportNucleotideAlignmentInterimResult reduceResults(SamExportNucleotideAlignmentInterimResult result1, 
+			SamExportNucleotideAlignmentInterimResult result2) {
+		Map<String, DNASequence> fastaMap = result1.getFastaMap();
+		fastaMap.putAll(result2.getFastaMap());
+		return new SamExportNucleotideAlignmentInterimResult(fastaMap);
 	}
 
 
-	
 	@CompleterClass
 	public static class Completer extends ReferenceLinkedSamReporterCommand.Completer {
 		public Completer() {
 			super();
+			registerEnumLookup("lineFeedStyle", LineFeedStyle.class);
+			registerPathLookup("outputFileName", false);
 		}
 	}
 
 	@Override
-	protected Supplier<SamDepthCommandContext> getContextSupplier(SamRecordFilter samRecordFilter, SamRefInfo samRefInfo, SamRefSense samRefSense, List<QueryAlignedSegment> samRefToRelatedRefSegs, List<ReferenceSegment> selectedRefSegs, SamReporter samReporter) {
+	protected Supplier<SamExportNucleotideAlignmentCommandContext> getContextSupplier(SamRecordFilter samRecordFilter, 
+			SamRefInfo samRefInfo, SamRefSense samRefSense, 
+			List<QueryAlignedSegment> samRefToRelatedRefSegs, 
+			List<ReferenceSegment> selectedRefSegs, SamReporter samReporter) {
 		return () -> {
-			SamDepthCommandContext context = new SamDepthCommandContext(samReporter, samRefInfo, QueryAlignedSegment.cloneList(samRefToRelatedRefSegs), samRefSense, samRecordFilter);
-			for(QueryAlignedSegment samRefToRelatedRefSeg: context.getSamRefToRelatedRefSegs()) {
-				for(int samRefNt = samRefToRelatedRefSeg.getQueryStart(); samRefNt <= samRefToRelatedRefSeg.getQueryEnd(); samRefNt++) {
-					int relatedRefNt = samRefNt+samRefToRelatedRefSeg.getQueryToReferenceOffset();
-					int resultSamRefNt = samRefNt;
-					if(context.getSamRefSense().equals(SamRefSense.REVERSE_COMPLEMENT)) {
-						// we want to report results in the SAM file's own coordinates.
-						resultSamRefNt = ReferenceSegment.reverseLocationSense(context.getSamRefInfo().getSamRefLength(), samRefNt);
-					}
-					context.getRelatedRefNtToInfo().put(relatedRefNt, new SamContributingReadsCount(resultSamRefNt, relatedRefNt));
-				}
-			}
+			SamExportNucleotideAlignmentCommandContext context = 
+					new SamExportNucleotideAlignmentCommandContext(samReporter, samRefInfo, 
+							QueryAlignedSegment.cloneList(samRefToRelatedRefSegs), samRefSense, selectedRefSegs, samRecordFilter);
 			return context;
 		};
 	}
 
 
 	@Override
-	public void initContextForReader(SamDepthCommandContext context, SamReader reader) {
+	public void initContextForReader(SamExportNucleotideAlignmentCommandContext context, SamReader reader) {
 	}
 
 
 	@Override
-	protected void processReadBase(SamDepthCommandContext context, String readName, int relatedRefNt, char base) {
-		context.getRelatedRefNtToInfo().get(relatedRefNt).incrementTotalContributingReads();
+	protected void processReadBase(SamExportNucleotideAlignmentCommandContext context, String readName, int relatedRefNt, char base) {
+		context.processReadBase(readName, relatedRefNt, base);
 	}
 
 	

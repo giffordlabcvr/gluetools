@@ -35,9 +35,9 @@ import java.util.stream.Collectors;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
-import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceAminoAcidCommand;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
@@ -113,7 +113,7 @@ public class SamNucleotideCommand extends SamBaseNucleotideCommand
 
 	@Override
 	protected SamNucleotideResult formResult(
-			SamNucleotideCommandInterimResult mergedResult, SamReporter samReporter) {
+			CommandContext cmdContext, SamNucleotideCommandInterimResult mergedResult, SamReporter samReporter) {
 		List<SamNucleotideResidueCount> nucleotideReadCounts = new ArrayList<SamNucleotideResidueCount>(mergedResult.getRelatedRefNtToInfo().valueCollection());
 
 		int minDepth = getMinDepth(samReporter);
@@ -154,7 +154,7 @@ public class SamNucleotideCommand extends SamBaseNucleotideCommand
 	}
 
 	@Override
-	protected Supplier<SamNucleotideCommandContext> getContextSupplier(SamRecordFilter samRecordFilter, SamRefInfo samRefInfo, SamRefSense samRefSense, List<QueryAlignedSegment> samRefToRelatedRefSegs, SamReporter samReporter) {
+	protected Supplier<SamNucleotideCommandContext> getContextSupplier(SamRecordFilter samRecordFilter, SamRefInfo samRefInfo, SamRefSense samRefSense, List<QueryAlignedSegment> samRefToRelatedRefSegs, List<ReferenceSegment> selectedRefSegs, SamReporter samReporter) {
 		return () -> {
 			SamNucleotideCommandContext context = new SamNucleotideCommandContext(samReporter, samRefInfo, QueryAlignedSegment.cloneList(samRefToRelatedRefSegs), samRefSense, samRecordFilter);
 			for(QueryAlignedSegment samRefToRelatedRefSeg: context.getSamRefToRelatedRefSegs()) {

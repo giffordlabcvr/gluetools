@@ -52,8 +52,8 @@ import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
-import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -65,7 +65,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SimpleNucleotideContentProvider;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceAminoAcidCommand;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamFileSession;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
@@ -79,12 +78,11 @@ import uk.ac.gla.cvr.gluetools.utils.StringUtils;
 @CommandClass(
 		commandWords={"amino-acid"}, 
 		description = "Translate amino acids in a SAM/BAM file", 
-		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] ( -E <selectorName> | -r <relRefName> -f <featureName> [-c <lcStart> <lcEnd>] ) (-p | [-l] -t <targetRefName>) -a <linkingAlmtName> [-q <minQScore>] [-g <minMapQ>] [-e <minDepth>] [-P <minAAPct>]" },
+		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] -r <relRefName> -f <featureName> [-c <lcStart> <lcEnd>] (-p | [-l] -t <targetRefName>) -a <linkingAlmtName> [-q <minQScore>] [-g <minMapQ>] [-e <minDepth>] [-P <minAAPct>]" },
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                       SAM/BAM input file",
 				"-n <samRefSense>, --samRefSense <samRefSense>              SAM ref seq sense",
 				"-s <samRefName>, --samRefName <samRefName>                 Specific SAM ref seq",
-				"-E <selectorName>, --selectorName <selectorName>           Column selector module",
 				"-r <relRefName>, --relRefName <relRefName>                 Related reference sequence",
 				"-f <featureName>, --featureName <featureName>              Feature to translate",
 				"-c, --labelledCodon                                        Region between codon labels",
@@ -145,7 +143,9 @@ public class SamAminoAcidCommand extends ReferenceLinkedSamReporterCommand<SamAm
 		if(this.getNtRegion()) {
 			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Illegal option --ntRegion");
 		}
-
+		if(this.getSelectorName() != null) {
+			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Illegal option --selectorName");
+		}
 	}
 
 
@@ -191,7 +191,19 @@ public class SamAminoAcidCommand extends ReferenceLinkedSamReporterCommand<SamAm
 			// translate segments to related reference
 			List<QueryAlignedSegment> samRefToRelatedRefSegsFull = linkingAlmt.translateToRelatedRef(cmdContext, samRefToLinkingAlmtSegs, relatedRef);
 
-			List<LabeledCodonReferenceSegment> labeledCodonReferenceSegments = featureLoc.getLabeledCodonReferenceSegments(cmdContext);
+			List<LabeledCodon> selectedLabeledCodons;
+			if(this.getLabelledCodon()) {
+				LabeledCodon startCodon = featureLoc.getLabeledCodon(cmdContext, getLcStart());
+				LabeledCodon endCodon = featureLoc.getLabeledCodon(cmdContext, getLcEnd());
+				selectedLabeledCodons = featureLoc.getLabeledCodons(cmdContext, startCodon, endCodon);
+			} else {
+				selectedLabeledCodons = featureLoc.getLabeledCodons(cmdContext);
+			}
+			
+			List<LabeledCodonReferenceSegment> labeledCodonReferenceSegments = new ArrayList<LabeledCodonReferenceSegment>();
+			for(LabeledCodon selectedLabeledCodon: selectedLabeledCodons) {
+				labeledCodonReferenceSegments.addAll(selectedLabeledCodon.getLcRefSegments());
+			}
 
 			// trim down to the feature area.
 			List<QueryAlignedSegment> samRefToRelatedRefSegsUnmerged = 

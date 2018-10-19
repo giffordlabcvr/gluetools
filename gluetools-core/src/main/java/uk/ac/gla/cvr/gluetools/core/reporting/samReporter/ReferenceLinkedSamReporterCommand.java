@@ -128,7 +128,7 @@ public abstract class ReferenceLinkedSamReporterCommand<R extends CommandResult>
 		if(selectorName != null && ( relRefName != null || featureName != null )) {
 			usageError1a();
 		}
-		if(selectorName == null && relRefName == null || featureName == null ) {
+		if(selectorName == null && ( relRefName == null || featureName == null ) ) {
 			usageError1b();
 		}
 		if(relRefName != null && featureName == null || relRefName == null && featureName != null) {
@@ -308,6 +308,18 @@ public abstract class ReferenceLinkedSamReporterCommand<R extends CommandResult>
 		} else {
 			return null;
 		}
+	}
+
+	protected String getSelectorName() {
+		return selectorName;
+	}
+
+	protected String getLcStart() {
+		return lcStart;
+	}
+
+	protected String getLcEnd() {
+		return lcEnd;
 	}
 
 	protected Boolean getLabelledCodon() {
