@@ -108,7 +108,7 @@ public abstract class ReferenceLinkedSamReporterCommand<R extends CommandResult>
 		this.selectorName = PluginUtils.configureStringProperty(configElem, SELECTOR_NAME, false);
 		this.relRefName = PluginUtils.configureStringProperty(configElem, REL_REF_NAME, false);
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, false);
-		this.labelledCodon = PluginUtils.configureBooleanProperty(configElem, LABELLED_CODON, true);
+		this.labelledCodon = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, LABELLED_CODON, false)).orElse(false);
 		this.lcStart = PluginUtils.configureStringProperty(configElem, LC_START, false);
 		this.lcEnd = PluginUtils.configureStringProperty(configElem, LC_END, false);
 		this.ntRegion = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, NT_REGION, false)).orElse(false);
