@@ -388,7 +388,6 @@ public class Console implements InteractiveCommandResultRenderingContext
 				console.output(console.bannerLines());
 			} else {
 				GluetoolsEngine gluetoolsEngine = GluetoolsEngine.getInstance();
-				gluetoolsEngine.dbWarning();
 				gluetoolsEngine.runWithGlueClassloader(new Supplier<Void>() {
 					@Override
 					public Void get() {

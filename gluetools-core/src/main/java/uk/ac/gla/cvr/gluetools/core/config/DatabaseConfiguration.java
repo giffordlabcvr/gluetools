@@ -29,13 +29,17 @@ import java.util.Optional;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.GluetoolsEngineException;
+import uk.ac.gla.cvr.gluetools.core.GluetoolsEngineException.Code;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 public class DatabaseConfiguration implements Plugin {
 
-	public static final String DEFAULT_APACHE_DERBY_JDBC_URL = "jdbc:derby:memory:testdb;create=true";
+	public static final String DEFAULT_MYSQL_JDBC_URL = "jdbc:mysql://localhost:3306/GLUE_TOOLS?characterEncoding=UTF-8";
+	public static final String DEFAULT_JDBC_DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
 
 	public enum Vendor {
 		ApacheDerby("org.apache.derby.jdbc.EmbeddedDriver"),
@@ -53,16 +57,26 @@ public class DatabaseConfiguration implements Plugin {
 	
 	private Optional<String> username = Optional.empty();
 	private Optional<String> password = Optional.empty();
-	private Vendor vendor = Vendor.ApacheDerby;
-	private String jdbcUrl = DEFAULT_APACHE_DERBY_JDBC_URL;
+	private String jdbcDriverClass;
+	private String jdbcUrl;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		Plugin.super.configure(pluginConfigContext, configElem);
-		username = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, "username", username.orElse(null)));
-		password = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, "password", password.orElse(null)));
-		vendor = PluginUtils.configureEnumProperty(Vendor.class, configElem, "vendor", vendor);
-		jdbcUrl = PluginUtils.configureStringProperty(configElem, "jdbcUrl", jdbcUrl);
+		this.username = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, "username", username.orElse(null)));
+		this.password = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, "password", password.orElse(null)));
+		String vendor = PluginUtils.configureStringProperty(configElem, "vendor", false);
+		if(vendor != null) {
+			GlueLogger.getGlueLogger().warning("The 'vendor' config element is deprecated as of GLUE 1.1.6 or later.");
+			if(vendor.equals("MySQL")) {
+				GlueLogger.getGlueLogger().warning("You can safely remove the <vendor> element MySQL as of GLUE 1.1.6 or later");
+			} else {
+				GlueLogger.getGlueLogger().severe("The only supported DB vendor at present is MySQL");
+				throw new GluetoolsEngineException(Code.DB_CONNECTION_ERROR, "The only supported DB vendor at present is MySQL");
+			}
+		}
+		this.jdbcUrl = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, "jdbcUrl", false)).orElse(DEFAULT_MYSQL_JDBC_URL);
+		this.jdbcDriverClass = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, "driverClass", false)).orElse(DEFAULT_JDBC_DRIVER_CLASS);
 	}
 
 	public Optional<String> getUsername() {
@@ -73,8 +87,8 @@ public class DatabaseConfiguration implements Plugin {
 		return password;
 	}
 
-	public Vendor getVendor() {
-		return vendor;
+	public String getDriverClass() {
+		return jdbcDriverClass;
 	}
 
 	public String getJdbcUrl() {

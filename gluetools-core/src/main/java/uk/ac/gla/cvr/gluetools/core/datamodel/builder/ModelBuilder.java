@@ -179,7 +179,7 @@ public class ModelBuilder {
 		} else {
 			cacheSizeFinal = cacheSize;
 		}
-	    String jdbcDriverClass = dbConfiguration.getVendor().getJdbcDriverClass();
+	    String jdbcDriverClass = dbConfiguration.getDriverClass();
 		String jdbcUrl = dbConfiguration.getJdbcUrl();
 	    Optional<String> username = dbConfiguration.getUsername();
 	    Optional<String> password = dbConfiguration.getPassword();

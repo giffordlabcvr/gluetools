@@ -143,14 +143,6 @@ public class GluetoolsEngine implements Plugin {
 		}
 	}
 
-	public void dbWarning() {
-		if(dbConfiguration.getVendor() == Vendor.ApacheDerby &&
-				dbConfiguration.getJdbcUrl().contains(":memory:")) {
-			GlueLogger.getGlueLogger().warning("The GLUE database is in-memory Apache Derby. "+
-				"Changes will not be persisted beyond the lifetime of this GLUE instance.");
-		}
-	}
-
 	public DatabaseConfiguration getDbConfiguration() {
 		return dbConfiguration;
 	}
