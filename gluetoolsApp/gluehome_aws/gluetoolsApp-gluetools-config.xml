@@ -2,7 +2,6 @@
 	<database>
 		<username>gluetoolsapp</username>
 		<password>gluetoolsapp</password>
-		<vendor>MySQL</vendor>
 		<jdbcUrl>jdbc:mysql://localhost:3306/GLUETOOLS_APP?characterEncoding=UTF-8</jdbcUrl>	
 	</database>
 	<properties>

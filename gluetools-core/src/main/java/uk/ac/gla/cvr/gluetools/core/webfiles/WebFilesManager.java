@@ -127,7 +127,8 @@ public class WebFilesManager implements Runnable {
 				});
 				Thread.sleep(10000);
 			} catch(Exception ioe) {
-				GlueLogger.getGlueLogger().warning("Exception in main WebFilesManager loop: "+ioe.getLocalizedMessage());
+				// had to take this logging line out as it was exacerbating disk-full errors.
+				//GlueLogger.getGlueLogger().warning("Exception in main WebFilesManager loop: "+ioe.getLocalizedMessage());
 			} 
 			
 		}
