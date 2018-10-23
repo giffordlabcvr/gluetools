@@ -46,7 +46,7 @@ import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManagerException.Code;
 
 public class WebFilesManager implements Runnable {
 
-	private static final int HOURS_UNTIL_EXPIRY = 48;
+	private static final int HOURS_UNTIL_EXPIRY = 2;
 	private Path webFilesRootDir;
 	private Path webPagesDir;
 	private Path downloadsDir;
