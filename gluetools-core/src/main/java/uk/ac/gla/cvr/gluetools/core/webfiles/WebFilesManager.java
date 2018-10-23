@@ -46,7 +46,7 @@ import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManagerException.Code;
 
 public class WebFilesManager implements Runnable {
 
-	private static final int HOURS_UNTIL_EXPIRY = 48;
+	private static final int HOURS_UNTIL_EXPIRY = 2;
 	private Path webFilesRootDir;
 	public boolean keepRunning;
 
@@ -94,7 +94,8 @@ public class WebFilesManager implements Runnable {
 				});
 				Thread.sleep(10000);
 			} catch(Exception ioe) {
-				GlueLogger.getGlueLogger().warning("Exception in main WebFilesManager loop: "+ioe.getLocalizedMessage());
+				// log message removed due to exacerbation of disk full issues.
+				//GlueLogger.getGlueLogger().warning("Exception in main WebFilesManager loop: "+ioe.getLocalizedMessage());
 			} 
 			
 		}
