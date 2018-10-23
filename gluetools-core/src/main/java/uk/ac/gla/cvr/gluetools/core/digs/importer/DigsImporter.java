@@ -286,7 +286,7 @@ public class DigsImporter extends ModulePlugin<DigsImporter> {
 		String digsDbPassword = getDigsDbPassword(cmdContext);
 		try {
 			// ensure MySQL driver loaded
-			Class.forName(DatabaseConfiguration.Vendor.MySQL.getJdbcDriverClass()).newInstance();
+			Class.forName(DatabaseConfiguration.DEFAULT_JDBC_DRIVER_CLASS).newInstance();
 		} catch(Exception e) {
 			throw new DigsImporterException(e, Code.DIGS_DB_ERROR, e.getLocalizedMessage());
 		}
@@ -319,7 +319,7 @@ public class DigsImporter extends ModulePlugin<DigsImporter> {
 		String digsDbUsername = getDigsDbUsername(cmdContext);
 		String digsDbPassword = getDigsDbPassword(cmdContext);
 		return new ServerRuntime(DIGS_DOMAIN_RESOURCE, 
-				CayenneUtils.createCayenneDbConfigModule("20000", DatabaseConfiguration.Vendor.MySQL.getJdbcDriverClass(), 
+				CayenneUtils.createCayenneDbConfigModule("20000", DatabaseConfiguration.DEFAULT_JDBC_DRIVER_CLASS, 
 				digsDbJdbcUrl, Optional.of(digsDbUsername), Optional.of(digsDbPassword)));
 	}
 

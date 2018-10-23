@@ -47,7 +47,7 @@ import org.glassfish.jersey.server.ResourceConfig;
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 
-import com.mysql.jdbc.AbandonedConnectionCleanupThread;
+import com.mysql.cj.jdbc.AbandonedConnectionCleanupThread;
 
 @WebListener
 @ApplicationPath("/")
@@ -103,8 +103,8 @@ public class GlueApplication extends ResourceConfig implements ServletContextLis
             }
         }
         try {
-            AbandonedConnectionCleanupThread.shutdown();
-        } catch (InterruptedException e) {
+            AbandonedConnectionCleanupThread.checkedShutdown();
+        } catch (Exception e) {
             logger.warning("SEVERE problem cleaning up: " + e.getMessage());
             e.printStackTrace();
         }

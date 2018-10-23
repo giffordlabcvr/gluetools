@@ -43,7 +43,7 @@ configure(subprojects.findAll {it.name != 'gluetools-web'}) {
 	    compile group: 'org.freemarker', name: 'freemarker', version: '2.3.25-incubating'
 	    compile group: 'commons-collections', name: 'commons-collections', version: '3.2'
 	    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.13'
-	    compile group: 'jline', name: 'jline', version: '2.12.1'
+	    compile group: 'jline', name: 'jline', version: '2.14.5'
 	    compile group: 'com.brsanthu', name: 'data-exporter', version: '1.0.4'
 	    compile group: 'com.offbytwo', name:'docopt', version:'0.6.0.20150202'
 	    compile group: 'javax.json', name:'javax.json-api', version:'1.0'

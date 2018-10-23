@@ -41,20 +41,6 @@ public class DatabaseConfiguration implements Plugin {
 	public static final String DEFAULT_MYSQL_JDBC_URL = "jdbc:mysql://localhost:3306/GLUE_TOOLS?characterEncoding=UTF-8";
 	public static final String DEFAULT_JDBC_DRIVER_CLASS = "com.mysql.cj.jdbc.Driver";
 
-	public enum Vendor {
-		ApacheDerby("org.apache.derby.jdbc.EmbeddedDriver"),
-		MySQL("com.mysql.jdbc.Driver");
-		
-		private String jdbcDriverClass;
-		private Vendor(String jdbcDriverClass) {
-			this.jdbcDriverClass = jdbcDriverClass;
-		}
-		
-		public String getJdbcDriverClass() {
-			return jdbcDriverClass;
-		}
-	}
-	
 	private Optional<String> username = Optional.empty();
 	private Optional<String> password = Optional.empty();
 	private String jdbcDriverClass;

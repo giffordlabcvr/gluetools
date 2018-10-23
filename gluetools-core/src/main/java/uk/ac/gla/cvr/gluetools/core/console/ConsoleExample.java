@@ -59,12 +59,12 @@ public class ConsoleExample
     }
 
     public static void main(String[] args) throws IOException {
-        try {
+        try(ConsoleReader reader = new ConsoleReader()) {
             Character mask = null;
             String trigger = null;
             boolean color = false;
 
-            ConsoleReader reader = new ConsoleReader();
+            ;
 
             reader.setPrompt("prompt> ");
 
