@@ -79,6 +79,7 @@ public class MaxLikelihoodGenotyper extends ModulePlugin<MaxLikelihoodGenotyper>
 		registerModulePluginCmdClass(GenotypeSequenceCommand.class);
 		registerModulePluginCmdClass(GenotypeFastaDocumentCommand.class);
 		registerModulePluginCmdClass(GenotypePlacerResultCommand.class);
+		registerModuleDocumentCmdClass(ListCladeCategoryCommand.class);
 		addSimplePropertyName(MAX_LIKELIHOOD_PLACER_MODULE_NAME);
 	}
 
