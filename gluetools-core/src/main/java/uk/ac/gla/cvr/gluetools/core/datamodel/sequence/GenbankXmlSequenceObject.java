@@ -70,7 +70,7 @@ public class GenbankXmlSequenceObject extends AbstractSequenceObject {
 			}
 			throw new SequenceException(SequenceException.Code.XML_SEQUENCE_DOES_NOT_CONTAIN_NUCLEOTIDES, primaryAccession);
 		}
-		return seqString.replaceAll("\\s", "");
+		return seqString.replaceAll("\\s", "").toUpperCase();
 	}
 
 	@Override

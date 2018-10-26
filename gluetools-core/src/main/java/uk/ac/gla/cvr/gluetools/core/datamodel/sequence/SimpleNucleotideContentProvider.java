@@ -9,7 +9,7 @@ public class SimpleNucleotideContentProvider implements NucleotideContentProvide
 	
 	public SimpleNucleotideContentProvider(String nucleotides) {
 		super();
-		this.nucleotides = nucleotides;
+		this.nucleotides = nucleotides.toUpperCase();
 	}
 
 	@Override

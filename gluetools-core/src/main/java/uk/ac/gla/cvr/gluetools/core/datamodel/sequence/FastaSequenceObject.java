@@ -51,7 +51,7 @@ public class FastaSequenceObject extends AbstractSequenceObject {
 	public FastaSequenceObject(String header, String nucleotides) {
 		this();
 		this.header = header;
-		this.nucleotides = nucleotides;
+		this.nucleotides = nucleotides.toUpperCase();
 	}
 	
 	@Override
