@@ -97,7 +97,7 @@ public class FastaUtils {
 	
 	public static DNASequence ntStringToSequence(String ntString) {
 		try {
-			return new DNASequence(ntString, AmbiguityDNACompoundSet.getDNACompoundSet());
+			return new DNASequence(ntString.toUpperCase(), AmbiguityDNACompoundSet.getDNACompoundSet());
 		} catch (CompoundNotFoundException cnfe) {
 			throw new SequenceException(cnfe, Code.SEQUENCE_FORMAT_ERROR, "FASTA format error");
 		}
