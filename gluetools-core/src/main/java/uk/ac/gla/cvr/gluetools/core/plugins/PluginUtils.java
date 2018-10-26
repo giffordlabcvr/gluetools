@@ -123,7 +123,7 @@ public class PluginUtils {
 		DNASequence dnaSequence = null;
 		if(ntsString != null) {
 			try {
-				dnaSequence = new DNASequence(ntsString, AmbiguityDNACompoundSet.getDNACompoundSet());
+				dnaSequence = new DNASequence(ntsString.toUpperCase(), AmbiguityDNACompoundSet.getDNACompoundSet());
 			} catch (CompoundNotFoundException cnfe) {
 				throw new PluginConfigException(Code.PROPERTY_FORMAT_ERROR, 
 						propertyName, cnfe.getLocalizedMessage(), ntsString);

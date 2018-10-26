@@ -105,7 +105,7 @@ public class FastaUtils {
 
 	public static ProteinSequence proteinStringToSequence(String proteinString) {
 		try {
-			return new ProteinSequence(proteinString, AminoAcidCompoundSet.getAminoAcidCompoundSet());
+			return new ProteinSequence(proteinString.toUpperCase(), AminoAcidCompoundSet.getAminoAcidCompoundSet());
 		} catch (CompoundNotFoundException cnfe) {
 			throw new SequenceException(cnfe, Code.SEQUENCE_FORMAT_ERROR, "FASTA format error");
 		}
