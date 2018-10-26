@@ -21,6 +21,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.NucleotideContentProvider;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SimpleNucleotideContentProvider;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
@@ -70,7 +71,7 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 	private String comparisonReferenceName;
 	private String featureName;
 	private List<QueryAlignedSegment> queryToTargetRefSegments = new ArrayList<QueryAlignedSegment>();
-	private String queryNucleotides;
+	private NucleotideContentProvider nucleotideContent;
 	private List<Detail> queryDetails;
 	
 	@Override
@@ -81,7 +82,7 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
 		List<Element> queryToTargetRefSegElems = PluginUtils.findConfigElements(configElem, QUERY_TO_TARGET_REF_SEGMENTS);
 		this.queryToTargetRefSegments = PluginFactory.createPlugins(pluginConfigContext, QueryAlignedSegment.class, queryToTargetRefSegElems);
-		this.queryNucleotides = PluginUtils.configureStringProperty(configElem, QUERY_NUCLEOTIDES, true);
+		this.nucleotideContent = new SimpleNucleotideContentProvider(PluginUtils.configureStringProperty(configElem, QUERY_NUCLEOTIDES, true));
 		List<Element> queryDetailElems = PluginUtils.findConfigElements(configElem, QUERY_DETAILS);
 		this.queryDetails = PluginFactory.createPlugins(pluginConfigContext, Detail.class, queryDetailElems);
 	}
@@ -117,7 +118,7 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 		List<QueryAlignedSegment> queryToComparisonRef = QueryAlignedSegment
 				.translateSegments(queryToTargetRefSegments, targetRefToComparisonRef);
 		
-		allColumnsAlmt.addRow("query", "reference", queryToComparisonRef, queryNucleotides.length());
+		allColumnsAlmt.addRow("query", "reference", queryToComparisonRef, nucleotideContent.getNucleotides(cmdContext).length());
 
 		allColumnsAlmt.rationalise();
 
@@ -195,12 +196,13 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 		queryToUFeatureLocSegs.forEach(seg -> {
 			QueryNtContentAnnotation queryNtContent = new QueryNtContentAnnotation();
 			queryNtContent.displayNtPos = seg.getRefStart()-displayNtOffset;
-			queryNtContent.ntContent = FastaUtils.subSequence(queryNucleotides, seg.getQueryStart(), seg.getQueryEnd()).toString();
+			
+			queryNtContent.ntContent = nucleotideContent.getNucleotides(cmdContext, seg.getQueryStart(), seg.getQueryEnd()).toString();
 			int uIndex = seg.getRefStart()-displayNtOffset;
 			int displayPos = queryNtContent.displayNtPos;
 			for(int queryNtIndex = seg.getQueryStart(); queryNtIndex <= seg.getQueryEnd(); queryNtIndex++) {
 				char refNt = refNtsInUSpace[uIndex-1];
-				char queryNt = FastaUtils.nt(queryNucleotides, queryNtIndex);
+				char queryNt = nucleotideContent.nt(cmdContext, queryNtIndex);
 				if(refNt != 0 && refNt != queryNt) {
 					queryNtContent.ntDisplayPosDifferences.add(displayPos);
 				}
@@ -271,7 +273,7 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 
 			List<LabeledQueryAminoAcid> queryLqaas = 
 					featureLoc.translateQueryNucleotides(cmdContext, translator, queryToComparisonRef, 
-							new SimpleNucleotideContentProvider(queryNucleotides));
+							nucleotideContent);
 			
 			for(LabeledQueryAminoAcid queryLqaa: queryLqaas) {
 				LabeledAminoAcid labeledAminoAcid = queryLqaa.getLabeledAminoAcid();
