@@ -113,6 +113,10 @@ public class WebFilesManager implements Runnable {
 	@Override
 	public void run() {
 		while(getKeepRunning()) {
+			try {
+				Thread.sleep(10000);
+			} catch (InterruptedException e) {
+			}
 			try(Stream<Path> subDirsStream = Stream.concat(Files.list(webPagesDir), Files.list(downloadsDir))) {
 				subDirsStream
 				.filter(p -> Files.isDirectory(p))
@@ -125,7 +129,6 @@ public class WebFilesManager implements Runnable {
 						//GlueLogger.getGlueLogger().finest("webFiles dir "+subDir.toString()+" is still live");
 					}
 				});
-				Thread.sleep(10000);
 			} catch(Exception ioe) {
 				// had to take this logging line out as it was exacerbating disk-full errors.
 				//GlueLogger.getGlueLogger().warning("Exception in main WebFilesManager loop: "+ioe.getLocalizedMessage());
