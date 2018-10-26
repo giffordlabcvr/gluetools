@@ -48,6 +48,7 @@ import org.docopt.DocoptExitException;
 import org.w3c.dom.Document;
 
 import jline.console.ConsoleReader;
+import jline.console.completer.CandidateListCompletionHandler;
 import jline.console.history.MemoryHistory;
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 import uk.ac.gla.cvr.gluetools.core.GlueException.GlueErrorCode;
@@ -489,6 +490,10 @@ public class Console implements InteractiveCommandResultRenderingContext
 		}
 		commandContext.pushCommandMode(new RootCommandMode(gluetoolsEngine.getRootServerRuntime()));
 		reader.addCompleter(new ConsoleCompleter(commandContext));
+		CandidateListCompletionHandler candidateListCompletionHandler = new CandidateListCompletionHandler();
+		// GLUE has its own logic for adding / not adding the space.
+		candidateListCompletionHandler.setPrintSpaceAfterFullCompletion(false);
+		reader.setCompletionHandler(candidateListCompletionHandler);
 		loadCommandHistory();
 	}
 
