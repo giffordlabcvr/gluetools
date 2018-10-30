@@ -53,6 +53,7 @@ public class TabularUtility extends ModulePlugin<TabularUtility>{
 		super();
 		registerModulePluginCmdClass(LoadTabularCommand.class);
 		registerModulePluginCmdClass(SaveTabularCommand.class);
+		registerModulePluginCmdClass(SaveTabularWebCommand.class);
 		addSimplePropertyName(COLUMN_DELIMITER_REGEX);
 		addSimplePropertyName(OUTPUT_FORMAT);
 	}
