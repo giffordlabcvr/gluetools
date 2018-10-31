@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.List;
 
 import jdk.nashorn.api.scripting.ScriptObjectMirror;
+import jdk.nashorn.internal.runtime.Undefined;
 import uk.ac.gla.cvr.gluetools.core.command.scripting.ScriptObjectMirrorUtilsException.Code;
 import uk.ac.gla.cvr.gluetools.core.document.CommandArray;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
@@ -73,7 +74,7 @@ public class ScriptObjectMirrorUtils {
 				CommandObject childCommandObject = parentCommandObject.setObject(key);
 				populateCommandObjectFromScriptObjectMirror(childCommandObject, (ScriptObjectMirror) value);
 			}
-		} else if(value == null){
+		} else if(value == null || value instanceof Undefined){
 			parentCommandObject.setNull(key);
 		} else if(value instanceof String) {
 			String string = (String) value;
@@ -106,7 +107,7 @@ public class ScriptObjectMirrorUtils {
 			populateCommandObjectFromScriptObjectMirror(childCommandObject, (ScriptObjectMirror) value);
 		} else if(value instanceof Collection) {
 			throw new ScriptObjectMirrorUtilsException(Code.JS_OBJECT_TO_COMMAND_DOCUMENT_ERROR, "GLUE array may not contain JavaScript array as item");
-		} else if(value == null){
+		} else if(value == null || value instanceof Undefined){
 			commandArray.addNull();
 		} else if(value instanceof String) {
 			String string = (String) value;
