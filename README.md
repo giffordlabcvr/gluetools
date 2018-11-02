@@ -14,7 +14,7 @@ You can find detailed instructions on how to install GLUE from its binary distri
 
 Building from source is only required if you intend to fix bugs, develop new GLUE features, or understand in detail how GLUE works. 
 
-In order to build GLUE you will need the [Java 1.8 SDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) and [Gradle](https://gradle.org/) 2.4. The build script may work with other Gradle versions but this has not been tested. You can download Gradle 2.4 here: [https://services.gradle.org/distributions/](https://services.gradle.org/distributions/).
+In order to build GLUE you will need the [Java 1.8 SDK](http://www.oracle.com/technetwork/java/javase/downloads/jdk8-downloads-2133151.html) and [Gradle](https://gradle.org/) 4.10.2. The build script may work with other Gradle versions but this has not been tested. You can download Gradle 4.2.10 here: [https://services.gradle.org/distributions/](https://services.gradle.org/distributions/).
 
 Build the GLUE engine jar by running `gradle jar` in the `gluetools-core` directory: 
 
