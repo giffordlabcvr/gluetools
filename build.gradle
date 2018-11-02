@@ -1,11 +1,13 @@
 apply plugin: 'java'
 apply plugin: 'eclipse-wtp'
 apply plugin: 'pl.allegro.tech.build.axion-release'
+apply plugin: 'com.palantir.docker'
 
 project('gluetools-core') {
 	apply plugin: 'java'
 	apply plugin: 'eclipse-wtp'
 	apply plugin: 'maven'
+	apply plugin: 'com.palantir.docker'
 }
 
 project('gluetools-ws') {
@@ -53,6 +55,8 @@ configure(subprojects.findAll {it.name != 'gluetools-web'}) {
 	    compile group: 'org.apache.commons', name:'commons-lang3', version:'3.0'
 	    compile group: 'org.apache.bcel', name:'bcel', version:'6.0'
 
+        annotationProcessor group: 'org.apache.logging.log4j', name:'log4j-core', version:'2.1'
+
 	    testCompile group: 'junit', name: 'junit', version: '4.+'
 	}
 }
@@ -90,9 +94,14 @@ allprojects {
 buildscript {
     repositories {
         mavenCentral()
+		// for palantir docker plugin
+        maven {
+         	url 'http://repo.spring.io/plugins-release/'
+        }
     }
     dependencies {
   		classpath group: 'pl.allegro.tech.build', name: 'axion-release-plugin', version: '1.9.3'
+  		classpath group: 'com.palantir.gradle.docker', name: 'gradle-docker', version: '0.20.1'
     }
 }
 

@@ -1,0 +1,4 @@
+console set log-level FINEST
+console add option-line load-save-path
+console set table-result-float-precision 2
+console set table-truncation-limit 1000

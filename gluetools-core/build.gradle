@@ -244,10 +244,12 @@ repositories {
 }
 
 
-task checkCayenneTools << {
-    ant.taskdef(name:'cgen', 
-    			classname:'org.apache.cayenne.tools.CayenneGeneratorTask', 
-    			classpath: configurations.cgen.asPath)
+task checkCayenneTools {
+	doLast {
+	    ant.taskdef(name:'cgen', 
+	    			classname:'org.apache.cayenne.tools.CayenneGeneratorTask', 
+	    			classpath: configurations.cgen.asPath)
+    }
 }
 
 
@@ -257,23 +259,27 @@ configurations {
 
 
 // uses cayenne to generate the datamodel classes.
-task datamodel(dependsOn: 'checkCayenneTools') << {
-	String destDir = 'src/main/java'
-	String superPkg = 'uk.ac.gla.cvr.gluetools.core.datamodel.auto'
-	String mapFile1 = 'src/main/resources/gluecore-map.map.xml'
-	ant.cgen(map: mapFile1, destDir: destDir, usepkgpath: true, superpkg: superPkg)
-	String mapFile2 = 'src/main/resources/glueproject-map.map.xml'
-	ant.cgen(map: mapFile2, destDir: destDir, usepkgpath: true, superpkg: superPkg)
-	String mapFile3 = 'src/main/resources/gluemeta-map.map.xml'
-	ant.cgen(map: mapFile3, destDir: destDir, usepkgpath: true, superpkg: superPkg)
+task datamodel(dependsOn: 'checkCayenneTools') {
+	doLast {
+		String destDir = 'src/main/java'
+		String superPkg = 'uk.ac.gla.cvr.gluetools.core.datamodel.auto'
+		String mapFile1 = 'src/main/resources/gluecore-map.map.xml'
+		ant.cgen(map: mapFile1, destDir: destDir, usepkgpath: true, superpkg: superPkg)
+		String mapFile2 = 'src/main/resources/glueproject-map.map.xml'
+		ant.cgen(map: mapFile2, destDir: destDir, usepkgpath: true, superpkg: superPkg)
+		String mapFile3 = 'src/main/resources/gluemeta-map.map.xml'
+		ant.cgen(map: mapFile3, destDir: destDir, usepkgpath: true, superpkg: superPkg)
+	}
 }
 
 // uses cayenne to generate the datamodel classes.
-task datamodelDigs(dependsOn: 'checkCayenneTools') << {
-	String destDir = 'src/main/java'
-	String superPkg = 'uk.ac.gla.cvr.gluetools.core.digs.importer.model.auto'
-	String mapFile1 = 'src/main/resources/digs-map.map.xml'
-	ant.cgen(map: mapFile1, destDir: destDir, usepkgpath: true, superpkg: superPkg)
+task datamodelDigs(dependsOn: 'checkCayenneTools') {
+	doLast {
+		String destDir = 'src/main/java'
+		String superPkg = 'uk.ac.gla.cvr.gluetools.core.digs.importer.model.auto'
+		String mapFile1 = 'src/main/resources/digs-map.map.xml'
+		ant.cgen(map: mapFile1, destDir: destDir, usepkgpath: true, superpkg: superPkg)
+	}
 }
 
 
@@ -440,9 +446,16 @@ task updateGlueAWSServerXml {
   }
 }
 
-
-
-
+docker {
+	dependsOn jar
+	dependsOn exampleProjectZip
+    name 'cvrbioinformatics/gluetools:'+project.version
+    tags 'latest'
+    dockerfile file('Dockerfile')
+	files file('build/libs/gluetools-core-'+project.version+'.jar'), file('build/distributions/exampleProject-'+project.version+'.zip'), file('gluetools/bin/gluetools.sh')
+	copySpec.from("docker").into("docker")
+	buildArgs([glueVersion: project.version])
+}
 
 
 // add stuff inside this task for testing setup
