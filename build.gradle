@@ -33,8 +33,11 @@ project('gluetoolsApp') {
 
 
 task deployAll(dependsOn: [
+	':gluetools-core:jar', 
 	':gluetools-core:install', 
+	':gluetools-web:war', 
 	':gluetools-web:install', 
+	':gluetools-ws:war', 
 	':gluetools-ws:install', 
 	':gluetoolsApp:deployGluetoolsAppGlueHomeAWS',
 	':gluetools-mysql-docker:docker', 

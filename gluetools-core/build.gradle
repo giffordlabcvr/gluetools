@@ -447,15 +447,29 @@ task updateGlueAWSServerXml {
 }
 
 docker {
-	dependsOn jar
-	dependsOn exampleProjectZip
     name 'cvrbioinformatics/gluetools:'+project.version
     tags 'latest'
     dockerfile file('Dockerfile')
-	files file('build/libs/gluetools-core-'+project.version+'.jar'), file('build/distributions/exampleProject-'+project.version+'.zip'), file('gluetools/bin/gluetools.sh')
 	copySpec.from("docker").into("docker")
 	buildArgs([glueVersion: project.version])
 }
+
+tasks.docker.dependsOn { tasks.initDockerContext }
+tasks.docker.dependsOn { tasks.jar }
+
+ task initDockerContext(type: Copy, dependsOn: ['exampleProjectZip','jar']) {
+     from('build/libs/') {
+         include 'gluetools-core-'+project.version+'.jar'
+     }
+     from('build/distributions/') {
+         include 'exampleProject-'+project.version+'.zip'
+     }
+     from('gluetools/bin') {
+         include 'gluetools.sh'
+     }
+     into 'build/docker/docker'
+ }
+ 
 
 
 // add stuff inside this task for testing setup
