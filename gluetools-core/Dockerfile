@@ -17,17 +17,6 @@ RUN echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true
 # install java8 jdk
 RUN apt-get install --no-install-recommends -y oracle-java8-installer
 
-# Use set-selections to pre-populate mysql root password
-RUN echo "mysql-server mysql-server/root_password password root123" | debconf-set-selections
-RUN echo "mysql-server mysql-server/root_password_again password root123" | debconf-set-selections
-
-# install mysql server
-RUN apt-get install --no-install-recommends -y mysql-server
-
-# workaround for this: https://askubuntu.com/questions/737903/mysql-5-7-no-directory-logging-in-with-home
-RUN usermod -d /var/lib/mysql/ mysql
-
-
 # various stuff required for MAFFT, RAxML 
 RUN apt-get install --no-install-recommends -y git
 RUN apt-get install --no-install-recommends -y make 
@@ -75,14 +64,6 @@ RUN mkdir -p /opt/gluetools/tmp/jmodeltest
 RUN mkdir -p /opt/gluetools/jModelTest/lib
 COPY docker/jModelTest.jar /opt/gluetools/jModelTest/lib
 
-# Start MySQL and create user and DB.
-RUN mkdir -p /opt/gluetools/bin
-COPY docker/startMySQL.sh /opt/gluetools/bin
-RUN chmod a+rwx /opt/gluetools/bin/startMySQL.sh
-COPY docker/initMySQL.sh /opt/gluetools/bin
-RUN chmod a+rwx /opt/gluetools/bin/initMySQL.sh
-RUN /opt/gluetools/bin/initMySQL.sh 
-
 RUN mkdir -p /opt/gluetools/lib
 RUN mkdir -p /opt/gluetools/conf
 RUN mkdir -p /opt/gluetools/projects
@@ -92,7 +73,7 @@ COPY docker/exampleProject-${glueVersion}.zip /opt/gluetools/projects
 RUN cd /opt/gluetools/projects && unzip exampleProject-${glueVersion}.zip && rm exampleProject-${glueVersion}.zip
 
 COPY docker/gluetools-core-${glueVersion}.jar /opt/gluetools/lib/gluetools-core.jar
-COPY docker/gluetools.sh /opt/gluetools/bin
+COPY docker/gluetools.sh /opt/gluetools/bin/gluetools.sh
 RUN chmod a+rwx /opt/gluetools/bin/gluetools.sh
 COPY docker/gluetools-config.xml /opt/gluetools/conf
 COPY docker/.gluerc /root
@@ -101,9 +82,6 @@ COPY docker/.gluerc /root
 ENV GLUE_HOME=/opt/gluetools
 ENV PATH="/opt/gluetools/bin:${PATH}"
 
-ENTRYPOINT /opt/gluetools/bin/startMySQL.sh && /bin/bash
-
 # Set the working directory to /opt/gluetools/projects
 WORKDIR /opt/gluetools/projects
-
 

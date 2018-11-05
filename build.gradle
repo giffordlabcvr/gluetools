@@ -10,6 +10,11 @@ project('gluetools-core') {
 	apply plugin: 'com.palantir.docker'
 }
 
+project('gluetools-mysql-docker') {
+	apply plugin: 'java'
+	apply plugin: 'com.palantir.docker'
+}
+
 project('gluetools-ws') {
 	apply plugin: 'war'
 	apply plugin: 'java'
@@ -31,7 +36,17 @@ task deployAll(dependsOn: [
 	':gluetools-core:install', 
 	':gluetools-web:install', 
 	':gluetools-ws:install', 
-	':gluetoolsApp:deployGluetoolsAppGlueHomeAWS']) {
+	':gluetoolsApp:deployGluetoolsAppGlueHomeAWS',
+	':gluetools-mysql-docker:docker', 
+	':gluetools-mysql-docker:dockerTag', 
+	':gluetools-mysql-docker:dockerPush', 
+	':gluetools-mysql-docker:dockerTagLatest', 
+	':gluetools-mysql-docker:dockerPushLatest', 
+	':gluetools-core:dockerTag', 
+	':gluetools-core:dockerPush', 
+	':gluetools-core:dockerTagLatest', 
+	':gluetools-core:dockerPushLatest', 
+	]) {
 }
 
 configure(subprojects.findAll {it.name != 'gluetools-web'}) {
