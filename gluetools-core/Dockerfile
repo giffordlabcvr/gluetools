@@ -82,6 +82,8 @@ COPY docker/.gluerc /root
 ENV GLUE_HOME=/opt/gluetools
 ENV PATH="/opt/gluetools/bin:${PATH}"
 
-# Set the working directory to /opt/gluetools/projects
-WORKDIR /opt/gluetools/projects
+# Set the working directory to /opt/gluetools/projects/exampleProject
+WORKDIR /opt/gluetools/projects/exampleProject
+
+CMD gluetools.sh
 

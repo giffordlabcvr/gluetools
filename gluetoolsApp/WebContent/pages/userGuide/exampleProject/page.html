@@ -15,12 +15,26 @@ to illustrate many of the key features of GLUE. </p>
 <h3 id="download">Download and unpack</h3>
 
 <p>Conventionally, files relating to GLUE projects are each stored in their own directories, which are inside the <code>gluetools/projects</code> directory. 
-Download the example project zip from the <a target="_blank" href="#download">GLUE download page</a>. Unzip it inside <code>gluetools/projects</code>.</p>
+
+<p>
+<b>NOTE</b> If you are using Docker-based GLUE, the example project is already unzipped in your container filesystem, so you can go straight to <a ng-click="scrollTo('build')">building the project</a>.
+</p>
+
+<p>
+If you are using Native GLUE, download the example project zip from the <a target="_blank" href="#download">GLUE download page</a>. Unzip it inside <code>gluetools/projects</code>.
+</p>
 
 <div hljs language="json" no-escape>
 <pre>
 $ cd /home/fred/gluetools/projects
-$ unzip exampleProject-0.1.136.zip</pre>
+$ unzip exampleProject-1.1.14.zip</pre>
+</div>
+
+Now start an interactive GLUE session within the <code>exampleProject</code>
+<div hljs language="json" no-escape>
+<pre>
+$ cd /home/fred/gluetools/projects/exampleProject
+$ gluetools.sh</pre>
 </div>
 
 <h3 id="build">Build the project</h3>
@@ -28,18 +42,16 @@ $ unzip exampleProject-0.1.136.zip</pre>
 <p>
 While a project is archived as a set of files, in order to use the project within GLUE we have to <b>build</b> it. 
 Building a project means asking GLUE to run a series of commands which will load all the project data and analysis 
-functions into the GLUE instance, performing any necessary processing of this data.</p>
+configuration into the database.</p>
 
-<p>We can now start a GLUE interactive session and build the example project. We will do this by executing the 
+<p>Within a GLUE interactive session we can now build the example project. We will do this by executing the 
 <non-mode-command command="run_file"></non-mode-command> command on the file 
 <code>exampleProject.glue</code>. This is the <b>master build file</b>
 for the project.</p>
 
 <div hljs language="json" no-escape>
 <pre>
-$ cd /home/fred/gluetools/projects/exampleProject
-$ gluetools.sh
-GLUE version 0.1.136
+GLUE version 1.1.14
 Mode path: /
 GLUE> run file exampleProject.glue
 ...</pre>
