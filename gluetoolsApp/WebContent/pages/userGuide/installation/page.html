@@ -16,8 +16,8 @@ error-prone set-up. Also, GLUE will be isolated from other software on the compu
 	<li><a ng-click="scrollTo('howDockerGlueWorks')">How Docker-based GLUE works</a></li>
 	<li><a ng-click="scrollTo('gluetoolsMySQLcontainer')">Set up a <tt>gluetools-mysql</tt> container</a></li>
 	<li><a ng-click="scrollTo('gluetoolsContainer')">Set up a <tt>gluetools</tt> container</a></li>
-	<li><a ng-click="scrollTo('nextSteps1')">Next steps</a></li>
 	<li><a ng-click="scrollTo('hintsAndTips')">Hints and tips for Docker-based GLUE</a></li>
+	<li><a ng-click="scrollTo('nextSteps1')">Next steps</a></li>
 </ol>	
 
 <h4 id="installDocker">Install Docker</h4>
@@ -34,10 +34,13 @@ GLUE is packaged into two Docker images. The
 <code>cvrbioinformatics/gluetools-mysql</code>
 image provides the MySQL database which GLUE will use and some
 scripts for updating it. A container based on this image provides GLUE
-with its persistent database storage. The
-<code>cvrbioinformatics/gluetools</code>
+with its persistent database storage, and runs in the background as a daemon.
+</p>
+<p>
+The <code>cvrbioinformatics/gluetools</code>
 image provides the GLUE engine software itself plus its 3rd-party dependencies
-such as RAxML and MAFFT. 
+such as RAxML and MAFFT. Containers based on this image will be run in a transient way, 
+each time a GLUE interactive session is run. 
 </p>
 <h4 id="gluetoolsMySQLcontainer">Set up a <tt>gluetools-mysql</tt> container</h4>
 <p>
@@ -80,21 +83,53 @@ Option load-save-path: /opt/gluetools/projects/exampleProject
 GLUE>
 ...
 </pre>
+When the interactive session completes, the container will be removed (via the <code>--rm</code> option).
 </p>
-
-<h4 id="nextSteps1">Next steps</h4>
-
-If you are new to GLUE we strongly recommend building the <a href="#exampleProject">example GLUE project</a> as the next step. 
-The example project directory is included within the container file system. 
 
 
 <h4 id="hintsAndTips">Hints and tips for Docker-based GLUE</h4>
 <ul>
+<li> <b>Starting and stopping the <tt>gluetools-mysql</tt> container</b>
+<p>
+The <code>gluetools-mysql</code> container contains the GLUE database which you normally want to keep in place from one GLUE interactive session to the next. 
+When you restart your computer this container will be in a "stopped" state. To start it again use:
+<div hljs language="bash" no-escape>
+$ docker start gluetools-mysql
+</div>
+You can stop it with:
+<div hljs language="bash" no-escape>
+$ docker stop gluetools-mysql
+</div>
+If you remove this container, your database contents will be lost.
+</p>
+</li>
+<li> <b>Install a pre-built GLUE dataset in the <tt>gluetools-mysql</tt> container</b>
+<p>
+While the <code>gluetools-mysql</code> container is running, you can install various pre-built GLUE projects. 
+For example, the latest NCBI-HCV-GLUE project build can be installed using this command:
+<div hljs language="js" no-escape>
+$ docker exec gluetools-mysql installGlueProject.sh ncbi_hcv_glue
+</div>
+<b>Note:</b> this command will wipe any previous data from the database.
+</p>
+</li>
+<li> <b>Wipe the database in the <tt>gluetools-mysql</tt> container</b>
+<p>
+You can wipe the GLUE database using this command:
+<div hljs language="js" no-escape>
+$ docker exec gluetools-mysql glueWipeDatabase.sh
+</div>
+</p>
+</li>
 <li> <b>Volume mapping</b> 
 <p>
+Each Docker container has its own isolated file system, so by default files outside the container cannot be accessed by GLUE. 
+Since the <code>gluetools</code> container is transient, its file system will be removed at the end of the GLUE session. 
+</p>
+<p>
 If you want GLUE to read your own project data from a directory outside the container or save any file output, 
-add the <code>--volume</code> option to the <code>docker run</code> command. 
-This maps a directory outside the container to a path within the host filesystem. For example, if you use 
+add the <code>--volume</code> option to the <code>docker run</code> command for the <code>gluetools</code> container. 
+This maps a directory outside the container (i.e. on the host filesystem) to a path within container filesystem. For example, if you use 
 <div hljs language="bash" no-escape>
 --volume /home/fred/my_glue_project:/opt/gluetools/projects/my_glue_project
 </div>
@@ -105,21 +140,21 @@ Multiple directories can be mapped with this option.
 </li>
 <li> <b>Working directory</b> 
 <p>
-The working directory can be set by adding this option to the <code>docker run</code> command:
+The working directory for the <code>gluetools</code> container defaults to the example project directory. However this can be overridden by adding the following option to the <code>docker run</code> command:
 <div hljs language="bash" no-escape>
 $ --workdir /opt/gluetools/projects/my_glue_project
 </div>
 </p>
 </li>
-<li> <b>Use <code>.gluerc</code> and <code>.glue_history</code> files from the host file system</b> 
+<li> <b>Use <tt>.gluerc</tt> and <tt>.glue_history</tt> files from the host file system</b> 
 <p>
 These files store your GLUE console preferences and command history. 
 You may want to use <code>.gluerc</code> and <code>.glue_history</code> files from the host file system rather than the container file system. 
-To do this, map your home directory using a <code>--volume</code> option:
+To do this, map your home directory using a <code>--volume</code> option in the <code>docker run</code> command:
 <div hljs language="bash" no-escape>
 --volume /home/fred:/home/fred
 </div>
-Then add this <code>--env</code> option:
+Then also add this <code>--env</code> option to the <code>docker run</code> command:
 <div hljs language="bash" no-escape>
 --env _JAVA_OPTIONS=-Duser.home=/home/fred 
 </div>
@@ -135,7 +170,11 @@ $ docker run --rm -it --name gluetools --link gluetools-mysql cvrbioinformatics/
 </p>
 </li>
 </ul>
-</p>
+
+<h4 id="nextSteps1">Next steps</h4>
+
+If you are new to GLUE we strongly recommend building the <a href="#exampleProject">example GLUE project</a> as the next step. 
+The example project directory is included within the container file system. 
 
 
 
