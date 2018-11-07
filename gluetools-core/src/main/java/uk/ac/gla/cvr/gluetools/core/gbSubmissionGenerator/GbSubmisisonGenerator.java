@@ -38,6 +38,7 @@ import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.featureProvider.Featur
 import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.featureProvider.FeatureProviderFactory;
 import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.sourceInfoProvider.SourceInfoProvider;
 import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.sourceInfoProvider.SourceInfoProviderFactory;
+import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.structuredCommentProvider.StructuredCommentProvider;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -56,12 +57,13 @@ public class GbSubmisisonGenerator extends ModulePlugin<GbSubmisisonGenerator> {
 	public static final String SOURCE_INFO_PROVIDERS = "sourceInfoProviders";
 	public static final String SUPPRESS_GLUE_NOTE = "suppressGlueNote";
 	public static final String ID_TEMPLATE = "idTemplate";
-
+	public static final String STRUCTURED_COMMENT_PROVIDER = "structuredCommentProvider";
 	
 	private Tbl2AsnRunner tbl2AsnRunner = new Tbl2AsnRunner();
 	
 	private List<SourceInfoProvider> sourceInfoProviders = new ArrayList<SourceInfoProvider>();
 	private List<FeatureProvider> featureProviders = new ArrayList<FeatureProvider>();
+	private StructuredCommentProvider structuredCommentProvider = null;
 	
 	private Template idTemplate;
 	private boolean suppressGlueNote;
@@ -77,9 +79,18 @@ public class GbSubmisisonGenerator extends ModulePlugin<GbSubmisisonGenerator> {
 
 	}
 
+	public StructuredCommentProvider getStructuredCommentProvider() {
+		return structuredCommentProvider;
+	}
+
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
+		
+		Element structuredCommentProviderElem = PluginUtils.findConfigElement(configElem, STRUCTURED_COMMENT_PROVIDER);
+		if(structuredCommentProviderElem != null) {
+			this.structuredCommentProvider = PluginFactory.createPlugin(pluginConfigContext, StructuredCommentProvider.class, structuredCommentProviderElem);
+		}
 		this.idTemplate = Optional.ofNullable(
 				PluginUtils.configureFreemarkerTemplateProperty(pluginConfigContext, configElem, ID_TEMPLATE, false))
 				.orElse(FreemarkerUtils.templateFromString(DEFAULT_ID_TEMPLATE, pluginConfigContext.getFreemarkerConfiguration()));

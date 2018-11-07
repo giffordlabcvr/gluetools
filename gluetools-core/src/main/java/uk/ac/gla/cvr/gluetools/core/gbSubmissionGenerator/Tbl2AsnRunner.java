@@ -75,7 +75,7 @@ public class Tbl2AsnRunner implements Plugin {
 
 	
 	public List<Tbl2AsnResult> runTbl2Asn(CommandContext cmdContext, List<String> sourceColumnHeaders0, 
-			List<Tbl2AsnInput> inputs, byte[] templateBytes, boolean generateGbf, File dataDirFile) {
+			List<Tbl2AsnInput> inputs, byte[] templateBytes, byte[] structuredCommentBytes, boolean generateGbf, File dataDirFile) {
 		
 		String tbl2asnTempDir = getTbl2AsnTempDir(cmdContext);
 		String tbl2asnExecutable = getTbl2AsnExecutable(cmdContext);
@@ -92,6 +92,12 @@ public class Tbl2AsnRunner implements Plugin {
 			
 			File templateFile = new File(tempDir, "template.sbt");
 			writeFile(templateFile, templateBytes);
+
+			File structuredCommentsFile = null;
+			if(structuredCommentBytes != null) {
+				structuredCommentsFile = new File(tempDir, "structuredComments.cmt");
+				writeFile(structuredCommentsFile, structuredCommentBytes);
+			}
 			
 			for(Tbl2AsnInput input: inputs) {
 				Map<String, String> sourceInfoMap = new LinkedHashMap<String,String>(input.getSourceInfoMap());
@@ -142,6 +148,11 @@ public class Tbl2AsnRunner implements Plugin {
 			// template file
 			commandWords.add("-t");
 			commandWords.add(ProcessUtils.normalisedFilePath(templateFile));
+			
+			if(structuredCommentsFile != null) {
+				commandWords.add("-w");
+				commandWords.add(ProcessUtils.normalisedFilePath(structuredCommentsFile));
+			}
 			
 			if(generateGbf) {
 				commandWords.add("-V");
