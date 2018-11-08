@@ -50,6 +50,8 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
+import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.BaseGbSubmissionGeneratorCommand.GbSubmissionGeneratorCompleter;
+import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.GenerateSqnCommand.SequenceSqnResult;
 import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.featureProvider.FeatureProvider;
 import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.featureProvider.GbFeatureSpecification;
 import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.sourceInfoProvider.SourceInfoProvider;
@@ -65,207 +67,25 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 @CommandClass(
 		commandWords={"generate-sqn"}, 
 		description = "Generate .sqn submission files from a set of stored GLUE sequences", 
-		docoptUsages = { "(-w <whereClause> | -a) -t <templateFile> [-g] [-o <outputDir>] [-d <dataDir>]" },
+		docoptUsages = { "(-w <whereClause> | -a | -s <sourceName> <sequenceID>) -t <templateFile> [-o <outputDir>] [-d <dataDir>]" },
 		docoptOptions = { 
 				"-w <whereClause>, --whereClause <whereClause>     Qualify the sequence set",
 				"-a, --allSequences                                All sequences in the project",
-				"-g, --generateGbf                                 Also generate GenBank flat files",
+				"-s, --specificSequence                            Specific <sourceName> + <sequenceID>",
 				"-t <templateFile>, --templateFile <templateFile>  Template .sbt file",
 				"-o <outputDir>, --outputDir <outputDir>           Directory for .sqn files",
 				"-d <dataDir>, --dataDir <dataDir>                 Directory for intermediate files",
 		},
-		furtherHelp = "This command uses tbl2asn as a subroutine to generate .sqn files, for GenBank submssion, "+
-		"and optionally the equivalent .gbf (GenBank flat) files. "+
+		furtherHelp = "This command uses tbl2asn as a subroutine to generate .sqn files, for GenBank submssion. "+
 		"If <outputDir> is omitted, the files are written to the current load/save path. If <outputDir> does not "+
 		"exist, it is created. If <dataDir> is supplied, it is created if it does not exist and the the intermediate "+
 		"files which were supplied to tbl2asn are retained in that directory.",
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class GenerateSqnCommand extends ModulePluginCommand<GenerateSqnResult, GbSubmisisonGenerator> {
+public class GenerateSqnCommand extends FileGeneratingGbSubmissionGeneratorCommand<GenerateSqnCommand.SequenceSqnResult, GenerateSqnResult> {
 	
-	
-	public final static String WHERE_CLAUSE = "whereClause";
-	public final static String ALL_SEQUENCES = "allSequences";
-	public final static String GENERATE_GBF = "generateGbf";
-	public final static String TEMPLATE_FILE = "templateFile";
-	public final static String OUTPUT_DIR = "outputDir";
-	public final static String DATA_DIR = "dataDir";
-	
-	private Expression whereClause;
-	private Boolean allSequences;
-	private Boolean generateGbf;
-
-	private String templateFile;
-	private String outputDir;
-	private String dataDir;
-	
-	@Override
-	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
-		super.configure(pluginConfigContext, configElem);
-		this.whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false);
-		this.allSequences = PluginUtils.configureBooleanProperty(configElem, ALL_SEQUENCES, false);
-		if(this.whereClause == null && this.allSequences == null) {
-			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <whereClause> or --allSequences must be specified");
-		}
-		this.templateFile = PluginUtils.configureStringProperty(configElem, TEMPLATE_FILE, true);
-		this.generateGbf = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, GENERATE_GBF, false)).orElse(false);
-		this.outputDir = PluginUtils.configureStringProperty(configElem, OUTPUT_DIR, false);
-		this.dataDir = PluginUtils.configureStringProperty(configElem, DATA_DIR, false);
-	}
-	
-	
-	@Override
-	protected GenerateSqnResult execute(CommandContext cmdContext, GbSubmisisonGenerator gbSubmisisonGenerator) {
-		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
-		
-		byte[] templateBytes = consoleCmdContext.loadBytes(templateFile);
-
-		StructuredCommentProvider structuredCommentProvider = gbSubmisisonGenerator.getStructuredCommentProvider();
-		byte[] structuredCommentBytes = null;
-		if(structuredCommentProvider != null) {
-			Map<String, String> structuredComments = structuredCommentProvider.generateStructuredComments();
-			if(!structuredComments.isEmpty()) {
-				String lineBreakChars = LineFeedStyle.forOS().getLineBreakChars();
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				PrintWriter printWriter = new PrintWriter(baos);
-				printWriter.write("StructuredCommentPrefix\t##Assembly-Data-START##");
-				printWriter.write(lineBreakChars);
-				structuredComments.forEach((k, v) -> {
-					printWriter.write(k);
-					printWriter.write("\t");
-					printWriter.write(v);
-					printWriter.write(lineBreakChars);
-				});
-				printWriter.flush();
-				structuredCommentBytes = baos.toByteArray();
-			}
-			
-		}
-		
-		
-		File dataDirFile = null;
-		if(dataDir != null) {
-			dataDirFile = consoleCmdContext.fileStringToFile(dataDir);
-			dataDirFile.mkdirs();
-			if(!dataDirFile.exists()) {
-				throw new Tbl2AsnException(Tbl2AsnException.Code.TBL2ASN_FILE_EXCEPTION, 
-						"Unable to create data directory "+dataDirFile.getAbsolutePath());
-
-			}
-		}
-		
-		File outputDirFile;
-		
-		if(outputDir == null) {
-			outputDirFile = consoleCmdContext.getLoadSavePath();
-		} else {
-			outputDirFile = consoleCmdContext.fileStringToFile(outputDir);
-			outputDirFile.mkdirs();
-			if(!outputDirFile.exists()) {
-				throw new Tbl2AsnException(Tbl2AsnException.Code.TBL2ASN_FILE_EXCEPTION, 
-						"Unable to create output directory "+outputDirFile.getAbsolutePath());
-
-			}
-		}		
-					
-		SelectQuery selectQuery;
-		if(this.allSequences) {
-			selectQuery = new SelectQuery(Sequence.class);
-		} else {
-			selectQuery = new SelectQuery(Sequence.class, this.whereClause);
-		}
-		
-		int totalNumSeqs = GlueDataObject.count(cmdContext, selectQuery);
-		int batchSize = 250;
-		int processed = 0;
-		int offset = 0;
-
-		List<SequenceSqnResult> sequenceSqnResults = new ArrayList<SequenceSqnResult>();
-		LinkedHashSet<String> generatedIDs = new LinkedHashSet<String>();
-
-		while(processed < totalNumSeqs) {
-			selectQuery.setFetchLimit(batchSize);
-			selectQuery.setPageSize(batchSize);
-			selectQuery.setFetchOffset(offset);
-			GlueLogger.getGlueLogger().finest("Retrieving sequences");
-			List<Sequence> sequences = GlueDataObject.query(cmdContext, Sequence.class, selectQuery);
-
-			List<Tbl2AsnInput> inputs = new ArrayList<Tbl2AsnInput>();
-			
-			List<SourceInfoProvider> sourceInfoProviders = gbSubmisisonGenerator.getSourceInfoProviders();
-			
-			if(!gbSubmisisonGenerator.getSuppressGlueNote()) {
-				StaticSourceInfoProvider glueNoteProvider = new StaticSourceInfoProvider();
-				glueNoteProvider.setSourceModifier("note");		
-				String glueEngineVersion = cmdContext.getGluetoolsEngine().getGluecoreProperties().getProperty("version", null);
-				glueNoteProvider.setValue("submission file generated by GLUE v"+glueEngineVersion+" (http://tools.glue.cvr.ac.uk)");
-				sourceInfoProviders.add(glueNoteProvider);
-			}
-			
-			List<FeatureProvider> featureProviders = gbSubmisisonGenerator.getFeatureProviders();
-			List<String> sourceColumnHeaders = new ArrayList<String>();
-			sourceColumnHeaders.add("SeqID");
-			sourceInfoProviders.forEach(sip -> sourceColumnHeaders.add(sip.getSourceModifier()));
-			
-			sequences.forEach(seq -> {
-				String id = gbSubmisisonGenerator.generateId(seq);
-				if(generatedIDs.contains(id)) {
-					throw new Tbl2AsnException(Tbl2AsnException.Code.TBL2ASN_DATA_EXCEPTION, 
-							"Duplicate ID string '"+id+"' was generated for different sequences");
-				}
-				generatedIDs.add(id);
-				Map<String, String> sourceInfoMap = new LinkedHashMap<String, String>();
-				sourceInfoMap.put("SeqID", id);
-				for(SourceInfoProvider sourceInfoProvider: sourceInfoProviders) {
-					sourceInfoMap.put(sourceInfoProvider.getSourceModifier(), sourceInfoProvider.provideSourceInfo(seq));
-				}
-				List<GbFeatureSpecification> featureSpecs = new ArrayList<GbFeatureSpecification>();
-				
-				for(FeatureProvider featureProvider: featureProviders) {
-					GbFeatureSpecification featureSpec = featureProvider.provideFeature(cmdContext, seq);
-					if(featureSpec != null) {
-						featureSpecs.add(featureSpec);
-					}
-				}
-				
-				inputs.add(new Tbl2AsnInput(seq.getSource().getName(), seq.getSequenceID(), id, 
-					FastaUtils.ntStringToSequence(seq.getSequenceObject().getNucleotides(cmdContext)), 
-					sourceInfoMap, featureSpecs));
-			});
-
-			List<Tbl2AsnResult> batchResults = gbSubmisisonGenerator.getTbl2AsnRunner().
-					runTbl2Asn(consoleCmdContext, sourceColumnHeaders, inputs, templateBytes, structuredCommentBytes, generateGbf, dataDirFile);
-			
-			batchResults.forEach(result -> {
-				File sqnFile = new File(outputDirFile, result.getId()+".sqn");
-				ConsoleCommandContext.saveBytesToFile(sqnFile, result.getSqnFileContent());
-				sequenceSqnResults.add(new SequenceSqnResult(result.getSourceName(), result.getSequenceID(), sqnFile.getAbsolutePath()));
-				
-				if(generateGbf) {
-					File gbfFile = new File(outputDirFile, result.getId()+".gbf");
-					ConsoleCommandContext.saveBytesToFile(gbfFile, result.getGbfFileContent());
-				}
-			});
-			
-			
-			offset += batchSize;
-			processed += sequences.size();
-			GlueLogger.getGlueLogger().finest("Processed "+processed+" of "+totalNumSeqs+" sequences");
-			cmdContext.newObjectContext();
-		}
-		return new GenerateSqnResult(sequenceSqnResults);
-	}
-
 	@CompleterClass
-	public static class Completer extends AdvancedCmdCompleter {
-		public Completer() {
-			super();
-			registerPathLookup("templateFile", false);
-			registerPathLookup("outputDir", true);
-			registerPathLookup("dataDir", true);
-		}
-		
-	}
+	public static class Completer extends FileGeneratingGbSubmissionGeneratorCompleter {}
 	
 	/**
 	 * summary for a single sequence.
@@ -292,5 +112,17 @@ public class GenerateSqnCommand extends ModulePluginCommand<GenerateSqnResult, G
 			return filePath;
 		}
 	}
-	
+
+	@Override
+	protected SequenceSqnResult intermediateResult(File outputDirFile, Tbl2AsnResult tbl2AsnResult) {
+		File sqnFile = new File(outputDirFile, tbl2AsnResult.getId()+".sqn");
+		ConsoleCommandContext.saveBytesToFile(sqnFile, tbl2AsnResult.getSqnFileContent());
+		return new SequenceSqnResult(tbl2AsnResult.getSourceName(), tbl2AsnResult.getSequenceID(), sqnFile.getAbsolutePath());
+	}
+
+	@Override
+	protected GenerateSqnResult finalResult(List<SequenceSqnResult> intermediateResults) {
+		return new GenerateSqnResult(intermediateResults);
+	}
+
 }

@@ -25,50 +25,20 @@
 */
 package uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator;
 
-public class Tbl2AsnResult {
+import java.util.List;
 
-	private String sourceName;
-	private String sequenceID;
-	private String id;
-	private byte[] sqnFileContent;
-	private byte[] gbfFileContent;
-	private byte[] valFileContent;
+import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
+import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.GenerateGbfCommand.SequenceGbfResult;
+
+public class GenerateGbfResult extends BaseTableResult<SequenceGbfResult> {
 	
-	public Tbl2AsnResult(String sourceName, String sequenceID, String id, 
-			byte[] sqnFileContent, byte[] gbfFileContent, byte[] valFileContent) {
-		super();
-		this.sourceName = sourceName;
-		this.sequenceID = sequenceID;
-		this.id = id;
-		this.sqnFileContent = sqnFileContent;
-		this.gbfFileContent = gbfFileContent;
-		this.valFileContent = valFileContent;
+	public GenerateGbfResult(List<SequenceGbfResult> rowData) {
+		super("generateSqnResult", rowData,
+				column(Sequence.SOURCE_NAME_PATH, ssr -> ssr.getSourceName()),
+				column(Sequence.SEQUENCE_ID_PROPERTY, ssr -> ssr.getSequenceID()),
+				column("filePath", ssr -> ssr.getFilePath()));
 	}
 
-	public String getSourceName() {
-		return sourceName;
-	}
-
-	public String getSequenceID() {
-		return sequenceID;
-	}
-
-	public String getId() {
-		return id;
-	}
-
-	public byte[] getSqnFileContent() {
-		return sqnFileContent;
-	}
-
-	public byte[] getGbfFileContent() {
-		return gbfFileContent;
-	}
-
-	public byte[] getValFileContent() {
-		return valFileContent;
-	}
-	
-	
 	
 }

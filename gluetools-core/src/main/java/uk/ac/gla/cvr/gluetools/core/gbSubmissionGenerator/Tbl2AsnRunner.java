@@ -75,7 +75,7 @@ public class Tbl2AsnRunner implements Plugin {
 
 	
 	public List<Tbl2AsnResult> runTbl2Asn(CommandContext cmdContext, List<String> sourceColumnHeaders0, 
-			List<Tbl2AsnInput> inputs, byte[] templateBytes, byte[] structuredCommentBytes, boolean generateGbf, File dataDirFile) {
+			List<Tbl2AsnInput> inputs, byte[] templateBytes, byte[] structuredCommentBytes, boolean generateGbf, boolean validate, File dataDirFile) {
 		
 		String tbl2asnTempDir = getTbl2AsnTempDir(cmdContext);
 		String tbl2asnExecutable = getTbl2AsnExecutable(cmdContext);
@@ -154,23 +154,32 @@ public class Tbl2AsnRunner implements Plugin {
 				commandWords.add(ProcessUtils.normalisedFilePath(structuredCommentsFile));
 			}
 			
-			if(generateGbf) {
+			if(generateGbf || validate) {
 				commandWords.add("-V");
-				commandWords.add("b");
+				
+				String verificationArg = "";
+				if(generateGbf) {
+					verificationArg += "b";
+				}
+				if(validate) {
+					verificationArg += "v";
+				}
+				commandWords.add(verificationArg);
 			}
 			
 			ProcessResult tbl2asnProcessResult = ProcessUtils.runProcess(null, tempDir, commandWords); 
 
 			ProcessUtils.checkExitCode(commandWords, tbl2asnProcessResult);
 
-			return resultListFromTempDir(inputs, tempDir, generateGbf);
+			return resultListFromTempDir(inputs, tempDir, generateGbf, validate);
 		} finally {
 			ProcessUtils.cleanUpTempDir(dataDirFile, tempDir);
 		}
 	}
 	
 	
-	private List<Tbl2AsnResult> resultListFromTempDir(List<Tbl2AsnInput> inputs, File tempDir, boolean generateGbf) {
+	private List<Tbl2AsnResult> resultListFromTempDir(List<Tbl2AsnInput> inputs, File tempDir, boolean generateGbf, 
+			boolean validate) {
 		List<Tbl2AsnResult> results = new ArrayList<Tbl2AsnResult>();
 		
 		for(Tbl2AsnInput input: inputs) {
@@ -189,8 +198,17 @@ public class Tbl2AsnRunner implements Plugin {
 				}
 				gbfFileContent = readFile(gbfFile);
 			}
+
+			byte[] valFileContent = null;
+			if(validate) {
+				File valFile = new File(tempDir, id+".val");
+				if(!valFile.exists()) {
+					throw new Tbl2AsnException(Code.TBL2ASN_FILE_EXCEPTION, "Expected file was not generated: "+id+".val");
+				}
+				valFileContent = readFile(valFile);
+			}
 			
-			results.add(new Tbl2AsnResult(input.getSourceName(), input.getSequenceID(), id, sqnFileContent, gbfFileContent));
+			results.add(new Tbl2AsnResult(input.getSourceName(), input.getSequenceID(), id, sqnFileContent, gbfFileContent, valFileContent));
 		}
 		return results;
 	}

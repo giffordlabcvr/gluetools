@@ -25,50 +25,22 @@
 */
 package uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator;
 
-public class Tbl2AsnResult {
+import java.util.List;
 
-	private String sourceName;
-	private String sequenceID;
-	private String id;
-	private byte[] sqnFileContent;
-	private byte[] gbfFileContent;
-	private byte[] valFileContent;
+import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
+import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.GbSubmissionValidateCommand.SequenceValidationMessage;
+
+public class GbSubmissionValidateResult extends BaseTableResult<SequenceValidationMessage> {
 	
-	public Tbl2AsnResult(String sourceName, String sequenceID, String id, 
-			byte[] sqnFileContent, byte[] gbfFileContent, byte[] valFileContent) {
-		super();
-		this.sourceName = sourceName;
-		this.sequenceID = sequenceID;
-		this.id = id;
-		this.sqnFileContent = sqnFileContent;
-		this.gbfFileContent = gbfFileContent;
-		this.valFileContent = valFileContent;
+	public GbSubmissionValidateResult(List<SequenceValidationMessage> rowData) {
+		super("gbSubmissionValidateResult", rowData,
+				column(Sequence.SOURCE_NAME_PATH, svm -> svm.getSourceName()),
+				column(Sequence.SEQUENCE_ID_PROPERTY, svm -> svm.getSequenceID()),
+				column("level", svm -> svm.getLevel()),
+				column("code", svm -> svm.getCode()),
+				column("message", svm -> svm.getMessage()));
 	}
 
-	public String getSourceName() {
-		return sourceName;
-	}
-
-	public String getSequenceID() {
-		return sequenceID;
-	}
-
-	public String getId() {
-		return id;
-	}
-
-	public byte[] getSqnFileContent() {
-		return sqnFileContent;
-	}
-
-	public byte[] getGbfFileContent() {
-		return gbfFileContent;
-	}
-
-	public byte[] getValFileContent() {
-		return valFileContent;
-	}
-	
-	
 	
 }
