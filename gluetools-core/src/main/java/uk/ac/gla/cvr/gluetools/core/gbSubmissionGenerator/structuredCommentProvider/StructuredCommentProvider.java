@@ -26,11 +26,11 @@ public class StructuredCommentProvider implements Plugin {
 	
 	public Map<String, String> generateStructuredComments() {
 		Map<String, String> structuredComments = new LinkedHashMap<String, String>();
-		if(!sequencingTechnologies.isEmpty()) {
-			structuredComments.put("Sequencing Technology", String.join("; ", sequencingTechnologies));
-		}
 		if(!assemblyMethods.isEmpty()) {
 			structuredComments.put("Assembly Method", String.join("; ", assemblyMethods));
+		}
+		if(!sequencingTechnologies.isEmpty()) {
+			structuredComments.put("Sequencing Technology", String.join("; ", sequencingTechnologies));
 		}
 		return structuredComments;
 	}
