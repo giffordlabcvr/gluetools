@@ -203,7 +203,8 @@ public abstract class BaseGbSubmissionGeneratorCommand<C, SR, R extends CommandR
 			});
 
 			List<Tbl2AsnResult> batchResults = gbSubmisisonGenerator.getTbl2AsnRunner().
-					runTbl2Asn(consoleCmdContext, sourceColumnHeaders, inputs, templateBytes, structuredCommentBytes, generateGbf, validate, dataDirFile);
+					runTbl2Asn(consoleCmdContext, sourceColumnHeaders, inputs, templateBytes, structuredCommentBytes, gbSubmisisonGenerator.getAssemblyGapSpecifier(),
+							generateGbf, validate, dataDirFile);
 			
 			
 			batchResults.forEach(tbl2AsnResult -> {

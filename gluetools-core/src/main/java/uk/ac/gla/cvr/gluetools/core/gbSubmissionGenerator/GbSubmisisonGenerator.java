@@ -34,6 +34,7 @@ import org.w3c.dom.Element;
 import freemarker.template.Template;
 import freemarker.template.TemplateModel;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
+import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.assemblyGapSpecifier.AssemblyGapSpecifier;
 import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.featureProvider.FeatureProvider;
 import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.featureProvider.FeatureProviderFactory;
 import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.sourceInfoProvider.SourceInfoProvider;
@@ -58,12 +59,14 @@ public class GbSubmisisonGenerator extends ModulePlugin<GbSubmisisonGenerator> {
 	public static final String SUPPRESS_GLUE_NOTE = "suppressGlueNote";
 	public static final String ID_TEMPLATE = "idTemplate";
 	public static final String STRUCTURED_COMMENT_PROVIDER = "structuredCommentProvider";
+	public static final String ASSEMBLY_GAP_SPECIFIER = "assemblyGapSpecifier";
 	
 	private Tbl2AsnRunner tbl2AsnRunner = new Tbl2AsnRunner();
 	
 	private List<SourceInfoProvider> sourceInfoProviders = new ArrayList<SourceInfoProvider>();
 	private List<FeatureProvider> featureProviders = new ArrayList<FeatureProvider>();
 	private StructuredCommentProvider structuredCommentProvider = null;
+	private AssemblyGapSpecifier assemblyGapSpecifier = null;
 	
 	private Template idTemplate;
 	private boolean suppressGlueNote;
@@ -82,10 +85,6 @@ public class GbSubmisisonGenerator extends ModulePlugin<GbSubmisisonGenerator> {
 
 	}
 
-	public StructuredCommentProvider getStructuredCommentProvider() {
-		return structuredCommentProvider;
-	}
-
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
@@ -94,6 +93,12 @@ public class GbSubmisisonGenerator extends ModulePlugin<GbSubmisisonGenerator> {
 		if(structuredCommentProviderElem != null) {
 			this.structuredCommentProvider = PluginFactory.createPlugin(pluginConfigContext, StructuredCommentProvider.class, structuredCommentProviderElem);
 		}
+
+		Element assemblyGapSpecifierElem = PluginUtils.findConfigElement(configElem, ASSEMBLY_GAP_SPECIFIER);
+		if(assemblyGapSpecifierElem != null) {
+			this.assemblyGapSpecifier = PluginFactory.createPlugin(pluginConfigContext, AssemblyGapSpecifier.class, assemblyGapSpecifierElem);
+		}
+
 		this.idTemplate = Optional.ofNullable(
 				PluginUtils.configureFreemarkerTemplateProperty(pluginConfigContext, configElem, ID_TEMPLATE, false))
 				.orElse(FreemarkerUtils.templateFromString(DEFAULT_ID_TEMPLATE, pluginConfigContext.getFreemarkerConfiguration()));
@@ -142,4 +147,11 @@ public class GbSubmisisonGenerator extends ModulePlugin<GbSubmisisonGenerator> {
 		return featureProviders;
 	}
 
+	public StructuredCommentProvider getStructuredCommentProvider() {
+		return structuredCommentProvider;
+	}
+
+	public AssemblyGapSpecifier getAssemblyGapSpecifier() {
+		return assemblyGapSpecifier;
+	}
 }

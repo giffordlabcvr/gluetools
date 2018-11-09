@@ -46,6 +46,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.OutputStreamCommandResultRend
 import uk.ac.gla.cvr.gluetools.core.command.result.ResultOutputFormat;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableColumn;
 import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.Tbl2AsnException.Code;
+import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.assemblyGapSpecifier.AssemblyGapSpecifier;
 import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.featureProvider.GbFeatureSpecification;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -75,7 +76,8 @@ public class Tbl2AsnRunner implements Plugin {
 
 	
 	public List<Tbl2AsnResult> runTbl2Asn(CommandContext cmdContext, List<String> sourceColumnHeaders0, 
-			List<Tbl2AsnInput> inputs, byte[] templateBytes, byte[] structuredCommentBytes, boolean generateGbf, boolean validate, File dataDirFile) {
+			List<Tbl2AsnInput> inputs, byte[] templateBytes, byte[] structuredCommentBytes, AssemblyGapSpecifier assemblyGapSpecifier,
+			boolean generateGbf, boolean validate, File dataDirFile) {
 		
 		String tbl2asnTempDir = getTbl2AsnTempDir(cmdContext);
 		String tbl2asnExecutable = getTbl2AsnExecutable(cmdContext);
@@ -139,11 +141,6 @@ public class Tbl2AsnRunner implements Plugin {
 			commandWords.add("-p");
 			commandWords.add(ProcessUtils.normalisedFilePath(tempDir));
 
-			/* 
-			// batching
-			commandWords.add("-a");
-			commandWords.add("s");
-			*/
 			
 			// template file
 			commandWords.add("-t");
@@ -165,6 +162,20 @@ public class Tbl2AsnRunner implements Plugin {
 					verificationArg += "v";
 				}
 				commandWords.add(verificationArg);
+			}
+			
+			if(assemblyGapSpecifier != null) {
+				commandWords.add("-a");
+				String gapSpecifierArg = "r";
+				gapSpecifierArg += Integer.toString(assemblyGapSpecifier.getMinRunLengthForGap());
+				if(assemblyGapSpecifier.isLengthsKnown()) {
+					gapSpecifierArg += "k";
+				} else {
+					gapSpecifierArg += "u";
+				}
+				commandWords.add(gapSpecifierArg);
+				commandWords.add("-l");
+				commandWords.add(assemblyGapSpecifier.getLinkageEvidence());
 			}
 			
 			ProcessResult tbl2asnProcessResult = ProcessUtils.runProcess(null, tempDir, commandWords); 

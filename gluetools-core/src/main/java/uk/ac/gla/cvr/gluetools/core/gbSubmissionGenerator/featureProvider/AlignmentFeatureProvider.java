@@ -77,11 +77,15 @@ public abstract class AlignmentFeatureProvider extends FeatureProvider {
 		return spanInsertions;
 	}
 
-	protected Map<String, String> generateQualifierKeyValuesFromFeatureLocation(
-			CommandContext cmdContext, FeatureLocation featureLocation) {
+	private Map<String, String> generateQualifierKeyValuesFromFeatureLocation(
+			CommandContext cmdContext, String sequenceID, FeatureLocation featureLocation) {
 		Map<String, String> qualifierKeyValues = new LinkedHashMap<String, String>();
 		qualifierKeyValueTemplates.forEach(qkvt -> 
-			qualifierKeyValues.put(qkvt.getKey(), qkvt.generateValueFromFeatureLocation(cmdContext, featureLocation)));
+		{
+			if(qkvt.includeForSequenceID(sequenceID)) {
+				qualifierKeyValues.put(qkvt.getKey(), qkvt.generateValueFromFeatureLocation(cmdContext, featureLocation));
+			}
+		});
 		return qualifierKeyValues;
 	}
 
@@ -132,7 +136,8 @@ public abstract class AlignmentFeatureProvider extends FeatureProvider {
 					return null;
 				}
 				String featureKey = getFeatureKey();
-				Map<String, String> qualifierKeyValues = generateQualifierKeyValuesFromFeatureLocation(cmdContext, featureLocation); 
+				Map<String, String> qualifierKeyValues = 
+						generateQualifierKeyValuesFromFeatureLocation(cmdContext, sequence.getSequenceID(), featureLocation); 
 				List<GbFeatureInterval> gbFeatureIntervals = new ArrayList<GbFeatureInterval>();
 				
 				
