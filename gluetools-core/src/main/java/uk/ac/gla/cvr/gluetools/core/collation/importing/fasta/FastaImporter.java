@@ -62,6 +62,8 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 public class FastaImporter extends SequenceImporter<FastaImporter> implements ValueExtractor {
 
 	private static final String SKIP_EXISTING_SEQUENCES = "skipExistingSequences";
+	private static final String REMOVE_LEADING_NS = "removeLeadingNs";
+	private static final String REMOVE_TRAILING_NS = "removeTrailingNs";
 	private static final String SOURCE_NAME = "sourceName";
 	
 	private Pattern nullRegex = null;
@@ -70,12 +72,16 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Va
 	private String sourceName;
 	private List<FastaFieldParser> fieldParsers;
 	private boolean skipExistingSequences = false;
+	private boolean removeLeadingNs = false;
+	private boolean removeTrailingNs = false;
 
 	public FastaImporter() {
 		super();
 		registerModulePluginCmdClass(FastaImporterImportCommand.class);
 		addSimplePropertyName(SKIP_EXISTING_SEQUENCES);
 		addSimplePropertyName(SOURCE_NAME);
+		addSimplePropertyName(REMOVE_LEADING_NS);
+		addSimplePropertyName(REMOVE_TRAILING_NS);
 	}
 
 	@Override
@@ -86,6 +92,10 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Va
 				configureStringProperty(configElem, SOURCE_NAME, false)).orElse("local");
 		skipExistingSequences = Optional.ofNullable(PluginUtils.
 				configureBooleanProperty(configElem, SKIP_EXISTING_SEQUENCES, false)).orElse(false);
+		removeLeadingNs = Optional.ofNullable(PluginUtils.
+				configureBooleanProperty(configElem, REMOVE_LEADING_NS, false)).orElse(false);
+		removeTrailingNs = Optional.ofNullable(PluginUtils.
+				configureBooleanProperty(configElem, REMOVE_TRAILING_NS, false)).orElse(false);
 		List<Element> idParserElems = PluginUtils.findConfigElements(configElem, "idParser", 0, 1);
 		if(!idParserElems.isEmpty()) {
 			Element idParserElem  = idParserElems.get(0);
@@ -116,6 +126,21 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Va
 				return;
 			}
 			String sequenceAsString = seq.getSequenceAsString().toUpperCase().replaceAll("-", "");
+			if(removeLeadingNs) {
+				int firstNonNIndex = 0;
+				while(firstNonNIndex < sequenceAsString.length() && sequenceAsString.charAt(firstNonNIndex) == 'N') {
+					firstNonNIndex++;
+				}
+				sequenceAsString = sequenceAsString.substring(firstNonNIndex);
+			}
+			if(removeTrailingNs) {
+				int lastNonNIndex = sequenceAsString.length()-1;
+				while(lastNonNIndex >= 0 && sequenceAsString.charAt(lastNonNIndex) == 'N') {
+					lastNonNIndex--;
+				}
+				sequenceAsString = sequenceAsString.substring(0, lastNonNIndex+1);
+			}
+			
 			String seqString = ">"+id+"\n"+sequenceAsString+"\n";
 			Sequence sequence = createSequence(cmdContext, sourceName, id, SequenceFormat.FASTA, seqString.getBytes());
 			Collection<Object> userCollection = seq.getUserCollection();
