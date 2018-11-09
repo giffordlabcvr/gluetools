@@ -20,7 +20,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 // FeatureProvider which generates a feature in a GenBank submission, based on the sequence's membership of a 
 // an unconstrained alignment, and the homology between the sequence and a named reference within that alignment.
 
-// There must be a feature location on the constraining reference of this alignment which has the feature
+// There must be a feature location on the named reference of this alignment which has the feature
 // named in the <glueFeatureName> element. The homology of the sequence within the unconstrained alignment, 
 // in the region of this feature location, is used to generate the genbank feature specification.
 
