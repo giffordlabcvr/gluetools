@@ -115,7 +115,7 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Va
 			if(skipExistingSequences && sequenceExists(cmdContext, sourceName, id)) {
 				return;
 			}
-			String sequenceAsString = seq.getSequenceAsString();
+			String sequenceAsString = seq.getSequenceAsString().toUpperCase().replaceAll("-", "");
 			String seqString = ">"+id+"\n"+sequenceAsString+"\n";
 			Sequence sequence = createSequence(cmdContext, sourceName, id, SequenceFormat.FASTA, seqString.getBytes());
 			Collection<Object> userCollection = seq.getUserCollection();
