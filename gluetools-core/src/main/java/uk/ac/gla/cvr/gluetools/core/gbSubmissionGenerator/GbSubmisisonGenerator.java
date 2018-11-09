@@ -75,6 +75,7 @@ public class GbSubmisisonGenerator extends ModulePlugin<GbSubmisisonGenerator> {
 		super();
 		registerModulePluginCmdClass(GenerateSqnCommand.class);
 		registerModulePluginCmdClass(GenerateGbfCommand.class);
+		registerModulePluginCmdClass(PreviewGbfCommand.class);
 		registerModulePluginCmdClass(GbSubmissionValidateCommand.class);
 		addSimplePropertyName(ID_TEMPLATE);
 		addSimplePropertyName(SUPPRESS_GLUE_NOTE);
