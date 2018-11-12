@@ -63,13 +63,18 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 public class PlaceFileCommand extends AbstractPlaceCommand<OkResult> {
 
 	public final static String INPUT_FILE = "inputFile";
+	public final static String OUTPUT_FILE = "outputFile";
+
 	
 	private String inputFile;
+	private String outputFile;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		this.inputFile = PluginUtils.configureStringProperty(configElem, INPUT_FILE, true);
+		this.outputFile = PluginUtils.configureStringProperty(configElem, OUTPUT_FILE, true);
+
 	}
 
 	@Override
@@ -83,7 +88,7 @@ public class PlaceFileCommand extends AbstractPlaceCommand<OkResult> {
 		CommandDocument placerResultCmdDocument = PojoDocumentUtils.pojoToCommandDocument(placerResultInternal.toPojoResult());
 		Document placerResultXmlDoc = CommandDocumentXmlUtils.commandDocumentToXmlDocument(placerResultCmdDocument);
 		byte[] placerResultXmlBytes = GlueXmlUtils.prettyPrint(placerResultXmlDoc);
-		consoleCommandContext.saveBytes(getOutputFile(), placerResultXmlBytes);
+		consoleCommandContext.saveBytes(outputFile, placerResultXmlBytes);
 		return new OkResult();
 	}
 

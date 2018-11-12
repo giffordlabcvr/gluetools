@@ -44,7 +44,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @CommandClass(
 		commandWords={"place", "fasta-document"}, 
-		description = "Place sequences from a FASTA command document object", 
+		description = "Place sequences from a FASTA command document object, returns result as placement result document", 
 		docoptUsages = { },
 		furtherHelp = "If supplied, <dataDir> must either not exist or be an empty directory",
 		metaTags = {CmdMeta.inputIsComplex}	

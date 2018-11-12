@@ -82,13 +82,17 @@ public class PlaceSequenceCommand extends AbstractPlaceCommand<OkResult> {
 	public static final String PAGE_SIZE = "pageSize";
 	public static final String FETCH_LIMIT = "fetchLimit";
 	public static final String FETCH_OFFSET = "fetchOffset";
-
 	
+	public final static String OUTPUT_FILE = "outputFile";
+
 	private Expression whereClause;
 	private Boolean allSequences;
 	private Optional<Integer> fetchLimit;
 	private Optional<Integer> fetchOffset;
 	private int pageSize;
+	
+	private String outputFile;
+
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -101,8 +105,7 @@ public class PlaceSequenceCommand extends AbstractPlaceCommand<OkResult> {
 		pageSize = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, PAGE_SIZE, false)).orElse(250);
 		fetchLimit = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, FETCH_LIMIT, false));
 		fetchOffset = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, FETCH_OFFSET, false));
-
-
+		this.outputFile = PluginUtils.configureStringProperty(configElem, OUTPUT_FILE, true);
 	}
 
 	
@@ -132,7 +135,6 @@ public class PlaceSequenceCommand extends AbstractPlaceCommand<OkResult> {
 		CommandDocument placerResultCmdDocument = PojoDocumentUtils.pojoToCommandDocument(placerResultInternal.toPojoResult());
 		Document placerResultXmlDoc = CommandDocumentXmlUtils.commandDocumentToXmlDocument(placerResultCmdDocument);
 		byte[] placerResultXmlBytes = GlueXmlUtils.prettyPrint(placerResultXmlDoc);
-		String outputFile = getOutputFile();
 		consoleCmdContext.saveBytes(outputFile, placerResultXmlBytes);
 		GlueLogger.getGlueLogger().log(Level.FINEST, "Saved placerResult to "+outputFile);
 		return new OkResult();

@@ -40,7 +40,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 public abstract class BaseExportPlacementPhylogenyCommand<R extends CommandResult> extends AbstractPlacementCommand<R> {
 
 	public static final String LEAF_NAME = "leafName";
-	public static final String OUTPUT_FORMAT = "outputFormat";
 	
 	private String leafName;
 
