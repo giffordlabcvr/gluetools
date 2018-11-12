@@ -128,6 +128,7 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		registerModulePluginCmdClass(ListPlacementCommand.class);
 		registerModulePluginCmdClass(ExportPlacementPhylogenyCommand.class);
 		registerModulePluginCmdClass(ListNeighbourCommand.class);
+		registerModulePluginCmdClass(PlaceFastaDocumentCommand.class);
 		addSimplePropertyName(PHYLO_ALIGNMENT_NAME);
 		addSimplePropertyName(PHYLO_FIELD_NAME);
 		addSimplePropertyName(ALIGNMENT_ALIGNMENT_NAME);
