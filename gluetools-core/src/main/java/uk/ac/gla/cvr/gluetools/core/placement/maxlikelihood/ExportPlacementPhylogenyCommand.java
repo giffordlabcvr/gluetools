@@ -70,10 +70,20 @@ public class ExportPlacementPhylogenyCommand extends AbstractPlacementCommand<Ok
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
+		configureInputFile(pluginConfigContext, configElem);
 		this.outputFile = PluginUtils.configureStringProperty(configElem, OUTPUT_FILE, true);
 		this.outputFormat = PluginUtils.configureEnumProperty(PhyloFormat.class, configElem, OUTPUT_FORMAT, true);
 		this.leafName = PluginUtils.configureStringProperty(configElem, LEAF_NAME, false);
 	}
+
+	
+	
+	@Override
+	protected OkResult execute(CommandContext cmdContext, MaxLikelihoodPlacer maxLikelihoodPlacer) {
+		return executeBasedOnFile(cmdContext, maxLikelihoodPlacer);
+	}
+
+
 
 	@Override
 	protected OkResult executeOnPlacementResult(CommandContext cmdContext,

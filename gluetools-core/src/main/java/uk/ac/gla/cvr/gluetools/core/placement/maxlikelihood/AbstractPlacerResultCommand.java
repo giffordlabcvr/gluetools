@@ -45,17 +45,27 @@ public abstract class AbstractPlacerResultCommand<R extends CommandResult> exten
 	public final static String INPUT_FILE = "inputFile";
 
 	private String inputFile;
-	
-	@Override
-	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
-		super.configure(pluginConfigContext, configElem);
+
+	public void configureInputFile(PluginConfigContext pluginConfigContext, Element configElem) {
 		this.inputFile = PluginUtils.configureStringProperty(configElem, INPUT_FILE, true);
 	}
+	
+	public final static String PLACER_RESULT_DOCUMENT = "placerResultDocument";
+	
+	private CommandDocument placerResultCmdDoc;
+	
+	public void configureResultDocument(PluginConfigContext pluginConfigContext, Element configElem) {
+		this.placerResultCmdDoc = PluginUtils.configureCommandDocumentProperty(configElem, PLACER_RESULT_DOCUMENT, true);
+	}
 
-	@Override
-	protected final R execute(CommandContext cmdContext, MaxLikelihoodPlacer maxLikelihoodPlacer) {
+	protected final R executeBasedOnFile(CommandContext cmdContext, MaxLikelihoodPlacer maxLikelihoodPlacer) {
 		ConsoleCommandContext consoleCmdContext = ((ConsoleCommandContext) cmdContext);
 		MaxLikelihoodPlacerResult placerResult = loadPlacerResult(consoleCmdContext, inputFile);
+		return executeOnPlacerResult(cmdContext, maxLikelihoodPlacer, placerResult);
+	}
+
+	protected final R executeBasedOnDocument(CommandContext cmdContext, MaxLikelihoodPlacer maxLikelihoodPlacer) {
+		MaxLikelihoodPlacerResult placerResult = PojoDocumentUtils.commandObjectToPojo(placerResultCmdDoc, MaxLikelihoodPlacerResult.class);
 		return executeOnPlacerResult(cmdContext, maxLikelihoodPlacer, placerResult);
 	}
 

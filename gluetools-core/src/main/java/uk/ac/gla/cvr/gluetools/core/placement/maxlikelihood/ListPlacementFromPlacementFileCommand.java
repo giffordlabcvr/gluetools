@@ -25,17 +25,17 @@
 */
 package uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood;
 
-import java.util.List;
+import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 
 @CommandClass(
 		commandWords={"list", "placement"}, 
-		description = "Summarise the placements for a single query in a result file", 
+		description = "Summarise the placements for a single query in a placement result file", 
 		docoptUsages = { "-i <inputFile> -q <queryName>" },
 		docoptOptions = { 
 				"-i <inputFile>, --inputFile <inputFile>  Placement results file",
@@ -44,30 +44,19 @@ import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 		furtherHelp = "",
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class ListPlacementCommand extends AbstractQueryResultCommand<ListPlacementCommand.Result> {
-
+public class ListPlacementFromPlacementFileCommand extends BaseListPlacementCommand {
 
 	@Override
-	protected Result executeOnQueryResult(CommandContext cmdContext,
-			MaxLikelihoodPlacer maxLikelihoodPlacer,
-			MaxLikelihoodPlacerResult placerResult,
-			MaxLikelihoodSingleQueryResult queryResult) {
-		return new Result(queryResult.singlePlacement);
+	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
+		super.configure(pluginConfigContext, configElem);
+		configureInputFile(pluginConfigContext, configElem);
 	}
 
-	
-	public static class Result extends BaseTableResult<MaxLikelihoodSinglePlacement> {
-		public Result(List<MaxLikelihoodSinglePlacement> rowObjects) {
-			super("listPlacementResult", rowObjects, 
-					column("placementIndex", singlePlacement -> singlePlacement.placementIndex),
-					column("likeWeightRatio", singlePlacement -> singlePlacement.likeWeightRatio),
-					column("edgeIndex", singlePlacement -> singlePlacement.edgeIndex),
-					column("distalLength", singlePlacement -> singlePlacement.distalLength),
-					column("pendantLength", singlePlacement -> singlePlacement.pendantLength),
-					column("logLikelihood", singlePlacement -> singlePlacement.logLikelihood));
-		}
-		
+	@Override
+	protected Result execute(CommandContext cmdContext, MaxLikelihoodPlacer maxLikelihoodPlacer) {
+		return super.executeBasedOnFile(cmdContext, maxLikelihoodPlacer);
 	}
+
 
 	@CompleterClass
 	public static class Completer extends AbstractQueryResultCommandCompleter {}

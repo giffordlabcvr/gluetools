@@ -25,42 +25,47 @@
 */
 package uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood;
 
-import java.util.List;
+import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 
 @CommandClass(
-		commandWords={"list", "query"}, 
-		description = "Summarise the per-query placement results from a file", 
-		docoptUsages = { "-i <inputFile>" },
+		commandWords={"list", "neighbour"}, 
+		description = "List the neighbours of a placement from a file in order of decreasing distance", 
+		docoptUsages = { "-i <inputFile> -q <queryName> -p <placementIndex>" },
 		docoptOptions = { 
-				"-i <inputFile>, --inputFile <inputFile>  Placement results file",
+				"-i <inputFile>, --inputFile <inputFile>                 Placement results file",
+				"-q <queryName>, --queryName <queryName>                 Query sequence name",
+				"-p <placementIndex>, --placementIndex <placementIndex>  Placement index"
 		},
 		furtherHelp = "",
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class ListQueryCommand extends AbstractPlacerResultCommand<ListQueryCommand.Result> {
+public class ListNeighbourFromPlacementFileCommand extends BaseListNeighbourCommand {
 
 	@Override
-	protected Result executeOnPlacerResult(CommandContext cmdContext, MaxLikelihoodPlacer maxLikelihoodPlacer, MaxLikelihoodPlacerResult placerResult) {
-		return new Result(placerResult.singleQueryResult);
+	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
+		super.configure(pluginConfigContext, configElem);
+		configureInputFile(pluginConfigContext, configElem);
 	}
+
+	@Override
+	protected Result execute(CommandContext cmdContext, MaxLikelihoodPlacer maxLikelihoodPlacer) {
+		return super.executeBasedOnFile(cmdContext, maxLikelihoodPlacer);
+	}
+
 	
-	public static class Result extends BaseTableResult<MaxLikelihoodSingleQueryResult> {
-		public Result(List<MaxLikelihoodSingleQueryResult> rowObjects) {
-			super("listQueryResult", rowObjects, 
-					column("queryName", singleQueryResult -> singleQueryResult.queryName),
-					column("numPlacements", singleQueryResult -> singleQueryResult.singlePlacement.size()));
+	@CompleterClass
+	public static class Completer extends AbstractPlacementCommandCompleter {
+		public Completer() {
+			super();
 		}
 		
 	}
 
-	@CompleterClass
-	public static class Completer extends AbstractPlacerResultCommandCompleter {}
-	
 	
 }

@@ -25,66 +25,40 @@
 */
 package uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood;
 
-import java.util.logging.Level;
-
-import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
-import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 @CommandClass(
-		commandWords={"genotype", "placer-result"}, 
-		description = "Generate genotyping results from a placer result file", 
-		docoptUsages = { "-f <fileName> [-l <detailLevel> | -c]" },
-		docoptOptions = { 
-				"-f <fileName>, --fileName <fileName>           Placer result file path",
-				"-l <detailLevel>, --detailLevel <detailLevel>  Table result detail level",
-				"-c, --documentResult                           Output document rather than table result",
-		},
-		furtherHelp = "",
-		metaTags = {CmdMeta.consoleOnly}	
+		commandWords={"genotype", "placer-result-document"}, 
+		description = "Generate genotyping results from a placer result document", 
+		docoptUsages = { },
+		metaTags = {CmdMeta.inputIsComplex}	
 )
-public class GenotypePlacerResultCommand extends BaseGenotypePlacerResultCommand {
+public class GenotypePlacerResultDocumentCommand extends BaseGenotypePlacerResultCommand {
 
-	public final static String FILE_NAME = "fileName";
+	public final static String PLACER_RESULT_DOCUMENT = "placerResultDocument";
 	
-	private String fileName;
+	private CommandDocument placerResultCmdDoc;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		this.fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, true);
+		this.placerResultCmdDoc = PluginUtils.configureCommandDocumentProperty(configElem, PLACER_RESULT_DOCUMENT, true);
 	}
+
 	
 	@Override
 	protected CommandResult execute(CommandContext cmdContext, MaxLikelihoodGenotyper maxLikelihoodGenotyper) {
-		ConsoleCommandContext consoleCommandContext = (ConsoleCommandContext) cmdContext;
-		maxLikelihoodGenotyper.log(Level.FINEST, "Reading placer result file "+fileName);
-		byte[] placerResultBytes = consoleCommandContext.loadBytes(fileName);
-		Document placerResultDocument = GlueXmlUtils.documentFromBytes(placerResultBytes);
-		CommandDocument placerResultCmdDoc = CommandDocumentXmlUtils.xmlDocumentToCommandDocument(placerResultDocument);
-		return executeOnPlacerResultDocument(cmdContext, maxLikelihoodGenotyper, placerResultCmdDoc);
+		return super.executeOnPlacerResultDocument(cmdContext, maxLikelihoodGenotyper, placerResultCmdDoc);
 	}
 
-	@CompleterClass
-	public static class Completer extends AdvancedCmdCompleter {
-		public Completer() {
-			super();
-			registerPathLookup("fileName", false);
-			registerEnumLookup("detailLevel", DetailLevel.class);
-		}
-	}
 
 	
 }

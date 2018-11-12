@@ -29,12 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import org.w3c.dom.Element;
-
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
-import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
@@ -42,26 +37,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 
-@CommandClass(
-		commandWords={"list", "neighbour"}, 
-		description = "List the neighbours of a placement in order of decreasing distance", 
-		docoptUsages = { "-i <inputFile> -q <queryName> -p <placementIndex>" },
-		docoptOptions = { 
-				"-i <inputFile>, --inputFile <inputFile>                 Placement results file",
-				"-q <queryName>, --queryName <queryName>                 Query sequence name",
-				"-p <placementIndex>, --placementIndex <placementIndex>  Placement index"
-		},
-		furtherHelp = "",
-		metaTags = {CmdMeta.consoleOnly}	
-)
-public class ListNeighbourCommand extends AbstractPlacementCommand<ListNeighbourCommand.Result> {
-
-	@Override
-	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
-		super.configure(pluginConfigContext, configElem);
-	}
+public abstract class BaseListNeighbourCommand extends AbstractPlacementCommand<BaseListNeighbourCommand.Result> {
 
 	@Override
 	protected Result executeOnPlacementResult(CommandContext cmdContext,
@@ -111,16 +88,6 @@ public class ListNeighbourCommand extends AbstractPlacementCommand<ListNeighbour
 		}
 		
 	}
-	
-	@CompleterClass
-	public static class Completer extends AbstractPlacementCommandCompleter {
-		public Completer() {
-			super();
-		}
-		
-	}
-
-
 	
 	
 }
