@@ -1,6 +1,7 @@
 package uk.ac.gla.cvr.gluetools.core.treeVisualiser;
 
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
@@ -10,6 +11,10 @@ import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
+import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.document.CommandArray;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
@@ -22,6 +27,7 @@ import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeVisitor;
 import uk.ac.gla.cvr.gluetools.core.phylotree.document.DocumentToPhyloTreeTransformer;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.reporting.memberAnnotationGenerator.MemberAnnotationGenerator;
 
 @CommandClass(
 		commandWords={"visualise", "tree-document"}, 
@@ -31,21 +37,18 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 )
 public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseTreeResult, TreeVisualiser> {
 
-	private static final String MAX_SUBTREE_Y = "maxSubtreeY";
-	private static final String MIN_SUBTREE_Y = "minSubtreeY";
-	private static final String SUBTREE_Y = "y";
-	private static final String SUBTREE_X = "x";
 	public final static String TREE_DOCUMENT = "treeDocument";
 	public final static String PX_WIDTH = "pxWidth";
 	public final static String PX_HEIGHT = "pxHeight";
-	public final static String LEAF_NODES = "leafNodes";
-	public final static String INTERNAL_NODES = "internalNodes";
-	public final static String INTERNAL_VERTICALS = "internalVerticals";
-	public final static String BRANCHES = "branches";
-	
+	public final static String LEAF_TEXT_WIDTH_PX = "leafTextWidthPx";
+	public final static String LEAF_TEXT_HEIGHT_PX = "leafTextHeightPx";
+	public final static String LEAF_TEXT_GAP_PX = "leafTextGapPx";
+
 	private CommandDocument treeDocument;
 	private int pxWidth;
 	private int pxHeight;
+
+	
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -55,6 +58,20 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 		this.pxHeight = PluginUtils.configureIntProperty(configElem, PX_HEIGHT, true);
 	}
 
+	// phyloTree user data constants
+	private static final String MAX_SUBTREE_Y = "maxSubtreeY";
+	private static final String MIN_SUBTREE_Y = "minSubtreeY";
+	private static final String SUBTREE_Y = "y";
+	private static final String SUBTREE_X = "x";
+
+	// visualisation document constants
+	private final static String LEAF_NODES = "leafNodes";
+	private final static String INTERNAL_NODES = "internalNodes";
+	private final static String BRANCHES = "branches";
+	private final static String ROOT = "root";
+	
+
+	
 	@Override
 	protected VisualiseTreeResult execute(CommandContext cmdContext, TreeVisualiser treeVisualiser) {
 		DocumentToPhyloTreeTransformer docToPhyloTreeTransformer = new DocumentToPhyloTreeTransformer();
@@ -71,7 +88,8 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 		double treeWidthPct = 100 - (
 				treeVisualiser.getRightMarginPct() + 
 				treeVisualiser.getRootPct() + 
-				treeVisualiser.getLeafInfoPct() + 
+				treeVisualiser.getLeafTextGapPct() + 
+				treeVisualiser.getLeafTextPct() + 
 				treeVisualiser.getLeftMarginPct()
 		); 
 		
@@ -91,14 +109,19 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 		double branchLengthMultiplier = treeWidth / maxDepth.doubleValue();
 		
 		double rightMarginPx = (pxWidth * treeVisualiser.getRightMarginPct()) / 100.0;
+		double leafTextGapPx = (pxWidth * treeVisualiser.getLeafTextGapPct()) / 100.0;
+		double leafTextWidthPx = (pxWidth * treeVisualiser.getLeafTextPct()) / 100.0;
 		double rootLengthPx = (pxWidth * treeVisualiser.getRootPct()) / 100.0;
 		double topMarginPx = (pxHeight * treeVisualiser.getTopMarginPct()) / 100.0;
 
 		visDocument.setInt(PX_WIDTH, pxWidth);
 		visDocument.setInt(PX_HEIGHT, pxHeight);
+		visDocument.setDouble(LEAF_TEXT_WIDTH_PX, leafTextWidthPx);
+		visDocument.setDouble(LEAF_TEXT_HEIGHT_PX, verticalLeafSpace);
+		visDocument.setDouble(LEAF_TEXT_GAP_PX, leafTextGapPx);
 		
 		setSubtreeCoords(phyloTree, rightMarginPx, rootLengthPx, topMarginPx, verticalLeafSpace, branchLengthMultiplier);
-		generateObjects(phyloTree, rightMarginPx,  rootLengthPx, topMarginPx, visDocument);
+		generateObjects(cmdContext, treeVisualiser, phyloTree, rightMarginPx,  rootLengthPx, topMarginPx, visDocument);
 		return new VisualiseTreeResult(visDocument);
 	}
 
@@ -151,34 +174,84 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 		});
 	}
 
-	private void generateObjects(PhyloTree phyloTree, 
+	private void generateObjects(CommandContext cmdContext, TreeVisualiser treeVisualiser, PhyloTree phyloTree, 
 			double rightMarginPx, double rootLengthPx, double topMarginPx, 
 			CommandDocument visDocument) {
 
 		CommandArray leafNodesArray = visDocument.setArray(LEAF_NODES);
 		CommandArray internalNodesArray = visDocument.setArray(INTERNAL_NODES);
-		CommandArray internalVerticalsArray = visDocument.setArray(INTERNAL_VERTICALS);
 		CommandArray branchesArray = visDocument.setArray(BRANCHES);
+		CommandObject rootObj = visDocument.setObject(ROOT);
+		
+		List<MemberAnnotationGenerator> memberAnnotationGenerators = treeVisualiser.getMemberAnnotationGenerators();
 		
 		phyloTree.accept(new PhyloTreeVisitor() {
 			@Override
 			public void visitLeaf(PhyloLeaf phyloLeaf) {
-				double x = (double) phyloLeaf.getUserData().get(SUBTREE_X);
-				double y = (double) phyloLeaf.getUserData().get(SUBTREE_Y);
+				Map<String, Object> leafUserData = phyloLeaf.getUserData();
+				double x = (double) leafUserData.get(SUBTREE_X);
+				double y = (double) leafUserData.get(SUBTREE_Y);
 				CommandObject leafObj = leafNodesArray.addObject();
 				leafObj.setDouble("x", x);
 				leafObj.setDouble("y", y);
+				
+				CommandObject leafPropertiesObj = leafObj.setObject("properties");
+				String phyloLeafName = phyloLeaf.getName();
+				leafPropertiesObj.set("name", phyloLeafName);
+				boolean storedAlmtMember = true;
+				boolean highlighted = false;
+				if(leafUserData != null) {
+					Object nonMemberValue = leafUserData.get("treevisualiser-nonmember");
+					if(nonMemberValue != null && nonMemberValue.equals("true")) {
+						storedAlmtMember = false;
+					}
+					Object highlightedValue = leafUserData.get("treevisualiser-highlighted");
+					if(highlightedValue != null && highlightedValue.equals("true")) {
+						highlighted = true;
+					}
+				} 
+				if(storedAlmtMember) {
+					Map<String, String> memberPkMap = Project.targetPathToPkMap(ConfigurableTable.alignment_member, phyloLeafName);
+					AlignmentMember member = GlueDataObject.lookup(cmdContext, AlignmentMember.class, memberPkMap);
+					memberAnnotationGenerators.forEach(membAnnotGen -> {
+						String annoString = membAnnotGen.renderAnnotation(member);
+						leafPropertiesObj.set(membAnnotGen.getAnnotationName(), annoString);
+					});
+				} else {
+					leafPropertiesObj.set("sequenceID", phyloLeafName);
+				}
+				if(highlighted) {
+					leafObj.setBoolean("highlighted", true);
+				}
+
 			}
 			@Override
 			public void postVisitBranch(int branchIndex, PhyloBranch phyloBranch) {
-				double x1 = (double) phyloBranch.getParentPhyloInternal().getUserData().get(SUBTREE_X);
-				double x2 = (double) phyloBranch.getSubtree().getUserData().get(SUBTREE_X);
-				double y = (double) phyloBranch.getSubtree().getUserData().get(SUBTREE_Y);
+				Map<String, Object> parentUserData = phyloBranch.getParentPhyloInternal().getUserData();
+				double parentX = (double) parentUserData.get(SUBTREE_X);
+				double parentY = (double) parentUserData.get(SUBTREE_Y);
+				Map<String, Object> childUserData = phyloBranch.getSubtree().getUserData();
+				double childX = (double) childUserData.get(SUBTREE_X);
+				double childY = (double) childUserData.get(SUBTREE_Y);
+				Map<String, Object> branchUserData = phyloBranch.getUserData();
+				boolean highlighted = false;
+				if(branchUserData != null) {
+					Object highlightedValue = branchUserData.get("treevisualiser-highlighted");
+					if(highlightedValue != null && highlightedValue.equals("true")) {
+						highlighted = true;
+					}
+				} 
+				
 				CommandObject branchObj = branchesArray.addObject();
-				branchObj.setDouble("x1", x1);
-				branchObj.setDouble("y1", y);
-				branchObj.setDouble("x2", x2);
-				branchObj.setDouble("y2", y);
+				branchObj.setDouble("parentX", parentX);
+				branchObj.setDouble("parentY", parentY);
+				branchObj.setDouble("cornerX", parentX);
+				branchObj.setDouble("cornerY", childY);
+				branchObj.setDouble("childX", childX);
+				branchObj.setDouble("childY", childY);
+				if(highlighted) {
+					branchObj.setBoolean("highlighted", true);
+				}
 			}
 			@Override
 			public void postVisitInternal(PhyloInternal phyloInternal) {
@@ -187,14 +260,6 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 				CommandObject internalNodeObj = internalNodesArray.addObject();
 				internalNodeObj.setDouble("x", x);
 				internalNodeObj.setDouble("y", y);
-
-				double y1 = (double) phyloInternal.getUserData().get(MIN_SUBTREE_Y);
-				double y2 = (double) phyloInternal.getUserData().get(MAX_SUBTREE_Y);
-				CommandObject internalVerticalObj = internalVerticalsArray.addObject();
-				internalVerticalObj.setDouble("x1", x);
-				internalVerticalObj.setDouble("y1", y1);
-				internalVerticalObj.setDouble("x2", x);
-				internalVerticalObj.setDouble("y2", y2);
 			}
 		});
 		
@@ -203,11 +268,10 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 		double x1 = rightMarginPx;
 		double x2 = (double) root.getUserData().get(SUBTREE_X);
 		double y = (double) root.getUserData().get(SUBTREE_Y);
-		CommandObject branchObj = branchesArray.addObject();
-		branchObj.setDouble("x1", x1);
-		branchObj.setDouble("y1", y);
-		branchObj.setDouble("x2", x2);
-		branchObj.setDouble("y2", y);
+		rootObj.setDouble("x1", x1);
+		rootObj.setDouble("y1", y);
+		rootObj.setDouble("x2", x2);
+		rootObj.setDouble("y2", y);
 
 	}
 

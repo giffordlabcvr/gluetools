@@ -41,13 +41,15 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass(
 		commandWords={"export", "placement", "phylogeny"}, 
 		description = "Export phylogeny file for a single placement in a result file", 
-		docoptUsages = { "-i <inputFile> -q <queryName> -p <placementIndex> [-l <leafName>] -o <outputFile> <outputFormat>" },
+		docoptUsages = { "-i <inputFile> -q <queryName> -p <placementIndex> [-l <leafName>] [-L <leafNodeProperty>]... [-B <branchProperty>]... -o <outputFile> <outputFormat>" },
 		docoptOptions = { 
-				"-i <inputFile>, --inputFile <inputFile>                 Placement results file",
-				"-q <queryName>, --queryName <queryName>                 Query sequence name",
-				"-p <placementIndex>, --placementIndex <placementIndex>  Placement index",
-				"-l <leafName>, --leafName <leafName>                    Name given to placement leaf",
-				"-o <outputFile>, --outputFile <outputFile>              Phylogeny output file",
+				"-i <inputFile>, --inputFile <inputFile>                       Placement results file",
+				"-q <queryName>, --queryName <queryName>                       Query sequence name",
+				"-p <placementIndex>, --placementIndex <placementIndex>        Placement index",
+				"-l <leafName>, --leafName <leafName>                          Name given to placement leaf",
+				"-L <leafNodeProperty>, --leafNodeProperty <leafNodeProperty>  <key>:<value> pair for leaf",
+				"-B <branchProperty>, --branchProperty <branchProperty>        <key>:<value> pair for branch",
+				"-o <outputFile>, --outputFile <outputFile>                    Phylogeny output file",
 		},
 		furtherHelp = "The reference phylogeny will be output, with an additional leaf node, representing the specified placement."+
 				"If <leafName> is specified, this will annotate the new placement. Otherwise, the query sequence name will be used.",
