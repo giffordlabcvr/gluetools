@@ -30,8 +30,6 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
-import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloFormat;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -67,12 +65,5 @@ public class ExportPlacementPhylogenyFromDocumentCommand extends BaseExportPlace
 		return new PhyloTreeResult(glueProjectPhyloTree);
 	}
 	
-	@CompleterClass
-	public static class Completer extends AbstractPlacementCommandCompleter {
-		public Completer() {
-			super();
-			registerPathLookup("outputFile", false);
-			registerEnumLookup("outputFormat", PhyloFormat.class);
-		}		
-	}
+	
 }
