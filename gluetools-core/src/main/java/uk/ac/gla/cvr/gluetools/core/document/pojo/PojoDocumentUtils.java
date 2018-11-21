@@ -68,7 +68,10 @@ public class PojoDocumentUtils {
 				if(cmdFieldValue instanceof SimpleCommandValue) {
 					pojoFieldValue = ((SimpleCommandValue) cmdFieldValue).getValue();
 					Class<? extends Object> valueClass = pojoFieldValue.getClass();
-					if(!valueClass.equals(fieldType)) {
+					if(valueClass.equals(Integer.class) && fieldType.equals(Double.class)) {
+						// this can happen because of how JSON / JavaScript represents all numbers as floating points, but renders exact integers as integers.
+						pojoFieldValue = ((Integer) pojoFieldValue).doubleValue();
+					} else if(!valueClass.equals(fieldType)) {
 						throw new PojoDocumentException(Code.DOCUMENT_TO_POJO_FAILED, "Object field of incorrect type "+valueClass.getSimpleName()+", expected "+fieldType);
 					}
 				} else if(cmdFieldValue == null) {
