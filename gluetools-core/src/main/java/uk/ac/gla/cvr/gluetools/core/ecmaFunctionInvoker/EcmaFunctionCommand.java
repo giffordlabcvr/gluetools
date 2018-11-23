@@ -29,9 +29,12 @@ import java.util.List;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -39,16 +42,22 @@ public abstract class EcmaFunctionCommand extends ModulePluginCommand<CommandRes
 
 	public static final String FUNCTION_NAME = "functionName";
 	public static final String ARGUMENT = "argument";
+	public static final String DOCUMENT = "document";
 	
 	
 	private String functionName;
 	private List<String> arguments;
+	private CommandDocument document;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		this.functionName = PluginUtils.configureStringProperty(configElem, FUNCTION_NAME, true);
 		this.arguments = PluginUtils.configureStringsProperty(configElem, ARGUMENT);
+		this.document = PluginUtils.configureCommandDocumentProperty(configElem, DOCUMENT, false);
+		if(this.arguments.size() > 0 && this.document != null) {
+			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Cannot supply both arguments and document to EcmaFunction invocation");
+		}
 	}
 
 	protected String getFunctionName() {
@@ -57,6 +66,10 @@ public abstract class EcmaFunctionCommand extends ModulePluginCommand<CommandRes
 
 	protected List<String> getArguments() {
 		return arguments;
+	}
+
+	protected CommandDocument getDocument() {
+		return document;
 	}
 
 	

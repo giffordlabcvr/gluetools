@@ -41,11 +41,22 @@ public class CommandDocumentToXmlDocumentVisitor implements CommandDocumentVisit
 
 	private Document document;
 	private Element currentParentElem;
+	
+	private boolean addGlueTypes = true;
+	private boolean includeGlueNullElements = true;
 
 	public CommandDocumentToXmlDocumentVisitor() {
 		this.document = GlueXmlUtils.newDocument();
 	}
 	
+	public void setAddGlueTypes(boolean addGlueTypes) {
+		this.addGlueTypes = addGlueTypes;
+	}
+
+	public void setIncludeGlueNullElements(boolean includeGlueNullElements) {
+		this.includeGlueNullElements = includeGlueNullElements;
+	}
+
 	@Override
 	public void preVisitCommandDocument(CommandDocument documentBuilder) {
 		Element rootElem = document.createElement(documentBuilder.getRootName());
@@ -98,16 +109,22 @@ public class CommandDocumentToXmlDocumentVisitor implements CommandDocumentVisit
 	
 	private void addObjectValue(String fieldName, boolean isMemberOfArray) {
 		Element fieldElem = GlueXmlUtils.appendElement(currentParentElem, fieldName);
-		CommandDocumentXmlUtils.setGlueType(fieldElem, GlueType.Object, isMemberOfArray);
+		if(addGlueTypes) {
+			CommandDocumentXmlUtils.setGlueType(fieldElem, GlueType.Object, isMemberOfArray);
+		}
 		this.currentParentElem = fieldElem;
 	}
 
 	private void addSimpleValue(String fieldName, boolean isMemberOfArray, SimpleCommandValue simpleCommandValue) {
 		GlueType glueType = simpleCommandValue.getGlueType();
-		Element fieldElem = GlueXmlUtils.appendElement(currentParentElem, fieldName);
-		CommandDocumentXmlUtils.setGlueType(fieldElem, glueType, isMemberOfArray);
-		if(glueType != GlueType.Null) {
-			fieldElem.appendChild(document.createTextNode(glueType.renderAsString(simpleCommandValue.getValue())));
+		if(glueType != GlueType.Null || includeGlueNullElements) {
+			Element fieldElem = GlueXmlUtils.appendElement(currentParentElem, fieldName);
+			if(addGlueTypes) {
+				CommandDocumentXmlUtils.setGlueType(fieldElem, glueType, isMemberOfArray);
+			}
+			if(glueType != GlueType.Null) {
+				fieldElem.appendChild(document.createTextNode(glueType.renderAsString(simpleCommandValue.getValue())));
+			}
 		}
 	}
 

@@ -54,6 +54,7 @@ import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
 import uk.ac.gla.cvr.gluetools.utils.CayenneUtils;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.GlueTypeUtils.GlueType;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 // TODO stop using XPaths when it's just a simple property lookup.
@@ -179,7 +180,16 @@ public class PluginUtils {
 		if(propertyElems.size() > 1) {
 			throw new PluginConfigException(Code.MULTIPLE_PROPERTY_SETTINGS, propertyName);
 		}
-		return propertyElems.get(0).getTextContent();
+		Element propertyElem = propertyElems.get(0);
+		GlueType glueType = CommandDocumentXmlUtils.getGlueType(propertyElem);
+		if(glueType == GlueType.Null) {
+			if(required) {
+				throw new PluginConfigException(Code.REQUIRED_PROPERTY_MISSING, configElem.getNodeName(), propertyName);
+			} else {
+				return null;
+			}
+		}
+		return propertyElem.getTextContent();
 	}
 
 	public static char configureCharProperty(Element configElem, String propertyName, boolean required) {
@@ -540,6 +550,9 @@ public class PluginUtils {
 
 	public static CommandDocument configureCommandDocumentProperty(Element configElem, String propertyName, boolean required) {
 		Element cmdDocParent = findConfigElement(configElem, propertyName, required);
+		if(cmdDocParent == null && !required) {
+			return null;
+		}
 		List<Element> childElements = GlueXmlUtils.findChildElements(cmdDocParent);
 		if(childElements.size() != 1) {
 			throw new PluginConfigException(Code.COMMAND_DOCUMENT_PROPERTY_ERROR, "Command document property "+propertyName+" should have exactly one child element");

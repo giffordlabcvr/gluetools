@@ -70,7 +70,7 @@ public class EcmaInvokeConsumesBinaryFunctionCommand extends EcmaFunctionCommand
 		ArrayList<String> arguments = new ArrayList<String>();
 		arguments.add(inputData);
 		arguments.addAll(otherArguments);
-		return ecmaFunctionInvoker.invokeFunction(cmdContext, getFunctionName(), arguments);
+		return ecmaFunctionInvoker.invokeFunction(cmdContext, getFunctionName(), arguments, getDocument());
 	}
 
 	

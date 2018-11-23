@@ -153,7 +153,8 @@ public class EcmaFunctionInvoker extends ModulePlugin<EcmaFunctionInvoker> {
 		return new ArrayList<EcmaFunction>(functionNameToFunction.values());
 	}
 
-	public CommandResult invokeFunction(CommandContext cmdContext, String functionName, List<String> arguments) {
+	public CommandResult invokeFunction(CommandContext cmdContext, String functionName, List<String> arguments,
+			CommandDocument document) {
 		return getFunctions()
 				.stream()
 				.filter(fn -> fn.getName().equals(functionName))
@@ -161,7 +162,7 @@ public class EcmaFunctionInvoker extends ModulePlugin<EcmaFunctionInvoker> {
 				.orElseThrow(() -> 
 					new EcmaFunctionInvokerException(EcmaFunctionInvokerException.Code.FUNCTION_NAME_UNKNOWN, 
 					functionName, this.getModuleName()))
-				.invoke(cmdContext, this, arguments);
+				.invoke(cmdContext, this, arguments, document);
 	}
 
 

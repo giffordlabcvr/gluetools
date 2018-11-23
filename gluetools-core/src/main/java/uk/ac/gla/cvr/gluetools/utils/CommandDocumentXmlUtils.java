@@ -39,7 +39,13 @@ public class CommandDocumentXmlUtils {
 
 	
 	public static Document commandDocumentToXmlDocument(CommandDocument commandDocument) {
+		return commandDocumentToXmlDocument(commandDocument, true, true);
+	}
+
+	public static Document commandDocumentToXmlDocument(CommandDocument commandDocument, boolean addGlueTypes, boolean includeGlueNullElements) {
 		CommandDocumentToXmlDocumentVisitor commandDocumentToXmlDocumentVisitor = new CommandDocumentToXmlDocumentVisitor();
+		commandDocumentToXmlDocumentVisitor.setAddGlueTypes(addGlueTypes);
+		commandDocumentToXmlDocumentVisitor.setIncludeGlueNullElements(includeGlueNullElements);
 		commandDocument.accept(commandDocumentToXmlDocumentVisitor);
 		return commandDocumentToXmlDocumentVisitor.getXmlDocument();
 	}
