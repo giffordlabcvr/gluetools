@@ -84,7 +84,7 @@ public class EcmaInvokeFunctionCommand extends EcmaFunctionCommand implements Pr
 							.collect(Collectors.toList());
 				}
 			});
-			registerVariableInstantiator("argument", new ModuleVariableInstantiator() {
+			ModuleVariableInstantiator argumentsInstantiator = new ModuleVariableInstantiator() {
 
 				@SuppressWarnings("unchecked")
 				@Override
@@ -131,7 +131,9 @@ public class EcmaInvokeFunctionCommand extends EcmaFunctionCommand implements Pr
 					return Arrays.asList(
 							new CompletionSuggestion("<"+thisParam.getName()+">", true));
 				}
-			});
+			};
+			argumentsInstantiator.setAllowsDuplicateListSuggestions(true);
+			registerVariableInstantiator("argument", argumentsInstantiator);
 		}
 		
 	}
