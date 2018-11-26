@@ -41,7 +41,7 @@ public abstract class EcmaFunctionBaseTableResult<D> extends BaseTableResult<D> 
 		super(rootDocumentName, rowObjects, tableColumns);
 	}
 
-	protected static Object jsValueToGlueDocValue(EcmaFunctionInvoker ecmaFunctionInvoker, String functionName,
+	public static Object jsValueToGlueDocValue(EcmaFunctionInvoker ecmaFunctionInvoker, String functionName,
 			Object value) {
 		Object glueDocValue;
 		if(value == null || value instanceof Undefined){
