@@ -229,9 +229,11 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 			if(instantiations != null) {
 				Object currentBinding = bindings.get(variableName);
 				if(currentBinding != null && currentBinding instanceof String) {
-					instantiations = instantiations.stream()
-							.filter(i -> !i.getSuggestedWord().equals((String) currentBinding))
-							.collect(Collectors.toList());
+					if(!variableInstantiator.allowsDuplicateListSuggestions()) {
+						instantiations = instantiations.stream()
+								.filter(i -> !i.getSuggestedWord().equals((String) currentBinding))
+								.collect(Collectors.toList());
+					}
 				}
 				if(currentBinding != null && currentBinding instanceof List<?>) {
 					if(!variableInstantiator.allowsDuplicateListSuggestions()) {
