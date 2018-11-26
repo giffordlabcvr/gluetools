@@ -39,6 +39,7 @@ public class EcmaFunctionResultTypeFactory extends PluginFactory<EcmaFunctionRes
 		registerPluginClass(EcmaFunctionTableFromObjectsResultType.class);
 		registerPluginClass(EcmaFunctionTableFromDocumentResultType.class);
 		registerPluginClass(EcmaFunctionOkFromNullResultType.class);
+		registerPluginClass(EcmaFunctionMapFromDocumentResultType.class);
 	}
 	
 }

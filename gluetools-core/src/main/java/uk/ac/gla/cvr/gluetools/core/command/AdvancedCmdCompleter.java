@@ -50,10 +50,20 @@ import uk.ac.gla.cvr.gluetools.core.docopt.DocoptParseResult.OptionsDisplay;
 public class AdvancedCmdCompleter extends CommandCompleter {
 
 	public abstract static class VariableInstantiator {
+		private boolean allowsDuplicateListSuggestions = false;
 		@SuppressWarnings("rawtypes")
-		public
-		abstract List<CompletionSuggestion> instantiate(
+		public abstract List<CompletionSuggestion> instantiate(
 				ConsoleCommandContext cmdContext, Class<? extends Command> cmdClass, Map<String, Object> bindings, String prefix);
+
+		public boolean allowsDuplicateListSuggestions() {
+			return allowsDuplicateListSuggestions;
+		}
+
+		public void setAllowsDuplicateListSuggestions(boolean allowsDuplicateListSuggestions) {
+			this.allowsDuplicateListSuggestions = allowsDuplicateListSuggestions;
+		}
+		
+		
 	}
 	
 	public static class SimpleDataObjectNameInstantiator extends VariableInstantiator {
@@ -219,14 +229,18 @@ public class AdvancedCmdCompleter extends CommandCompleter {
 			if(instantiations != null) {
 				Object currentBinding = bindings.get(variableName);
 				if(currentBinding != null && currentBinding instanceof String) {
-					instantiations = instantiations.stream()
-							.filter(i -> !i.getSuggestedWord().equals((String) currentBinding))
-							.collect(Collectors.toList());
+					if(!variableInstantiator.allowsDuplicateListSuggestions()) {
+						instantiations = instantiations.stream()
+								.filter(i -> !i.getSuggestedWord().equals((String) currentBinding))
+								.collect(Collectors.toList());
+					}
 				}
 				if(currentBinding != null && currentBinding instanceof List<?>) {
-					instantiations = instantiations.stream()
-							.filter(i -> !((List<String>) currentBinding).contains(i.getSuggestedWord()))
-							.collect(Collectors.toList());
+					if(!variableInstantiator.allowsDuplicateListSuggestions()) {
+						instantiations = instantiations.stream()
+								.filter(i -> !((List<String>) currentBinding).contains(i.getSuggestedWord()))
+								.collect(Collectors.toList());
+					}
 				}
 				results.addAll(instantiations);
 			} else {

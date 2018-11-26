@@ -41,6 +41,9 @@ public class DateUtils {
 	}
 	
 	public static boolean isDateString(String string) {
+		if(string.length() != 11) {
+			return false; // bit faster
+		}
 		return string.matches("^"+GLUE_DATE_REGEX+"$");
 	}
 	

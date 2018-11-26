@@ -229,8 +229,7 @@ public class NashornContext {
 		@SuppressWarnings("rawtypes")
 		public Map runCommandFromArray(ScriptObjectMirror scrObjMirror) {
 			List<String> tokenStrings = new ArrayList<String>();
-			for(int i = 0; i < scrObjMirror.size(); i++) {
-				Object obj = scrObjMirror.getSlot(i);
+			for(Object obj: scrObjMirror.values()) {
 				String string;
 				if(obj instanceof String) {
 					string = (String) obj;

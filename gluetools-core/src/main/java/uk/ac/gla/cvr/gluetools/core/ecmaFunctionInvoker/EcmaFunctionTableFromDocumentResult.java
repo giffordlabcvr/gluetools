@@ -33,7 +33,7 @@ import jdk.nashorn.api.scripting.ScriptObjectMirror;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableColumn;
 import uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker.EcmaFunctionInvokerException.Code;
 
-public class EcmaFunctionTableFromDocumentResult extends EcmaFunctionBaseTableResult<ScriptObjectMirror> {
+public class EcmaFunctionTableFromDocumentResult extends EcmaFunctionBaseTableResult<List<Object>> {
 
 	public EcmaFunctionTableFromDocumentResult(EcmaFunctionInvoker ecmaFunctionInvoker, String functionName, ScriptObjectMirror jsDocument) {
 		super(rootNameFromJsDocument(jsDocument, ecmaFunctionInvoker, functionName), 
@@ -41,22 +41,22 @@ public class EcmaFunctionTableFromDocumentResult extends EcmaFunctionBaseTableRe
 				tableColumnsFromRowJsDocument(jsDocument, ecmaFunctionInvoker, functionName));
 	}
 
-	private static TableColumn<ScriptObjectMirror>[] tableColumnsFromRowJsDocument(ScriptObjectMirror jsDocument,
+	private static TableColumn<List<Object>>[] tableColumnsFromRowJsDocument(ScriptObjectMirror jsDocument,
 			EcmaFunctionInvoker ecmaFunctionInvoker, String functionName) {
 		String[] columnNames = columnNames(jsDocument, ecmaFunctionInvoker, functionName);
 		@SuppressWarnings("unchecked")
-		TableColumn<ScriptObjectMirror>[] tableColumns = new TableColumn[columnNames.length];
+		TableColumn<List<Object>>[] tableColumns = new TableColumn[columnNames.length];
 		for(int i = 0; i < tableColumns.length; i++) {
 			final int iFinal = i;
-			TableColumn<ScriptObjectMirror> tableColumn = 
-					new TableColumn<ScriptObjectMirror>(columnNames[iFinal], valueArray -> jsValueToGlueDocValue(ecmaFunctionInvoker, functionName, valueArray.getSlot(iFinal)));
+			TableColumn<List<Object>> tableColumn = 
+					new TableColumn<List<Object>>(columnNames[iFinal], valueList -> jsValueToGlueDocValue(ecmaFunctionInvoker, functionName, valueList.get(iFinal)));
 			
 			tableColumns[i] = tableColumn;
 		}
 		return tableColumns;
 	}
 
-	private static List<ScriptObjectMirror> rowsFromJsDocument(ScriptObjectMirror jsDocument,
+	private static List<List<Object>> rowsFromJsDocument(ScriptObjectMirror jsDocument,
 			EcmaFunctionInvoker ecmaFunctionInvoker, String functionName) {
 		ScriptObjectMirror rootObject = getRootObject(jsDocument, ecmaFunctionInvoker, functionName);
 		String[] columnNames = columnNames(jsDocument, ecmaFunctionInvoker, functionName);
@@ -77,9 +77,8 @@ public class EcmaFunctionTableFromDocumentResult extends EcmaFunctionBaseTableRe
 					ecmaFunctionInvoker.getModuleName(), functionName, 
 					"Root object 'row' field for tableFromDocumentResultType must be an array");
 		}
-		List<ScriptObjectMirror> rows = new ArrayList<ScriptObjectMirror>(rowsScriptObjectMirror.size());
-		for(int i = 0; i < rowsScriptObjectMirror.size(); i++) {
-			Object rowSlotValue = rowsScriptObjectMirror.getSlot(i);
+		List<List<Object>> rows = new ArrayList<List<Object>>(rowsScriptObjectMirror.size());
+		for(Object rowSlotValue : rowsScriptObjectMirror.values()) {
 			if(!(rowSlotValue instanceof ScriptObjectMirror)) {
 				throw new EcmaFunctionInvokerException(Code.FUNCTION_RESULT_EXCEPTION, 
 						ecmaFunctionInvoker.getModuleName(), functionName, 
@@ -117,7 +116,7 @@ public class EcmaFunctionTableFromDocumentResult extends EcmaFunctionBaseTableRe
 						ecmaFunctionInvoker.getModuleName(), functionName, 
 						"Field 'value' in row for tableFromDocumentResultType must be an array of correct length");
 			}
-			rows.add(valueScriptObjectMirror);
+			rows.add(new ArrayList<Object>(valueScriptObjectMirror.values()));
 		}
 		return rows;
 	}
@@ -144,8 +143,8 @@ public class EcmaFunctionTableFromDocumentResult extends EcmaFunctionBaseTableRe
 		}
 		int numColumns = columnScriptObjectMirror.size();
 		String[] columnNames = new String[numColumns];
-		for(int i = 0; i < numColumns; i++) {
-			Object slotValue = columnScriptObjectMirror.getSlot(i);
+		int i = 0;
+		for(Object slotValue: columnScriptObjectMirror.values()) {
 			Object columnNameObj = jsValueToGlueDocValue(ecmaFunctionInvoker, functionName, slotValue);
 			if(columnNameObj == null) {
 				throw new EcmaFunctionInvokerException(Code.FUNCTION_RESULT_EXCEPTION, 
@@ -153,6 +152,7 @@ public class EcmaFunctionTableFromDocumentResult extends EcmaFunctionBaseTableRe
 						"Null column name");
 			}
 			columnNames[i] = columnNameObj.toString();
+			i++;
 		}
 		return columnNames;
 	}
