@@ -67,8 +67,7 @@ public class EcmaFunctionTableFromObjectsResultType extends EcmaFunctionResultTy
 					ecmaFunctionInvoker.getModuleName(), functionName, "JavaScript return object must be an array to make a GLUE result table");
 		}
 		List<ScriptObjectMirror> rowJsObjects = new ArrayList<ScriptObjectMirror>();
-		for(int i = 0; i < scriptObjectMirror.size(); i++) {
-			Object value = scriptObjectMirror.getSlot(i);
+		for(Object value: scriptObjectMirror.values()) {
 			if(!(value instanceof ScriptObjectMirror)) {
 				throw new EcmaFunctionInvokerException(Code.FUNCTION_RESULT_EXCEPTION, 
 						ecmaFunctionInvoker.getModuleName(), functionName, "JavaScript array items must be objects to make a GLUE result table");

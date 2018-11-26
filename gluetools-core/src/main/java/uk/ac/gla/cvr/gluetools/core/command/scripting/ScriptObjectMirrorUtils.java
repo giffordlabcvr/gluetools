@@ -67,8 +67,8 @@ public class ScriptObjectMirrorUtils {
 			ScriptObjectMirror scriptObjectMirror = (ScriptObjectMirror) value;
 			if(scriptObjectMirror.isArray()) {
 				CommandArray arrayBuilder = parentCommandObject.setArray(key);
-				for(int i = 0; i < scriptObjectMirror.size(); i++) {
-					addArrayItemFromValue(arrayBuilder, scriptObjectMirror.getSlot(i));
+				for(Object slotVal: scriptObjectMirror.values()) {
+					addArrayItemFromValue(arrayBuilder, slotVal);
 				}
 			} else {
 				CommandObject childCommandObject = parentCommandObject.setObject(key);
