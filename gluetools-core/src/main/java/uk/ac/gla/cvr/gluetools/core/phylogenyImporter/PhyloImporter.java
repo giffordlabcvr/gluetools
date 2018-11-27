@@ -60,6 +60,9 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 		description="Imports a phylogenetic tree to be stored as auxiliary data in alignment nodes")
 public class PhyloImporter extends ModulePlugin<PhyloImporter> {
 
+	// key used on PhyloSubtrees to indicate which GLUE alignment (possibly within an alignment tree) the subtree relates to.
+	public static final String GLUE_ALIGNMENT_NAME_USER_DATA_KEY = "glueAlignmentName";
+
 	public PhyloImporter() {
 		super();
 		registerModulePluginCmdClass(ImportPhylogenyCommand.class);
@@ -173,6 +176,7 @@ public class PhyloImporter extends ModulePlugin<PhyloImporter> {
 		alignmentPhylogeny.setAlignment(almtData.alignment);
 		alignmentPhylogeny.setPhyloTree(phyloTree);
 		phyloTree.setRoot(cloneCladeSubtree(almtData.cladeSubtree, almtData, alignmentPhylogeny));
+		phyloTree.getRoot().ensureUserData().put(GLUE_ALIGNMENT_NAME_USER_DATA_KEY, almtData.alignment.getName());
 		// log(Level.FINE, "Phylogeny for alignment "+almtData.alignment.getName()+":\n"+
 		// new String(PhyloFormat.GLUE_JSON.generate(phyloTree));
 		return alignmentPhylogeny;
