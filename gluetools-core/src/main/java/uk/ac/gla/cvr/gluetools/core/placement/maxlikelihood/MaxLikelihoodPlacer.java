@@ -481,6 +481,9 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		return seqNameToPlacements;
 	}
 	
+	// Assuming that labelledPhyloTree is labeled with branch labels and that
+	// labelledPhyloTree and glueProjectPhyloTree have the same structure and leaf names,
+	// generates a map of integer branch label to PhyloBranch object within glueProjectPhyloTree
 	public static Map<Integer, PhyloBranch> generateEdgeIndexToPhyloBranch(PhyloTree labelledPhyloTree, PhyloTree glueProjectPhyloTree) {
 		Map<Integer, PhyloBranch> edgeIndexToPhyloBranch = new LinkedHashMap<Integer, PhyloBranch>();
 		
