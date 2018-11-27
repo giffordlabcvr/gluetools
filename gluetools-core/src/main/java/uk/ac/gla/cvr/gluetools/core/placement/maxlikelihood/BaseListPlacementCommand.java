@@ -36,7 +36,7 @@ public abstract class BaseListPlacementCommand extends AbstractQueryResultComman
 	@Override
 	protected Result executeOnQueryResult(CommandContext cmdContext,
 			MaxLikelihoodPlacer maxLikelihoodPlacer,
-			MaxLikelihoodPlacerResult placerResult,
+			IMaxLikelihoodPlacerResult placerResult,
 			MaxLikelihoodSingleQueryResult queryResult) {
 		return new Result(queryResult.singlePlacement);
 	}

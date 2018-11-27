@@ -36,7 +36,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
-import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentUtils;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodPlacer.PlacerResultInternal;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -69,7 +68,7 @@ public class PlaceFastaDocumentCommand extends AbstractPlaceCommand<PlacementRes
 		Map<String, DNASequence> querySequenceMap = FastaUtils.commandDocumentToNucleotideFastaMap(cmdDocument);
 		File dataDirFile = CommandUtils.ensureDataDir(cmdContext, dataDir);
 		PlacerResultInternal placerResultInternal = maxLikelihoodPlacer.place(cmdContext, querySequenceMap, dataDirFile);
-		CommandDocument placerResultCmdDocument = PojoDocumentUtils.pojoToCommandDocument(placerResultInternal.toPojoResult());
+		CommandDocument placerResultCmdDocument = placerResultInternal.toCommandDocument();
 		return new PlacementResult(placerResultCmdDocument);
 	}
 	

@@ -50,7 +50,6 @@ import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
-import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentUtils;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodPlacer.PlacerResultInternal;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -132,7 +131,7 @@ public class PlaceSequenceCommand extends AbstractPlaceCommand<OkResult> {
 		String requestedDataDir = getDataDir();
 		File dataDirFile = CommandUtils.ensureDataDir(consoleCmdContext, requestedDataDir);
 		PlacerResultInternal placerResultInternal = maxLikelihoodPlacer.place(consoleCmdContext, querySequenceMap, dataDirFile);
-		CommandDocument placerResultCmdDocument = PojoDocumentUtils.pojoToCommandDocument(placerResultInternal.toPojoResult());
+		CommandDocument placerResultCmdDocument = placerResultInternal.toCommandDocument();
 		Document placerResultXmlDoc = CommandDocumentXmlUtils.commandDocumentToXmlDocument(placerResultCmdDocument);
 		byte[] placerResultXmlBytes = GlueXmlUtils.prettyPrint(placerResultXmlDoc);
 		consoleCmdContext.saveBytes(outputFile, placerResultXmlBytes);

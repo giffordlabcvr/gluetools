@@ -55,13 +55,13 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
+import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.jplace.JPlaceNamePQuery;
 import uk.ac.gla.cvr.gluetools.core.jplace.JPlacePlacement;
 import uk.ac.gla.cvr.gluetools.core.jplace.JPlaceResult;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.newick.NewickJPlaceToPhyloTreeParser;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
-import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloFormat;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeafLister;
@@ -324,13 +324,11 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 			return edgeIndexToPhyloBranch;
 		}
 
-		public MaxLikelihoodPlacerResult toPojoResult() {
-			MaxLikelihoodPlacerResult maxLikelihoodPlacerResult = new MaxLikelihoodPlacerResult();
-			PhyloFormat resultPhyloFormat = PhyloFormat.NEWICK_JPLACE;
-			maxLikelihoodPlacerResult.labelledPhyloTreeFormat = resultPhyloFormat.name();
-			maxLikelihoodPlacerResult.labelledPhyloTree = new String(resultPhyloFormat.generate(labelledPhyloTree));
-			maxLikelihoodPlacerResult.singleQueryResult = new ArrayList<MaxLikelihoodSingleQueryResult>(queryResults.values());
-			return maxLikelihoodPlacerResult;
+		public CommandDocument toCommandDocument() {
+			DetailedMaxLikelihoodPlacerResult detailedMaxLikelihoodPlacerResult = 
+					new DetailedMaxLikelihoodPlacerResult(labelledPhyloTree, 
+							new ArrayList<MaxLikelihoodSingleQueryResult>(queryResults.values()));
+			return IMaxLikelihoodPlacerResult.toCommandDocument(detailedMaxLikelihoodPlacerResult);
 		}
 		
 	}

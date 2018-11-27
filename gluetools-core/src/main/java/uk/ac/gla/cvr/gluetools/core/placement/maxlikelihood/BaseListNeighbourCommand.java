@@ -43,7 +43,7 @@ public abstract class BaseListNeighbourCommand extends AbstractPlacementCommand<
 	@Override
 	protected Result executeOnPlacementResult(CommandContext cmdContext,
 			MaxLikelihoodPlacer maxLikelihoodPlacer,
-			MaxLikelihoodPlacerResult placerResult,
+			IMaxLikelihoodPlacerResult placerResult,
 			MaxLikelihoodSingleQueryResult queryResult,
 			MaxLikelihoodSinglePlacement placement) {
 		PhyloTree glueProjectPhyloTree = maxLikelihoodPlacer.constructGlueProjectPhyloTree(cmdContext);

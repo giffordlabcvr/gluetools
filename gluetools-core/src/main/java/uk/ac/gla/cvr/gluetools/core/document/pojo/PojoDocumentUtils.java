@@ -204,7 +204,7 @@ public class PojoDocumentUtils {
 		}
 	}
 
-	private static void addToArray(CommandArray commandArray, Object elem) {
+	public static void addToArray(CommandArray commandArray, Object elem) {
 		if(elem == null) {
 			commandArray.addNull();
 			return;

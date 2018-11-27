@@ -33,8 +33,8 @@ import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 public abstract class BaseListQueryCommand extends AbstractPlacerResultCommand<BaseListQueryCommand.Result> {
 
 	@Override
-	protected Result executeOnPlacerResult(CommandContext cmdContext, MaxLikelihoodPlacer maxLikelihoodPlacer, MaxLikelihoodPlacerResult placerResult) {
-		return new Result(placerResult.singleQueryResult);
+	protected Result executeOnPlacerResult(CommandContext cmdContext, MaxLikelihoodPlacer maxLikelihoodPlacer, IMaxLikelihoodPlacerResult placerResult) {
+		return new Result(placerResult.getQueryResults());
 	}
 	
 	public static class Result extends BaseTableResult<MaxLikelihoodSingleQueryResult> {

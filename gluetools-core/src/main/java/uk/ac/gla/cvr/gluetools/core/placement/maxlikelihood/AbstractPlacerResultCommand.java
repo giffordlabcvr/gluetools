@@ -34,7 +34,6 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
-import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentUtils;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
@@ -60,23 +59,23 @@ public abstract class AbstractPlacerResultCommand<R extends CommandResult> exten
 
 	protected final R executeBasedOnFile(CommandContext cmdContext, MaxLikelihoodPlacer maxLikelihoodPlacer) {
 		ConsoleCommandContext consoleCmdContext = ((ConsoleCommandContext) cmdContext);
-		MaxLikelihoodPlacerResult placerResult = loadPlacerResult(consoleCmdContext, inputFile);
+		IMaxLikelihoodPlacerResult placerResult = loadPlacerResult(consoleCmdContext, inputFile);
 		return executeOnPlacerResult(cmdContext, maxLikelihoodPlacer, placerResult);
 	}
 
 	protected final R executeBasedOnDocument(CommandContext cmdContext, MaxLikelihoodPlacer maxLikelihoodPlacer) {
-		MaxLikelihoodPlacerResult placerResult = PojoDocumentUtils.commandObjectToPojo(placerResultCmdDoc, MaxLikelihoodPlacerResult.class);
+		IMaxLikelihoodPlacerResult placerResult = IMaxLikelihoodPlacerResult.fromCommandDocument(placerResultCmdDoc);
 		return executeOnPlacerResult(cmdContext, maxLikelihoodPlacer, placerResult);
 	}
 
 	protected abstract R executeOnPlacerResult(CommandContext cmdContext, MaxLikelihoodPlacer maxLikelihoodPlacer, 
-			MaxLikelihoodPlacerResult placerResult);
+			IMaxLikelihoodPlacerResult placerResult);
 
-	protected static MaxLikelihoodPlacerResult loadPlacerResult(ConsoleCommandContext consoleCmdContext, String inputFile) {
+	protected static IMaxLikelihoodPlacerResult loadPlacerResult(ConsoleCommandContext consoleCmdContext, String inputFile) {
 		byte[] placerResultBytes = consoleCmdContext.loadBytes(inputFile);
 		Document placerResultDocument = GlueXmlUtils.documentFromBytes(placerResultBytes);
 		CommandDocument placerResultCmdDoc = CommandDocumentXmlUtils.xmlDocumentToCommandDocument(placerResultDocument);
-		MaxLikelihoodPlacerResult placerResult = PojoDocumentUtils.commandObjectToPojo(placerResultCmdDoc, MaxLikelihoodPlacerResult.class);
+		IMaxLikelihoodPlacerResult placerResult = IMaxLikelihoodPlacerResult.fromCommandDocument(placerResultCmdDoc);
 		return placerResult;
 	}
 

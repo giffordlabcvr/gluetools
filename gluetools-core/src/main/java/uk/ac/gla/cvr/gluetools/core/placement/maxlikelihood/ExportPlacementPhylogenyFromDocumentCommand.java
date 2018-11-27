@@ -58,7 +58,7 @@ public class ExportPlacementPhylogenyFromDocumentCommand extends BaseExportPlace
 	@Override
 	protected PhyloTreeResult executeOnPlacementResult(CommandContext cmdContext,
 			MaxLikelihoodPlacer maxLikelihoodPlacer,
-			MaxLikelihoodPlacerResult placerResult,
+			IMaxLikelihoodPlacerResult placerResult,
 			MaxLikelihoodSingleQueryResult queryResult,
 			MaxLikelihoodSinglePlacement placement) {
 		PhyloTree glueProjectPhyloTree = super.generatePhyloTree(cmdContext, maxLikelihoodPlacer, placerResult, queryResult, placement);

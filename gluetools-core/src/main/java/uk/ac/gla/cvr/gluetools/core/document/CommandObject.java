@@ -95,6 +95,8 @@ public class CommandObject extends CommandValue implements CommandArrayItem, Com
 			return setString(name, ((String) value));
 		} else if(value instanceof Date) {
 			return setDate(name, ((Date) value));
+		} else if(value instanceof CommandObject) {
+			return setObject(name, (CommandObject) value);
 		} else {
 			throw new RuntimeException("Object of type: "+value.getClass().getCanonicalName()+" cannot be put in a GLUE document");
 		}
@@ -197,5 +199,11 @@ public class CommandObject extends CommandValue implements CommandArrayItem, Com
 
 	public Set<String> getFieldNames() {
 		return fields.keySet();
+	}
+	
+	public void shallowCopyFrom(CommandObject otherCmdObject) {
+		for(String fieldName: otherCmdObject.getFieldNames()) {
+			this.set(fieldName, otherCmdObject.get(fieldName));
+		}
 	}
 }

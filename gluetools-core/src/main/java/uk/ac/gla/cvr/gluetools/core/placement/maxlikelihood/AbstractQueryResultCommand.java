@@ -55,13 +55,13 @@ public abstract class AbstractQueryResultCommand<R extends CommandResult> extend
 	}
 
 	protected final R executeOnPlacerResult(CommandContext cmdContext, 
-			MaxLikelihoodPlacer maxLikelihoodPlacer, MaxLikelihoodPlacerResult placerResult) {
+			MaxLikelihoodPlacer maxLikelihoodPlacer, IMaxLikelihoodPlacerResult placerResult) {
 		return executeOnQueryResult(cmdContext, maxLikelihoodPlacer, placerResult, getQueryResult(placerResult, this.queryName));
 	}
 
 	protected static MaxLikelihoodSingleQueryResult getQueryResult(
-			MaxLikelihoodPlacerResult placerResult, String queryName2) {
-		Optional<MaxLikelihoodSingleQueryResult> firstResult = placerResult.singleQueryResult.stream().filter(res -> res.queryName.equals(queryName2)).findFirst();
+			IMaxLikelihoodPlacerResult placerResult, String queryName2) {
+		Optional<MaxLikelihoodSingleQueryResult> firstResult = placerResult.getQueryResults().stream().filter(res -> res.queryName.equals(queryName2)).findFirst();
 		if(!firstResult.isPresent()) {
 			throw new CommandException(Code.COMMAND_FAILED_ERROR, "File does not contain result for query '"+queryName2+"'");
 		}
@@ -71,7 +71,7 @@ public abstract class AbstractQueryResultCommand<R extends CommandResult> extend
 
 	protected abstract R executeOnQueryResult(CommandContext cmdContext,
 			MaxLikelihoodPlacer maxLikelihoodPlacer,
-			MaxLikelihoodPlacerResult placerResult,
+			IMaxLikelihoodPlacerResult placerResult,
 			MaxLikelihoodSingleQueryResult queryResult);
 
 	protected static class AbstractQueryResultCommandCompleter extends AbstractPlacerResultCommandCompleter {
@@ -85,8 +85,8 @@ public abstract class AbstractQueryResultCommand<R extends CommandResult> extend
 						String prefix) {
 					String inputFile = (String) bindings.get("inputFile");
 					try {
-						MaxLikelihoodPlacerResult placerResult = loadPlacerResult(cmdContext, inputFile);
-						return placerResult.singleQueryResult.stream()
+						IMaxLikelihoodPlacerResult placerResult = loadPlacerResult(cmdContext, inputFile);
+						return placerResult.getQueryResults().stream()
 								.map(res -> new CompletionSuggestion(res.queryName, true))
 								.collect(Collectors.toList());
 					} catch(Exception e) {

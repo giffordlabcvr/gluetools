@@ -62,7 +62,7 @@ public abstract class BaseExportPlacementPhylogenyCommand<R extends CommandResul
 	
 	protected PhyloTree generatePhyloTree(CommandContext cmdContext,
 			MaxLikelihoodPlacer maxLikelihoodPlacer,
-			MaxLikelihoodPlacerResult placerResult,
+			IMaxLikelihoodPlacerResult placerResult,
 			MaxLikelihoodSingleQueryResult queryResult,
 			MaxLikelihoodSinglePlacement placement) {
 		
