@@ -19,7 +19,7 @@ description="Renders GLUE command document tree into a command document form wit
 public class TreeVisualiser extends ModulePlugin<TreeVisualiser> {
 
 	private double rootPct;
-	private double leafTextPct;
+	private double leafTextHeightProportion;
 	private double leftMarginPct;
 	private double rightMarginPct;
 	private double topMarginPct;
@@ -37,7 +37,7 @@ public class TreeVisualiser extends ModulePlugin<TreeVisualiser> {
 		this.topMarginPct = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, "topMarginPct", false)).orElse(2.0);
 		this.bottomMarginPct = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, "bottomMarginPct", false)).orElse(2.0);
 		this.leafTextGapPct = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, "leafTextGapPct", false)).orElse(0.5);
-		this.leafTextPct = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, "leafTextPct", false)).orElse(10.0);
+		this.leafTextHeightProportion = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, "leafTextHeightProportion", false)).orElse(0.9);
 		this.leafTextFont = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, "leafTextFont", false)).orElse("Arial");
 		
 		MemberAnnotationGeneratorFactory annotationGeneratorFactory = PluginFactory.get(MemberAnnotationGeneratorFactory.creator);
@@ -73,9 +73,10 @@ public class TreeVisualiser extends ModulePlugin<TreeVisualiser> {
 		return bottomMarginPct;
 	}
 
-	public double getLeafTextPct() {
-		return leafTextPct;
+	public double getLeafTextHeightProportion() {
+		return leafTextHeightProportion;
 	}
+
 	public double getLeafTextGapPct() {
 		return leafTextGapPct;
 	}

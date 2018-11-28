@@ -45,9 +45,6 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 	public final static String TREE_DOCUMENT = "treeDocument";
 	public final static String PX_WIDTH = "pxWidth";
 	public final static String PX_HEIGHT = "pxHeight";
-	public final static String LEAF_TEXT_WIDTH_PX = "leafTextWidthPx";
-	public final static String LEAF_TEXT_HEIGHT_PX = "leafTextHeightPx";
-	public final static String LEAF_TEXT_GAP_PX = "leafTextGapPx";
 	public final static String LEAF_TEXT_ANNOTATION_NAME = "leafTextAnnotationName";
 
 	private CommandDocument treeDocument;
@@ -66,17 +63,21 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 		this.leafTextAnnotationName = PluginUtils.configureStringProperty(configElem, LEAF_TEXT_ANNOTATION_NAME, true);
 	}
 
-	// phyloTree user data constants
+	// phyloTree user data and visualisation document constants
 	private static final String MAX_SUBTREE_Y = "maxSubtreeY";
 	private static final String MIN_SUBTREE_Y = "minSubtreeY";
 	private static final String SUBTREE_Y = "y";
 	private static final String SUBTREE_X = "x";
-
-	// visualisation document constants
 	private final static String LEAF_NODES = "leafNodes";
 	private final static String INTERNAL_NODES = "internalNodes";
 	private final static String BRANCHES = "branches";
 	private final static String ROOT = "root";
+	private final static String TOTAL_BRANCH_DEPTH = "totalBranchDepth";
+	private final static String LEAF_TEXT_WIDTH_PX = "leafTextWidthPx";
+	private final static String VERTICAL_LEAF_SPACE_PX = "verticalLeafSpacePx";
+	private final static String LEAF_TEXT = "leafText";
+	private final static String LEAF_TEXT_GAP_PX = "leafTextGapPx";
+	private static final String LEAF_TEXT_HEIGHT_PROPORTION = "leafTextHeightProportion";
 	
 
 	
@@ -87,50 +88,115 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 		
 		PhyloTree phyloTree = docToPhyloTreeTransformer.getPhyloTree();
 		
-		CommandDocument visDocument = new CommandDocument("treeVisualisation");
-		
-		
-		BigDecimal maxDepth = getMaxDepth(phyloTree);
-		Integer numLeaves = countLeaves(phyloTree);
-		
+		// calculate tree width in pixels including tree, leaf gap and leaf text but not including root.
 		double treeWidthPct = 100 - (
 				treeVisualiser.getRightMarginPct() + 
 				treeVisualiser.getRootPct() + 
-				treeVisualiser.getLeafTextGapPct() + 
-				treeVisualiser.getLeafTextPct() + 
 				treeVisualiser.getLeftMarginPct()
 		); 
-		
-		double treeWidth = (pxWidth * treeWidthPct) / 100.0;
-				
+		double treeWidthPx = (pxWidth * treeWidthPct) / 100.0;
+
+		// vertical space allocated to tree
 		double treeHeightPct = 100 - (
 				treeVisualiser.getTopMarginPct() + 
 				treeVisualiser.getBottomMarginPct()
 		); 
-		
-		double treeHeight = (pxHeight * treeHeightPct) / 100.0;
+		double treeHeightPx = (pxHeight * treeHeightPct) / 100.0;
 		
 		// amount of space in pixels allocated to one leaf.
-		double verticalLeafSpace = treeHeight / (double) numLeaves;
+		Integer numLeaves = countLeaves(phyloTree);
+		double verticalLeafSpacePx = treeHeightPx / (double) numLeaves;
+
+		// on phyloTree leaf nodes, sets these properties: 
+		//     -- totalBranchDepth (branch length units)
+		//     -- leafText
+		//     -- leafTextWidthPx (based on font, leaf text height proportion, vertical leaf space and leaf text)
+		setLeafProperties(cmdContext, treeVisualiser, phyloTree, verticalLeafSpacePx);
 		
-		// multiply branch lengths by this amount to give branth length in pixels 
-		double branchLengthMultiplier = treeWidth / maxDepth.doubleValue();
+		// gap in pixels between leaf node tip and leaf text
+		double leafTextGapPx = (pxWidth * treeVisualiser.getLeafTextGapPct()) / 100.0;
+		
+		// Calculate the amount to multiply branch lengths by to give branth length in pixels 
+		double branchLengthMultiplier = getBranchLengthMultiplier(phyloTree, treeWidthPx, leafTextGapPx);
 		
 		double rightMarginPx = (pxWidth * treeVisualiser.getRightMarginPct()) / 100.0;
-		double leafTextGapPx = (pxWidth * treeVisualiser.getLeafTextGapPct()) / 100.0;
-		double leafTextWidthPx = (pxWidth * treeVisualiser.getLeafTextPct()) / 100.0;
 		double rootLengthPx = (pxWidth * treeVisualiser.getRootPct()) / 100.0;
 		double topMarginPx = (pxHeight * treeVisualiser.getTopMarginPct()) / 100.0;
 
+		CommandDocument visDocument = new CommandDocument("treeVisualisation");
 		visDocument.setInt(PX_WIDTH, pxWidth);
 		visDocument.setInt(PX_HEIGHT, pxHeight);
-		visDocument.setDouble(LEAF_TEXT_WIDTH_PX, leafTextWidthPx);
-		visDocument.setDouble(LEAF_TEXT_HEIGHT_PX, verticalLeafSpace);
+		visDocument.setDouble(VERTICAL_LEAF_SPACE_PX, verticalLeafSpacePx);
 		visDocument.setDouble(LEAF_TEXT_GAP_PX, leafTextGapPx);
+		visDocument.setDouble(LEAF_TEXT_HEIGHT_PROPORTION, treeVisualiser.getLeafTextHeightProportion());
 		
-		setSubtreeCoords(phyloTree, rightMarginPx, rootLengthPx, topMarginPx, verticalLeafSpace, branchLengthMultiplier);
+		setSubtreeCoords(phyloTree, rightMarginPx, rootLengthPx, topMarginPx, verticalLeafSpacePx, branchLengthMultiplier);
 		generateObjects(cmdContext, treeVisualiser, phyloTree, rightMarginPx,  rootLengthPx, topMarginPx, visDocument);
 		return new VisualiseTreeResult(visDocument);
+	}
+
+
+	private void setLeafProperties(CommandContext cmdContext, TreeVisualiser treeVisualiser, PhyloTree phyloTree, double verticalLeafSpacePx) {
+		List<MemberAnnotationGenerator> memberAnnotationGenerators = treeVisualiser.getMemberAnnotationGenerators();
+		
+		MemberAnnotationGenerator leafTextAnnotationGenerator = null;
+		for(MemberAnnotationGenerator memberAnnotationGenerator: memberAnnotationGenerators) {
+			if(memberAnnotationGenerator.getAnnotationName().equals(leafTextAnnotationName)) {
+				leafTextAnnotationGenerator = memberAnnotationGenerator;
+				break;
+			}
+		}
+		if(leafTextAnnotationGenerator == null) {
+			throw new CommandException(Code.COMMAND_FAILED_ERROR, "TreeVisualiser module has no generator for annotations named '"+leafTextAnnotationName+"'");
+		}
+		final MemberAnnotationGenerator leafTextAnnotationGeneratorFinal = leafTextAnnotationGenerator;
+		
+		// We use the code below to predict font widths from text. 
+		// The following system propety is set in the GLUE engine to prevent a desktop icon popping up
+		// when using AWT classes.
+		// System.setProperty("java.awt.headless", "true"); 
+		AffineTransform affineTransform = new AffineTransform();     
+		FontRenderContext fontRenderContext = new FontRenderContext(affineTransform, true, true);     
+		Font font = new Font(treeVisualiser.getLeafTextFont(), 0, 22); 
+		
+		phyloTree.accept(new PhyloTreeVisitor() {
+			BigDecimal currentDepth = new BigDecimal(0);
+			
+			@Override
+			public void preVisitBranch(int branchIndex, PhyloBranch phyloBranch) {
+				currentDepth = currentDepth.add(phyloBranch.getLength());
+			}
+			@Override
+			public void postVisitBranch(int branchIndex, PhyloBranch phyloBranch) {
+				currentDepth = currentDepth.subtract(phyloBranch.getLength());
+			}
+			@Override
+			public void visitLeaf(PhyloLeaf phyloLeaf) {
+				Map<String, Object> leafUserData = phyloLeaf.getUserData();
+				leafUserData.put(TOTAL_BRANCH_DEPTH, currentDepth.doubleValue());
+				String phyloLeafName = phyloLeaf.getName();
+				boolean storedAlmtMember = true;
+				if(leafUserData != null) {
+					Object nonMemberValue = leafUserData.get("treevisualiser-nonmember");
+					if(nonMemberValue != null && nonMemberValue.equals("true")) {
+						storedAlmtMember = false;
+					}
+				} 
+				String leafText;
+				if(storedAlmtMember) {
+					Map<String, String> memberPkMap = Project.targetPathToPkMap(ConfigurableTable.alignment_member, phyloLeafName);
+					AlignmentMember member = GlueDataObject.lookup(cmdContext, AlignmentMember.class, memberPkMap);
+					leafText = leafTextAnnotationGeneratorFinal.renderAnnotation(member);
+				} else {
+					leafText = phyloLeafName;
+				}
+				leafUserData.put(LEAF_TEXT, leafText);
+
+				double leafTextHeightPx = verticalLeafSpacePx * treeVisualiser.getLeafTextHeightProportion();
+				double leafTextWidthPx = (font.getStringBounds(leafText, fontRenderContext).getWidth() / 22.008397899077214) * leafTextHeightPx;  
+				leafUserData.put(LEAF_TEXT_WIDTH_PX, leafTextWidthPx);
+			}
+		});
 	}
 
 
@@ -191,28 +257,6 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 		CommandArray branchesArray = visDocument.setArray(BRANCHES);
 		CommandObject rootObj = visDocument.setObject(ROOT);
 		
-		List<MemberAnnotationGenerator> memberAnnotationGenerators = treeVisualiser.getMemberAnnotationGenerators();
-		
-		MemberAnnotationGenerator leafTextAnnotationGenerator = null;
-		for(MemberAnnotationGenerator memberAnnotationGenerator: memberAnnotationGenerators) {
-			if(memberAnnotationGenerator.getAnnotationName().equals(leafTextAnnotationName)) {
-				leafTextAnnotationGenerator = memberAnnotationGenerator;
-				break;
-			}
-		}
-		if(leafTextAnnotationGenerator == null) {
-			throw new CommandException(Code.COMMAND_FAILED_ERROR, "TreeVisualiser module has no generator for annotations named '"+leafTextAnnotationName+"'");
-		}
-		final MemberAnnotationGenerator leafTextAnnotationGeneratorFinal = leafTextAnnotationGenerator;
-		
-		// We use the code below to predict font widths from text. 
-		// The following system propety is set in the GLUE engine to prevent a desktop icon popping up
-		// when using AWT classes.
-		// System.setProperty("java.awt.headless", "true"); 
-		AffineTransform affineTransform = new AffineTransform();     
-		FontRenderContext fontRenderContext = new FontRenderContext(affineTransform, true, true);     
-		Font font = new Font(treeVisualiser.getLeafTextFont(), 0, 22); 
-		
 		phyloTree.accept(new PhyloTreeVisitor() {
 			@Override
 			public void visitLeaf(PhyloLeaf phyloLeaf) {
@@ -226,35 +270,14 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 				CommandObject leafPropertiesObj = leafObj.setObject("properties");
 				String phyloLeafName = phyloLeaf.getName();
 				leafPropertiesObj.set("name", phyloLeafName);
-				boolean storedAlmtMember = true;
-				boolean highlighted = false;
-				if(leafUserData != null) {
-					Object nonMemberValue = leafUserData.get("treevisualiser-nonmember");
-					if(nonMemberValue != null && nonMemberValue.equals("true")) {
-						storedAlmtMember = false;
-					}
-					Object highlightedValue = leafUserData.get("treevisualiser-highlighted");
-					if(highlightedValue != null && highlightedValue.equals("true")) {
-						highlighted = true;
-					}
-				} 
-				String leafText;
-				if(storedAlmtMember) {
-					Map<String, String> memberPkMap = Project.targetPathToPkMap(ConfigurableTable.alignment_member, phyloLeafName);
-					AlignmentMember member = GlueDataObject.lookup(cmdContext, AlignmentMember.class, memberPkMap);
-					leafText = leafTextAnnotationGeneratorFinal.renderAnnotation(member);
-				} else {
-					leafText = phyloLeafName;
-				}
-				leafPropertiesObj.set("leafText", leafText);
-
-				double leafTextWidth100pt = font.getStringBounds(leafText, fontRenderContext).getWidth();  
-				leafPropertiesObj.set("leafTextWidth100pt", leafTextWidth100pt);
-				
-				if(highlighted) {
+				Object highlightedValue = leafUserData.get("treevisualiser-highlighted");
+				if(highlightedValue != null && highlightedValue.equals("true")) {
 					leafObj.setBoolean("highlighted", true);
 				}
-
+				String leafText = (String) leafUserData.get(LEAF_TEXT);
+				leafPropertiesObj.set(LEAF_TEXT, leafText);
+				double leafTextWidthPx = (Double) leafUserData.get(LEAF_TEXT_WIDTH_PX);
+				leafPropertiesObj.set(LEAF_TEXT_WIDTH_PX, leafTextWidthPx);
 			}
 			@Override
 			public void postVisitBranch(int branchIndex, PhyloBranch phyloBranch) {
@@ -306,29 +329,24 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 
 	}
 
-	
-	private BigDecimal getMaxDepth(PhyloTree phyloTree) {
-		return phyloTree.accept(new PhyloTreeSummariser<BigDecimal>() {
-			BigDecimal currentDepth = new BigDecimal(0);
-			BigDecimal maxDepth = new BigDecimal(0);
-			
-			@Override
-			public void preVisitBranch(int branchIndex, PhyloBranch phyloBranch) {
-				currentDepth = currentDepth.add(phyloBranch.getLength());
-			}
-			@Override
-			public void postVisitBranch(int branchIndex, PhyloBranch phyloBranch) {
-				currentDepth = currentDepth.subtract(phyloBranch.getLength());
-			}
+	// find the minimum acceptable branch length multiplier across all leaf nodes.	
+	private Double getBranchLengthMultiplier(PhyloTree phyloTree, double treeWidthPx, double leafTextGapPx) {
+		return phyloTree.accept(new PhyloTreeSummariser<Double>() {
+			private double branchLengthMultiplier = Double.MAX_VALUE;
 			@Override
 			public void visitLeaf(PhyloLeaf phyloLeaf) {
-				if(currentDepth.compareTo(maxDepth) > 0) {
-					maxDepth = currentDepth;
-				}
+				Map<String, Object> leafUserData = phyloLeaf.getUserData();
+				Double leafTextWidthPx = (Double) leafUserData.get(LEAF_TEXT_WIDTH_PX);
+				// maximum amount of horizontal space in pixels, which could be used for the branches
+				// leading to this leaf
+				double maxRemainingPixelsForLeaf = treeWidthPx - (leafTextGapPx + leafTextWidthPx);
+				double totalBranchDepth = (Double) leafUserData.get(TOTAL_BRANCH_DEPTH);
+				double maxBranchLengthMultiplierForLeaf = maxRemainingPixelsForLeaf / totalBranchDepth;
+				this.branchLengthMultiplier = Math.min(branchLengthMultiplier, maxBranchLengthMultiplierForLeaf);
 			}
 			@Override
-			public BigDecimal get() {
-				return maxDepth;
+			public Double get() {
+				return branchLengthMultiplier;
 			}
 		}).get();
 	}
