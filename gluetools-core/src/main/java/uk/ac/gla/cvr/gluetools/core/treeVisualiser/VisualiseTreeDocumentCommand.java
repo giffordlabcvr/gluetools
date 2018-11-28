@@ -156,8 +156,11 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 		// when using AWT classes.
 		// System.setProperty("java.awt.headless", "true"); 
 		AffineTransform affineTransform = new AffineTransform();     
-		FontRenderContext fontRenderContext = new FontRenderContext(affineTransform, true, true);     
-		Font font = new Font(treeVisualiser.getLeafTextFont(), 0, 22); 
+		FontRenderContext fontRenderContext = new FontRenderContext(affineTransform, true, true);  
+		double leafTextHeightPx = verticalLeafSpacePx * treeVisualiser.getLeafTextHeightProportion();
+		// fonts must use integer sizes
+		// we will use a 100pt font to figure out the width, then re-scale it as necessary.
+		Font font = new Font(treeVisualiser.getLeafTextFont(), 0, 100); 
 		
 		phyloTree.accept(new PhyloTreeVisitor() {
 			BigDecimal currentDepth = new BigDecimal(0);
@@ -192,8 +195,7 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 				}
 				leafUserData.put(LEAF_TEXT, leafText);
 
-				double leafTextHeightPx = verticalLeafSpacePx * treeVisualiser.getLeafTextHeightProportion();
-				double leafTextWidthPx = (font.getStringBounds(leafText, fontRenderContext).getWidth() / 22.008397899077214) * leafTextHeightPx;  
+				double leafTextWidthPx = (font.getStringBounds(leafText, fontRenderContext).getWidth() / 100) * leafTextHeightPx;  
 				leafUserData.put(LEAF_TEXT_WIDTH_PX, leafTextWidthPx);
 			}
 		});
