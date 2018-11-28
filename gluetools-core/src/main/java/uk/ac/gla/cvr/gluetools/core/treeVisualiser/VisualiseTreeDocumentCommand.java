@@ -103,8 +103,8 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 		); 
 		double treeHeightPx = (pxHeight * treeHeightPct) / 100.0;
 		
-		// amount of space in pixels allocated to one leaf.
 		Integer numLeaves = countLeaves(phyloTree);
+		// amount of space in pixels allocated to one leaf.
 		double verticalLeafSpacePx = treeHeightPx / (double) numLeaves;
 
 		// on phyloTree leaf nodes, sets these properties: 
