@@ -1,5 +1,8 @@
 package uk.ac.gla.cvr.gluetools.core.treeVisualiser;
 
+import java.awt.Font;
+import java.awt.font.FontRenderContext;
+import java.awt.geom.AffineTransform;
 import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
@@ -10,6 +13,8 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
@@ -43,10 +48,12 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 	public final static String LEAF_TEXT_WIDTH_PX = "leafTextWidthPx";
 	public final static String LEAF_TEXT_HEIGHT_PX = "leafTextHeightPx";
 	public final static String LEAF_TEXT_GAP_PX = "leafTextGapPx";
+	public final static String LEAF_TEXT_ANNOTATION_NAME = "leafTextAnnotationName";
 
 	private CommandDocument treeDocument;
 	private int pxWidth;
 	private int pxHeight;
+	private String leafTextAnnotationName;
 
 	
 	
@@ -56,6 +63,7 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 		this.treeDocument = PluginUtils.configureCommandDocumentProperty(configElem, TREE_DOCUMENT, true);
 		this.pxWidth = PluginUtils.configureIntProperty(configElem, PX_WIDTH, true);
 		this.pxHeight = PluginUtils.configureIntProperty(configElem, PX_HEIGHT, true);
+		this.leafTextAnnotationName = PluginUtils.configureStringProperty(configElem, LEAF_TEXT_ANNOTATION_NAME, true);
 	}
 
 	// phyloTree user data constants
@@ -185,6 +193,26 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 		
 		List<MemberAnnotationGenerator> memberAnnotationGenerators = treeVisualiser.getMemberAnnotationGenerators();
 		
+		MemberAnnotationGenerator leafTextAnnotationGenerator = null;
+		for(MemberAnnotationGenerator memberAnnotationGenerator: memberAnnotationGenerators) {
+			if(memberAnnotationGenerator.getAnnotationName().equals(leafTextAnnotationName)) {
+				leafTextAnnotationGenerator = memberAnnotationGenerator;
+				break;
+			}
+		}
+		if(leafTextAnnotationGenerator == null) {
+			throw new CommandException(Code.COMMAND_FAILED_ERROR, "TreeVisualiser module has no generator for annotations named '"+leafTextAnnotationName+"'");
+		}
+		final MemberAnnotationGenerator leafTextAnnotationGeneratorFinal = leafTextAnnotationGenerator;
+		
+		// We use the code below to predict font widths from text. 
+		// The following system propety is set in the GLUE engine to prevent a desktop icon popping up
+		// when using AWT classes.
+		// System.setProperty("java.awt.headless", "true"); 
+		AffineTransform affineTransform = new AffineTransform();     
+		FontRenderContext fontRenderContext = new FontRenderContext(affineTransform, true, true);     
+		Font font = new Font(treeVisualiser.getLeafTextFont(), 0, 22); 
+		
 		phyloTree.accept(new PhyloTreeVisitor() {
 			@Override
 			public void visitLeaf(PhyloLeaf phyloLeaf) {
@@ -210,16 +238,19 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 						highlighted = true;
 					}
 				} 
+				String leafText;
 				if(storedAlmtMember) {
 					Map<String, String> memberPkMap = Project.targetPathToPkMap(ConfigurableTable.alignment_member, phyloLeafName);
 					AlignmentMember member = GlueDataObject.lookup(cmdContext, AlignmentMember.class, memberPkMap);
-					memberAnnotationGenerators.forEach(membAnnotGen -> {
-						String annoString = membAnnotGen.renderAnnotation(member);
-						leafPropertiesObj.set(membAnnotGen.getAnnotationName(), annoString);
-					});
+					leafText = leafTextAnnotationGeneratorFinal.renderAnnotation(member);
 				} else {
-					leafPropertiesObj.set("sequenceID", phyloLeafName);
+					leafText = phyloLeafName;
 				}
+				leafPropertiesObj.set("leafText", leafText);
+
+				double leafTextWidth100pt = font.getStringBounds(leafText, fontRenderContext).getWidth();  
+				leafPropertiesObj.set("leafTextWidth100pt", leafTextWidth100pt);
+				
 				if(highlighted) {
 					leafObj.setBoolean("highlighted", true);
 				}
