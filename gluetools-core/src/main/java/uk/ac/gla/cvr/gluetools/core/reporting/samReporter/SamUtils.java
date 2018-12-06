@@ -227,7 +227,7 @@ public class SamUtils {
 		GlueLogger.getGlueLogger().finest("Running SamPairedParallelProcessor "+samPairedParallelProcessor.getClass().getSimpleName());
 		List<M> contexts = new ArrayList<M>();
 		List<PairedParallelSamWorker<M, R>> workers = new ArrayList<PairedParallelSamWorker<M, R>>();
-		ReadLogger readLogger = new ReadLogger();
+		SimpleReadLogger readLogger = new SimpleReadLogger();
 		for(int i = 0; i < samFileSession.preprocessedBamPaths.length; i++) {
 			M context = contextSupplier.get();;
 			contexts.add(context);
@@ -282,11 +282,11 @@ public class SamUtils {
 		private SamReader samReader;
 		private SamPairedParallelProcessor<M, R> samPairedParallelProcessor;
 		private SAMRecord read1;
-		private ReadLogger readLogger;
+		private SimpleReadLogger readLogger;
 		
 		public PairedParallelSamWorker(M context, SamReader samReader,
 				SamPairedParallelProcessor<M, R> samPairedParallelProcessor, 
-				ReadLogger readLogger) {
+				SimpleReadLogger readLogger) {
 			super();
 			this.context = context;
 			this.samReader = samReader;
@@ -309,8 +309,8 @@ public class SamUtils {
 					} else {
 						if(samRecord.getReadName().equals(read1.getReadName())) {
 							samPairedParallelProcessor.processPair(context, read1, samRecord);
-							read1 = null;
 							readLogger.logPair();
+							read1 = null;
 						} else {
 							throw new SamUtilsException(Code.SAM_PAIRED_READS_ERROR, "Mispaired reads "+read1.getReadName()+" 1/2 with "+samRecord.getReadName()+" 2/2");
 						}
@@ -325,38 +325,6 @@ public class SamUtils {
 			}
 			return samPairedParallelProcessor.contextResult(context);
 		}
-	}
-
-	public static class ReadLogger {
-		private static final int INTERVAL = 30000;
-		private int pairs = 0;
-		private int singletonReads = 0;
-		private int totalReads = 0;
-		
-		public synchronized void logPair() {
-			totalReads++;
-			if(totalReads % INTERVAL == 0) {
-				printMessage();
-			}
-			totalReads++;
-			pairs++;
-			if(totalReads % INTERVAL == 0) {
-				printMessage();
-			}
-		}
-		
-		public synchronized void logSingleton() {
-			singletonReads++;
-			totalReads++;
-			if(totalReads % INTERVAL == 0) {
-				printMessage();
-			}
-		}
-		
-		public void printMessage() {
-			GlueLogger.getGlueLogger().finest("Processed "+totalReads+" reads, ("+pairs+" pairs, "+singletonReads+" singletons)");
-		}
-		
 	}
 
 	public static int worstQScore(String qualityString, int queryStart, int queryEnd) {

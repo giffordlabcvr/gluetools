@@ -17,7 +17,6 @@ import htsjdk.samtools.ValidationStringency;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.config.PropertiesConfiguration;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
-import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtils.ReadLogger;
 
 
 
@@ -39,7 +38,7 @@ public class SamReporterPreprocessor {
 		SamFileSession samFileSession = new SamFileSession();
 		samFileSession.preprocessedBamPaths = new String[cpus];
 		
-		ReadLogger readLogger = new ReadLogger();
+		DetailedReadLogger readLogger = new DetailedReadLogger();
 		
 		try(SamReader samReader = SamUtils.newSamReader(consoleCmdContext, fileName, validationStringency)) {
 			SAMFileHeader header = samReader.getFileHeader().clone();
@@ -54,6 +53,9 @@ public class SamReporterPreprocessor {
 			Map<String, ReadPair> nameToPair = new LinkedHashMap<String, ReadPair>();
 			
 			SamUtils.iterateOverSamReader(samReader, samRecord -> {
+				if(samRecord.getReadUnmappedFlag()) {
+					return;
+				}
 				boolean firstOfPair = samRecord.getFirstOfPairFlag();
 				boolean secondOfPair = samRecord.getSecondOfPairFlag();
 				if(firstOfPair || secondOfPair) {
@@ -61,22 +63,53 @@ public class SamReporterPreprocessor {
 					ReadPair readPair = nameToPair.remove(readName);
 					if(readPair == null) {
 						readPair = new ReadPair();
-						if(firstOfPair) { 
-							readPair.read1 = samRecord; 
-						} else {
-							readPair.read2 = samRecord; 
-						}
 						nameToPair.put(readName, readPair);
-					} else {
-						if(firstOfPair) { 
+					}
+					if(firstOfPair && !secondOfPair) {
+						if(readPair.read2 != null) {
+							// balanced -- 1 x firstOfPair, 1 x secondOfPair
 							writeRead(bamWriters, samRecord);
 							writeRead(bamWriters, readPair.read2);
+							readLogger.logBalancedPair(!samRecord.getReadNegativeStrandFlag(), !readPair.read2.getReadNegativeStrandFlag());
+						} else if(readPair.read1 == null) {
+							readPair.read1 = samRecord; 
 						} else {
+							// unbalanced -- 2 x firstOfPair
+							samRecord.setSecondOfPairFlag(true); // fix samRecord
+							samRecord.setFirstOfPairFlag(false);
 							writeRead(bamWriters, readPair.read1);
 							writeRead(bamWriters, samRecord);
+							readLogger.logUnbalancedPair(!readPair.read1.getReadNegativeStrandFlag(), !samRecord.getReadNegativeStrandFlag());
 						}
-						readLogger.logPair();
-
+					} else if(!firstOfPair && secondOfPair) {
+						if(readPair.read1 != null) {
+							// balanced -- 1 x firstOfPair, 1 x secondOfPair
+							writeRead(bamWriters, readPair.read1);
+							writeRead(bamWriters, samRecord);
+							readLogger.logBalancedPair(!readPair.read1.getReadNegativeStrandFlag(), !samRecord.getReadNegativeStrandFlag());
+						} else if(readPair.read2 == null) {
+							readPair.read2 = samRecord; 
+						} else {
+							// unbalanced -- 2 x secondOfPair
+							samRecord.setFirstOfPairFlag(true); // fix samRecord
+							samRecord.setSecondOfPairFlag(false); 
+							writeRead(bamWriters, samRecord);
+							writeRead(bamWriters, readPair.read2);
+							readLogger.logUnbalancedPair(!samRecord.getReadNegativeStrandFlag(), !readPair.read2.getReadNegativeStrandFlag());
+						}
+					} else {
+						// unbalanced -- some other combination.
+						if(readPair.read1 == null) {
+							readPair.read1 = samRecord; 
+						} else {
+							readPair.read1.setFirstOfPairFlag(true); // fix read1
+							readPair.read1.setSecondOfPairFlag(false); 
+							samRecord.setSecondOfPairFlag(true); // fix samRecord
+							samRecord.setFirstOfPairFlag(false);
+							writeRead(bamWriters, readPair.read1);
+							writeRead(bamWriters, samRecord);
+							readLogger.logUnbalancedPair(!readPair.read1.getReadNegativeStrandFlag(), !samRecord.getReadNegativeStrandFlag());
+						}						
 					}
 				} else {
 					// non paired read
@@ -85,6 +118,7 @@ public class SamReporterPreprocessor {
 				}
 			});
 			// now write out reads which claimed to be in a pair but aren't
+			// or where the mate is unmapped.
 			nameToPair.values().forEach(readPair -> {
 				SAMRecord read1 = readPair.read1;
 				if(read1 != null) {
@@ -99,6 +133,7 @@ public class SamReporterPreprocessor {
 					readLogger.logSingleton();
 				}
 			});
+			readLogger.printMessage();
 			closeBamWriters(bamWriters, samFileSession);
 
 		} catch (IOException e) {
