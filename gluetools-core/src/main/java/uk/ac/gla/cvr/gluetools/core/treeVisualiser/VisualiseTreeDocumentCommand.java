@@ -33,6 +33,7 @@ import uk.ac.gla.cvr.gluetools.core.phylotree.document.DocumentToPhyloTreeTransf
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.memberAnnotationGenerator.MemberAnnotationGenerator;
+import uk.ac.gla.cvr.gluetools.core.treeVisualiser.VisualiseTreeDocumentCommand.PhyloTreeSummariser;
 
 @CommandClass(
 		commandWords={"visualise", "tree-document"}, 
@@ -42,10 +43,13 @@ import uk.ac.gla.cvr.gluetools.core.reporting.memberAnnotationGenerator.MemberAn
 )
 public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseTreeResult, TreeVisualiser> {
 
-	public final static String TREE_DOCUMENT = "treeDocument";
-	public final static String PX_WIDTH = "pxWidth";
-	public final static String PX_HEIGHT = "pxHeight";
-	public final static String LEAF_TEXT_ANNOTATION_NAME = "leafTextAnnotationName";
+	public static final String TREE_DOCUMENT = "treeDocument";
+	public static final String PX_WIDTH = "pxWidth";
+	public static final String PX_HEIGHT = "pxHeight";
+	public static final String LEAF_TEXT_ANNOTATION_NAME = "leafTextAnnotationName";
+
+	private static final double COLLAPSED_SUBTREE_VERTICAL_PROPORTION = 0.8;
+	private static final double COLLAPSED_LEAF_WIDTH_PROPORTION = 0.5;
 
 	private CommandDocument treeDocument;
 	private int pxWidth;
@@ -64,22 +68,32 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 	}
 
 	// phyloTree user data and visualisation document constants
-	private static final String MAX_SUBTREE_Y = "maxSubtreeY";
-	private static final String MIN_SUBTREE_Y = "minSubtreeY";
 	private static final String SUBTREE_Y = "y";
 	private static final String SUBTREE_X = "x";
-	private final static String LEAF_NODES = "leafNodes";
-	private final static String INTERNAL_NODES = "internalNodes";
-	private final static String BRANCHES = "branches";
-	private final static String ROOT = "root";
-	private final static String TOTAL_BRANCH_DEPTH = "totalBranchDepth";
-	private final static String LEAF_TEXT_WIDTH_PX = "leafTextWidthPx";
-	private final static String VERTICAL_LEAF_SPACE_PX = "verticalLeafSpacePx";
-	private final static String LEAF_TEXT = "leafText";
-	private final static String LEAF_TEXT_GAP_PX = "leafTextGapPx";
+	private static final String COLLAPSED_WIDTH_PX = "collapsedWidthPx";
+	private static final String COLLAPSED_HEIGHT_PX = "collapsedHeightPx";
+	private static final String LEAF_NODES = "leafNodes";
+	private static final String INTERNAL_NODES = "internalNodes";
+	private static final String COLLAPSED_SUBTREES = "collapsedSubtrees";
+	private static final String BRANCHES = "branches";
+	private static final String ROOT = "root";
+	private static final String LEAF_BRANCH_DEPTH = "leafBranchDepth";
+	private static final String MIN_BRANCH_DEPTH = "minBranchDepth";
+	private static final String MAX_BRANCH_DEPTH = "maxBranchDepth";
+	private static final String LEAF_TEXT = "leafText";
+	private static final String LEAF_TEXT_WIDTH_PX = "leafTextWidthPx";
+	private static final String COLLAPSED_TEXT = "collapsedText";
+	private static final String COLLAPSED_TEXT_WIDTH_PX = "collapsedTextWidthPx";
+	private static final String VERTICAL_LEAF_SPACE_PX = "verticalLeafSpacePx";
+	private static final String LEAF_TEXT_GAP_PX = "leafTextGapPx";
+	private static final String LEAF_TEXT_HEIGHT_PX = "leafTextHeightPx";
 	private static final String LEAF_TEXT_HEIGHT_PROPORTION = "leafTextHeightProportion";
+	private static final String STARTING_LEAF_UNIT = "startingLeafUnit";
+	private static final String LEAF_UNITS = "leafUnits";
+	
 	
 
+	private static final int COLLAPSED_NODE_LEAF_UNITS = 3;
 	
 	@Override
 	protected VisualiseTreeResult execute(CommandContext cmdContext, TreeVisualiser treeVisualiser) {
@@ -103,15 +117,14 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 		); 
 		double treeHeightPx = (pxHeight * treeHeightPct) / 100.0;
 		
-		Integer numLeaves = countLeaves(phyloTree);
+		Integer numLeafUnits = allocateLeafUnits(phyloTree);
 		// amount of space in pixels allocated to one leaf.
-		double verticalLeafSpacePx = treeHeightPx / (double) numLeaves;
+		double verticalLeafSpacePx = treeHeightPx / (double) numLeafUnits;
 
-		// on phyloTree leaf nodes, sets these properties: 
-		//     -- totalBranchDepth (branch length units)
-		//     -- leafText
-		//     -- leafTextWidthPx (based on font, leaf text height proportion, vertical leaf space and leaf text)
-		setLeafProperties(cmdContext, treeVisualiser, phyloTree, verticalLeafSpacePx);
+		double leafTextHeightPx = Math.min(verticalLeafSpacePx * treeVisualiser.getLeafTextHeightProportion(), 
+				treeVisualiser.getMaxLeafTextHeightPx()); // apply maximum to avoid huge text which mucks up tree!
+
+		setBranchAndTextProperties(cmdContext, treeVisualiser, phyloTree, leafTextHeightPx);
 		
 		// gap in pixels between leaf node tip and leaf text
 		double leafTextGapPx = (pxWidth * treeVisualiser.getLeafTextGapPct()) / 100.0;
@@ -127,6 +140,7 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 		visDocument.setInt(PX_WIDTH, pxWidth);
 		visDocument.setInt(PX_HEIGHT, pxHeight);
 		visDocument.setDouble(VERTICAL_LEAF_SPACE_PX, verticalLeafSpacePx);
+		visDocument.setDouble(LEAF_TEXT_HEIGHT_PX, leafTextHeightPx);
 		visDocument.setDouble(LEAF_TEXT_GAP_PX, leafTextGapPx);
 		visDocument.setDouble(LEAF_TEXT_HEIGHT_PROPORTION, treeVisualiser.getLeafTextHeightProportion());
 		
@@ -136,7 +150,19 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 	}
 
 
-	private void setLeafProperties(CommandContext cmdContext, TreeVisualiser treeVisualiser, PhyloTree phyloTree, double verticalLeafSpacePx) {
+	// on non-collapsed leaf nodes outside collapsed nodes, set these properties: 
+	//     -- leafBranchDepth (branch length units)
+	//     -- leafText
+	//     -- leafTextWidthPx (based on font, leaf text height proportion, vertical leaf space and leaf text)
+	
+	// on collapsed internal / leafNodes: 
+	//     -- minBranchDepth, maxBranchDepth (branch length units)
+	//     -- collapsedText
+	//     -- collapsedTextWidthPx (based on font, leaf text height proportion, vertical leaf space and leaf text)
+	
+
+	
+	private void setBranchAndTextProperties(CommandContext cmdContext, TreeVisualiser treeVisualiser, PhyloTree phyloTree, double leafTextHeightPx) {
 		List<MemberAnnotationGenerator> memberAnnotationGenerators = treeVisualiser.getMemberAnnotationGenerators();
 		
 		MemberAnnotationGenerator leafTextAnnotationGenerator = null;
@@ -157,7 +183,6 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 		// System.setProperty("java.awt.headless", "true"); 
 		AffineTransform affineTransform = new AffineTransform();     
 		FontRenderContext fontRenderContext = new FontRenderContext(affineTransform, true, true);  
-		double leafTextHeightPx = verticalLeafSpacePx * treeVisualiser.getLeafTextHeightProportion();
 		// fonts must use integer sizes
 		// we will use a 100pt font to figure out the width, then re-scale it as necessary.
 		Font font = new Font(treeVisualiser.getLeafTextFont(), 0, 100); 
@@ -165,6 +190,34 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 		phyloTree.accept(new PhyloTreeVisitor() {
 			BigDecimal currentDepth = new BigDecimal(0);
 			
+			PhyloInternal currentCollapsed = null;
+			
+			@Override
+			public void preVisitInternal(PhyloInternal phyloInternal) {
+				Map<String, Object> internalUserData = phyloInternal.getUserData();
+				if(currentCollapsed == null) {
+					if(isCollapsed(phyloInternal)) {
+						currentCollapsed = phyloInternal;
+						
+						internalUserData.put(MIN_BRANCH_DEPTH, currentDepth.doubleValue());
+
+						String collapsedLabel = (String) internalUserData.get("treevisualiser-collapsedLabel");
+						if(collapsedLabel == null) {
+							collapsedLabel = "?";
+						}
+						internalUserData.put(COLLAPSED_TEXT, collapsedLabel);
+						double collapsedTextWidthPx = getTextWidthPx(fontRenderContext, font, leafTextHeightPx, collapsedLabel);  
+						internalUserData.put(COLLAPSED_TEXT_WIDTH_PX, collapsedTextWidthPx);
+					}
+				}
+			}
+			@Override
+			public void postVisitInternal(PhyloInternal phyloInternal) {
+				if(currentCollapsed == phyloInternal) {
+					currentCollapsed = null;
+				}
+			}
+
 			@Override
 			public void preVisitBranch(int branchIndex, PhyloBranch phyloBranch) {
 				currentDepth = currentDepth.add(phyloBranch.getLength());
@@ -175,34 +228,67 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 			}
 			@Override
 			public void visitLeaf(PhyloLeaf phyloLeaf) {
-				Map<String, Object> leafUserData = phyloLeaf.getUserData();
-				leafUserData.put(TOTAL_BRANCH_DEPTH, currentDepth.doubleValue());
-				String phyloLeafName = phyloLeaf.getName();
-				boolean storedAlmtMember = true;
-				if(leafUserData != null) {
-					Object nonMemberValue = leafUserData.get("treevisualiser-nonmember");
-					if(nonMemberValue != null && nonMemberValue.equals("true")) {
-						storedAlmtMember = false;
-					}
-				} 
-				String leafText;
-				if(storedAlmtMember) {
-					Map<String, String> memberPkMap = Project.targetPathToPkMap(ConfigurableTable.alignment_member, phyloLeafName);
-					AlignmentMember member = GlueDataObject.lookup(cmdContext, AlignmentMember.class, memberPkMap);
-					leafText = leafTextAnnotationGeneratorFinal.renderAnnotation(member);
-				} else {
-					leafText = phyloLeafName;
-				}
-				leafUserData.put(LEAF_TEXT, leafText);
+				if(currentCollapsed == null) {
+					Map<String, Object> leafUserData = phyloLeaf.getUserData();
+					if(isCollapsed(phyloLeaf)) {
+						
+						leafUserData.put(MIN_BRANCH_DEPTH, currentDepth.doubleValue() - 
+								( phyloLeaf.getParentPhyloBranch().getLength().doubleValue()) * COLLAPSED_LEAF_WIDTH_PROPORTION );
+						leafUserData.put(MAX_BRANCH_DEPTH, currentDepth.doubleValue());
+						
+						String collapsedLabel = (String) leafUserData.get("treevisualiser-collapsedLabel");
+						if(collapsedLabel == null) {
+							collapsedLabel = "?";
+						}
+						leafUserData.put(COLLAPSED_TEXT, collapsedLabel);
+						double collapsedTextWidthPx = getTextWidthPx(fontRenderContext, font, leafTextHeightPx, collapsedLabel);  
+						leafUserData.put(COLLAPSED_TEXT_WIDTH_PX, collapsedTextWidthPx);
+					} else {
+						leafUserData.put(LEAF_BRANCH_DEPTH, currentDepth.doubleValue());
+						String phyloLeafName = phyloLeaf.getName();
+						boolean storedAlmtMember = true;
+						if(leafUserData != null) {
+							Object nonMemberValue = leafUserData.get("treevisualiser-nonmember");
+							if(nonMemberValue != null && nonMemberValue.equals("true")) {
+								storedAlmtMember = false;
+							}
+						} 
+						String leafText;
+						if(storedAlmtMember) {
+							Map<String, String> memberPkMap = Project.targetPathToPkMap(ConfigurableTable.alignment_member, phyloLeafName);
+							AlignmentMember member = GlueDataObject.lookup(cmdContext, AlignmentMember.class, memberPkMap);
+							leafText = leafTextAnnotationGeneratorFinal.renderAnnotation(member);
+						} else {
+							leafText = phyloLeafName;
+						}
+						leafUserData.put(LEAF_TEXT, leafText);
 
-				double leafTextWidthPx = (font.getStringBounds(leafText, fontRenderContext).getWidth() / 100) * leafTextHeightPx;  
-				leafUserData.put(LEAF_TEXT_WIDTH_PX, leafTextWidthPx);
+						double leafTextWidthPx = getTextWidthPx(fontRenderContext, font, leafTextHeightPx, leafText);  
+						leafUserData.put(LEAF_TEXT_WIDTH_PX, leafTextWidthPx);
+					}
+				} else {
+					// update the max branch depth of the current collapsed internal node.
+					Map<String, Object> collapsedInternalUserData = currentCollapsed.getUserData();
+					Double currentMaxBranchDepth = (Double) collapsedInternalUserData.get(MAX_BRANCH_DEPTH);
+					if(currentMaxBranchDepth == null) {
+						currentMaxBranchDepth = Double.MIN_VALUE;
+					}
+					currentMaxBranchDepth = Math.max(currentMaxBranchDepth, currentDepth.doubleValue());
+					collapsedInternalUserData.put(MAX_BRANCH_DEPTH, currentMaxBranchDepth);
+				}
+			}
+			
+			private double getTextWidthPx(FontRenderContext fontRenderContext, Font font, double textHeightPx,
+					String text) {
+				return (font.getStringBounds(text, fontRenderContext).getWidth() / 100) * textHeightPx;
 			}
 		});
 	}
 
 
-	// set x and y positions for all tree nodes, and minSubtreeY / maxSubtreeY for internals.
+	// set x and y positions for all internal and leaf nodes outside of collapsed nodes.
+	// for collapsed nodes it sets x and y positions for the root of the collapsed subtree, 
+	// and collapsedWidthPx / collapsedHeightPx values for the dimensions of the subtree.
 	private void setSubtreeCoords(PhyloTree phyloTree, 
 			double rightMarginPx, double rootLengthPx, double topMarginPx,
 			double verticalLeafSpace, double branchLengthMultiplier) {
@@ -211,8 +297,8 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 		
 		phyloTree.accept(new PhyloTreeVisitor() {
 			BigDecimal currentDepth = new BigDecimal(0);
-			int leafNumber = 0;
-			
+			PhyloInternal currentCollapsed = null;
+
 			@Override
 			public void preVisitBranch(int branchIndex, PhyloBranch phyloBranch) {
 				currentDepth = currentDepth.add(phyloBranch.getLength());
@@ -221,31 +307,74 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 			public void postVisitBranch(int branchIndex, PhyloBranch phyloBranch) {
 				currentDepth = currentDepth.subtract(phyloBranch.getLength());
 			}
+
+			@Override
+			public void preVisitInternal(PhyloInternal phyloInternal) {
+				if(currentCollapsed == null) {
+					if(isCollapsed(phyloInternal)) {
+						currentCollapsed = phyloInternal;
+
+						Map<String, Object> phyloInternalData = phyloInternal.ensureUserData();
+						int startingLeafUnit = (Integer) phyloInternalData.get(STARTING_LEAF_UNIT);
+						int leafUnits = (Integer) phyloInternalData.get(LEAF_UNITS);
+						double minBranchDepth = (Double) phyloInternalData.get(MIN_BRANCH_DEPTH);
+						double maxBranchDepth = (Double) phyloInternalData.get(MAX_BRANCH_DEPTH);
+						double collapsedInternalX = xOffset + (minBranchDepth * branchLengthMultiplier);
+						double collapsedInternalY = topMarginPx + ( (startingLeafUnit + (leafUnits * 0.5)) * verticalLeafSpace );
+						phyloInternalData.put(SUBTREE_X, collapsedInternalX);
+						phyloInternalData.put(SUBTREE_Y, collapsedInternalY);
+						double collapsedWidthPx = ((maxBranchDepth - minBranchDepth) * branchLengthMultiplier);
+						double collapsedHeightPx = leafUnits * verticalLeafSpace;
+						phyloInternalData.put(COLLAPSED_WIDTH_PX, collapsedWidthPx);
+						phyloInternalData.put(COLLAPSED_HEIGHT_PX, collapsedHeightPx);
+					}
+				}
+			}
+			
 			@Override
 			public void postVisitInternal(PhyloInternal phyloInternal) {
-				double internalX = xOffset + (currentDepth.doubleValue() * branchLengthMultiplier);
-				Map<String, Object> phyloInternalData = phyloInternal.ensureUserData();
-				phyloInternalData.put(SUBTREE_X, internalX);
-				double maxSubtreeY = Double.MIN_VALUE;
-				double minSubtreeY = Double.MAX_VALUE;
-				for(PhyloBranch phyloBranch: phyloInternal.getBranches()) {
-					double subtreeY = (Double) phyloBranch.getSubtree().getUserData().get(SUBTREE_Y);
-					minSubtreeY = Math.min(minSubtreeY, subtreeY);
-					maxSubtreeY = Math.max(maxSubtreeY, subtreeY);
+				if(currentCollapsed == null) {
+					double internalX = xOffset + (currentDepth.doubleValue() * branchLengthMultiplier);
+					Map<String, Object> phyloInternalData = phyloInternal.ensureUserData();
+					phyloInternalData.put(SUBTREE_X, internalX);
+					double maxSubtreeY = Double.MIN_VALUE;
+					double minSubtreeY = Double.MAX_VALUE;
+					for(PhyloBranch phyloBranch: phyloInternal.getBranches()) {
+						double subtreeY = (Double) phyloBranch.getSubtree().getUserData().get(SUBTREE_Y);
+						minSubtreeY = Math.min(minSubtreeY, subtreeY);
+						maxSubtreeY = Math.max(maxSubtreeY, subtreeY);
+					}
+					phyloInternalData.put(SUBTREE_Y, (maxSubtreeY + minSubtreeY) / 2.0);				
+				} else if(currentCollapsed == phyloInternal) {
+					currentCollapsed = null;
 				}
-				phyloInternalData.put(MIN_SUBTREE_Y, minSubtreeY);
-				phyloInternalData.put(MAX_SUBTREE_Y, maxSubtreeY);
-				phyloInternalData.put(SUBTREE_Y, (maxSubtreeY + minSubtreeY) / 2.0);
 				
 			}
 			@Override
 			public void visitLeaf(PhyloLeaf phyloLeaf) {
-				double leafX = xOffset + (currentDepth.doubleValue() * branchLengthMultiplier);
-				double leafY = topMarginPx + ( (leafNumber + 0.5) * verticalLeafSpace );
-				Map<String, Object> phyloLeafData = phyloLeaf.ensureUserData();
-				phyloLeafData.put(SUBTREE_X, leafX);
-				phyloLeafData.put(SUBTREE_Y, leafY);
-				leafNumber++;
+				if(currentCollapsed == null) {
+					Map<String, Object> phyloLeafData = phyloLeaf.ensureUserData();
+					int startingLeafUnit = (Integer) phyloLeafData.get(STARTING_LEAF_UNIT);
+					if(isCollapsed(phyloLeaf)) {
+						int leafUnits = (Integer) phyloLeafData.get(LEAF_UNITS);
+						double minBranchDepth = (Double) phyloLeafData.get(MIN_BRANCH_DEPTH);
+						double maxBranchDepth = (Double) phyloLeafData.get(MAX_BRANCH_DEPTH);
+						double leafX = xOffset + (minBranchDepth * branchLengthMultiplier);
+						double leafY = topMarginPx + ( (startingLeafUnit + (leafUnits * 0.5)) * verticalLeafSpace );
+						phyloLeafData.put(SUBTREE_X, leafX);
+						phyloLeafData.put(SUBTREE_Y, leafY);
+						double collapsedWidthPx = ((maxBranchDepth - minBranchDepth) * branchLengthMultiplier);
+						double collapsedHeightPx = leafUnits * verticalLeafSpace;
+						phyloLeafData.put(COLLAPSED_WIDTH_PX, collapsedWidthPx);
+						phyloLeafData.put(COLLAPSED_HEIGHT_PX, collapsedHeightPx);
+					} else {
+						double leafBranchDepth = (Double) phyloLeafData.get(LEAF_BRANCH_DEPTH);
+						double leafX = xOffset + (leafBranchDepth * branchLengthMultiplier);
+						double leafY = topMarginPx + ( (startingLeafUnit + 0.5) * verticalLeafSpace );
+						phyloLeafData.put(SUBTREE_X, leafX);
+						phyloLeafData.put(SUBTREE_Y, leafY);
+					}
+				}
 			}
 		});
 	}
@@ -257,65 +386,126 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 		CommandArray leafNodesArray = visDocument.setArray(LEAF_NODES);
 		CommandArray internalNodesArray = visDocument.setArray(INTERNAL_NODES);
 		CommandArray branchesArray = visDocument.setArray(BRANCHES);
+		CommandArray collapsedSubtreesArray = visDocument.setArray(COLLAPSED_SUBTREES);
+		
 		CommandObject rootObj = visDocument.setObject(ROOT);
 		
 		phyloTree.accept(new PhyloTreeVisitor() {
+
+			PhyloInternal currentCollapsed = null;
+
+			@Override
+			public void preVisitInternal(PhyloInternal phyloInternal) {
+				if(currentCollapsed == null) {
+					if(isCollapsed(phyloInternal)) {
+						currentCollapsed = phyloInternal;
+					}
+				}
+			}
+			
 			@Override
 			public void visitLeaf(PhyloLeaf phyloLeaf) {
-				Map<String, Object> leafUserData = phyloLeaf.getUserData();
-				double x = (double) leafUserData.get(SUBTREE_X);
-				double y = (double) leafUserData.get(SUBTREE_Y);
-				CommandObject leafObj = leafNodesArray.addObject();
-				leafObj.setDouble("x", x);
-				leafObj.setDouble("y", y);
-				
-				CommandObject leafPropertiesObj = leafObj.setObject("properties");
-				String phyloLeafName = phyloLeaf.getName();
-				leafPropertiesObj.set("name", phyloLeafName);
-				Object highlightedValue = leafUserData.get("treevisualiser-highlighted");
-				if(highlightedValue != null && highlightedValue.equals("true")) {
-					leafObj.setBoolean("highlighted", true);
+				if(currentCollapsed == null) {
+					Map<String, Object> leafUserData = phyloLeaf.getUserData();
+					double x = (double) leafUserData.get(SUBTREE_X);
+					double y = (double) leafUserData.get(SUBTREE_Y);
+					if(isCollapsed(phyloLeaf)) {
+						CommandObject collapsedObj = collapsedSubtreesArray.addObject();
+						double width = (double) leafUserData.get(COLLAPSED_WIDTH_PX);
+						double height = ((double) leafUserData.get(COLLAPSED_HEIGHT_PX)) * COLLAPSED_SUBTREE_VERTICAL_PROPORTION;
+						collapsedObj.setDouble("rootX", x);
+						collapsedObj.setDouble("rootY", y);
+						collapsedObj.setDouble("leafX", x + width);
+						collapsedObj.setDouble("upperLeafY", y - (height/2));
+						collapsedObj.setDouble("lowerLeafY", y + (height/2));
+						
+						CommandObject collapsedPropertiesObj = collapsedObj.setObject("properties");
+						String collapsedText = (String) leafUserData.get(COLLAPSED_TEXT);
+						collapsedPropertiesObj.set(COLLAPSED_TEXT, collapsedText);
+						double collapsedTextWidthPx = (Double) leafUserData.get(COLLAPSED_TEXT_WIDTH_PX);
+						collapsedPropertiesObj.set(COLLAPSED_TEXT_WIDTH_PX, collapsedTextWidthPx);
+					} else {
+						CommandObject leafObj = leafNodesArray.addObject();
+						leafObj.setDouble("x", x);
+						leafObj.setDouble("y", y);
+						
+						CommandObject leafPropertiesObj = leafObj.setObject("properties");
+						String phyloLeafName = phyloLeaf.getName();
+						leafPropertiesObj.set("name", phyloLeafName);
+						Object highlightedValue = leafUserData.get("treevisualiser-highlighted");
+						if(highlightedValue != null && highlightedValue.equals("true")) {
+							leafObj.setBoolean("highlighted", true);
+						}
+						String leafText = (String) leafUserData.get(LEAF_TEXT);
+						leafPropertiesObj.set(LEAF_TEXT, leafText);
+						double leafTextWidthPx = (Double) leafUserData.get(LEAF_TEXT_WIDTH_PX);
+						leafPropertiesObj.set(LEAF_TEXT_WIDTH_PX, leafTextWidthPx);
+					}
 				}
-				String leafText = (String) leafUserData.get(LEAF_TEXT);
-				leafPropertiesObj.set(LEAF_TEXT, leafText);
-				double leafTextWidthPx = (Double) leafUserData.get(LEAF_TEXT_WIDTH_PX);
-				leafPropertiesObj.set(LEAF_TEXT_WIDTH_PX, leafTextWidthPx);
 			}
+			
+			
 			@Override
 			public void postVisitBranch(int branchIndex, PhyloBranch phyloBranch) {
-				Map<String, Object> parentUserData = phyloBranch.getParentPhyloInternal().getUserData();
-				double parentX = (double) parentUserData.get(SUBTREE_X);
-				double parentY = (double) parentUserData.get(SUBTREE_Y);
-				Map<String, Object> childUserData = phyloBranch.getSubtree().getUserData();
-				double childX = (double) childUserData.get(SUBTREE_X);
-				double childY = (double) childUserData.get(SUBTREE_Y);
-				Map<String, Object> branchUserData = phyloBranch.getUserData();
-				boolean highlighted = false;
-				if(branchUserData != null) {
-					Object highlightedValue = branchUserData.get("treevisualiser-highlighted");
-					if(highlightedValue != null && highlightedValue.equals("true")) {
-						highlighted = true;
+				if(currentCollapsed == null) {
+					Map<String, Object> parentUserData = phyloBranch.getParentPhyloInternal().getUserData();
+					double parentX = (double) parentUserData.get(SUBTREE_X);
+					double parentY = (double) parentUserData.get(SUBTREE_Y);
+					Map<String, Object> childUserData = phyloBranch.getSubtree().getUserData();
+					double childX = (double) childUserData.get(SUBTREE_X);
+					double childY = (double) childUserData.get(SUBTREE_Y);
+					Map<String, Object> branchUserData = phyloBranch.getUserData();
+					boolean highlighted = false;
+					if(branchUserData != null) {
+						Object highlightedValue = branchUserData.get("treevisualiser-highlighted");
+						if(highlightedValue != null && highlightedValue.equals("true")) {
+							highlighted = true;
+						}
+					} 
+
+					CommandObject branchObj = branchesArray.addObject();
+					branchObj.setDouble("parentX", parentX);
+					branchObj.setDouble("parentY", parentY);
+					branchObj.setDouble("cornerX", parentX);
+					branchObj.setDouble("cornerY", childY);
+					branchObj.setDouble("childX", childX);
+					branchObj.setDouble("childY", childY);
+					if(highlighted) {
+						branchObj.setBoolean("highlighted", true);
 					}
-				} 
-				
-				CommandObject branchObj = branchesArray.addObject();
-				branchObj.setDouble("parentX", parentX);
-				branchObj.setDouble("parentY", parentY);
-				branchObj.setDouble("cornerX", parentX);
-				branchObj.setDouble("cornerY", childY);
-				branchObj.setDouble("childX", childX);
-				branchObj.setDouble("childY", childY);
-				if(highlighted) {
-					branchObj.setBoolean("highlighted", true);
 				}
 			}
 			@Override
 			public void postVisitInternal(PhyloInternal phyloInternal) {
-				double x = (double) phyloInternal.getUserData().get(SUBTREE_X);
-				double y = (double) phyloInternal.getUserData().get(SUBTREE_Y);
-				CommandObject internalNodeObj = internalNodesArray.addObject();
-				internalNodeObj.setDouble("x", x);
-				internalNodeObj.setDouble("y", y);
+				if(currentCollapsed == null) {
+					Map<String, Object> internalUserData = phyloInternal.getUserData();
+					double x = (double) internalUserData.get(SUBTREE_X);
+					double y = (double) internalUserData.get(SUBTREE_Y);
+					CommandObject internalNodeObj = internalNodesArray.addObject();
+					internalNodeObj.setDouble("x", x);
+					internalNodeObj.setDouble("y", y);
+				} else if(currentCollapsed == phyloInternal) {
+					Map<String, Object> internalUserData = phyloInternal.getUserData();
+					double x = (double) internalUserData.get(SUBTREE_X);
+					double y = (double) internalUserData.get(SUBTREE_Y);
+					CommandObject collapsedObj = collapsedSubtreesArray.addObject();
+					double width = (double) internalUserData.get(COLLAPSED_WIDTH_PX);
+					double height = ((double) internalUserData.get(COLLAPSED_HEIGHT_PX)) * COLLAPSED_SUBTREE_VERTICAL_PROPORTION;
+					collapsedObj.setDouble("rootX", x);
+					collapsedObj.setDouble("rootY", y);
+					collapsedObj.setDouble("leafX", x + width);
+					collapsedObj.setDouble("upperLeafY", y - (height/2));
+					collapsedObj.setDouble("lowerLeafY", y + (height/2));
+					
+					CommandObject collapsedPropertiesObj = collapsedObj.setObject("properties");
+					String collapsedText = (String) internalUserData.get(COLLAPSED_TEXT);
+					collapsedPropertiesObj.set(COLLAPSED_TEXT, collapsedText);
+					double collapsedTextWidthPx = (Double) internalUserData.get(COLLAPSED_TEXT_WIDTH_PX);
+					collapsedPropertiesObj.set(COLLAPSED_TEXT_WIDTH_PX, collapsedTextWidthPx);
+
+					
+					currentCollapsed = null;
+				}
 			}
 		});
 		
@@ -331,20 +521,54 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 
 	}
 
-	// find the minimum acceptable branch length multiplier across all leaf nodes.	
+	// find the minimum acceptable branch length multiplier across all collapsed / leaf nodes.	
 	private Double getBranchLengthMultiplier(PhyloTree phyloTree, double treeWidthPx, double leafTextGapPx) {
 		return phyloTree.accept(new PhyloTreeSummariser<Double>() {
 			private double branchLengthMultiplier = Double.MAX_VALUE;
+			
+			PhyloInternal currentCollapsed = null;
+			
+			@Override
+			public void preVisitInternal(PhyloInternal phyloInternal) {
+				if(currentCollapsed == null) {
+					if(isCollapsed(phyloInternal)) {
+						currentCollapsed = phyloInternal;
+						Map<String, Object> internalUserData = phyloInternal.getUserData();
+						Double collapsedTextWidthPx = (Double) internalUserData.get(COLLAPSED_TEXT_WIDTH_PX);
+						double maxRemainingPixelsForNode = treeWidthPx - (leafTextGapPx + collapsedTextWidthPx);
+						double maxBranchDepth = (Double) internalUserData.get(MAX_BRANCH_DEPTH);
+						double maxBranchLengthMultiplierForNode = maxRemainingPixelsForNode / maxBranchDepth;
+						this.branchLengthMultiplier = Math.min(branchLengthMultiplier, maxBranchLengthMultiplierForNode);
+					}
+				}
+			}
+			@Override
+			public void postVisitInternal(PhyloInternal phyloInternal) {
+				if(currentCollapsed == phyloInternal) {
+					currentCollapsed = null;
+				}
+			}
+			
 			@Override
 			public void visitLeaf(PhyloLeaf phyloLeaf) {
-				Map<String, Object> leafUserData = phyloLeaf.getUserData();
-				Double leafTextWidthPx = (Double) leafUserData.get(LEAF_TEXT_WIDTH_PX);
-				// maximum amount of horizontal space in pixels, which could be used for the branches
-				// leading to this leaf
-				double maxRemainingPixelsForLeaf = treeWidthPx - (leafTextGapPx + leafTextWidthPx);
-				double totalBranchDepth = (Double) leafUserData.get(TOTAL_BRANCH_DEPTH);
-				double maxBranchLengthMultiplierForLeaf = maxRemainingPixelsForLeaf / totalBranchDepth;
-				this.branchLengthMultiplier = Math.min(branchLengthMultiplier, maxBranchLengthMultiplierForLeaf);
+				if(currentCollapsed == null) {
+					Map<String, Object> leafUserData = phyloLeaf.getUserData();
+					if(isCollapsed(phyloLeaf)) {
+						Double collapsedTextWidthPx = (Double) leafUserData.get(COLLAPSED_TEXT_WIDTH_PX);
+						double maxRemainingPixelsForLeaf = treeWidthPx - (leafTextGapPx + collapsedTextWidthPx);
+						double maxBranchDepth = (Double) leafUserData.get(MAX_BRANCH_DEPTH);
+						double maxBranchLengthMultiplierForLeaf = maxRemainingPixelsForLeaf / maxBranchDepth;
+						this.branchLengthMultiplier = Math.min(branchLengthMultiplier, maxBranchLengthMultiplierForLeaf);
+					} else {
+						Double leafTextWidthPx = (Double) leafUserData.get(LEAF_TEXT_WIDTH_PX);
+						// maximum amount of horizontal space in pixels, which could be used for the branches
+						// leading to this leaf
+						double maxRemainingPixelsForLeaf = treeWidthPx - (leafTextGapPx + leafTextWidthPx);
+						double leafBranchDepth = (Double) leafUserData.get(LEAF_BRANCH_DEPTH);
+						double maxBranchLengthMultiplierForLeaf = maxRemainingPixelsForLeaf / leafBranchDepth;
+						this.branchLengthMultiplier = Math.min(branchLengthMultiplier, maxBranchLengthMultiplierForLeaf);
+					}
+				}
 			}
 			@Override
 			public Double get() {
@@ -353,20 +577,61 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 		}).get();
 	}
 	
-	private Integer countLeaves(PhyloTree phyloTree) {
+	// each leaf outside of a collapsed node is allocated 1 leaf unit.
+	// collapsed nodes are allocated a fixed number of leaf units (for now)
+
+	// this method sets the STARTING_LEAF_UNIT user data integer on leaf nodes outside 
+	// collapsed internals and on collapsed internal/leaf nodes
+	// and the LEAF_UNITS user data integer on collapsed internal/leaf nodes
+	
+	private Integer allocateLeafUnits(PhyloTree phyloTree) {
 		return phyloTree.accept(new PhyloTreeSummariser<Integer>() {
-			Integer numLeaves = 0;
+			Integer numLeafUnits = 0;
+			PhyloInternal currentCollapsed = null;
+			
+			@Override
+			public void preVisitInternal(PhyloInternal phyloInternal) {
+				if(currentCollapsed == null) {
+					if(isCollapsed(phyloInternal)) {
+						phyloInternal.ensureUserData().put(STARTING_LEAF_UNIT, numLeafUnits);
+						currentCollapsed = phyloInternal;
+					}
+				}
+			}
+			@Override
+			public void postVisitInternal(PhyloInternal phyloInternal) {
+				if(currentCollapsed == phyloInternal) {
+					currentCollapsed = null;
+					numLeafUnits = numLeafUnits + COLLAPSED_NODE_LEAF_UNITS;
+					phyloInternal.ensureUserData().put(LEAF_UNITS, COLLAPSED_NODE_LEAF_UNITS);
+				}
+			}
+
 			@Override
 			public void visitLeaf(PhyloLeaf phyloLeaf) {
-				numLeaves = numLeaves+1;
+				if(currentCollapsed == null) {
+					phyloLeaf.ensureUserData().put(STARTING_LEAF_UNIT, numLeafUnits);
+					if(isCollapsed(phyloLeaf)) {
+						numLeafUnits = numLeafUnits + COLLAPSED_NODE_LEAF_UNITS;
+						phyloLeaf.ensureUserData().put(LEAF_UNITS, COLLAPSED_NODE_LEAF_UNITS);
+					} else {
+						numLeafUnits = numLeafUnits+1;
+					}
+				}
 			}
 			@Override
 			public Integer get() {
-				return numLeaves;
+				return numLeafUnits;
 			}
+			
 		}).get();
 	}
 	
 	public interface PhyloTreeSummariser<C> extends PhyloTreeVisitor, Supplier<C> {}
 
+	private boolean isCollapsed(PhyloSubtree<?> phyloSubtree) {
+		Object collapsed = phyloSubtree.ensureUserData().get("treevisualiser-collapsed");
+		return (collapsed != null && collapsed.equals("true"));
+	}
+	
 }
