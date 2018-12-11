@@ -29,6 +29,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.w3c.dom.Element;
+
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
@@ -37,8 +39,19 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 public abstract class BaseListNeighbourCommand extends AbstractPlacementCommand<BaseListNeighbourCommand.Result> {
+
+	public static final String MAX_NEIGHBOURS = "maxNeighbours";
+	private Integer maxNeighbours;
+	
+	@Override
+	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
+		super.configure(pluginConfigContext, configElem);
+		this.maxNeighbours = PluginUtils.configureIntProperty(configElem, MAX_NEIGHBOURS, 1, true, null, false, false);
+	}
 
 	@Override
 	protected Result executeOnPlacementResult(CommandContext cmdContext,
@@ -50,7 +63,7 @@ public abstract class BaseListNeighbourCommand extends AbstractPlacementCommand<
 		Map<Integer, PhyloBranch> edgeIndexToPhyloBranch = 
 				MaxLikelihoodPlacer.generateEdgeIndexToPhyloBranch(placerResult.getLabelledPhyloTree(), glueProjectPhyloTree);
 		PhyloLeaf placementLeaf = MaxLikelihoodPlacer.addPlacementToPhylogeny(glueProjectPhyloTree, edgeIndexToPhyloBranch, queryResult, placement);
-		List<ResultRow> resultRows = PlacementNeighbourFinder.findNeighbours(placementLeaf)
+		List<ResultRow> resultRows = PlacementNeighbourFinder.findNeighbours(placementLeaf, null, maxNeighbours)
 				.stream()
 				.map(plcmtNeighbour -> {
 					String leafName = plcmtNeighbour.getPhyloLeaf().getName();

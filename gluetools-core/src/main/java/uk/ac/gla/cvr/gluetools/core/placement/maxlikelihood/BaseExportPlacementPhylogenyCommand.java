@@ -25,14 +25,11 @@
 */
 package uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood;
 
-import java.util.List;
 import java.util.Map;
 
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandException;
-import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
@@ -44,20 +41,12 @@ public abstract class BaseExportPlacementPhylogenyCommand<R extends CommandResul
 
 	public static final String LEAF_NAME = "leafName";
 
-	public static final String PLACEMENT_LEAF_PROPERTIES = "placementLeafProperty";
-	public static final String PLACEMENT_BRANCH_PROPERTIES = "placementBranchProperty";
-
 	private String leafName;
 	
-	private List<String> placementLeafProperties;
-	private List<String> placementBranchProperties;
-
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		this.leafName = PluginUtils.configureStringProperty(configElem, LEAF_NAME, false);
-		this.placementLeafProperties = PluginUtils.configureStringsProperty(configElem, PLACEMENT_LEAF_PROPERTIES);
-		this.placementBranchProperties = PluginUtils.configureStringsProperty(configElem, PLACEMENT_BRANCH_PROPERTIES);
 	}
 	
 	protected PhyloTree generatePhyloTree(CommandContext cmdContext,
@@ -76,31 +65,6 @@ public abstract class BaseExportPlacementPhylogenyCommand<R extends CommandResul
 		} else {
 			placementLeaf.setName(leafName);
 		}
-		this.placementLeafProperties.forEach(placementLeafProperty -> {
-			if(placementLeafProperty.length() == 0) {
-				throw new CommandException(Code.COMMAND_FAILED_ERROR, "Empty placementLeafProperty");
-			}
-			int firstColonIndex = placementLeafProperty.indexOf(':');
-			if(firstColonIndex < 0) {
-				throw new CommandException(Code.COMMAND_FAILED_ERROR, "placementLeafProperty string does not contain ':'");
-			}
-			String key = placementLeafProperty.substring(0, firstColonIndex);
-			String value = placementLeafProperty.substring(firstColonIndex+1);
-			placementLeaf.ensureUserData().put(key, value);
-		});
-		PhyloBranch placementBranch = placementLeaf.getParentPhyloBranch();
-		this.placementBranchProperties.forEach(placementBranchProperty -> {
-			if(placementBranchProperty.length() == 0) {
-				throw new CommandException(Code.COMMAND_FAILED_ERROR, "Empty placementBranchProperty");
-			}
-			int firstColonIndex = placementBranchProperty.indexOf(':');
-			if(firstColonIndex < 0) {
-				throw new CommandException(Code.COMMAND_FAILED_ERROR, "placementBranchProperty string does not contain ':'");
-			}
-			String key = placementBranchProperty.substring(0, firstColonIndex);
-			String value = placementBranchProperty.substring(firstColonIndex+1);
-			placementBranch.ensureUserData().put(key, value);
-		});
 		
 		return glueProjectPhyloTree;
 	}

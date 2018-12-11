@@ -36,11 +36,12 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 @CommandClass(
 		commandWords={"list", "neighbour"}, 
 		description = "List the neighbours of a placement from a file in order of decreasing distance", 
-		docoptUsages = { "-i <inputFile> -q <queryName> -p <placementIndex>" },
+		docoptUsages = { "-i <inputFile> -q <queryName> -p <placementIndex> [-m <maxNeighbours>]" },
 		docoptOptions = { 
 				"-i <inputFile>, --inputFile <inputFile>                 Placement results file",
 				"-q <queryName>, --queryName <queryName>                 Query sequence name",
-				"-p <placementIndex>, --placementIndex <placementIndex>  Placement index"
+				"-p <placementIndex>, --placementIndex <placementIndex>  Placement index",
+				"-m <maxNeighbours>, --maxNeighbours <maxNeighbours>     Max. number of neighbours to return"
 		},
 		furtherHelp = "",
 		metaTags = {CmdMeta.consoleOnly}	

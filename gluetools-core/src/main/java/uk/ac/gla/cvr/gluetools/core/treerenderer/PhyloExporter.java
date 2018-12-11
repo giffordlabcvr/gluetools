@@ -25,6 +25,8 @@
 */
 package uk.ac.gla.cvr.gluetools.core.treerenderer;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
 import org.w3c.dom.Element;
@@ -35,6 +37,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
+import uk.ac.gla.cvr.gluetools.core.phylogenyImporter.PhyloImporter;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloFormat;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
@@ -78,6 +81,25 @@ public class PhyloExporter extends ModulePlugin<PhyloExporter> {
 						PhyloSubtree<?> childRootSubtree = childPhyloTree.getRoot();
 						childPhyloTree.setRoot(null);
 						PhyloBranch parentPhyloBranch = phyloLeaf.getParentPhyloBranch();
+						
+						// merge glueAlignmentNames lists
+						@SuppressWarnings("unchecked")
+						List<Object> replacedLeafGlueAlignmentNames = 
+								(List<Object>) phyloLeaf.ensureUserData().get(PhyloImporter.GLUE_ALIGNMENT_NAMES_USER_DATA_KEY);
+						if(replacedLeafGlueAlignmentNames == null) {
+							replacedLeafGlueAlignmentNames = new ArrayList<Object>();
+						}
+						@SuppressWarnings("unchecked")
+						List<Object> newSubtreeGlueAlignmentNames = 
+								(List<Object>) childRootSubtree.ensureUserData().get(PhyloImporter.GLUE_ALIGNMENT_NAMES_USER_DATA_KEY);
+						if(newSubtreeGlueAlignmentNames == null) {
+							newSubtreeGlueAlignmentNames = new ArrayList<Object>();
+						}
+						newSubtreeGlueAlignmentNames.addAll(0, replacedLeafGlueAlignmentNames);
+						if(newSubtreeGlueAlignmentNames.size() > 0) {
+							childRootSubtree.ensureUserData().put(PhyloImporter.GLUE_ALIGNMENT_NAMES_USER_DATA_KEY, newSubtreeGlueAlignmentNames);
+						}
+						
 						if(parentPhyloBranch != null) {
 							parentPhyloBranch.setSubtree(childRootSubtree);
 						} else {

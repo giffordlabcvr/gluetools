@@ -15,7 +15,7 @@ import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 		furtherHelp = "",
 		metaTags = {CmdMeta.inputIsComplex}	
 )
-public class UpdateLeafCommand extends BaseUpdatePhyloTreeCommand {
+public class UpdateLeavesCommand extends BaseUpdatePhyloTreeCommand {
 
 	@Override
 	protected void updatePhyloTree(PhyloTree phyloTree) {
