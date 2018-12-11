@@ -26,6 +26,7 @@ public class TreeVisualiser extends ModulePlugin<TreeVisualiser> {
 	private double bottomMarginPct;
 	private double leafTextGapPct;
 	private String leafTextFont;
+	private double maxLeafTextHeightPx;
 	private List<MemberAnnotationGenerator> memberAnnotationGenerators;
 	
 	@Override
@@ -39,6 +40,7 @@ public class TreeVisualiser extends ModulePlugin<TreeVisualiser> {
 		this.leafTextGapPct = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, "leafTextGapPct", false)).orElse(0.5);
 		this.leafTextHeightProportion = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, "leafTextHeightProportion", false)).orElse(0.9);
 		this.leafTextFont = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, "leafTextFont", false)).orElse("Arial");
+		this.maxLeafTextHeightPx = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, "maxLeafTextHeightPx", false)).orElse(20.0);
 		
 		MemberAnnotationGeneratorFactory annotationGeneratorFactory = PluginFactory.get(MemberAnnotationGeneratorFactory.creator);
 		String alternateElemsXPath = GlueXmlUtils.alternateElemsXPath(annotationGeneratorFactory.getElementNames());
@@ -87,6 +89,10 @@ public class TreeVisualiser extends ModulePlugin<TreeVisualiser> {
 
 	public String getLeafTextFont() {
 		return leafTextFont;
+	}
+
+	public double getMaxLeafTextHeightPx() {
+		return maxLeafTextHeightPx;
 	}
 
 }
