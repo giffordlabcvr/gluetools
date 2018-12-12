@@ -26,7 +26,9 @@ public class TreeVisualiser extends ModulePlugin<TreeVisualiser> {
 	private double bottomMarginPct;
 	private double leafTextGapPct;
 	private String leafTextFont;
-	private double maxLeafTextHeightPx;
+	private double maxVerticalLeafUnitSpacePx;
+	private int minCollapsedSubtreeLeafUnits;
+	private int maxCollapsedSubtreeLeafUnits;
 	private List<MemberAnnotationGenerator> memberAnnotationGenerators;
 	
 	@Override
@@ -40,7 +42,9 @@ public class TreeVisualiser extends ModulePlugin<TreeVisualiser> {
 		this.leafTextGapPct = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, "leafTextGapPct", false)).orElse(0.5);
 		this.leafTextHeightProportion = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, "leafTextHeightProportion", false)).orElse(0.9);
 		this.leafTextFont = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, "leafTextFont", false)).orElse("Arial");
-		this.maxLeafTextHeightPx = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, "maxLeafTextHeightPx", false)).orElse(20.0);
+		this.maxVerticalLeafUnitSpacePx = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, "maxVerticalLeafSpacePx", false)).orElse(20.0);
+		this.minCollapsedSubtreeLeafUnits = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, "minCollapsedSubtreeLeafUnits", false)).orElse(1);
+		this.maxCollapsedSubtreeLeafUnits = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, "maxCollapsedSubtreeLeafUnits", false)).orElse(6);
 		
 		MemberAnnotationGeneratorFactory annotationGeneratorFactory = PluginFactory.get(MemberAnnotationGeneratorFactory.creator);
 		String alternateElemsXPath = GlueXmlUtils.alternateElemsXPath(annotationGeneratorFactory.getElementNames());
@@ -91,8 +95,16 @@ public class TreeVisualiser extends ModulePlugin<TreeVisualiser> {
 		return leafTextFont;
 	}
 
-	public double getMaxLeafTextHeightPx() {
-		return maxLeafTextHeightPx;
+	public Double getMaxVerticalLeafUnitSpacePx() {
+		return maxVerticalLeafUnitSpacePx;
+	}
+
+	public int getMinCollapsedSubtreeLeafUnits() {
+		return minCollapsedSubtreeLeafUnits;
+	}
+
+	public int getMaxCollapsedSubtreeLeafUnits() {
+		return maxCollapsedSubtreeLeafUnits;
 	}
 
 }

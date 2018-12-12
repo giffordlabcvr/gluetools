@@ -33,7 +33,6 @@ import uk.ac.gla.cvr.gluetools.core.phylotree.document.DocumentToPhyloTreeTransf
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.memberAnnotationGenerator.MemberAnnotationGenerator;
-import uk.ac.gla.cvr.gluetools.core.treeVisualiser.VisualiseTreeDocumentCommand.PhyloTreeSummariser;
 
 @CommandClass(
 		commandWords={"visualise", "tree-document"}, 
@@ -92,9 +91,6 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 	private static final String LEAF_UNITS = "leafUnits";
 	
 	
-
-	private static final int COLLAPSED_NODE_LEAF_UNITS = 3;
-	
 	@Override
 	protected VisualiseTreeResult execute(CommandContext cmdContext, TreeVisualiser treeVisualiser) {
 		DocumentToPhyloTreeTransformer docToPhyloTreeTransformer = new DocumentToPhyloTreeTransformer();
@@ -115,14 +111,16 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 				treeVisualiser.getTopMarginPct() + 
 				treeVisualiser.getBottomMarginPct()
 		); 
-		double treeHeightPx = (pxHeight * treeHeightPct) / 100.0;
+		double availableTreeVerticalSpacePx = (pxHeight * treeHeightPct) / 100.0;
 		
-		Integer numLeafUnits = allocateLeafUnits(phyloTree);
-		// amount of space in pixels allocated to one leaf.
-		double verticalLeafSpacePx = treeHeightPx / (double) numLeafUnits;
+		Integer numLeafUnits = allocateLeafUnits(phyloTree, 
+				treeVisualiser.getMinCollapsedSubtreeLeafUnits(), treeVisualiser.getMaxCollapsedSubtreeLeafUnits());
+		
+		// amount of space in pixels allocated to one leaf unit.
+		double verticalLeafUnitSpacePx = Math.min(availableTreeVerticalSpacePx / (double) numLeafUnits, 
+				treeVisualiser.getMaxVerticalLeafUnitSpacePx()); // apply maximum to avoid huge text which mucks up tree!
 
-		double leafTextHeightPx = Math.min(verticalLeafSpacePx * treeVisualiser.getLeafTextHeightProportion(), 
-				treeVisualiser.getMaxLeafTextHeightPx()); // apply maximum to avoid huge text which mucks up tree!
+		double leafTextHeightPx = verticalLeafUnitSpacePx * treeVisualiser.getLeafTextHeightProportion(); 
 
 		setBranchAndTextProperties(cmdContext, treeVisualiser, phyloTree, leafTextHeightPx);
 		
@@ -135,16 +133,19 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 		double rightMarginPx = (pxWidth * treeVisualiser.getRightMarginPct()) / 100.0;
 		double rootLengthPx = (pxWidth * treeVisualiser.getRootPct()) / 100.0;
 		double topMarginPx = (pxHeight * treeVisualiser.getTopMarginPct()) / 100.0;
+		double bottomMarginPx = (pxHeight * treeVisualiser.getBottomMarginPct()) / 100.0;
 
+		int finalHeightPx = (int) Math.ceil((topMarginPx + (numLeafUnits * verticalLeafUnitSpacePx) + bottomMarginPx));
+		
 		CommandDocument visDocument = new CommandDocument("treeVisualisation");
 		visDocument.setInt(PX_WIDTH, pxWidth);
-		visDocument.setInt(PX_HEIGHT, pxHeight);
-		visDocument.setDouble(VERTICAL_LEAF_SPACE_PX, verticalLeafSpacePx);
+		visDocument.setInt(PX_HEIGHT, finalHeightPx);
+		visDocument.setDouble(VERTICAL_LEAF_SPACE_PX, verticalLeafUnitSpacePx);
 		visDocument.setDouble(LEAF_TEXT_HEIGHT_PX, leafTextHeightPx);
 		visDocument.setDouble(LEAF_TEXT_GAP_PX, leafTextGapPx);
 		visDocument.setDouble(LEAF_TEXT_HEIGHT_PROPORTION, treeVisualiser.getLeafTextHeightProportion());
 		
-		setSubtreeCoords(phyloTree, rightMarginPx, rootLengthPx, topMarginPx, verticalLeafSpacePx, branchLengthMultiplier);
+		setSubtreeCoords(phyloTree, rightMarginPx, rootLengthPx, topMarginPx, verticalLeafUnitSpacePx, branchLengthMultiplier);
 		generateObjects(cmdContext, treeVisualiser, phyloTree, rightMarginPx,  rootLengthPx, topMarginPx, visDocument);
 		return new VisualiseTreeResult(visDocument);
 	}
@@ -584,10 +585,11 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 	// collapsed internals and on collapsed internal/leaf nodes
 	// and the LEAF_UNITS user data integer on collapsed internal/leaf nodes
 	
-	private Integer allocateLeafUnits(PhyloTree phyloTree) {
+	private Integer allocateLeafUnits(PhyloTree phyloTree, int minCollapsedLeafUnits, int maxCollapsedLeafUnits) {
 		return phyloTree.accept(new PhyloTreeSummariser<Integer>() {
 			Integer numLeafUnits = 0;
 			PhyloInternal currentCollapsed = null;
+			Integer currentCollapsedLeafNodes = 0;
 			
 			@Override
 			public void preVisitInternal(PhyloInternal phyloInternal) {
@@ -595,6 +597,7 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 					if(isCollapsed(phyloInternal)) {
 						phyloInternal.ensureUserData().put(STARTING_LEAF_UNIT, numLeafUnits);
 						currentCollapsed = phyloInternal;
+						currentCollapsedLeafNodes = 0;
 					}
 				}
 			}
@@ -602,8 +605,11 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 			public void postVisitInternal(PhyloInternal phyloInternal) {
 				if(currentCollapsed == phyloInternal) {
 					currentCollapsed = null;
-					numLeafUnits = numLeafUnits + COLLAPSED_NODE_LEAF_UNITS;
-					phyloInternal.ensureUserData().put(LEAF_UNITS, COLLAPSED_NODE_LEAF_UNITS);
+					int collapsedLeafUnits = (int) Math.ceil(Math.log(currentCollapsedLeafNodes)/Math.log(2));
+					collapsedLeafUnits = Math.max(collapsedLeafUnits, minCollapsedLeafUnits);
+					collapsedLeafUnits = Math.min(collapsedLeafUnits, maxCollapsedLeafUnits);
+					numLeafUnits = numLeafUnits + collapsedLeafUnits;
+					phyloInternal.ensureUserData().put(LEAF_UNITS, collapsedLeafUnits);
 				}
 			}
 
@@ -612,11 +618,13 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 				if(currentCollapsed == null) {
 					phyloLeaf.ensureUserData().put(STARTING_LEAF_UNIT, numLeafUnits);
 					if(isCollapsed(phyloLeaf)) {
-						numLeafUnits = numLeafUnits + COLLAPSED_NODE_LEAF_UNITS;
-						phyloLeaf.ensureUserData().put(LEAF_UNITS, COLLAPSED_NODE_LEAF_UNITS);
+						numLeafUnits = numLeafUnits + 1;
+						phyloLeaf.ensureUserData().put(LEAF_UNITS, 1);
 					} else {
 						numLeafUnits = numLeafUnits+1;
 					}
+				} else {
+					currentCollapsedLeafNodes++;
 				}
 			}
 			@Override
