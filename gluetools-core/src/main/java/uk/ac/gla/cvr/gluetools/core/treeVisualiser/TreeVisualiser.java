@@ -42,7 +42,7 @@ public class TreeVisualiser extends ModulePlugin<TreeVisualiser> {
 		this.leafTextGapPct = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, "leafTextGapPct", false)).orElse(0.5);
 		this.leafTextHeightProportion = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, "leafTextHeightProportion", false)).orElse(0.9);
 		this.leafTextFont = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, "leafTextFont", false)).orElse("Arial");
-		this.maxVerticalLeafUnitSpacePx = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, "maxVerticalLeafSpacePx", false)).orElse(20.0);
+		this.maxVerticalLeafUnitSpacePx = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, "maxVerticalLeafSpacePx", false)).orElse(22.0);
 		this.minCollapsedSubtreeLeafUnits = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, "minCollapsedSubtreeLeafUnits", false)).orElse(1);
 		this.maxCollapsedSubtreeLeafUnits = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, "maxCollapsedSubtreeLeafUnits", false)).orElse(6);
 		
