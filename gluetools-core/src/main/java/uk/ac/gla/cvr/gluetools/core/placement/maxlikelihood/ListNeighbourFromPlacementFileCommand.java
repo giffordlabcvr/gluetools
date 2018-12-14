@@ -41,7 +41,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 				"-i <inputFile>, --inputFile <inputFile>                 Placement results file",
 				"-q <queryName>, --queryName <queryName>                 Query sequence name",
 				"-p <placementIndex>, --placementIndex <placementIndex>  Placement index",
-				"-m <maxNeighbours>, --maxNeighbours <maxNeighbours>     Max. number of neighbours to return"
+				"-m <maxNeighbours>, --maxNeighbours <maxNeighbours>     Max. number of neighbours to return",
+				"-d <maxDistance>, --maxDistance <maxDistance>           Max. patristic distance to neighbour"
 		},
 		furtherHelp = "",
 		metaTags = {CmdMeta.consoleOnly}	

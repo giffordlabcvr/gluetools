@@ -25,6 +25,7 @@
 */
 package uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -45,12 +46,15 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 public abstract class BaseListNeighbourCommand extends AbstractPlacementCommand<BaseListNeighbourCommand.Result> {
 
 	public static final String MAX_NEIGHBOURS = "maxNeighbours";
+	public static final String MAX_DISTANCE = "maxDistance";
 	private Integer maxNeighbours;
+	private Double maxDistance;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		this.maxNeighbours = PluginUtils.configureIntProperty(configElem, MAX_NEIGHBOURS, 1, true, null, false, false);
+		this.maxDistance = PluginUtils.configureDoubleProperty(configElem, MAX_DISTANCE, 0.0, true, null, false, false);
 	}
 
 	@Override
@@ -63,7 +67,7 @@ public abstract class BaseListNeighbourCommand extends AbstractPlacementCommand<
 		Map<Integer, PhyloBranch> edgeIndexToPhyloBranch = 
 				MaxLikelihoodPlacer.generateEdgeIndexToPhyloBranch(placerResult.getLabelledPhyloTree(), glueProjectPhyloTree);
 		PhyloLeaf placementLeaf = MaxLikelihoodPlacer.addPlacementToPhylogeny(glueProjectPhyloTree, edgeIndexToPhyloBranch, queryResult, placement);
-		List<ResultRow> resultRows = PlacementNeighbourFinder.findNeighbours(placementLeaf, null, maxNeighbours)
+		List<ResultRow> resultRows = PlacementNeighbourFinder.findNeighbours(placementLeaf, new BigDecimal(maxDistance), maxNeighbours)
 				.stream()
 				.map(plcmtNeighbour -> {
 					String leafName = plcmtNeighbour.getPhyloLeaf().getName();
