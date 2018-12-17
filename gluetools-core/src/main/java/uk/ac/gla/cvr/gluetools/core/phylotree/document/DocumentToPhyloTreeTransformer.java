@@ -25,8 +25,11 @@
 */
 package uk.ac.gla.cvr.gluetools.core.phylotree.document;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 
+import uk.ac.gla.cvr.gluetools.core.document.CommandArray;
 import uk.ac.gla.cvr.gluetools.core.document.CommandArrayItem;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocumentVisitor;
@@ -114,6 +117,19 @@ public class DocumentToPhyloTreeTransformer implements CommandDocumentVisitor {
 		if(currentUserData != null) {
 			if(commandFieldValue instanceof SimpleCommandValue) {
 				currentUserData.put(objFieldName, ((SimpleCommandValue) commandFieldValue).getValue());
+			} else if(commandFieldValue instanceof CommandArray) {
+				CommandArray cmdArray = (CommandArray) commandFieldValue;
+				List<Object> values = new ArrayList<Object>();
+				for(int i = 0; i < cmdArray.size(); i++) {
+					Object cmdArrayItmeVal = cmdArray.getItem(i);
+					if(cmdArrayItmeVal instanceof SimpleCommandValue) {
+						values.add(((SimpleCommandValue) cmdArrayItmeVal).getValue());
+					} else {
+						throw new PhyloDocumentException(Code.ILLEGAL_USER_DATA_VALUE, 
+								objFieldName, cmdArrayItmeVal.getClass().getSimpleName());
+					}
+				}
+				currentUserData.put(objFieldName, values);
 			} else {
 				throw new PhyloDocumentException(Code.ILLEGAL_USER_DATA_VALUE, 
 						objFieldName, commandFieldValue.getClass().getSimpleName());
@@ -128,8 +144,6 @@ public class DocumentToPhyloTreeTransformer implements CommandDocumentVisitor {
 			PhyloBranch phyloBranch = new PhyloBranch();
 			phyloInternal.addBranch(phyloBranch);
 			currentPhyloObject = phyloBranch;
-		} else {
-			throw new PhyloDocumentException(Code.FORMAT_ERROR, "Unexpected array "+arrayFieldName);
 		}
 	}
 

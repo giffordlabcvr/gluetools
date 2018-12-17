@@ -26,6 +26,7 @@
 package uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.w3c.dom.Element;
@@ -34,7 +35,9 @@ import jdk.nashorn.api.scripting.JSObject;
 import jdk.nashorn.api.scripting.NashornException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.scripting.CommandDocumentToMapVisitor;
 import uk.ac.gla.cvr.gluetools.core.command.scripting.NashornContext;
+import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker.EcmaFunctionInvokerException.Code;
 import uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker.resultType.EcmaFunctionOkFromNullResultType;
 import uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker.resultType.EcmaFunctionResultType;
@@ -52,9 +55,11 @@ public class EcmaFunction implements Plugin {
 	public static final String NAME = "name";
 	public static final String PARAMETER = "parameter";
 	public static final String CONSUMES_BINARY = "consumesBinary";
+	public static final String CONSUMES_DOCUMENT = "consumesDocument";
 
 	private String name;
 	private Boolean consumesBinary;
+	private Boolean consumesDocument;
 	private List<EcmaFunctionParameter> parameters;
 	private EcmaFunctionResultType<?> resultType;
 	
@@ -65,6 +70,7 @@ public class EcmaFunction implements Plugin {
 
 		name = PluginUtils.configureStringProperty(configElem, NAME, true);
 		consumesBinary = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, CONSUMES_BINARY, false)).orElse(false);
+		consumesDocument = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, CONSUMES_DOCUMENT, false)).orElse(false);
 		parameters = PluginFactory.createPlugins(pluginConfigContext, EcmaFunctionParameter.class, 
 				PluginUtils.findConfigElements(configElem, PARAMETER));
 		String alternateElemsXPath = GlueXmlUtils.alternateElemsXPath(resultTypeFactory.getElementNames());
@@ -84,30 +90,64 @@ public class EcmaFunction implements Plugin {
 		return consumesBinary;
 	}
 
+	protected Boolean consumesDocument() {
+		return consumesDocument;
+	}
+	
 	public List<EcmaFunctionParameter> getParameters() {
 		return parameters;
 	}
 
-	public CommandResult invoke(CommandContext cmdContext, EcmaFunctionInvoker ecmaFunctionInvoker, List<String> arguments) {
+	public CommandResult invoke(CommandContext cmdContext, EcmaFunctionInvoker ecmaFunctionInvoker, List<String> arguments,
+			CommandDocument document) {
+		if(consumesDocument && consumesBinary) {
+			throw new EcmaFunctionInvokerException(Code.FUNCTION_INVOCATION_EXCEPTION, ecmaFunctionInvoker.getModuleName(), getName(), 
+					"EcmaFunction may not have both consumesBinary and consumesDocument set to true.");
+		}
 		if(consumesBinary) {
 			if(getParameters().size() == 0 || !getParameters().get(0).getName().equals("base64")) {
 				throw new EcmaFunctionInvokerException(Code.FUNCTION_INVOCATION_EXCEPTION, ecmaFunctionInvoker.getModuleName(), getName(), 
 						"EcmaFunction with consumesBinary set to true must define first parameter named 'base64'.");
 			}
 		}
-		int expectedArgumentsSize = getParameters().size();
-		if(arguments.size() != expectedArgumentsSize) {
+		if(consumesDocument) {
+			if(getParameters().size() != 1 || !getParameters().get(0).getName().equals("document")) {
+				throw new EcmaFunctionInvokerException(Code.FUNCTION_INVOCATION_EXCEPTION, ecmaFunctionInvoker.getModuleName(), getName(), 
+						"EcmaFunction with consumesDocument set to true must define single parameter named 'document'.");
+			}
+			if(arguments.size() > 0) {
+				throw new EcmaFunctionInvokerException(Code.FUNCTION_INVOCATION_EXCEPTION, ecmaFunctionInvoker.getModuleName(), getName(), 
+						"EcmaFunction with consumesDocument set to true cannot be invoked with arguments.");
+			}
+		} else {
+			if(document != null) {
+				throw new EcmaFunctionInvokerException(Code.FUNCTION_INVOCATION_EXCEPTION, ecmaFunctionInvoker.getModuleName(), getName(), 
+						"EcmaFunction with consumesDocument set to false cannot be invoked with a document.");
+			}
+		}
+		if(arguments.size() != getParameters().size() && !consumesDocument) {
 			throw new EcmaFunctionInvokerException(
 					EcmaFunctionInvokerException.Code.INCORRECT_NUMBER_OF_ARGUMENTS, 
 						ecmaFunctionInvoker.getModuleName(), getName(), 
-						Integer.toString(expectedArgumentsSize), Integer.toString(arguments.size()));
+						Integer.toString(getParameters().size()), Integer.toString(arguments.size()));
 		}
 		NashornContext nashornContext = cmdContext.getNashornContext();
 		nashornContext.setScriptContext(ecmaFunctionInvoker.ensureScriptContext(cmdContext));
 		JSObject functionJSObject = nashornContext.lookupFunction(getName());
 		Object cmdResultObj = null;
+		Object[] inputArray;
+		if(consumesDocument) {
+			CommandDocumentToMapVisitor visitor = new CommandDocumentToMapVisitor();
+			document.accept(visitor);
+			Map<String, Object> rootMap = visitor.getRootMap();
+			JSObject objToNativeFunction = nashornContext.lookupFunction("objToNative");
+			Object nativeObj = nashornContext.invokeFunction(objToNativeFunction, new Object[]{rootMap});
+			inputArray = new Object[]{nativeObj};
+		} else {
+			inputArray = arguments.toArray(new Object[]{});
+		}
 		try {
-			cmdResultObj = nashornContext.invokeFunction(functionJSObject, arguments.toArray(new Object[]{}));
+			cmdResultObj = nashornContext.invokeFunction(functionJSObject, inputArray);
 		} catch(NashornException ne) {
 			nashornContext.recastException(ne.getFileName(), ne);
 		}

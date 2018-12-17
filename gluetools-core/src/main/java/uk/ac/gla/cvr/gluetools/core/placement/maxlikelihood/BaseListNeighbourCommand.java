@@ -25,16 +25,14 @@
 */
 package uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
-import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
@@ -43,37 +41,37 @@ import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-@CommandClass(
-		commandWords={"list", "neighbour"}, 
-		description = "List the neighbours of a placement in order of decreasing distance", 
-		docoptUsages = { "-i <inputFile> -q <queryName> -p <placementIndex>" },
-		docoptOptions = { 
-				"-i <inputFile>, --inputFile <inputFile>                 Placement results file",
-				"-q <queryName>, --queryName <queryName>                 Query sequence name",
-				"-p <placementIndex>, --placementIndex <placementIndex>  Placement index"
-		},
-		furtherHelp = "",
-		metaTags = {CmdMeta.consoleOnly}	
-)
-public class ListNeighbourCommand extends AbstractPlacementCommand<ListNeighbourCommand.Result> {
+public abstract class BaseListNeighbourCommand extends AbstractPlacementCommand<BaseListNeighbourCommand.Result> {
 
+	public static final String MAX_NEIGHBOURS = "maxNeighbours";
+	public static final String MAX_DISTANCE = "maxDistance";
+	private Integer maxNeighbours;
+	private Double maxDistance;
+	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
+		this.maxNeighbours = PluginUtils.configureIntProperty(configElem, MAX_NEIGHBOURS, 1, true, null, false, false);
+		this.maxDistance = PluginUtils.configureDoubleProperty(configElem, MAX_DISTANCE, 0.0, true, null, false, false);
 	}
 
 	@Override
 	protected Result executeOnPlacementResult(CommandContext cmdContext,
 			MaxLikelihoodPlacer maxLikelihoodPlacer,
-			MaxLikelihoodPlacerResult placerResult,
+			IMaxLikelihoodPlacerResult placerResult,
 			MaxLikelihoodSingleQueryResult queryResult,
 			MaxLikelihoodSinglePlacement placement) {
 		PhyloTree glueProjectPhyloTree = maxLikelihoodPlacer.constructGlueProjectPhyloTree(cmdContext);
 		Map<Integer, PhyloBranch> edgeIndexToPhyloBranch = 
 				MaxLikelihoodPlacer.generateEdgeIndexToPhyloBranch(placerResult.getLabelledPhyloTree(), glueProjectPhyloTree);
 		PhyloLeaf placementLeaf = MaxLikelihoodPlacer.addPlacementToPhylogeny(glueProjectPhyloTree, edgeIndexToPhyloBranch, queryResult, placement);
-		List<ResultRow> resultRows = PlacementNeighbourFinder.findNeighbours(placementLeaf)
+		BigDecimal maxDistanceBD = null;
+		if(maxDistance != null) {
+			maxDistanceBD = new BigDecimal(maxDistance);
+		}
+		List<ResultRow> resultRows = PlacementNeighbourFinder.findNeighbours(placementLeaf, maxDistanceBD, maxNeighbours)
 				.stream()
 				.map(plcmtNeighbour -> {
 					String leafName = plcmtNeighbour.getPhyloLeaf().getName();
@@ -111,16 +109,6 @@ public class ListNeighbourCommand extends AbstractPlacementCommand<ListNeighbour
 		}
 		
 	}
-	
-	@CompleterClass
-	public static class Completer extends AbstractPlacementCommandCompleter {
-		public Completer() {
-			super();
-		}
-		
-	}
-
-
 	
 	
 }

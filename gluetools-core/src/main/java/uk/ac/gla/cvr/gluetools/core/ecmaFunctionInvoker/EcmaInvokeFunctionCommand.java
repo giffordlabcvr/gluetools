@@ -62,7 +62,7 @@ public class EcmaInvokeFunctionCommand extends EcmaFunctionCommand implements Pr
 
 	@Override
 	protected CommandResult execute(CommandContext cmdContext, EcmaFunctionInvoker ecmaFunctionInvoker) {
-		return ecmaFunctionInvoker.invokeFunction(cmdContext, getFunctionName(), getArguments());
+		return ecmaFunctionInvoker.invokeFunction(cmdContext, getFunctionName(), getArguments(), getDocument());
 	}
 
 	@CompleterClass

@@ -34,8 +34,14 @@ import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentListField;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloFormat;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 
+/**
+ * Superceded by DetailedMaxLikelihoodPlacerResult.
+ * Retained for file-based backwards-compatibility for the time being. 
+ *
+ */
+
 @PojoDocumentClass
-public class MaxLikelihoodPlacerResult {
+public class MaxLikelihoodPlacerResult implements IMaxLikelihoodPlacerResult {
 
 	@PojoDocumentField
 	public String labelledPhyloTree;
@@ -46,6 +52,7 @@ public class MaxLikelihoodPlacerResult {
 	@PojoDocumentListField(itemClass = MaxLikelihoodSingleQueryResult.class)
 	public List<MaxLikelihoodSingleQueryResult> singleQueryResult = new ArrayList<MaxLikelihoodSingleQueryResult>();
 
+	@Override
 	public PhyloTree getLabelledPhyloTree() {
 		PhyloFormat labelledPhyloTreeFormatEnum;
 		try {
@@ -61,5 +68,10 @@ public class MaxLikelihoodPlacerResult {
 					e, "Failed to parse labelled phylo tree: "+e.getLocalizedMessage());
 		}
 
+	}
+
+	@Override
+	public List<MaxLikelihoodSingleQueryResult> getQueryResults() {
+		return singleQueryResult;
 	}
 }

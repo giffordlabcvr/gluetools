@@ -27,30 +27,16 @@ package uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood;
 
 import java.util.List;
 
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
-import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 
-@CommandClass(
-		commandWords={"list", "placement"}, 
-		description = "Summarise the placements for a single query in a result file", 
-		docoptUsages = { "-i <inputFile> -q <queryName>" },
-		docoptOptions = { 
-				"-i <inputFile>, --inputFile <inputFile>  Placement results file",
-				"-q <queryName>, --queryName <queryName>  Query sequence name",
-		},
-		furtherHelp = "",
-		metaTags = {CmdMeta.consoleOnly}	
-)
-public class ListPlacementCommand extends AbstractQueryResultCommand<ListPlacementCommand.Result> {
+public abstract class BaseListPlacementCommand extends AbstractQueryResultCommand<BaseListPlacementCommand.Result> {
 
 
 	@Override
 	protected Result executeOnQueryResult(CommandContext cmdContext,
 			MaxLikelihoodPlacer maxLikelihoodPlacer,
-			MaxLikelihoodPlacerResult placerResult,
+			IMaxLikelihoodPlacerResult placerResult,
 			MaxLikelihoodSingleQueryResult queryResult) {
 		return new Result(queryResult.singlePlacement);
 	}
@@ -69,9 +55,5 @@ public class ListPlacementCommand extends AbstractQueryResultCommand<ListPlaceme
 		
 	}
 
-	@CompleterClass
-	public static class Completer extends AbstractQueryResultCommandCompleter {}
-
-	
 	
 }

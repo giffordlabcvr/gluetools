@@ -192,6 +192,9 @@ public class GluetoolsEngine implements Plugin {
 			rootServerRuntime.getContext(); // just to check that it works.
 			ModelBuilder.setDbSchemaVersionString(metaObjectContext, currentSchemaVersion);
 			metaObjectContext.commitChanges();
+			// this is to allow the use of AWT font classes (e.g. for predicting text widths) without 
+			// popping up a window.
+			System.setProperty("java.awt.headless", "true"); 
 		} catch(Exception e) {
 			throw new GluetoolsEngineException(e, GluetoolsEngineException.Code.DB_CONNECTION_ERROR, e.getMessage());
 		} finally {

@@ -55,13 +55,13 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.field.FieldType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
+import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.jplace.JPlaceNamePQuery;
 import uk.ac.gla.cvr.gluetools.core.jplace.JPlacePlacement;
 import uk.ac.gla.cvr.gluetools.core.jplace.JPlaceResult;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.newick.NewickJPlaceToPhyloTreeParser;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
-import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloFormat;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeafLister;
@@ -124,10 +124,15 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		super();
 		registerModulePluginCmdClass(PlaceSequenceCommand.class);
 		registerModulePluginCmdClass(PlaceFileCommand.class);
-		registerModulePluginCmdClass(ListQueryCommand.class);
-		registerModulePluginCmdClass(ListPlacementCommand.class);
-		registerModulePluginCmdClass(ExportPlacementPhylogenyCommand.class);
-		registerModulePluginCmdClass(ListNeighbourCommand.class);
+		registerModulePluginCmdClass(ListQueryFromPlacementFileCommand.class);
+		registerModulePluginCmdClass(ListPlacementFromPlacementFileCommand.class);
+		registerModulePluginCmdClass(ListNeighbourFromPlacementFileCommand.class);
+		registerModulePluginCmdClass(ListQueryFromPlacementDocumentCommand.class);
+		registerModulePluginCmdClass(ListPlacementFromPlacementDocumentCommand.class);
+		registerModulePluginCmdClass(ListNeighbourFromPlacementDocumentCommand.class);
+		registerModulePluginCmdClass(ExportPlacementPhylogenyFromFileCommand.class);
+		registerModulePluginCmdClass(ExportPlacementPhylogenyFromDocumentCommand.class);
+		registerModulePluginCmdClass(PlaceFastaDocumentCommand.class);
 		addSimplePropertyName(PHYLO_ALIGNMENT_NAME);
 		addSimplePropertyName(PHYLO_FIELD_NAME);
 		addSimplePropertyName(ALIGNMENT_ALIGNMENT_NAME);
@@ -319,13 +324,11 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 			return edgeIndexToPhyloBranch;
 		}
 
-		public MaxLikelihoodPlacerResult toPojoResult() {
-			MaxLikelihoodPlacerResult maxLikelihoodPlacerResult = new MaxLikelihoodPlacerResult();
-			PhyloFormat resultPhyloFormat = PhyloFormat.NEWICK_JPLACE;
-			maxLikelihoodPlacerResult.labelledPhyloTreeFormat = resultPhyloFormat.name();
-			maxLikelihoodPlacerResult.labelledPhyloTree = new String(resultPhyloFormat.generate(labelledPhyloTree));
-			maxLikelihoodPlacerResult.singleQueryResult = new ArrayList<MaxLikelihoodSingleQueryResult>(queryResults.values());
-			return maxLikelihoodPlacerResult;
+		public CommandDocument toCommandDocument() {
+			DetailedMaxLikelihoodPlacerResult detailedMaxLikelihoodPlacerResult = 
+					new DetailedMaxLikelihoodPlacerResult(labelledPhyloTree, 
+							new ArrayList<MaxLikelihoodSingleQueryResult>(queryResults.values()));
+			return IMaxLikelihoodPlacerResult.toCommandDocument(detailedMaxLikelihoodPlacerResult);
 		}
 		
 	}
@@ -478,6 +481,9 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		return seqNameToPlacements;
 	}
 	
+	// Assuming that labelledPhyloTree is labeled with branch labels and that
+	// labelledPhyloTree and glueProjectPhyloTree have the same structure and leaf names,
+	// generates a map of integer branch label to PhyloBranch object within glueProjectPhyloTree
 	public static Map<Integer, PhyloBranch> generateEdgeIndexToPhyloBranch(PhyloTree labelledPhyloTree, PhyloTree glueProjectPhyloTree) {
 		Map<Integer, PhyloBranch> edgeIndexToPhyloBranch = new LinkedHashMap<Integer, PhyloBranch>();
 		

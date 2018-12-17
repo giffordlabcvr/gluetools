@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
 	<name>gluetools-ws</name>
-	<comment/>
+	<comment></comment>
 	<projects>
 		<project>gluetools-core</project>
 	</projects>
@@ -32,4 +32,5 @@
 		</buildCommand>
 	</buildSpec>
 	<linkedResources/>
+	<filteredResources/>
 </projectDescription>

@@ -56,7 +56,7 @@ public abstract class AbstractPlacementCommand<R extends CommandResult> extends 
 
 	protected final R executeOnQueryResult(CommandContext cmdContext, 
 			MaxLikelihoodPlacer maxLikelihoodPlacer, 
-			MaxLikelihoodPlacerResult placerResult, 
+			IMaxLikelihoodPlacerResult placerResult, 
 			MaxLikelihoodSingleQueryResult queryResult) {
 		return executeOnPlacementResult(cmdContext, maxLikelihoodPlacer, placerResult, queryResult, getPlacement(queryResult, placementIndex));
 	}
@@ -75,7 +75,7 @@ public abstract class AbstractPlacementCommand<R extends CommandResult> extends 
 
 	protected abstract R executeOnPlacementResult(CommandContext cmdContext,
 			MaxLikelihoodPlacer maxLikelihoodPlacer,
-			MaxLikelihoodPlacerResult placerResult,
+			IMaxLikelihoodPlacerResult placerResult,
 			MaxLikelihoodSingleQueryResult queryResult,
 			MaxLikelihoodSinglePlacement placement);
 
@@ -91,7 +91,7 @@ public abstract class AbstractPlacementCommand<R extends CommandResult> extends 
 					String inputFile = (String) bindings.get("inputFile");
 					String queryName = (String) bindings.get("queryName");
 					try {
-						MaxLikelihoodPlacerResult placerResult = loadPlacerResult(cmdContext, inputFile);
+						IMaxLikelihoodPlacerResult placerResult = loadPlacerResult(cmdContext, inputFile);
 						MaxLikelihoodSingleQueryResult queryResult = getQueryResult(placerResult, queryName);
 						return queryResult.singlePlacement.stream()
 								.map(placement -> new CompletionSuggestion(Integer.toString(placement.placementIndex), true))

@@ -25,6 +25,7 @@
 */
 package uk.ac.gla.cvr.gluetools.core.phylotree.document;
 
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.Map;
 
@@ -93,12 +94,20 @@ public class PhyloTreeToDocumentTransformer implements PhyloTreeVisitor {
 		commandValueStack.pop();
 	}
 
+	@SuppressWarnings("unchecked")
 	private void writeUserData(PhyloObject<?> phyloObject, CommandObject parentObj) {
 		Map<String, Object> userData = phyloObject.getUserData();
 		if(userData != null) {
 			CommandObject userDataObj = parentObj.setObject("userData");
 			userData.forEach((k,v) -> {
-				userDataObj.set(k, v);
+				if(v instanceof Collection) {
+					CommandArray cmdArray = userDataObj.setArray(k);
+					((Collection<Object>) v).forEach(item -> {
+						cmdArray.add(item);
+					});
+				} else {
+					userDataObj.set(k, v);
+				}
 			});
 		}
 	}

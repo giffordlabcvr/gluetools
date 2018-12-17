@@ -25,7 +25,6 @@
 */
 package uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood;
 
-import java.util.Map;
 import java.util.logging.Level;
 
 import org.w3c.dom.Document;
@@ -39,11 +38,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
-import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentUtils;
-import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
-import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
-import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodPlacer;
-import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodPlacerResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
@@ -61,7 +55,7 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 		furtherHelp = "",
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class GenotypePlacerResultCommand extends AbstractGenotypeCommand {
+public class GenotypePlacerResultCommand extends BaseGenotypePlacerResultCommand {
 
 	public final static String FILE_NAME = "fileName";
 	
@@ -80,14 +74,7 @@ public class GenotypePlacerResultCommand extends AbstractGenotypeCommand {
 		byte[] placerResultBytes = consoleCommandContext.loadBytes(fileName);
 		Document placerResultDocument = GlueXmlUtils.documentFromBytes(placerResultBytes);
 		CommandDocument placerResultCmdDoc = CommandDocumentXmlUtils.xmlDocumentToCommandDocument(placerResultDocument);
-		MaxLikelihoodPlacerResult placerResult = PojoDocumentUtils.commandObjectToPojo(placerResultCmdDoc, MaxLikelihoodPlacerResult.class);
-
-		MaxLikelihoodPlacer placer = maxLikelihoodGenotyper.resolvePlacer(cmdContext);
-		PhyloTree glueProjectPhyloTree = placer.constructGlueProjectPhyloTree(cmdContext);
-		Map<Integer, PhyloBranch> edgeIndexToPhyloBranch = 
-				MaxLikelihoodPlacer.generateEdgeIndexToPhyloBranch(placerResult.getLabelledPhyloTree(), glueProjectPhyloTree);
-		Map<String, QueryGenotypingResult> genotypeResults = maxLikelihoodGenotyper.genotype(cmdContext, glueProjectPhyloTree, edgeIndexToPhyloBranch, placerResult.singleQueryResult);
-		return formResult(maxLikelihoodGenotyper, genotypeResults);
+		return executeOnPlacerResultDocument(cmdContext, maxLikelihoodGenotyper, placerResultCmdDoc);
 	}
 
 	@CompleterClass

@@ -73,6 +73,7 @@ import uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool.WebAnalysisTool;
 import uk.ac.gla.cvr.gluetools.core.samFileGenerator.SamFileGenerator;
 import uk.ac.gla.cvr.gluetools.core.tabularUtility.TabularUtility;
 import uk.ac.gla.cvr.gluetools.core.textToQuery.TextToQueryTransformer;
+import uk.ac.gla.cvr.gluetools.core.treeVisualiser.TreeVisualiser;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.PhyloExporter;
 import uk.ac.gla.cvr.gluetools.core.treetransformer.TreeTransformer;
 import uk.ac.gla.cvr.gluetools.core.variationFrequencies.VariationFrequenciesGenerator;
@@ -165,6 +166,7 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 
 		setModulePluginGroup(new ModulePluginGroup("visualisation", "Visualisation module types", 92));
 		registerPluginClass(VisualisationUtility.class);
+		registerPluginClass(TreeVisualiser.class);
 	}
 
 	

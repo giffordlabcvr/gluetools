@@ -30,10 +30,11 @@ public class PhyloTree extends PhyloObject<PhyloTree> {
 
 	private PhyloSubtree<?> root;
 	
-	public void accept(PhyloTreeVisitor visitor) {
+	public <C extends PhyloTreeVisitor> C accept(C visitor) {
 		visitor.preVisitTree(this);
 		root.accept(visitor);
 		visitor.postVisitTree(this);
+		return visitor;
 	}
 
 	public PhyloSubtree<?> getRoot() {

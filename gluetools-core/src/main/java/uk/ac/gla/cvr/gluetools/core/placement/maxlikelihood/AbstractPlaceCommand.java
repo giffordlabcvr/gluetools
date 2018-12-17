@@ -36,26 +36,18 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 public abstract class AbstractPlaceCommand<R extends CommandResult> extends ModulePluginCommand<R, MaxLikelihoodPlacer> {
 
 	public final static String DATA_DIR = "dataDir";
-	public final static String OUTPUT_FILE = "outputFile";
 
 	private String dataDir;
-	private String outputFile;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		this.dataDir = PluginUtils.configureStringProperty(configElem, DATA_DIR, false);
-		this.outputFile = PluginUtils.configureStringProperty(configElem, OUTPUT_FILE, true);
 	}
 
 	
 	protected String getDataDir() {
 		return dataDir;
-	}
-
-
-	protected String getOutputFile() {
-		return outputFile;
 	}
 
 
