@@ -67,7 +67,11 @@ public abstract class BaseListNeighbourCommand extends AbstractPlacementCommand<
 		Map<Integer, PhyloBranch> edgeIndexToPhyloBranch = 
 				MaxLikelihoodPlacer.generateEdgeIndexToPhyloBranch(placerResult.getLabelledPhyloTree(), glueProjectPhyloTree);
 		PhyloLeaf placementLeaf = MaxLikelihoodPlacer.addPlacementToPhylogeny(glueProjectPhyloTree, edgeIndexToPhyloBranch, queryResult, placement);
-		List<ResultRow> resultRows = PlacementNeighbourFinder.findNeighbours(placementLeaf, new BigDecimal(maxDistance), maxNeighbours)
+		BigDecimal maxDistanceBD = null;
+		if(maxDistance != null) {
+			maxDistanceBD = new BigDecimal(maxDistance);
+		}
+		List<ResultRow> resultRows = PlacementNeighbourFinder.findNeighbours(placementLeaf, maxDistanceBD, maxNeighbours)
 				.stream()
 				.map(plcmtNeighbour -> {
 					String leafName = plcmtNeighbour.getPhyloLeaf().getName();
