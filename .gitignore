@@ -21,3 +21,4 @@ gluetools-web/WebContent/www/gluetoolsApp/downloads
 gluetoolsApp/WebContent/downloads
 gluetoolsApp/WebContent/exampleProject
 gluetools-mysql-docker/bin
+gluetools-core/bin
