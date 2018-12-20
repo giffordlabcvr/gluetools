@@ -25,6 +25,7 @@
 */
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
 
@@ -45,7 +46,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.NucleotideFastaCommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamFileSession;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamReporterPreprocessorSession;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
@@ -106,13 +107,12 @@ public class SamNucleotideConsensusCommand extends BaseSamReporterCommand<Comman
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
 
 		String samFileName = getFileName();
-		ValidationStringency validationStringency = samReporter.getSamReaderValidationStringency();
-		try(SamFileSession samFileSession = SamReporterPreprocessor.preprocessSam(consoleCmdContext, samFileName, validationStringency)) {
-			Map<String, DNASequence> samNtConsensusMap = SamUtils.getSamConsensus(
-					consoleCmdContext, samFileName, samFileSession, validationStringency, getSuppliedSamRefName(),
-					this.consensusID, getMinQScore(samReporter), getMinMapQ(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
+		try(SamReporterPreprocessorSession samReporterPreprocessorSession = SamReporterPreprocessor.getPreprocessorSession(consoleCmdContext, samFileName, samReporter)) {
+			DNASequence consensusSequence = samReporterPreprocessorSession
+					.getConsensus(consoleCmdContext, getMinDepth(samReporter), getMinQScore(samReporter), getMinMapQ(samReporter), getSamRefSense(samReporter), getSuppliedSamRefName());
 
-
+			Map<String, DNASequence> samNtConsensusMap = new LinkedHashMap<String, DNASequence>();
+			samNtConsensusMap.put(this.consensusID, consensusSequence);
 			if(this.preview) {
 				return new NucleotideFastaCommandResult(samNtConsensusMap);
 			} else {

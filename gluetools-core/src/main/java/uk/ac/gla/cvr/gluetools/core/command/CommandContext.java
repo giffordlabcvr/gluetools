@@ -47,6 +47,10 @@ import uk.ac.gla.cvr.gluetools.core.command.scripting.NashornContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSetting;
 import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
+import uk.ac.gla.cvr.gluetools.core.session.Session;
+import uk.ac.gla.cvr.gluetools.core.session.SessionException;
+import uk.ac.gla.cvr.gluetools.core.session.SessionFactory;
+import uk.ac.gla.cvr.gluetools.core.session.SessionKey;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 
@@ -59,6 +63,7 @@ public class CommandContext {
 	private List<CommandMode<?>> commandModeStack = new ArrayList<CommandMode<?>>();
 	private XPath xpathEngine;
 	private NashornContext nashornContext;
+	private Map<SessionKey, Session> currentSessions = new LinkedHashMap<SessionKey, Session>();
 	
 	public CommandContext(GluetoolsEngine gluetoolsEngine, String description) {
 		super();
@@ -291,7 +296,25 @@ public class CommandContext {
 		return nashornContext;
 	}
 
+	public Session initSession(SessionKey sessionKey) {
+		if(currentSessions.containsKey(sessionKey)) {
+			throw new SessionException(SessionException.Code.SESSION_EXISTS, "Cannot init session: "+sessionKey.toString());
+		}
+		Session session = SessionFactory.get().createSession(this, sessionKey);
+		currentSessions.put(sessionKey, session);
+		return session;
+	}
 	
-	
-	
+	public Session getCurrentSession(SessionKey sessionKey) {
+		return currentSessions.get(sessionKey);
+	}
+
+	public void closeSession(SessionKey sessionKey) {
+		Session session = currentSessions.remove(sessionKey);
+		if(session == null) {
+			throw new SessionException(SessionException.Code.SESSION_DOES_NOT_EXIST, "Cannot close session: "+sessionKey.toString());
+		}
+		session.close();
+	}
+
 }

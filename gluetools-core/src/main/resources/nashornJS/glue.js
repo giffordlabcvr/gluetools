@@ -157,6 +157,37 @@ var glue = {
 			} catch(x) {
 				throw recastException(x);
 			}
+		},
+		inSession: function(sessionType, sessionArgs, inSessionFunction) {
+			if(!_.isArray(sessionArgs)) {
+				throw new Error("inSession: sessionArgs must be array");
+			}
+			try {
+				this.initSession(sessionType, sessionArgs);
+				inSessionFunction();
+			} finally {
+				this.closeSession(sessionType, sessionArgs);
+			}
+		},
+		initSession: function(sessionType, sessionArgs) {
+			if(!_.isArray(sessionArgs)) {
+				throw new Error("initSession: sessionArgs must be array");
+			}
+			try {
+				glueAux.initSession(sessionType, sessionArgs);
+			} catch(x) {
+				throw recastException(x);
+			}
+		},
+		closeSession: function(sessionType, sessionArgs) {
+			if(!_.isArray(sessionArgs)) {
+				throw new Error("closeSession: sessionArgs must be array");
+			}
+			try {
+				glueAux.closeSession(sessionType, sessionArgs);
+			} catch(x) {
+				throw recastException(x);
+			}
 		}
 };
 

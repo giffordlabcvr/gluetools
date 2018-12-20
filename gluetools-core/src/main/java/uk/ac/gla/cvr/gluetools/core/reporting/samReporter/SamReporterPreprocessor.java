@@ -3,9 +3,12 @@ package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 import java.io.File;
 import java.io.IOException;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
+
+import org.biojava.nbio.core.sequence.DNASequence;
 
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SAMFileHeader.SortOrder;
@@ -16,10 +19,12 @@ import htsjdk.samtools.SamReader;
 import htsjdk.samtools.ValidationStringency;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.config.PropertiesConfiguration;
+import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
-
-
-
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.session.SamFileSession;
+import uk.ac.gla.cvr.gluetools.core.session.SessionKey;
 
 public class SamReporterPreprocessor {
 
@@ -29,14 +34,25 @@ public class SamReporterPreprocessor {
 	 * (b) paired reads are always next to each other in the same file, with first read then second read.
 	 * (c) first of pair / second of pair flags are always correct.
 	 */
-	public static SamFileSession preprocessSam(ConsoleCommandContext consoleCmdContext, String fileName, ValidationStringency validationStringency) {
+	public static SamReporterPreprocessorSession getPreprocessorSession(ConsoleCommandContext consoleCmdContext, String fileName, SamReporter samReporter) {
+		SessionKey sessionKey = new SessionKey(SamFileSession.SESSION_TYPE, new String[] {samReporter.getModuleName(), fileName});
+		SamFileSession currentSession = (SamFileSession) consoleCmdContext.getCurrentSession(sessionKey);
+		if(currentSession != null) {
+			return currentSession.getSamReporterPreprocessorSession();
+		}
+		return initPreprocessorSession(consoleCmdContext, fileName, samReporter);
+	}
+
+	public static SamReporterPreprocessorSession initPreprocessorSession(ConsoleCommandContext consoleCmdContext,
+			String fileName, SamReporter samReporter) {
+		ValidationStringency validationStringency = samReporter.getSamReaderValidationStringency();
 		GlueLogger.getGlueLogger().finest("Preprocessing "+fileName+" into multiple BAM files");
 		PropertiesConfiguration propertiesConfiguration = consoleCmdContext.getGluetoolsEngine().getPropertiesConfiguration();
 		String tmpDirPath = propertiesConfiguration.getPropertyValue(SamUtils.SAM_TEMP_DIR_PROPERTY);
 		int cpus = Integer.parseInt(propertiesConfiguration.getPropertyValue(SamUtils.SAM_NUMBER_CPUS, "4"));
 		final SAMFileWriter[] bamWriters = new SAMFileWriter[cpus];
-		SamFileSession samFileSession = new SamFileSession();
-		samFileSession.preprocessedBamPaths = new String[cpus];
+		SamReporterPreprocessorSession samReporterPreprocessorSession = new SamReporterPreprocessorSession(samReporter.getModuleName(), fileName);
+		samReporterPreprocessorSession.preprocessedBamPaths = new String[cpus];
 		
 		DetailedReadLogger readLogger = new DetailedReadLogger();
 		
@@ -47,7 +63,7 @@ public class SamReporterPreprocessor {
 			for(int i = 0; i < cpus; i++) {
 				String uuid = UUID.randomUUID().toString();
 				File outputBamFile = new File(tmpDirPath, uuid+".bam");
-				samFileSession.preprocessedBamPaths[i] = outputBamFile.getAbsolutePath();
+				samReporterPreprocessorSession.preprocessedBamPaths[i] = outputBamFile.getAbsolutePath();
 				bamWriters[i] = samFileWriterFactory.makeBAMWriter(header, true, outputBamFile);
 			}
 			Map<String, ReadPair> nameToPair = new LinkedHashMap<String, ReadPair>();
@@ -134,22 +150,22 @@ public class SamReporterPreprocessor {
 				}
 			});
 			readLogger.printMessage();
-			closeBamWriters(bamWriters, samFileSession);
+			closeBamWriters(bamWriters, samReporterPreprocessorSession);
 
 		} catch (IOException e) {
-			closeBamWriters(bamWriters, samFileSession);
-			samFileSession.cleanup();
+			closeBamWriters(bamWriters, samReporterPreprocessorSession);
+			samReporterPreprocessorSession.cleanup();
 			throw new RuntimeException(e);
 		} finally {
 		}
-		return samFileSession;
+		return samReporterPreprocessorSession;
 	}
 
 	private static void closeBamWriters(final SAMFileWriter[] bamWriters,
-			SamFileSession samFileSession) {
+			SamReporterPreprocessorSession samReporterPreprocessorSession) {
 		for(int i = 0 ; i < bamWriters.length; i++) {
 			SAMFileWriter bamWriter = bamWriters[i];
-			String filePath = samFileSession.preprocessedBamPaths[i];
+			String filePath = samReporterPreprocessorSession.preprocessedBamPaths[i];
 			if(bamWriter != null) {
 				try {
 					bamWriter.close();
@@ -173,8 +189,74 @@ public class SamReporterPreprocessor {
 		SAMRecord read2;
 	}
 	
-	public static class SamFileSession implements AutoCloseable {
-		String[] preprocessedBamPaths;
+	public static class SamReporterPreprocessorSession implements AutoCloseable {
+		
+		private String bamPath;
+		
+		private boolean storedInCmdContext = false;
+		private String[] preprocessedBamPaths;
+		private Map<ConsensusKey, DNASequence> cachedConsensus = new LinkedHashMap<ConsensusKey, DNASequence>();
+		private Map<ConsensusKey, String> cachedTargetRefName = new LinkedHashMap<ConsensusKey, String>();
+		private Map<MappingSegsKey, List<QueryAlignedSegment>> cachedMappingSegs = new LinkedHashMap<MappingSegsKey, List<QueryAlignedSegment>>();
+		private String samReporterName;
+		
+		public SamReporterPreprocessorSession(String samReporterName, String bamPath) {
+			super();
+			this.bamPath = bamPath;
+			this.samReporterName = samReporterName;
+		}
+
+		public void setStoredInCmdContext(boolean storedInCmdContext) {
+			this.storedInCmdContext = storedInCmdContext;
+		}
+
+		public String[] getPreprocessedBamPaths() {
+			return preprocessedBamPaths;
+		}
+		
+		public DNASequence getConsensus(ConsoleCommandContext consoleCmdContext, int minDepth, int minQScore, int minMapQ, SamRefSense samRefSense, String suppliedSamRefName) {
+			ConsensusKey consensusKey = new ConsensusKey(minDepth, minQScore, minMapQ, samRefSense, suppliedSamRefName);
+			return getConsensus(consoleCmdContext, consensusKey);
+		}
+
+		private DNASequence getConsensus(ConsoleCommandContext consoleCmdContext, ConsensusKey consensusKey) {
+			DNASequence consensusSequence = cachedConsensus.get(consensusKey);
+			if(consensusSequence != null) {
+				return consensusSequence;
+			}
+			SamReporter samReporter = Module.resolveModulePlugin(consoleCmdContext, SamReporter.class, samReporterName);
+			consensusSequence = SamUtils.getSamConsensus(consoleCmdContext, bamPath, this, 
+					samReporter.getSamReaderValidationStringency(), consensusKey.suppliedSamRefName, consensusKey.minQScore, consensusKey.minMapQ, consensusKey.minDepth, consensusKey.samRefSense);
+			cachedConsensus.put(consensusKey, consensusSequence);
+			return consensusSequence;
+		}
+		
+		public String getTargetRefNameBasedOnPlacer(ConsoleCommandContext consoleCmdContext, int minDepth, int minQScore, int minMapQ, SamRefSense samRefSense, String suppliedSamRefName) {
+			ConsensusKey consensusKey = new ConsensusKey(minDepth, minQScore, minMapQ, samRefSense, suppliedSamRefName);
+
+			String targetRefName = cachedTargetRefName.get(consensusKey);
+			if(targetRefName != null) {
+				return targetRefName;
+			}
+			DNASequence consensus = getConsensus(consoleCmdContext, consensusKey);
+			// ...
+			cachedTargetRefName.put(consensusKey, targetRefName);
+			return targetRefName;
+		}
+		
+		public List<QueryAlignedSegment> getCachedMappingSegs(ConsoleCommandContext consoleCmdContext, int minDepth, int minQScore, int minMapQ, SamRefSense samRefSense, String suppliedSamRefName, String targetRefName) {
+			ConsensusKey consensusKey = new ConsensusKey(minDepth, minQScore, minMapQ, samRefSense, suppliedSamRefName);
+			MappingSegsKey mappingSegsKey = new MappingSegsKey(consensusKey, targetRefName);
+			List<QueryAlignedSegment> mappingSegs = cachedMappingSegs.get(mappingSegsKey);
+			if(mappingSegs != null) {
+				return mappingSegs;
+			}
+			DNASequence consensus = getConsensus(consoleCmdContext, consensusKey);
+			// ...
+			cachedMappingSegs.put(mappingSegsKey, mappingSegs);
+			return mappingSegs;
+			
+		}
 
 		public void cleanup() {
 			for(int i = 0 ; i < preprocessedBamPaths.length; i++) {
@@ -194,8 +276,114 @@ public class SamReporterPreprocessor {
 
 		@Override
 		public void close() {
-			cleanup();
+			if(!storedInCmdContext) {
+				cleanup();
+			}
 		}
 	}
 
+	private static class ConsensusKey {
+		public String suppliedSamRefName;
+		private int minDepth;
+		private int minQScore;
+		private int minMapQ;
+		private SamRefSense samRefSense;
+		
+		public ConsensusKey(int minDepth, int minQScore, int minMapQ, SamRefSense samRefSense, String suppliedSamRefName) {
+			super();
+			this.minDepth = minDepth;
+			this.minQScore = minQScore;
+			this.minMapQ = minMapQ;
+			this.samRefSense = samRefSense;
+			this.suppliedSamRefName = suppliedSamRefName;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + minDepth;
+			result = prime * result + minMapQ;
+			result = prime * result + minQScore;
+			result = prime * result + ((samRefSense == null) ? 0 : samRefSense.hashCode());
+			result = prime * result + ((suppliedSamRefName == null) ? 0 : suppliedSamRefName.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			ConsensusKey other = (ConsensusKey) obj;
+			if (minDepth != other.minDepth)
+				return false;
+			if (minMapQ != other.minMapQ)
+				return false;
+			if (minQScore != other.minQScore)
+				return false;
+			if (samRefSense != other.samRefSense)
+				return false;
+			if (suppliedSamRefName == null) {
+				if (other.suppliedSamRefName != null)
+					return false;
+			} else if (!suppliedSamRefName.equals(other.suppliedSamRefName))
+				return false;
+			return true;
+		}
+		
+		
+		
+	}
+
+	private static class MappingSegsKey {
+		
+		private ConsensusKey consensusKey;
+		private String targetRefName;
+
+		public MappingSegsKey(ConsensusKey consensusKey, String targetRefName) {
+			super();
+			this.consensusKey = consensusKey;
+			this.targetRefName = targetRefName;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((consensusKey == null) ? 0 : consensusKey.hashCode());
+			result = prime * result + ((targetRefName == null) ? 0 : targetRefName.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			MappingSegsKey other = (MappingSegsKey) obj;
+			if (consensusKey == null) {
+				if (other.consensusKey != null)
+					return false;
+			} else if (!consensusKey.equals(other.consensusKey))
+				return false;
+			if (targetRefName == null) {
+				if (other.targetRefName != null)
+					return false;
+			} else if (!targetRefName.equals(other.targetRefName))
+				return false;
+			return true;
+		}
+		
+		
+		
+	}
+
+	
 }

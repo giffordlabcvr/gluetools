@@ -48,7 +48,7 @@ import htsjdk.samtools.ValidationStringency;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
-import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamFileSession;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamReporterPreprocessorSession;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtilsException.Code;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
@@ -124,31 +124,31 @@ public class SamUtils {
 		return samReaderFactory.open(SamInputResource.of(samInputStream));
 	}
 
-	public static Map<String, DNASequence> getSamConsensus(ConsoleCommandContext cmdContext, String fileName, 
-			SamFileSession samFileSession, ValidationStringency validationStringency, String samRefName,
-			String fastaID, int minQScore, int minMapQ, int minDepth, SamRefSense samRefSense) {
-		Map<String, DNASequence> samConsensusFastaMap;
+	public static DNASequence getSamConsensus(ConsoleCommandContext cmdContext, String fileName, 
+			SamReporterPreprocessorSession samReporterPreprocessorSession, ValidationStringency validationStringency, String samRefName,
+			int minQScore, int minMapQ, int minDepth, SamRefSense samRefSense) {
+		Map<String, DNASequence> consensusMap;
 		try(SamReader samReader = newSamReader(cmdContext, fileName, validationStringency)) {
 
 			SAMSequenceRecord samReference = findReference(samReader, fileName, samRefName);
 
 			SamConsensusGenerator samConsensusGenerator = new SamConsensusGenerator();
 			
-			String ngsConsensus = samConsensusGenerator.getNgsConsensus(cmdContext, samFileSession, validationStringency, 
+			String ngsConsensus = samConsensusGenerator.getNgsConsensus(cmdContext, samReporterPreprocessorSession, validationStringency, 
 					samReference.getSequenceName(), minQScore, minMapQ, minDepth, samRefSense);
 			if(ngsConsensus.replaceAll("N", "").isEmpty()) {
 				throw new SamReporterCommandException(SamReporterCommandException.Code.NO_SAM_CONSENSUS, 
 						Integer.toString(minQScore), Integer.toString(minMapQ), Integer.toString(minDepth));
 			}
 			
-			String ngsConsensusFastaString = ">"+fastaID+"\n"+
+			String ngsConsensusFastaString = ">consensus\n"+
 					ngsConsensus;
 
-			samConsensusFastaMap = FastaUtils.parseFasta(ngsConsensusFastaString.getBytes());
+			consensusMap = FastaUtils.parseFasta(ngsConsensusFastaString.getBytes());
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
-		return samConsensusFastaMap;
+		return consensusMap.get("consensus");
 	}
 
 	public static class ReferenceBasedRecordFilter implements SamRecordFilter {
@@ -219,7 +219,7 @@ public class SamUtils {
 	}
 
 	public static <M, R> R pairedParallelSamIterate(Supplier<M> contextSupplier, ConsoleCommandContext consoleCmdContext, 
-			SamFileSession samFileSession, ValidationStringency validationStringency, 
+			SamReporterPreprocessorSession samReporterPreprocessorSession, ValidationStringency validationStringency, 
 			SamPairedParallelProcessor<M, R> samPairedParallelProcessor) {
 		R reducedResult = null;
 		List<SamReader> readers = new ArrayList<SamReader>();
@@ -228,11 +228,11 @@ public class SamUtils {
 		List<M> contexts = new ArrayList<M>();
 		List<PairedParallelSamWorker<M, R>> workers = new ArrayList<PairedParallelSamWorker<M, R>>();
 		SimpleReadLogger readLogger = new SimpleReadLogger();
-		for(int i = 0; i < samFileSession.preprocessedBamPaths.length; i++) {
+		for(int i = 0; i < samReporterPreprocessorSession.getPreprocessedBamPaths().length; i++) {
 			M context = contextSupplier.get();;
 			contexts.add(context);
 			SamReader samReader = 
-					SamUtils.newSamReader(consoleCmdContext, samFileSession.preprocessedBamPaths[i], validationStringency);
+					SamUtils.newSamReader(consoleCmdContext, samReporterPreprocessorSession.getPreprocessedBamPaths()[i], validationStringency);
 			readers.add(samReader);
 			samPairedParallelProcessor.initContextForReader(context, samReader);
 			workers.add(new PairedParallelSamWorker<M, R>(context, samReader, samPairedParallelProcessor, readLogger));

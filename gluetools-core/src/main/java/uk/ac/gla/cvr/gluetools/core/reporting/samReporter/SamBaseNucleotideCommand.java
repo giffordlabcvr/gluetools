@@ -52,7 +52,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceAminoAcidCommand;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
-import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamFileSession;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamReporterPreprocessorSession;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
@@ -72,13 +72,12 @@ public abstract class SamBaseNucleotideCommand<R extends CommandResult, C extend
 		ValidationStringency validationStringency = samReporter.getSamReaderValidationStringency();
 		String samFileName = getFileName();
 
-		try(SamFileSession samFileSession = SamReporterPreprocessor.preprocessSam(consoleCmdContext, samFileName, validationStringency)) {
+		try(SamReporterPreprocessorSession samReporterPreprocessorSession = SamReporterPreprocessor.getPreprocessorSession(consoleCmdContext, samFileName, samReporter)) {
 			DNASequence consensusSequence = null;
 			ReferenceSequence targetRef;
 			if(useMaxLikelihoodPlacer()) {
-				Map<String, DNASequence> consensusMap = SamUtils.getSamConsensus(consoleCmdContext, samFileName, samFileSession,
-						validationStringency, getSuppliedSamRefName(), "samConsensus", getMinQScore(samReporter), getMinMapQ(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
-				consensusSequence = consensusMap.get("samConsensus");
+				consensusSequence = samReporterPreprocessorSession
+						.getConsensus(consoleCmdContext, getMinDepth(samReporter), getMinQScore(samReporter), getMinMapQ(samReporter), getSamRefSense(samReporter), getSuppliedSamRefName());
 				AlignmentMember targetRefAlmtMember = samReporter.establishTargetRefMemberUsingPlacer(consoleCmdContext, consensusSequence);
 				targetRef = targetRefAlmtMember.targetReferenceFromMember();
 				samReporter.log(Level.FINE, "Max likelihood placement of consensus sequence selected target reference "+targetRef.getName());
@@ -96,7 +95,7 @@ public abstract class SamBaseNucleotideCommand<R extends CommandResult, C extend
 			}
 			ReferenceSequence relatedRef = linkingAlmt.getRelatedRef(cmdContext, almtColsSelector.getRelatedRefName());
 
-			List<QueryAlignedSegment> samRefToTargetRefSegs = getSamRefToTargetRefSegs(cmdContext, samReporter, samFileSession, consoleCmdContext, targetRef, consensusSequence);
+			List<QueryAlignedSegment> samRefToTargetRefSegs = getSamRefToTargetRefSegs(cmdContext, samReporter, samReporterPreprocessorSession, consoleCmdContext, targetRef, consensusSequence);
 
 			AlignmentMember linkingAlmtMember = targetRef.getLinkingAlignmentMembership(getLinkingAlmtName());
 
@@ -131,7 +130,7 @@ public abstract class SamBaseNucleotideCommand<R extends CommandResult, C extend
 				throw new RuntimeException(e);
 			}
 			Supplier<C> contextSupplier = getContextSupplier(samRecordFilter, samRefInfo, samRefSense, samRefToRelatedRefSegs, selectedRefSegs, samReporter);
-			IR mergedResult = SamUtils.pairedParallelSamIterate(contextSupplier, consoleCmdContext, samFileSession, validationStringency, this);
+			IR mergedResult = SamUtils.pairedParallelSamIterate(contextSupplier, consoleCmdContext, samReporterPreprocessorSession, validationStringency, this);
 			
 			return formResult(cmdContext, mergedResult, samReporter);
 			

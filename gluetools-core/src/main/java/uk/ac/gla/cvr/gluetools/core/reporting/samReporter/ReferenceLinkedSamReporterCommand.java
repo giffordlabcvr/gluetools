@@ -59,7 +59,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
-import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamFileSession;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamReporterPreprocessorSession;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 
 // SAM reporter command which links the SAM reads to a GLUE reference before performing
@@ -178,22 +178,19 @@ public abstract class ReferenceLinkedSamReporterCommand<R extends CommandResult>
 	
 	
 	protected List<QueryAlignedSegment> getSamRefToTargetRefSegs(
-			CommandContext cmdContext, SamReporter samReporter, SamFileSession samFileSession, 
+			CommandContext cmdContext, SamReporter samReporter, SamReporterPreprocessorSession samReporterPreprocessorSession, 
 			ConsoleCommandContext consoleCmdContext, ReferenceSequence targetRef, DNASequence consensusSequence) {
 		List<QueryAlignedSegment> samRefToTargetRefSegs;
 		if(autoAlign || maxLikelihoodPlacer) {
 			// auto-align consensus to target ref
 			Aligner<?, ?> aligner = Aligner.getAligner(cmdContext, samReporter.getAlignerModuleName());
-			Map<String, DNASequence> samConsensus;
 			if(consensusSequence == null) {
 				// compute consensus if we don't already have it.
-				samConsensus = 
-						SamUtils.getSamConsensus(consoleCmdContext, getFileName(), samFileSession, samReporter.getSamReaderValidationStringency(), getSuppliedSamRefName(),"samConsensus", 
-								getMinQScore(samReporter), getMinMapQ(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
-			} else {
-				samConsensus = new LinkedHashMap<String, DNASequence>();
-				samConsensus.put("samConsensus", consensusSequence);
+				consensusSequence = samReporterPreprocessorSession
+						.getConsensus(consoleCmdContext, getMinDepth(samReporter), getMinQScore(samReporter), getMinMapQ(samReporter), getSamRefSense(samReporter), getSuppliedSamRefName());
 			}
+			Map<String, DNASequence> samConsensus = new LinkedHashMap<String, DNASequence>();
+			samConsensus.put("samConsensus", consensusSequence);
 			AlignerResult alignerResult = aligner.computeConstrained(cmdContext, targetRef.getName(), samConsensus);
 			// extract segments from aligner result
 			samRefToTargetRefSegs = alignerResult.getQueryIdToAlignedSegments().get("samConsensus");

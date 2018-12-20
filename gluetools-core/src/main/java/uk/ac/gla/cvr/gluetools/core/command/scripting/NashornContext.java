@@ -68,6 +68,7 @@ import uk.ac.gla.cvr.gluetools.core.console.Lexer;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.Token;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
+import uk.ac.gla.cvr.gluetools.core.session.SessionKey;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentJsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
@@ -169,6 +170,19 @@ public class NashornContext {
 			return cmdContext.getModePath();
 		}
 
+		public void initSession(String sessionType, ScriptObjectMirror sessionArgsObj) {
+			String[] sessionArgs = sessionArgsFromScriptObjectMirror(sessionArgsObj);
+			SessionKey sessionKey = new SessionKey(sessionType, sessionArgs);
+			cmdContext.initSession(sessionKey);
+		}
+
+		public void closeSession(String sessionType, ScriptObjectMirror sessionArgsObj) {
+			String[] sessionArgs = sessionArgsFromScriptObjectMirror(sessionArgsObj);
+			SessionKey sessionKey = new SessionKey(sessionType, sessionArgs);
+			cmdContext.closeSession(sessionKey);
+		}
+
+		
 		@SuppressWarnings("rawtypes")
 		public Map runCommandFromObject(ScriptObjectMirror scrObjMirror) {
 			CommandDocument commandDocument;
@@ -348,5 +362,32 @@ public class NashornContext {
 	
 	}
 	
-	
+	private String[] sessionArgsFromScriptObjectMirror(ScriptObjectMirror sessionArgsObj) {
+		List<String> sessionArgs = new ArrayList<String>();
+		for(Object obj: sessionArgsObj.values()) {
+			String sessionArg;
+			if(obj instanceof String) {
+				sessionArg = (String) obj;
+			} else if(obj instanceof Number) {
+				// javascript does not have integers, only floats
+				// here we force integer if the number is mathematically an integer.
+				Number num = (Number) obj;
+				double doubleVal = Math.round(num.doubleValue());
+				if(doubleVal == num.doubleValue()) {
+					sessionArg = Integer.toString(num.intValue());
+				} else {
+					sessionArg = obj.toString();
+				}
+			} else if(obj instanceof Boolean) {
+				sessionArg = obj.toString();
+			} else if(obj == null) {
+				sessionArg = null;
+			} else {
+				throw new NashornScriptingException(Code.COMMAND_INPUT_ERROR, "Values in sessionArgs array must be strings, numbers, booleans or nulls");
+			}
+			sessionArgs.add(sessionArg);
+		}
+		return sessionArgs.toArray(new String[] {});
+	}
+
 }

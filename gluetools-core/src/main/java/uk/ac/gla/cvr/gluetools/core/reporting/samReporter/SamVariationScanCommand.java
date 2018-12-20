@@ -61,7 +61,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
-import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamFileSession;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamReporterPreprocessorSession;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamVariationScanCommand.VariationContext;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamVariationScanCommand.VariationResult;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
@@ -177,11 +177,10 @@ public class SamVariationScanCommand extends ReferenceLinkedSamReporterCommand<S
 		String samFileName = getFileName();
 		ValidationStringency validationStringency = samReporter.getSamReaderValidationStringency();
 		
-		try(SamFileSession samFileSession = SamReporterPreprocessor.preprocessSam(consoleCmdContext, samFileName, validationStringency)) {
+		try(SamReporterPreprocessorSession samReporterPreprocessorSession = SamReporterPreprocessor.getPreprocessorSession(consoleCmdContext, samFileName, samReporter)) {
 			if(useMaxLikelihoodPlacer()) {
-				Map<String, DNASequence> consensusMap = SamUtils.getSamConsensus(consoleCmdContext, samFileName, samFileSession,
-						validationStringency, getSuppliedSamRefName(),"samConsensus", getMinQScore(samReporter), getMinMapQ(samReporter), getMinDepth(samReporter), getSamRefSense(samReporter));
-				consensusSequence = consensusMap.get("samConsensus");
+				consensusSequence = samReporterPreprocessorSession
+						.getConsensus(consoleCmdContext, getMinDepth(samReporter), getMinQScore(samReporter), getMinMapQ(samReporter), getSamRefSense(samReporter), getSuppliedSamRefName());
 				AlignmentMember targetRefAlmtMember = samReporter.establishTargetRefMemberUsingPlacer(consoleCmdContext, consensusSequence);
 				targetRef = targetRefAlmtMember.targetReferenceFromMember();
 				samReporter.log(Level.FINE, "Max likelihood placement of consensus sequence selected target reference "+targetRef.getName());
@@ -200,7 +199,7 @@ public class SamVariationScanCommand extends ReferenceLinkedSamReporterCommand<S
 				featuresToScan.addAll(namedFeature.getDescendents());
 			}
 			
-			List<QueryAlignedSegment> samRefToTargetRefSegs = getSamRefToTargetRefSegs(cmdContext, samReporter, samFileSession, consoleCmdContext, targetRef, consensusSequence);
+			List<QueryAlignedSegment> samRefToTargetRefSegs = getSamRefToTargetRefSegs(cmdContext, samReporter, samReporterPreprocessorSession, consoleCmdContext, targetRef, consensusSequence);
 
 			AlignmentMember linkingAlmtMember = targetRef.getLinkingAlignmentMembership(getLinkingAlmtName());
 
@@ -263,7 +262,7 @@ public class SamVariationScanCommand extends ReferenceLinkedSamReporterCommand<S
 					};
 					
 					VariationResult reducedResult = 
-							SamUtils.pairedParallelSamIterate(contextSupplier, consoleCmdContext, samFileSession, validationStringency, this);
+							SamUtils.pairedParallelSamIterate(contextSupplier, consoleCmdContext, samReporterPreprocessorSession, validationStringency, this);
 					
 					List<VariationInfo> variationInfos = new ArrayList<VariationInfo>(reducedResult.variationNameToInfo.values());
 
