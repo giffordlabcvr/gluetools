@@ -55,7 +55,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 @CommandClass(
 		commandWords={"export", "nucleotide-alignment"}, 
-		description = "Summarise depth in a SAM/BAM file", 
+		description = "Export part of the BAM file as a nucleotide FASTA alignment", 
 		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] ( -e <selectorName> | -r <relRefName> -f <featureName> [-c <lcStart> <lcEnd> | -o <ntStart> <ntEnd>] ) (-p | [-l] -t <targetRefName>) -a <linkingAlmtName> [-q <minQScore>] [-g <minMapQ>][-d <minDepth>] [-y <lineFeedStyle>] (-O <outputFileName> | -P)" },
 				docoptOptions = { 
 						"-i <fileName>, --fileName <fileName>                       SAM/BAM input file",
