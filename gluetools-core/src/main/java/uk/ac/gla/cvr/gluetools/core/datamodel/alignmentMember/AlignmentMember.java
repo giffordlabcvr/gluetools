@@ -116,22 +116,22 @@ public class AlignmentMember extends _AlignmentMember {
 		return results;
 	}
 
-	public int getMinRefNt(CommandContext cmdContext) {
+	public Integer getMinRefNt(CommandContext cmdContext) {
 		List<AlignedSegment> alignedSegments = getAlignedSegments();
 		return ReferenceSegment.minRefStart(alignedSegments);
 	}
 
-	public int getMaxRefNt(CommandContext cmdContext) {
+	public Integer getMaxRefNt(CommandContext cmdContext) {
 		List<AlignedSegment> alignedSegments = getAlignedSegments();
 		return ReferenceSegment.maxRefEnd(alignedSegments);
 	}
 
-	public int getMinMemberNt(CommandContext cmdContext) {
+	public Integer getMinMemberNt(CommandContext cmdContext) {
 		List<AlignedSegment> alignedSegments = getAlignedSegments();
 		return QueryAlignedSegment.minQueryStart(alignedSegments);
 	}
 
-	public int getMaxMemberNt(CommandContext cmdContext) {
+	public Integer getMaxMemberNt(CommandContext cmdContext) {
 		List<AlignedSegment> alignedSegments = getAlignedSegments();
 		return QueryAlignedSegment.maxQueryEnd(alignedSegments);
 	}
