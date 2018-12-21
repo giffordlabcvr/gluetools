@@ -80,27 +80,27 @@ public abstract class BaseSamReporterCommand<R extends CommandResult> extends Mo
 		this.samRefSense = Optional.ofNullable(PluginUtils.configureEnumProperty(SamRefSense.class, configElem, SAM_REF_SENSE, false));
 	}
 
-	protected String getFileName() {
+	public String getFileName() {
 		return fileName;
 	}
 
-	protected String getSuppliedSamRefName() {
+	public String getSuppliedSamRefName() {
 		return samRefName;
 	}
 
-	protected int getMinQScore(SamReporter samReporter) {
+	public int getMinQScore(SamReporter samReporter) {
 		return minQScore.orElse(samReporter.getDefaultMinQScore());
 	}
 
-	protected int getMinDepth(SamReporter samReporter) {
+	public int getMinDepth(SamReporter samReporter) {
 		return minDepth.orElse(samReporter.getDefaultMinDepth());
 	}
 
-	protected int getMinMapQ(SamReporter samReporter) {
+	public int getMinMapQ(SamReporter samReporter) {
 		return minMapQ.orElse(samReporter.getDefaultMinMapQ());
 	}
 
-	protected SamRefSense getSamRefSense(SamReporter samReporter) {
+	public SamRefSense getSamRefSense(SamReporter samReporter) {
 		return samRefSense.orElse(samReporter.getDefaultSamRefSense());
 	}
 	

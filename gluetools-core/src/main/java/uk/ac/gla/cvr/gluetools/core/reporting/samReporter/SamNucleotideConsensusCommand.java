@@ -32,7 +32,6 @@ import java.util.Optional;
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
-import htsjdk.samtools.ValidationStringency;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -108,8 +107,7 @@ public class SamNucleotideConsensusCommand extends BaseSamReporterCommand<Comman
 
 		String samFileName = getFileName();
 		try(SamReporterPreprocessorSession samReporterPreprocessorSession = SamReporterPreprocessor.getPreprocessorSession(consoleCmdContext, samFileName, samReporter)) {
-			DNASequence consensusSequence = samReporterPreprocessorSession
-					.getConsensus(consoleCmdContext, getMinDepth(samReporter), getMinQScore(samReporter), getMinMapQ(samReporter), getSamRefSense(samReporter), getSuppliedSamRefName());
+			DNASequence consensusSequence = samReporterPreprocessorSession.getConsensus(consoleCmdContext, samReporter, this);
 
 			Map<String, DNASequence> samNtConsensusMap = new LinkedHashMap<String, DNASequence>();
 			samNtConsensusMap.put(this.consensusID, consensusSequence);

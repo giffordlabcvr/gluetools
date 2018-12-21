@@ -37,7 +37,6 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
-import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import htsjdk.samtools.SAMRecord;
@@ -172,18 +171,13 @@ public class SamVariationScanCommand extends ReferenceLinkedSamReporterCommand<S
 
 		SamRefInfo samRefInfo = getSamRefInfo(consoleCmdContext, samReporter);
 		
-		DNASequence consensusSequence = null;
 		ReferenceSequence targetRef;
 		String samFileName = getFileName();
 		ValidationStringency validationStringency = samReporter.getSamReaderValidationStringency();
 		
 		try(SamReporterPreprocessorSession samReporterPreprocessorSession = SamReporterPreprocessor.getPreprocessorSession(consoleCmdContext, samFileName, samReporter)) {
 			if(useMaxLikelihoodPlacer()) {
-				consensusSequence = samReporterPreprocessorSession
-						.getConsensus(consoleCmdContext, getMinDepth(samReporter), getMinQScore(samReporter), getMinMapQ(samReporter), getSamRefSense(samReporter), getSuppliedSamRefName());
-				AlignmentMember targetRefAlmtMember = samReporter.establishTargetRefMemberUsingPlacer(consoleCmdContext, consensusSequence);
-				targetRef = targetRefAlmtMember.targetReferenceFromMember();
-				samReporter.log(Level.FINE, "Max likelihood placement of consensus sequence selected target reference "+targetRef.getName());
+				targetRef = samReporterPreprocessorSession.getTargetRefBasedOnPlacer(consoleCmdContext, samReporter, this);
 			} else {
 				targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, 
 						ReferenceSequence.pkMap(getTargetRefName()));
@@ -199,7 +193,7 @@ public class SamVariationScanCommand extends ReferenceLinkedSamReporterCommand<S
 				featuresToScan.addAll(namedFeature.getDescendents());
 			}
 			
-			List<QueryAlignedSegment> samRefToTargetRefSegs = getSamRefToTargetRefSegs(cmdContext, samReporter, samReporterPreprocessorSession, consoleCmdContext, targetRef, consensusSequence);
+			List<QueryAlignedSegment> samRefToTargetRefSegs = getSamRefToTargetRefSegs(cmdContext, samReporter, samReporterPreprocessorSession, consoleCmdContext, targetRef);
 
 			AlignmentMember linkingAlmtMember = targetRef.getLinkingAlignmentMembership(getLinkingAlmtName());
 

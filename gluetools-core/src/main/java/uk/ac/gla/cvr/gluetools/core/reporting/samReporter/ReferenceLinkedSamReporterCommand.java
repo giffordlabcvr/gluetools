@@ -26,14 +26,12 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
 import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.query.SelectQuery;
-import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
@@ -48,8 +46,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
-import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
@@ -179,21 +175,11 @@ public abstract class ReferenceLinkedSamReporterCommand<R extends CommandResult>
 	
 	protected List<QueryAlignedSegment> getSamRefToTargetRefSegs(
 			CommandContext cmdContext, SamReporter samReporter, SamReporterPreprocessorSession samReporterPreprocessorSession, 
-			ConsoleCommandContext consoleCmdContext, ReferenceSequence targetRef, DNASequence consensusSequence) {
+			ConsoleCommandContext consoleCmdContext, ReferenceSequence targetRef) {
 		List<QueryAlignedSegment> samRefToTargetRefSegs;
 		if(autoAlign || maxLikelihoodPlacer) {
-			// auto-align consensus to target ref
-			Aligner<?, ?> aligner = Aligner.getAligner(cmdContext, samReporter.getAlignerModuleName());
-			if(consensusSequence == null) {
-				// compute consensus if we don't already have it.
-				consensusSequence = samReporterPreprocessorSession
-						.getConsensus(consoleCmdContext, getMinDepth(samReporter), getMinQScore(samReporter), getMinMapQ(samReporter), getSamRefSense(samReporter), getSuppliedSamRefName());
-			}
-			Map<String, DNASequence> samConsensus = new LinkedHashMap<String, DNASequence>();
-			samConsensus.put("samConsensus", consensusSequence);
-			AlignerResult alignerResult = aligner.computeConstrained(cmdContext, targetRef.getName(), samConsensus);
-			// extract segments from aligner result
-			samRefToTargetRefSegs = alignerResult.getQueryIdToAlignedSegments().get("samConsensus");
+			samRefToTargetRefSegs = samReporterPreprocessorSession.getSamRefToTargetRefSegs(
+					consoleCmdContext, samReporter, this, targetRef.getName());
 		} else {
 			SamRefSense samRefSense = getSamRefSense(samReporter);
 			if(!samRefSense.equals(SamRefSense.FORWARD)) {
@@ -286,9 +272,8 @@ public abstract class ReferenceLinkedSamReporterCommand<R extends CommandResult>
 			return new SimpleNucleotideColumnsSelector(relRefName, featureName, ntStart, ntEnd);
 		} else if(relRefName != null && featureName != null && lcStart != null && lcEnd != null) {
 			FeatureLocation featureLocation = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relRefName, featureName));
-			Map<String, LabeledCodon> labelToLabeledCodon = featureLocation.getLabelToLabeledCodon(cmdContext);
-			int refStart = labelToLabeledCodon.get(lcStart).getNtStart();
-			int refEnd = labelToLabeledCodon.get(lcEnd).getNtStart()+2;
+			int refStart = featureLocation.getLabeledCodon(cmdContext, lcStart).getNtStart();
+			int refEnd = featureLocation.getLabeledCodon(cmdContext, lcEnd).getNtStart()+2;
 			return new SimpleNucleotideColumnsSelector(relRefName, featureName, refStart, refEnd);
 		} else if(relRefName != null && featureName != null) {
 			return new SimpleNucleotideColumnsSelector(relRefName, featureName, null, null);

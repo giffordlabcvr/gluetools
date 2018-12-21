@@ -19,7 +19,12 @@ import htsjdk.samtools.SamReader;
 import htsjdk.samtools.ValidationStringency;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.config.PropertiesConfiguration;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
@@ -197,7 +202,7 @@ public class SamReporterPreprocessor {
 		private String[] preprocessedBamPaths;
 		private Map<ConsensusKey, DNASequence> cachedConsensus = new LinkedHashMap<ConsensusKey, DNASequence>();
 		private Map<ConsensusKey, String> cachedTargetRefName = new LinkedHashMap<ConsensusKey, String>();
-		private Map<MappingSegsKey, List<QueryAlignedSegment>> cachedMappingSegs = new LinkedHashMap<MappingSegsKey, List<QueryAlignedSegment>>();
+		private Map<SamToTargetSegsKey, List<QueryAlignedSegment>> cachedSamRefToTargetRefSegs = new LinkedHashMap<SamToTargetSegsKey, List<QueryAlignedSegment>>();
 		private String samReporterName;
 		
 		public SamReporterPreprocessorSession(String samReporterName, String bamPath) {
@@ -214,8 +219,9 @@ public class SamReporterPreprocessor {
 			return preprocessedBamPaths;
 		}
 		
-		public DNASequence getConsensus(ConsoleCommandContext consoleCmdContext, int minDepth, int minQScore, int minMapQ, SamRefSense samRefSense, String suppliedSamRefName) {
-			ConsensusKey consensusKey = new ConsensusKey(minDepth, minQScore, minMapQ, samRefSense, suppliedSamRefName);
+		public DNASequence getConsensus(ConsoleCommandContext consoleCmdContext, 
+				SamReporter samReporter, BaseSamReporterCommand<?> samReporterCommand) {
+			ConsensusKey consensusKey = new ConsensusKey(samReporter, samReporterCommand);
 			return getConsensus(consoleCmdContext, consensusKey);
 		}
 
@@ -231,30 +237,40 @@ public class SamReporterPreprocessor {
 			return consensusSequence;
 		}
 		
-		public String getTargetRefNameBasedOnPlacer(ConsoleCommandContext consoleCmdContext, int minDepth, int minQScore, int minMapQ, SamRefSense samRefSense, String suppliedSamRefName) {
-			ConsensusKey consensusKey = new ConsensusKey(minDepth, minQScore, minMapQ, samRefSense, suppliedSamRefName);
-
+		public ReferenceSequence getTargetRefBasedOnPlacer(ConsoleCommandContext consoleCmdContext, SamReporter samReporter, BaseSamReporterCommand<?> samReporterCommand) {
+			ConsensusKey consensusKey = new ConsensusKey(samReporter, samReporterCommand);
 			String targetRefName = cachedTargetRefName.get(consensusKey);
+			ReferenceSequence targetRef;
 			if(targetRefName != null) {
-				return targetRefName;
+				targetRef = GlueDataObject.lookup(consoleCmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(targetRefName));
+			} else {
+				DNASequence consensus = getConsensus(consoleCmdContext, consensusKey);
+				AlignmentMember targetRefAlmtMember = samReporter.establishTargetRefMemberUsingPlacer(consoleCmdContext, consensus);
+				targetRef = targetRefAlmtMember.targetReferenceFromMember();
+				cachedTargetRefName.put(consensusKey, targetRef.getName());
 			}
-			DNASequence consensus = getConsensus(consoleCmdContext, consensusKey);
-			// ...
-			cachedTargetRefName.put(consensusKey, targetRefName);
-			return targetRefName;
+			samReporter.log(Level.FINE, "Max likelihood placement of consensus sequence selected target reference "+targetRef.getName());
+			return targetRef;
 		}
 		
-		public List<QueryAlignedSegment> getCachedMappingSegs(ConsoleCommandContext consoleCmdContext, int minDepth, int minQScore, int minMapQ, SamRefSense samRefSense, String suppliedSamRefName, String targetRefName) {
-			ConsensusKey consensusKey = new ConsensusKey(minDepth, minQScore, minMapQ, samRefSense, suppliedSamRefName);
-			MappingSegsKey mappingSegsKey = new MappingSegsKey(consensusKey, targetRefName);
-			List<QueryAlignedSegment> mappingSegs = cachedMappingSegs.get(mappingSegsKey);
-			if(mappingSegs != null) {
-				return mappingSegs;
+		public List<QueryAlignedSegment> getSamRefToTargetRefSegs(ConsoleCommandContext consoleCmdContext, SamReporter samReporter, BaseSamReporterCommand<?> samReporterCommand, String targetRefName) {
+			ConsensusKey consensusKey = new ConsensusKey(samReporter, samReporterCommand);
+			SamToTargetSegsKey samToTargetSegsKey = new SamToTargetSegsKey(consensusKey, targetRefName);
+			List<QueryAlignedSegment> samRefToTargetRefSegs = cachedSamRefToTargetRefSegs.get(samToTargetSegsKey);
+			if(samRefToTargetRefSegs != null) {
+				return samRefToTargetRefSegs;
 			}
-			DNASequence consensus = getConsensus(consoleCmdContext, consensusKey);
-			// ...
-			cachedMappingSegs.put(mappingSegsKey, mappingSegs);
-			return mappingSegs;
+			// auto-align consensus to target ref
+			Aligner<?, ?> aligner = Aligner.getAligner(consoleCmdContext, samReporter.getAlignerModuleName());
+			// compute consensus if necessary.
+			DNASequence consensusSequence = getConsensus(consoleCmdContext, samReporter, samReporterCommand);
+			Map<String, DNASequence> samConsensus = new LinkedHashMap<String, DNASequence>();
+			samConsensus.put("samConsensus", consensusSequence);
+			AlignerResult alignerResult = aligner.computeConstrained(consoleCmdContext, targetRefName, samConsensus);
+			// extract segments from aligner result
+			samRefToTargetRefSegs = alignerResult.getQueryIdToAlignedSegments().get("samConsensus");
+			cachedSamRefToTargetRefSegs.put(samToTargetSegsKey, samRefToTargetRefSegs);
+			return samRefToTargetRefSegs;
 			
 		}
 
@@ -289,13 +305,13 @@ public class SamReporterPreprocessor {
 		private int minMapQ;
 		private SamRefSense samRefSense;
 		
-		public ConsensusKey(int minDepth, int minQScore, int minMapQ, SamRefSense samRefSense, String suppliedSamRefName) {
+		public ConsensusKey(SamReporter samReporter, BaseSamReporterCommand<?> samReporterCommand) {
 			super();
-			this.minDepth = minDepth;
-			this.minQScore = minQScore;
-			this.minMapQ = minMapQ;
-			this.samRefSense = samRefSense;
-			this.suppliedSamRefName = suppliedSamRefName;
+			this.minDepth = samReporterCommand.getMinDepth(samReporter);
+			this.minQScore = samReporterCommand.getMinQScore(samReporter);
+			this.minMapQ = samReporterCommand.getMinMapQ(samReporter);
+			this.samRefSense = samReporterCommand.getSamRefSense(samReporter);
+			this.suppliedSamRefName = samReporterCommand.getSuppliedSamRefName();
 		}
 
 		@Override
@@ -339,12 +355,12 @@ public class SamReporterPreprocessor {
 		
 	}
 
-	private static class MappingSegsKey {
+	private static class SamToTargetSegsKey {
 		
 		private ConsensusKey consensusKey;
 		private String targetRefName;
 
-		public MappingSegsKey(ConsensusKey consensusKey, String targetRefName) {
+		public SamToTargetSegsKey(ConsensusKey consensusKey, String targetRefName) {
 			super();
 			this.consensusKey = consensusKey;
 			this.targetRefName = targetRefName;
@@ -367,7 +383,7 @@ public class SamReporterPreprocessor {
 				return false;
 			if (getClass() != obj.getClass())
 				return false;
-			MappingSegsKey other = (MappingSegsKey) obj;
+			SamToTargetSegsKey other = (SamToTargetSegsKey) obj;
 			if (consensusKey == null) {
 				if (other.consensusKey != null)
 					return false;
