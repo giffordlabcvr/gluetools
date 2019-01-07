@@ -4,6 +4,8 @@ import java.awt.Font;
 import java.awt.font.FontRenderContext;
 import java.awt.geom.AffineTransform;
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
@@ -45,6 +47,8 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 	public static final String TREE_DOCUMENT = "treeDocument";
 	public static final String PX_WIDTH = "pxWidth";
 	public static final String PX_HEIGHT = "pxHeight";
+	public static final String LEGEND_PX_WIDTH = "legendPxWidth";
+	public static final String LEGEND_PX_HEIGHT = "legendPxHeight";
 	public static final String LEAF_TEXT_ANNOTATION_NAME = "leafTextAnnotationName";
 
 	private static final double COLLAPSED_SUBTREE_VERTICAL_PROPORTION = 0.8;
@@ -53,6 +57,8 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 	private CommandDocument treeDocument;
 	private int pxWidth;
 	private int pxHeight;
+	private int legendPxWidth;
+	private int legendPxHeight;
 	private String leafTextAnnotationName;
 
 	
@@ -63,6 +69,8 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 		this.treeDocument = PluginUtils.configureCommandDocumentProperty(configElem, TREE_DOCUMENT, true);
 		this.pxWidth = PluginUtils.configureIntProperty(configElem, PX_WIDTH, true);
 		this.pxHeight = PluginUtils.configureIntProperty(configElem, PX_HEIGHT, true);
+		this.legendPxWidth = PluginUtils.configureIntProperty(configElem, LEGEND_PX_WIDTH, true);
+		this.legendPxHeight = PluginUtils.configureIntProperty(configElem, LEGEND_PX_HEIGHT, true);
 		this.leafTextAnnotationName = PluginUtils.configureStringProperty(configElem, LEAF_TEXT_ANNOTATION_NAME, true);
 	}
 
@@ -137,20 +145,123 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 
 		int finalHeightPx = (int) Math.ceil((topMarginPx + (numLeafUnits * verticalLeafUnitSpacePx) + bottomMarginPx));
 		
-		CommandDocument visDocument = new CommandDocument("treeVisualisation");
-		visDocument.setInt(PX_WIDTH, pxWidth);
-		visDocument.setInt(PX_HEIGHT, finalHeightPx);
-		visDocument.setDouble(VERTICAL_LEAF_SPACE_PX, verticalLeafUnitSpacePx);
-		visDocument.setDouble(LEAF_TEXT_HEIGHT_PX, leafTextHeightPx);
-		visDocument.setDouble(LEAF_TEXT_GAP_PX, leafTextGapPx);
-		visDocument.setDouble(LEAF_TEXT_HEIGHT_PROPORTION, treeVisualiser.getLeafTextHeightProportion());
+		CommandDocument visDocument = new CommandDocument("visDocument");
+		CommandObject treeVisObj = visDocument.setObject("treeVisualisation");
+		treeVisObj.setInt(PX_WIDTH, pxWidth);
+		treeVisObj.setInt(PX_HEIGHT, finalHeightPx);
+		treeVisObj.setDouble(VERTICAL_LEAF_SPACE_PX, verticalLeafUnitSpacePx);
+		treeVisObj.setDouble(LEAF_TEXT_HEIGHT_PX, leafTextHeightPx);
+		treeVisObj.setDouble(LEAF_TEXT_GAP_PX, leafTextGapPx);
+		treeVisObj.setDouble(LEAF_TEXT_HEIGHT_PROPORTION, treeVisualiser.getLeafTextHeightProportion());
 		
 		setSubtreeCoords(phyloTree, rightMarginPx, rootLengthPx, topMarginPx, verticalLeafUnitSpacePx, branchLengthMultiplier);
-		generateObjects(cmdContext, treeVisualiser, phyloTree, rightMarginPx,  rootLengthPx, topMarginPx, visDocument);
+		generateTreeObjects(cmdContext, treeVisualiser, phyloTree, rightMarginPx,  rootLengthPx, topMarginPx, treeVisObj);
+		
+		CommandObject treeVisLegendObj = visDocument.setObject("treeVisualisationLegend");
+		treeVisLegendObj.setInt(LEGEND_PX_WIDTH, legendPxWidth);
+		treeVisLegendObj.setInt(LEGEND_PX_HEIGHT, legendPxHeight);
+		generateLegendObjects(cmdContext, treeVisualiser, branchLengthMultiplier, treeVisLegendObj);
+		
 		return new VisualiseTreeResult(visDocument);
 	}
 
 
+	
+
+	
+	private void generateLegendObjects(CommandContext cmdContext, TreeVisualiser treeVisualiser,
+			double branchLengthMultiplier, CommandObject treeVisLegendObj) {
+		
+		
+		Double branchLengthLegendValue = null;
+		Double branchLengthLegendWidthPx = null;
+		
+		List<Double> validBranchLengthLegendValues = treeVisualiser.getValidBranchLengthLegendValues();
+		double branchLengthLegendPxMin = ( treeVisualiser.getBranchLengthLegendMinPct() / 100.0 ) * legendPxWidth;
+		double branchLengthLegendPxMax = ( treeVisualiser.getBranchLengthLegendMaxPct() / 100.0 ) * legendPxWidth;
+		int branchLengthLegendDivisions = treeVisualiser.getBranchLengthLegendDivisions();
+		
+		for(Double validBranchLengthLegendValue : validBranchLengthLegendValues) {
+			double legendPxWidth = validBranchLengthLegendValue * branchLengthMultiplier;
+			if(legendPxWidth >= branchLengthLegendPxMin && legendPxWidth <= branchLengthLegendPxMax) {
+				branchLengthLegendValue = validBranchLengthLegendValue;
+				branchLengthLegendWidthPx = legendPxWidth;
+			}
+		}
+		if(branchLengthLegendValue == null) {
+			throw new CommandException(Code.COMMAND_FAILED_ERROR, "No valid branch length legend value could be found for branchLengthMultiplier: "+branchLengthMultiplier);
+		}
+		
+		double legendTopMarginPx = (legendPxHeight * treeVisualiser.getLegendTopMarginPct()) / 100.0;
+		double legendBottomMarginPx = (legendPxHeight * treeVisualiser.getLegendBottomMarginPct()) / 100.0;
+
+		double quarterUnitPx = ( legendPxHeight - (legendTopMarginPx + legendBottomMarginPx) ) / 4.0;
+
+
+		CommandObject branchLengthLegendCentreLineObj = treeVisLegendObj.setObject("branchLengthLegendCentreLine");
+		double branchLengthLegendLeft = (legendPxWidth - branchLengthLegendWidthPx) / 2.0;
+		branchLengthLegendCentreLineObj.setDouble("x1", branchLengthLegendLeft);
+		branchLengthLegendCentreLineObj.setDouble("y1", legendTopMarginPx + ( quarterUnitPx / 2.0 ) );
+		branchLengthLegendCentreLineObj.setDouble("x2", legendPxWidth-branchLengthLegendLeft);
+		branchLengthLegendCentreLineObj.setDouble("y2", legendTopMarginPx + ( quarterUnitPx / 2.0 ) );
+		
+		CommandArray branchLengthLegendTicksArray = treeVisLegendObj.setArray("branchLengthLegendTicks");
+		double tickY1 = legendTopMarginPx;
+		double tickY2 = tickY1 + quarterUnitPx;
+		for(int i = 0; i <= branchLengthLegendDivisions; i++) {
+			CommandObject branchLengthLegendTickObj = branchLengthLegendTicksArray.addObject();
+			double tickX = branchLengthLegendLeft + ( i * ( branchLengthLegendWidthPx / branchLengthLegendDivisions ) );
+			branchLengthLegendTickObj.setDouble("x1", tickX);
+			branchLengthLegendTickObj.setDouble("y1", tickY1);
+			branchLengthLegendTickObj.setDouble("x2", tickX);
+			branchLengthLegendTickObj.setDouble("y2", tickY2);
+		}
+		
+		AffineTransform affineTransform = new AffineTransform();     
+		FontRenderContext fontRenderContext = new FontRenderContext(affineTransform, true, true);  
+		// fonts must use integer sizes
+		// we will use a 100pt font to figure out the width, then re-scale it as necessary.
+		Font font = new Font(treeVisualiser.getLegendTextFont(), 0, 100); 
+
+		CommandArray branchLengthLegendValuesArray = treeVisLegendObj.setArray("branchLengthLegendValues");
+
+		double valuesCentreY = legendTopMarginPx + (quarterUnitPx * 1.5);
+		double textHeightPx = quarterUnitPx * 0.9;
+		
+		treeVisLegendObj.setDouble("textHeightPx", textHeightPx);
+
+		
+		for(int i = 0; i <= branchLengthLegendDivisions; i++) {
+			CommandObject branchLengthLegendValueObj = branchLengthLegendValuesArray.addObject();
+			double tickX = branchLengthLegendLeft + ( i * ( branchLengthLegendWidthPx / branchLengthLegendDivisions ) );
+			double value = i * (branchLengthLegendValue / branchLengthLegendDivisions);
+			String text = formatToSignificant(value, 2);
+			double textWidth = ( font.getStringBounds(text, fontRenderContext).getWidth() / 100) * textHeightPx;
+			branchLengthLegendValueObj.setDouble("x", tickX - (textWidth / 2.0));
+			branchLengthLegendValueObj.setDouble("y", valuesCentreY);
+			branchLengthLegendValueObj.setString("text", text);
+			branchLengthLegendValueObj.setDouble("width", textWidth);
+			branchLengthLegendValueObj.setDouble("height", quarterUnitPx);
+		}
+
+		double unitsCentreY = legendTopMarginPx + (quarterUnitPx * 3.5);
+		CommandObject branchLengthLegendUnitsObj = treeVisLegendObj.setObject("branchLengthLegendUnits");
+		String unitsText = treeVisualiser.getBranchLengthLegendUnitsText();
+		double unitsTextWidth = ( font.getStringBounds(unitsText, fontRenderContext).getWidth() / 100) * textHeightPx;
+		branchLengthLegendUnitsObj.setDouble("x", (legendPxWidth / 2.0) - (unitsTextWidth / 2.0));
+		branchLengthLegendUnitsObj.setDouble("y", unitsCentreY);
+		branchLengthLegendUnitsObj.setString("text", unitsText);
+		
+	}
+
+	
+	public static String formatToSignificant(double value, int significant) {
+		MathContext mathContext = new MathContext(significant, RoundingMode.HALF_UP);
+		BigDecimal bigDecimal = new BigDecimal(value, mathContext);
+		return bigDecimal.toPlainString();
+	} 
+
+	
 	// on non-collapsed leaf nodes outside collapsed nodes, set these properties: 
 	//     -- leafBranchDepth (branch length units)
 	//     -- leafText
@@ -160,9 +271,8 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 	//     -- minBranchDepth, maxBranchDepth (branch length units)
 	//     -- collapsedText
 	//     -- collapsedTextWidthPx (based on font, leaf text height proportion, vertical leaf space and leaf text)
-	
+		
 
-	
 	private void setBranchAndTextProperties(CommandContext cmdContext, TreeVisualiser treeVisualiser, PhyloTree phyloTree, double leafTextHeightPx) {
 		List<MemberAnnotationGenerator> memberAnnotationGenerators = treeVisualiser.getMemberAnnotationGenerators();
 		
@@ -380,16 +490,16 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 		});
 	}
 
-	private void generateObjects(CommandContext cmdContext, TreeVisualiser treeVisualiser, PhyloTree phyloTree, 
+	private void generateTreeObjects(CommandContext cmdContext, TreeVisualiser treeVisualiser, PhyloTree phyloTree, 
 			double rightMarginPx, double rootLengthPx, double topMarginPx, 
-			CommandDocument visDocument) {
+			CommandObject treeVisObj) {
 
-		CommandArray leafNodesArray = visDocument.setArray(LEAF_NODES);
-		CommandArray internalNodesArray = visDocument.setArray(INTERNAL_NODES);
-		CommandArray branchesArray = visDocument.setArray(BRANCHES);
-		CommandArray collapsedSubtreesArray = visDocument.setArray(COLLAPSED_SUBTREES);
+		CommandArray leafNodesArray = treeVisObj.setArray(LEAF_NODES);
+		CommandArray internalNodesArray = treeVisObj.setArray(INTERNAL_NODES);
+		CommandArray branchesArray = treeVisObj.setArray(BRANCHES);
+		CommandArray collapsedSubtreesArray = treeVisObj.setArray(COLLAPSED_SUBTREES);
 		
-		CommandObject rootObj = visDocument.setObject(ROOT);
+		CommandObject rootObj = treeVisObj.setObject(ROOT);
 		
 		phyloTree.accept(new PhyloTreeVisitor() {
 

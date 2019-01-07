@@ -304,11 +304,28 @@ public class PluginUtils {
 		return configureDoubleProperty(configElem, propertyName, null, false, null, false, required);
 	}
 	
+	
+	public static List<Double> configureDoublesProperty(Element configElem, String propertyName, 
+			Integer min, Integer max,
+			Double minValue, boolean minInclusive, 
+			Double maxValue, boolean maxInclusive) {
+		List<String> doubleStrings = configureStringsProperty(configElem, propertyName, min, max);
+		return doubleStrings.stream()
+				.map(c -> parseDouble(propertyName, minValue, minInclusive, maxValue, maxInclusive, c))
+				.collect(Collectors.toList());
+	}
+
+	
 	public static Double configureDoubleProperty(Element configElem, String propertyName, 
 			Double minValue, boolean minInclusive, 
 			Double maxValue, boolean maxInclusive,
 			boolean required)  {
 		String configuredString = configureStringProperty(configElem, propertyName, required);
+		return parseDouble(propertyName, minValue, minInclusive, maxValue, maxInclusive, configuredString);
+	}
+
+	private static Double parseDouble(String propertyName, Double minValue, boolean minInclusive, Double maxValue,
+			boolean maxInclusive, String configuredString) {
 		if(configuredString == null) { return null; }
 		Double result = null;
 		try {
