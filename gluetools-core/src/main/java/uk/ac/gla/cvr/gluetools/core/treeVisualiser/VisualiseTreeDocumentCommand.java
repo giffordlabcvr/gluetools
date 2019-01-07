@@ -251,7 +251,8 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 		branchLengthLegendUnitsObj.setDouble("x", (legendPxWidth / 2.0) - (unitsTextWidth / 2.0));
 		branchLengthLegendUnitsObj.setDouble("y", unitsCentreY);
 		branchLengthLegendUnitsObj.setString("text", unitsText);
-		
+		branchLengthLegendUnitsObj.setDouble("width", unitsTextWidth);
+		branchLengthLegendUnitsObj.setDouble("height", quarterUnitPx);
 	}
 
 	
