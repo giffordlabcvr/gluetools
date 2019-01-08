@@ -48,8 +48,8 @@ public class TreeVisualiser extends ModulePlugin<TreeVisualiser> {
 		this.rightMarginPct = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, "rightMarginPct", false)).orElse(2.0);
 		this.topMarginPct = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, "topMarginPct", false)).orElse(2.0);
 		this.bottomMarginPct = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, "bottomMarginPct", false)).orElse(2.0);
-		this.legendTopMarginPct = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, "legendTopMarginPct", false)).orElse(2.0);
-		this.legendBottomMarginPct = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, "legendBottomMarginPct", false)).orElse(2.0);
+		this.legendTopMarginPct = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, "legendTopMarginPct", false)).orElse(10.0);
+		this.legendBottomMarginPct = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, "legendBottomMarginPct", false)).orElse(10.0);
 		this.leafTextGapPct = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, "leafTextGapPct", false)).orElse(0.5);
 		this.leafTextHeightProportion = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, "leafTextHeightProportion", false)).orElse(0.9);
 		this.leafTextFont = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, "leafTextFont", false)).orElse("Arial");
