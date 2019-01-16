@@ -33,6 +33,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 public class AlignmentAminoAcidFrequencyResult extends BaseTableResult<LabeledAminoAcidFrequency> {
 
 	public static final String 
+		FEATURE = "feature",
 		CODON = "codon",
 		AMINO_ACID = "aminoAcid",
 		NUM_MEMBERS = "numMembers",
@@ -41,6 +42,7 @@ public class AlignmentAminoAcidFrequencyResult extends BaseTableResult<LabeledAm
 
 	public AlignmentAminoAcidFrequencyResult(List<LabeledAminoAcidFrequency> rowData) {
 		super("alignmentAminoAcidFrequencyResult", rowData,
+				column(FEATURE, laaf -> laaf.getLabeledCodon().getFeatureName()),
 				column(CODON, laaf -> laaf.getLabeledCodon().getCodonLabel()),
 				column(AMINO_ACID, laaf -> laaf.getAminoAcid()),
 				column(NUM_MEMBERS, laaf -> laaf.getNumMembers()),

@@ -133,7 +133,7 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 				if(TranslationUtils.isAtStartOfCodon(featureRefCodon1Start, i)) {
 					int rootCodon = TranslationUtils.getCodon(rootCodon1Start, 
 							i+currentSegment.getQueryToReferenceOffset());
-					labeledCodon = new LabeledCodon(Integer.toString(rootCodon), i, i+1, i+2);
+					labeledCodon = new LabeledCodon(featureLoc.getFeature().getName(), Integer.toString(rootCodon), i, i+1, i+2);
 				}
 			} else {
 				if(TranslationUtils.isAtStartOfCodon(featureRefCodon1Start, i)) {
@@ -141,7 +141,7 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 					int lastRootCodon = TranslationUtils.getCodon(rootCodon1Start, lastRootLocation);
 					int constrainingCodon = TranslationUtils.getCodon(rootCodon1Start, lastRootLocation+diff);
 					String label = Integer.toString(lastRootCodon) + getAlpha(constrainingCodon - lastRootCodon);
-					labeledCodon = new LabeledCodon(label, i, i+1, i+2);
+					labeledCodon = new LabeledCodon(featureLoc.getFeature().getName(), label, i, i+1, i+2);
 				}
 			}
 			if(labeledCodon != null) {

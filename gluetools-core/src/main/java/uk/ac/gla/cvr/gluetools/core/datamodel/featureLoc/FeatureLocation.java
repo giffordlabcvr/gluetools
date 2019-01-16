@@ -130,7 +130,7 @@ public class FeatureLocation extends _FeatureLocation {
 				while(segIndex < segments.size() && refNt <= currentSegment.getRefEnd()) {
 					if(TranslationUtils.isAtEndOfCodon(normalisedCodon1Start, featureNt)) {
 						String codonLabel = Integer.toString(TranslationUtils.getCodon(normalisedCodon1Start, featureNt-2));
-						labeledCodons.add(new LabeledCodon(codonLabel, refNtMinus2, refNtMinus1, refNt));
+						labeledCodons.add(new LabeledCodon(codonNumberingAncestorLocation.getFeature().getName(), codonLabel, refNtMinus2, refNtMinus1, refNt));
 					}
 					refNtMinus2 = refNtMinus1;
 					refNtMinus1 = refNt;

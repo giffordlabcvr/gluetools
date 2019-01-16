@@ -32,6 +32,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 public class LabeledCodon {
 
+	private String featureName;
 	private String codonLabel;
 	private int ntStart;
 	private int ntMiddle;
@@ -39,12 +40,17 @@ public class LabeledCodon {
 	private List<LabeledCodonReferenceSegment> lcRefSegs;
 	
 	
-	public LabeledCodon(String codonLabel, int ntStart, int ntMiddle, int ntEnd) {
+	public LabeledCodon(String featureName, String codonLabel, int ntStart, int ntMiddle, int ntEnd) {
 		super();
+		this.featureName = featureName;
 		this.codonLabel = codonLabel;
 		this.ntStart = ntStart;
 		this.ntMiddle = ntMiddle;
 		this.ntEnd = ntEnd;
+	}
+
+	public String getFeatureName() {
+		return featureName;
 	}
 
 	public String getCodonLabel() {
