@@ -45,6 +45,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.NucleotideContentProvider;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 public interface IAminoAcidAlignmentColumnsSelector extends IAlignmentColumnsSelector {
@@ -140,7 +141,7 @@ public interface IAminoAcidAlignmentColumnsSelector extends IAlignmentColumnsSel
 	
 	public List<LabeledQueryAminoAcid> translateQueryNucleotides(
 			CommandContext cmdContext, 
-			List<QueryAlignedSegment> queryToRefSegs,
+			Translator translator, List<QueryAlignedSegment> queryToRefSegs,
 			NucleotideContentProvider queryNucleotideContent);
 	
 }

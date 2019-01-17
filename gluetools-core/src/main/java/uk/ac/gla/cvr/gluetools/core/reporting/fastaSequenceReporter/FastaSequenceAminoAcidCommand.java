@@ -48,6 +48,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SimpleNucleotideContentPr
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
+import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 
 @CommandClass(
 		commandWords={"amino-acid"}, 
@@ -128,8 +130,9 @@ public class FastaSequenceAminoAcidCommand extends FastaSequenceReporterCommand<
 
 		String fastaNTs = fastaNTSeq.getSequenceAsString();
 
+		Translator translator = new CommandContextTranslator(cmdContext);
 		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = 
-				aaColumnsSelector.translateQueryNucleotides(cmdContext, queryToRelatedRef, new SimpleNucleotideContentProvider(fastaNTs));
+				aaColumnsSelector.translateQueryNucleotides(cmdContext, translator, queryToRelatedRef, new SimpleNucleotideContentProvider(fastaNTs));
 		return new FastaSequenceAminoAcidResult(labeledQueryAminoAcids);
 		
 	}

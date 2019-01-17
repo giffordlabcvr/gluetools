@@ -64,7 +64,7 @@ public class AlignmentColumnsSelector extends ModulePlugin<AlignmentColumnsSelec
 		addSimplePropertyName("relRefName", new SimpleDataObjectNameInstantiator(ReferenceSequence.class, ReferenceSequence.NAME_PROPERTY));
 		registerModuleDocumentCmdClass(AddRegionSelectorCommand.class);
 	}
-
+	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
@@ -79,6 +79,9 @@ public class AlignmentColumnsSelector extends ModulePlugin<AlignmentColumnsSelec
 		}
 	}
 
+
+
+	
 	@Override
 	public List<ReferenceSegment> selectAlignmentColumns(CommandContext cmdContext) {
 		RegionSelector firstRegionSelector = this.regionSelectors.get(0);
@@ -147,9 +150,8 @@ public class AlignmentColumnsSelector extends ModulePlugin<AlignmentColumnsSelec
 	}
 
 	@Override
-	public List<LabeledQueryAminoAcid> translateQueryNucleotides(CommandContext cmdContext,
+	public List<LabeledQueryAminoAcid> translateQueryNucleotides(CommandContext cmdContext, Translator translator,
 			List<QueryAlignedSegment> queryToRefSegs, NucleotideContentProvider queryNucleotideContent) {
-		Translator translator = new CommandContextTranslator(cmdContext);
 		List<LabeledQueryAminoAcid> lqaas = new ArrayList<LabeledQueryAminoAcid>();
 		for(RegionSelector regionSelector: this.regionSelectors) {
 			AminoAcidRegionSelector aaRegionSelector = (AminoAcidRegionSelector) regionSelector;

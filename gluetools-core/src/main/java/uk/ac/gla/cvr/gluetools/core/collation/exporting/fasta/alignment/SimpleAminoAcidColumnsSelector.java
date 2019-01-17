@@ -98,9 +98,8 @@ public class SimpleAminoAcidColumnsSelector implements IAminoAcidAlignmentColumn
 	}
 
 	@Override
-	public List<LabeledQueryAminoAcid> translateQueryNucleotides(CommandContext cmdContext,
+	public List<LabeledQueryAminoAcid> translateQueryNucleotides(CommandContext cmdContext, Translator translator,
 			List<QueryAlignedSegment> queryToRefSegs, NucleotideContentProvider queryNucleotideContent) {
-		Translator translator = new CommandContextTranslator(cmdContext);
 		return this.aaRegionSelector.translateQueryNucleotides(cmdContext, getRelatedRefName(), queryToRefSegs, translator, queryNucleotideContent);
 	}
 
