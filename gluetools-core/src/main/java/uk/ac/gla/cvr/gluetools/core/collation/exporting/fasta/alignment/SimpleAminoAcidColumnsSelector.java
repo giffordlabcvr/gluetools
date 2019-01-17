@@ -35,8 +35,10 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.NucleotideContentProvider;
 import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AlignmentColumnsSelectorException;
 import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AminoAcidRegionSelector;
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
@@ -82,6 +84,8 @@ public class SimpleAminoAcidColumnsSelector implements IAminoAcidAlignmentColumn
 		return this.aaRegionSelector.selectLabeledCodons(cmdContext, relatedRefName);
 	}
 
+	// TODO -- logic needs to be moved out of AARegionSelector and into calling commands.
+	// which should rely on AARegionSelector.translateQueryNucleotides
 	@Override
 	public List<LabeledQueryAminoAcid> generateAminoAcidAlmtRow(
 			CommandContext cmdContext,
@@ -91,6 +95,13 @@ public class SimpleAminoAcidColumnsSelector implements IAminoAcidAlignmentColumn
 		Translator translator = new CommandContextTranslator(cmdContext);
 		return this.aaRegionSelector
 					.generateAminoAcidAlmtRow(cmdContext, relatedRef, translator, selectedLabeledCodons, almtMember);
+	}
+
+	@Override
+	public List<LabeledQueryAminoAcid> translateQueryNucleotides(CommandContext cmdContext,
+			List<QueryAlignedSegment> queryToRefSegs, NucleotideContentProvider queryNucleotideContent) {
+		Translator translator = new CommandContextTranslator(cmdContext);
+		return this.aaRegionSelector.translateQueryNucleotides(cmdContext, getRelatedRefName(), queryToRefSegs, translator, queryNucleotideContent);
 	}
 
 	

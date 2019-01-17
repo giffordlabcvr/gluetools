@@ -32,6 +32,7 @@ import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAminoAcidAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -42,24 +43,22 @@ import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
-import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
-import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SimpleNucleotideContentProvider;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
-import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
-import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 
 @CommandClass(
 		commandWords={"amino-acid"}, 
 		description = "Translate amino acids in a FASTA file", 
-		docoptUsages = { "-i <fileName> -r <relRefName> -f <featureName> -t <targetRefName> -a <linkingAlmtName>" },
+		docoptUsages = { "-i <fileName> ( -e <selectorName> | -r <relRefName> -f <featureName> [-c <lcStart> <lcEnd>]) -t <targetRefName> -a <linkingAlmtName>" },
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                       FASTA input file",
+				"-e <selectorName>, --selectorName <selectorName>           Column selector module",
 				"-r <relRefName>, --relRefName <relRefName>                 Related reference",
 				"-f <featureName>, --featureName <featureName>              Feature to translate",
+				"-c, --labelledCodon                                        Region between codon labels",
 				"-t <targetRefName>, --targetRefName <targetRefName>        Target reference",
 				"-a <linkingAlmtName>, --linkingAlmtName <linkingAlmtName>  Linking alignment",
 		},
@@ -111,10 +110,8 @@ public class FastaSequenceAminoAcidCommand extends FastaSequenceReporterCommand<
 		AlignmentMember linkingAlmtMember = targetRef.getLinkingAlignmentMembership(getLinkingAlmtName());
 		Alignment linkingAlmt = linkingAlmtMember.getAlignment();
 
-		ReferenceSequence relatedRef = linkingAlmt.getRelatedRef(cmdContext, getRelRefName());
-		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(getRelRefName(), getFeatureName()), false);
-		Feature feature = featureLoc.getFeature();
-		feature.checkCodesAminoAcids();
+		IAminoAcidAlignmentColumnsSelector aaColumnsSelector = getAminoAcidAlignmentColumnsSelector(cmdContext);
+		aaColumnsSelector.checkAminoAcidSelector(cmdContext);
 		
 		// extract segments from aligner result
 		List<QueryAlignedSegment> queryToTargetRefSegs = alignerResult.getQueryIdToAlignedSegments().get(fastaID);
@@ -124,15 +121,15 @@ public class FastaSequenceAminoAcidCommand extends FastaSequenceReporterCommand<
 				linkingAlmtMember.getSequence().getSource().getName(), linkingAlmtMember.getSequence().getSequenceID(), 
 				queryToTargetRefSegs);
 		
+		ReferenceSequence relatedRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(aaColumnsSelector.getRelatedRefName()));
+
 		// translate segments to related reference
 		List<QueryAlignedSegment> queryToRelatedRef = linkingAlmt.translateToRelatedRef(cmdContext, queryToLinkingAlmtSegs, relatedRef);
 
 		String fastaNTs = fastaNTSeq.getSequenceAsString();
 
-		Translator translator = new CommandContextTranslator(cmdContext);
-
 		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = 
-				featureLoc.translateQueryNucleotides(consoleCmdContext, translator, queryToRelatedRef, new SimpleNucleotideContentProvider(fastaNTs));
+				aaColumnsSelector.translateQueryNucleotides(cmdContext, queryToRelatedRef, new SimpleNucleotideContentProvider(fastaNTs));
 		return new FastaSequenceAminoAcidResult(labeledQueryAminoAcids);
 		
 	}

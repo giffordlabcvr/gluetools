@@ -42,11 +42,15 @@ import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.Abs
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.NucleotideContentProvider;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 public interface IAminoAcidAlignmentColumnsSelector extends IAlignmentColumnsSelector {
 
+	// TODO -- logic needs to be moved out of AARegionSelector and into calling commands.
+	// which should rely on AARegionSelector.translateQueryNucleotides
 	public default void generateStringAlignmentRows(
 			CommandContext cmdContext, Boolean excludeEmptyRows,
 			AbstractMemberSupplier memberSupplier, AbstractStringAlmtRowConsumer stringAlmtRowConsumer) {
@@ -82,6 +86,8 @@ public interface IAminoAcidAlignmentColumnsSelector extends IAlignmentColumnsSel
 		
 	}
 
+	// TODO -- logic needs to be moved out of AARegionSelector and into calling commands.
+	// which should rely on AARegionSelector.translateQueryNucleotides
 	public default void generateLqaaAlignmentRows(CommandContext cmdContext, Boolean excludeEmptyRows,
 			AbstractMemberSupplier memberSupplier, AbstractLqaaAlmtRowConsumer lqaaAlmtRowConsumer) {
 		checkAminoAcidSelector(cmdContext);
@@ -131,5 +137,10 @@ public interface IAminoAcidAlignmentColumnsSelector extends IAlignmentColumnsSel
 		});
 		return memberAlignmentMap;
 	}
+	
+	public List<LabeledQueryAminoAcid> translateQueryNucleotides(
+			CommandContext cmdContext, 
+			List<QueryAlignedSegment> queryToRefSegs,
+			NucleotideContentProvider queryNucleotideContent);
 	
 }

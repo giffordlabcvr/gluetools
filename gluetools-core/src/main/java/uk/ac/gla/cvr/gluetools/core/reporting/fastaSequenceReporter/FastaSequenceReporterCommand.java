@@ -27,46 +27,128 @@ package uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAlignmentColumnsSelector;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAminoAcidAlignmentColumnsSelector;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAminoAcidColumnsSelector;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleNucleotideColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CompletionSuggestion;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AlignmentColumnsSelector;
 
 public abstract class FastaSequenceReporterCommand<R extends CommandResult> extends ModulePluginCommand<R, FastaSequenceReporter> {
 
+	public static final String SELECTOR_NAME = "selectorName";
 	public static final String REL_REF_NAME = "relRefName";
 	public static final String FEATURE_NAME = "featureName";
+	public static final String LABELLED_CODON = "labelledCodon";
+	public static final String LC_START = "lcStart";
+	public static final String LC_END = "lcEnd";
+	public static final String NT_REGION = "ntRegion";
+	public static final String NT_START = "ntStart";
+	public static final String NT_END = "ntEnd";
 	
 	public static final String TARGET_REF_NAME = "targetRefName";
 	public static final String LINKING_ALMT_NAME = "linkingAlmtName";
 
 
+	private String selectorName;
+
 	private String relRefName;
 	private String featureName;
 	private String linkingAlmtName;
 	private String targetRefName;
+	private Boolean labelledCodon;
+	private String lcStart;
+	private String lcEnd;
+	private Boolean ntRegion;
+	private Integer ntStart;
+	private Integer ntEnd;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		this.relRefName = PluginUtils.configureStringProperty(configElem, REL_REF_NAME, true);
-		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
+		this.selectorName = PluginUtils.configureStringProperty(configElem, SELECTOR_NAME, false);
+		this.relRefName = PluginUtils.configureStringProperty(configElem, REL_REF_NAME, false);
+		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, false);
+		this.labelledCodon = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, LABELLED_CODON, false)).orElse(false);
+		this.lcStart = PluginUtils.configureStringProperty(configElem, LC_START, false);
+		this.lcEnd = PluginUtils.configureStringProperty(configElem, LC_END, false);
+		this.ntRegion = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, NT_REGION, false)).orElse(false);
+		this.ntStart = PluginUtils.configureIntProperty(configElem, NT_START, false);
+		this.ntEnd = PluginUtils.configureIntProperty(configElem, NT_END, false);
 		this.targetRefName = PluginUtils.configureStringProperty(configElem, TARGET_REF_NAME, true);
 		this.linkingAlmtName = PluginUtils.configureStringProperty(configElem, LINKING_ALMT_NAME, true);
+
+		if(selectorName != null && ( relRefName != null || featureName != null )) {
+			usageError1a();
+		}
+		if(selectorName == null && ( relRefName == null || featureName == null ) ) {
+			usageError1b();
+		}
+		if(relRefName != null && featureName == null || relRefName == null && featureName != null) {
+			usageError2();
+		}
+		if(selectorName != null && ( ntRegion || labelledCodon )) {
+			usageError3a();
+		}
+		if(labelledCodon && (lcStart == null || lcEnd == null)) {
+			usageError4();
+		}
+		if(ntRegion && labelledCodon) {
+			usageError5();
+		}
+		if(ntRegion && (ntStart == null || ntEnd == null)) {
+			usageError6();
+		}
 	}
 
+	private void usageError1a() {
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "If <selectorName> is used then <relRefName> and <featureName> may not be used");
+	}
+
+	private void usageError1b() {
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <selectorName> or both <relRefName> and <featureName> must be specified");
+	}
+
+	private void usageError2() {
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either both <relRefName> and <featureName> must be specified or neither");
+	}
+
+	private void usageError3a() {
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "If <selectorName> is used then neither --ntRegion or --labelledCodon may be specified");
+	}
+
+	private void usageError4() {
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "If --labelledCodon is used, both <lcStart> and <lcEnd> must be specified");
+	}
+ 	private void usageError5() {
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either --ntRegion or --labelledCodon may be specified, but not both");
+	}
+ 	private void usageError6() {
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "If --ntRegion is used, both <ntStart> and <ntEnd> must be specified");
+	}
+
+	
 	protected String getRelRefName() {
 		return relRefName;
 	}
@@ -82,10 +164,39 @@ public abstract class FastaSequenceReporterCommand<R extends CommandResult> exte
 	protected String getTargetRefName() {
 		return targetRefName;
 	}
+	
+	protected IAlignmentColumnsSelector getNucleotideAlignmentColumnsSelector(CommandContext cmdContext) {
+		if(selectorName != null) {
+			return Module.resolveModulePlugin(cmdContext, AlignmentColumnsSelector.class, selectorName);
+		} else if(relRefName != null && featureName != null && ntStart != null && ntEnd != null) {
+			return new SimpleNucleotideColumnsSelector(relRefName, featureName, ntStart, ntEnd);
+		} else if(relRefName != null && featureName != null && lcStart != null && lcEnd != null) {
+			FeatureLocation featureLocation = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relRefName, featureName));
+			int refStart = featureLocation.getLabeledCodon(cmdContext, lcStart).getNtStart();
+			int refEnd = featureLocation.getLabeledCodon(cmdContext, lcEnd).getNtStart()+2;
+			return new SimpleNucleotideColumnsSelector(relRefName, featureName, refStart, refEnd);
+		} else if(relRefName != null && featureName != null) {
+			return new SimpleNucleotideColumnsSelector(relRefName, featureName, null, null);
+		} else {
+			return null;
+		}
+	}
 
+	protected IAminoAcidAlignmentColumnsSelector getAminoAcidAlignmentColumnsSelector(CommandContext cmdContext) {
+		if(selectorName != null) {
+			return Module.resolveModulePlugin(cmdContext, IAminoAcidAlignmentColumnsSelector.class, selectorName);
+		} else if(relRefName != null && featureName != null) {
+			return new SimpleAminoAcidColumnsSelector(relRefName, featureName, lcStart, lcEnd);
+		} else {
+			return null;
+		}
+	}
+	
+	
 	public static class Completer extends AdvancedCmdCompleter {
 		public Completer() {
 			super();
+			registerModuleNameLookup("selectorName", "alignmentColumnsSelector");
 			registerDataObjectNameLookup("relRefName", ReferenceSequence.class, ReferenceSequence.NAME_PROPERTY);
 			registerVariableInstantiator("featureName", new VariableInstantiator() {
 				@Override

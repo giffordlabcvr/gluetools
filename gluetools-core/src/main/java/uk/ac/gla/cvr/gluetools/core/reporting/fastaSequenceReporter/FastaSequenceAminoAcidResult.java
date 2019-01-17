@@ -33,6 +33,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 public class FastaSequenceAminoAcidResult extends BaseTableResult<LabeledQueryAminoAcid> {
 
 	public static final String 
+		FEATURE = "feature",
 		CODON_LABEL = "codonLabel",
 		QUERY_NT = "queryNt",
 		REL_REF_NT = "relRefNt",
@@ -44,6 +45,7 @@ public class FastaSequenceAminoAcidResult extends BaseTableResult<LabeledQueryAm
 
 	public FastaSequenceAminoAcidResult(List<LabeledQueryAminoAcid> labeledQueryAminoAcids) {
 		super("fastaSequenceAminoAcidsResult", labeledQueryAminoAcids,
+				column(FEATURE, lqaa -> lqaa.getLabeledAminoAcid().getLabeledCodon().getFeatureName()),
 				column(CODON_LABEL, lqaa -> lqaa.getLabeledAminoAcid().getLabeledCodon().getCodonLabel()),
 				column(QUERY_NT, lqaa -> lqaa.getQueryNtStart()),
 				column(REL_REF_NT, lqaa -> lqaa.getLabeledAminoAcid().getLabeledCodon().getNtStart()),

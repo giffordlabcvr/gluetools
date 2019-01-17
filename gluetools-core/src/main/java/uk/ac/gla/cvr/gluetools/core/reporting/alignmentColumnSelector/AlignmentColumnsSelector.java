@@ -38,12 +38,14 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.NucleotideContentProvider;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
@@ -119,6 +121,8 @@ public class AlignmentColumnsSelector extends ModulePlugin<AlignmentColumnsSelec
 		return selectedLabeledCodons;
 	}
 
+	// TODO -- logic needs to be moved out of AARegionSelector and into calling commands.
+	// which should rely on AARegionSelector.translateQueryNucleotides
 	@Override
 	public List<LabeledQueryAminoAcid> generateAminoAcidAlmtRow(
 			CommandContext cmdContext,
@@ -142,5 +146,15 @@ public class AlignmentColumnsSelector extends ModulePlugin<AlignmentColumnsSelec
 		}
 	}
 
-	
+	@Override
+	public List<LabeledQueryAminoAcid> translateQueryNucleotides(CommandContext cmdContext,
+			List<QueryAlignedSegment> queryToRefSegs, NucleotideContentProvider queryNucleotideContent) {
+		Translator translator = new CommandContextTranslator(cmdContext);
+		List<LabeledQueryAminoAcid> lqaas = new ArrayList<LabeledQueryAminoAcid>();
+		for(RegionSelector regionSelector: this.regionSelectors) {
+			AminoAcidRegionSelector aaRegionSelector = (AminoAcidRegionSelector) regionSelector;
+			lqaas.addAll(aaRegionSelector.translateQueryNucleotides(cmdContext, getRelatedRefName(), queryToRefSegs, translator, queryNucleotideContent));
+		}
+		return lqaas;
+	}
 }

@@ -42,6 +42,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.NucleotideContentProvider;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -91,6 +92,8 @@ public class AminoAcidRegionSelector extends RegionSelector {
 		this.endCodon = endCodon;
 	}
 
+	// TODO -- logic needs to be moved out of AARegionSelector and into calling commands.
+	// which should rely on AARegionSelector.translateQueryNucleotides
 	public List<LabeledQueryAminoAcid> generateAminoAcidAlmtRow(
 			CommandContext cmdContext, ReferenceSequence relatedRef,
 			Translator translator, List<LabeledCodon> selectedLabeledCodons,
@@ -172,6 +175,14 @@ public class AminoAcidRegionSelector extends RegionSelector {
 		
 		
 		
+	}
+
+	public List<LabeledQueryAminoAcid> translateQueryNucleotides(CommandContext cmdContext,
+			String relRefName, List<QueryAlignedSegment> queryToRefSegs, Translator translator, NucleotideContentProvider queryNucleotideContent) {
+		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relRefName, getFeatureName()));
+		List<ReferenceSegment> refSegs = selectAlignmentColumns(cmdContext, relRefName);
+		List<QueryAlignedSegment> queryToRefSegsInRegion = ReferenceSegment.intersection(refSegs, queryToRefSegs, ReferenceSegment.cloneRightSegMerger());
+		return featureLoc.translateQueryNucleotides(cmdContext, translator, queryToRefSegsInRegion, queryNucleotideContent);
 	}
 
 	
