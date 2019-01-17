@@ -174,7 +174,10 @@ public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<Ali
 					List<LabeledQueryAminoAcid> lqaas) {
 				for(LabeledQueryAminoAcid lqaa: lqaas) {
 					int refNtStart = lqaa.getLabeledAminoAcid().getLabeledCodon().getNtStart();
-					refNtToRefCodonInfo.get(refNtStart).addAaMamber(lqaa.getLabeledAminoAcid().getTranslationInfo().getSingleCharTranslation());;
+					char singleCharTranslation = lqaa.getLabeledAminoAcid().getTranslationInfo().getSingleCharTranslation();
+					if(singleCharTranslation != 'X') {
+						refNtToRefCodonInfo.get(refNtStart).addAaMamber(singleCharTranslation);
+					}
 				}
 			}
 		};
