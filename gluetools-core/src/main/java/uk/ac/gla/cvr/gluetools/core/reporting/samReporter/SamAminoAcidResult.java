@@ -32,6 +32,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 public class SamAminoAcidResult extends BaseTableResult<LabeledAminoAcidReadCount> {
 
 	public static final String 
+		FEATURE = "feature",
 		CODON_LABEL = "codonLabel",
 		SAM_REF_NT = "samRefNt",
 		REL_REF_NT = "relRefNt",
@@ -43,6 +44,7 @@ public class SamAminoAcidResult extends BaseTableResult<LabeledAminoAcidReadCoun
 	public SamAminoAcidResult(List<LabeledAminoAcidReadCount> rows) {
 		super("samAminoAcidsResult", 
 				rows,
+				column(FEATURE, laarc -> laarc.getLabeledCodon().getFeatureName()),
 				column(CODON_LABEL, laarc -> laarc.getLabeledCodon().getCodonLabel()),
 				column(SAM_REF_NT, laarc -> laarc.getSamRefNt()), 
 				column(REL_REF_NT, laarc -> laarc.getLabeledCodon().getNtStart()),

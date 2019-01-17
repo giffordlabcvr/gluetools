@@ -27,7 +27,9 @@ package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -45,6 +47,7 @@ import htsjdk.samtools.ValidationStringency;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodonReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAminoAcidAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -56,7 +59,6 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCo
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
-import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SimpleNucleotideContentProvider;
@@ -75,11 +77,12 @@ import uk.ac.gla.cvr.gluetools.utils.StringUtils;
 @CommandClass(
 		commandWords={"amino-acid"}, 
 		description = "Translate amino acids in a SAM/BAM file", 
-		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] -r <relRefName> -f <featureName> [-c <lcStart> <lcEnd>] (-p | [-l] -t <targetRefName>) -a <linkingAlmtName> [-q <minQScore>] [-g <minMapQ>] [-e <minDepth>] [-P <minAAPct>]" },
+		docoptUsages = { "-i <fileName> [-n <samRefSense>] [-s <samRefName>] (-m <selectorName> | -r <relRefName> -f <featureName> [-c <lcStart> <lcEnd>]) (-p | [-l] -t <targetRefName>) -a <linkingAlmtName> [-q <minQScore>] [-g <minMapQ>] [-e <minDepth>] [-P <minAAPct>]" },
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                       SAM/BAM input file",
 				"-n <samRefSense>, --samRefSense <samRefSense>              SAM ref seq sense",
 				"-s <samRefName>, --samRefName <samRefName>                 Specific SAM ref seq",
+				"-m <selectorName>, --selectorName <selectorName>           Column selector module",
 				"-r <relRefName>, --relRefName <relRefName>                 Related reference sequence",
 				"-f <featureName>, --featureName <featureName>              Feature to translate",
 				"-c, --labelledCodon                                        Region between codon labels",
@@ -140,9 +143,6 @@ public class SamAminoAcidCommand extends ReferenceLinkedSamReporterCommand<SamAm
 		if(this.getNtRegion()) {
 			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Illegal option --ntRegion");
 		}
-		if(this.getSelectorName() != null) {
-			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Illegal option --selectorName");
-		}
 	}
 
 
@@ -164,12 +164,11 @@ public class SamAminoAcidCommand extends ReferenceLinkedSamReporterCommand<SamAm
 			}
 			Alignment linkingAlmt = GlueDataObject.lookup(cmdContext, Alignment.class, 
 					Alignment.pkMap(getLinkingAlmtName()));
-			ReferenceSequence relatedRef = linkingAlmt.getRelatedRef(cmdContext, getRelatedRefName());
 
-			FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(getRelatedRefName(), getFeatureName()), false);
-			Feature feature = featureLoc.getFeature();
-			feature.checkCodesAminoAcids();
-
+			IAminoAcidAlignmentColumnsSelector columnsSelector = getAminoAcidAlignmentColumnsSelector(cmdContext);
+			columnsSelector.checkAminoAcidSelector(cmdContext);
+			ReferenceSequence relatedRef = linkingAlmt.getRelatedRef(cmdContext, columnsSelector.getRelatedRefName());
+			
 			List<QueryAlignedSegment> samRefToTargetRefSegs = getSamRefToTargetRefSegs(cmdContext, samReporter, samReporterPreprocessorSession, consoleCmdContext, targetRef);
 
 			AlignmentMember linkingAlmtMember = targetRef.getLinkingAlignmentMembership(getLinkingAlmtName());
@@ -182,14 +181,7 @@ public class SamAminoAcidCommand extends ReferenceLinkedSamReporterCommand<SamAm
 			// translate segments to related reference
 			List<QueryAlignedSegment> samRefToRelatedRefSegsFull = linkingAlmt.translateToRelatedRef(cmdContext, samRefToLinkingAlmtSegs, relatedRef);
 
-			List<LabeledCodon> selectedLabeledCodons;
-			if(this.getLabelledCodon()) {
-				LabeledCodon startCodon = featureLoc.getLabeledCodon(cmdContext, getLcStart());
-				LabeledCodon endCodon = featureLoc.getLabeledCodon(cmdContext, getLcEnd());
-				selectedLabeledCodons = featureLoc.getLabeledCodons(cmdContext, startCodon, endCodon);
-			} else {
-				selectedLabeledCodons = featureLoc.getLabeledCodons(cmdContext);
-			}
+			List<LabeledCodon> selectedLabeledCodons = columnsSelector.selectLabeledCodons(cmdContext);
 			
 			List<LabeledCodonReferenceSegment> labeledCodonReferenceSegments = new ArrayList<LabeledCodonReferenceSegment>();
 			for(LabeledCodon selectedLabeledCodon: selectedLabeledCodons) {
@@ -210,8 +202,13 @@ public class SamAminoAcidCommand extends ReferenceLinkedSamReporterCommand<SamAm
 
 			SamRefSense samRefSense = getSamRefSense(samReporter);
 
-			TIntObjectMap<LabeledCodon> relatedRefNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
+			TIntObjectMap<LabeledCodon> relatedRefNtToLabeledCodon = new TIntObjectHashMap<LabeledCodon>();
 
+			for(LabeledCodon labeledCodon: selectedLabeledCodons) {
+				relatedRefNtToLabeledCodon.put(labeledCodon.getNtStart(), labeledCodon);
+			}
+
+			
 			// build a map from related ref NT to AA read count.
 			TIntObjectHashMap<AminoAcidReadCount> relatedRefNtToAminoAcidReadCount = new TIntObjectHashMap<AminoAcidReadCount>();
 			List<Integer> mappedRelatedRefNts = new ArrayList<Integer>();
@@ -241,7 +238,24 @@ public class SamAminoAcidCommand extends ReferenceLinkedSamReporterCommand<SamAm
 				context.translator = translator;
 				context.samRefInfo = samRefInfo;
 				context.samRefSense = samRefSense;
-				context.featureLoc = featureLoc;
+				context.featureLocRefSegs = new ArrayList<FeatureLocRefSegs>();
+				synchronized(selectedLabeledCodons) {
+					Map<String, FeatureLocRefSegs> featureNameToFlrs = new LinkedHashMap<String, FeatureLocRefSegs>();
+					for(LabeledCodon lc: selectedLabeledCodons) {
+						String featureName = lc.getFeatureName();
+						FeatureLocRefSegs flrs = featureNameToFlrs.get(featureName);
+						if(flrs == null) {
+							flrs = new FeatureLocRefSegs();
+							flrs.featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, 
+									FeatureLocation.pkMap(columnsSelector.getRelatedRefName(), featureName));
+							flrs.refSegs = new ArrayList<ReferenceSegment>();
+							featureNameToFlrs.put(featureName, flrs);
+						}
+						flrs.refSegs.addAll(lc.getLcRefSegments());
+					}
+					context.featureLocRefSegs = new ArrayList<FeatureLocRefSegs>(featureNameToFlrs.values());
+					context.featureLocRefSegs.forEach(flrs -> { ReferenceSegment.sortByRefStart(flrs.refSegs); } );
+				}
 				// clone these segments
 				synchronized(samRefToRelatedRefSegs) {
 					context.samRefToRelatedRefSegs = QueryAlignedSegment.cloneList(samRefToRelatedRefSegs);
@@ -305,8 +319,12 @@ public class SamAminoAcidCommand extends ReferenceLinkedSamReporterCommand<SamAm
 		}
 		List<QueryAlignedSegment> readToRelatedRefSegs = QueryAlignedSegment.translateSegments(readToSamRefSegs, context.samRefToRelatedRefSegs);
 		
-		List<LabeledQueryAminoAcid> labeledReadAas = context.featureLoc.translateQueryNucleotides(context.cmdContext,
-				context.translator, readToRelatedRefSegs, new SimpleNucleotideContentProvider(readString));
+		List<LabeledQueryAminoAcid> labeledReadAas = new ArrayList<LabeledQueryAminoAcid>(); 
+				
+		for(FeatureLocRefSegs flrs: context.featureLocRefSegs) {
+			List<QueryAlignedSegment> readToRefSegsInFeature = ReferenceSegment.intersection(flrs.refSegs, readToRelatedRefSegs, ReferenceSegment.cloneRightSegMerger());
+			labeledReadAas.addAll(flrs.featureLoc.translateQueryNucleotides(context.cmdContext, context.translator, readToRefSegsInFeature, new SimpleNucleotideContentProvider(readString)));
+		}
 		
 		TIntObjectMap<AminoAcidWithQuality> refNtToAminoAcidWithQuality = new TIntObjectHashMap<SamAminoAcidCommand.AminoAcidWithQuality>();
 		
@@ -438,7 +456,7 @@ public class SamAminoAcidCommand extends ReferenceLinkedSamReporterCommand<SamAm
 		SamRefSense samRefSense;
 		TIntObjectMap<AminoAcidReadCount> relatedRefNtToAminoAcidReadCount;
 		Translator translator;
-		FeatureLocation featureLoc;
+		List<FeatureLocRefSegs> featureLocRefSegs;
 		SamRecordFilter samRecordFilter;
 	}
 
@@ -485,7 +503,10 @@ public class SamAminoAcidCommand extends ReferenceLinkedSamReporterCommand<SamAm
 		return reduced;
 	}
 
-
+	private class FeatureLocRefSegs {
+		private FeatureLocation featureLoc;
+		private List<ReferenceSegment> refSegs;
+	}
 
 	
 }
