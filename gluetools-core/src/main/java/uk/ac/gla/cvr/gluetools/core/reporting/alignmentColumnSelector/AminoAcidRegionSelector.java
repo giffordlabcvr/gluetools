@@ -96,12 +96,11 @@ public class AminoAcidRegionSelector extends RegionSelector {
 	// which should rely on AARegionSelector.translateQueryNucleotides
 	public List<LabeledQueryAminoAcid> generateAminoAcidAlmtRow(
 			CommandContext cmdContext, ReferenceSequence relatedRef,
-			Translator translator, List<LabeledCodon> selectedLabeledCodons,
-			AlignmentMember almtMember) {
+			Translator translator, AlignmentMember almtMember) {
 		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relatedRef.getName(), getFeatureName()));
 		List<QueryAlignedSegment> memberToAlmtSegs = almtMember.segmentsAsQueryAlignedSegments();
 		List<QueryAlignedSegment> memberToRelatedRef = almtMember.getAlignment().translateToRelatedRef(cmdContext, memberToAlmtSegs, relatedRef);
-		List<ReferenceSegment> selectedRefSegs = refSegsForSelectedLabeledCodons(selectedLabeledCodons);
+		List<ReferenceSegment> selectedRefSegs = refSegsForSelectedLabeledCodons(selectLabeledCodons(cmdContext, relatedRef.getName()));
 		memberToRelatedRef = ReferenceSegment.intersection(memberToRelatedRef, selectedRefSegs, QueryAlignedSegment.cloneLeftSegMerger());
 		return featureLoc.translateQueryNucleotides(cmdContext, translator, memberToRelatedRef, almtMember.getSequence().getSequenceObject());
 	}

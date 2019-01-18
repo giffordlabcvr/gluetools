@@ -128,15 +128,14 @@ public class AlignmentColumnsSelector extends ModulePlugin<AlignmentColumnsSelec
 	// which should rely on AARegionSelector.translateQueryNucleotides
 	@Override
 	public List<LabeledQueryAminoAcid> generateAminoAcidAlmtRow(
-			CommandContext cmdContext,
-			List<LabeledCodon> selectedLabeledCodons, Alignment alignment,
+			CommandContext cmdContext, Alignment alignment,
 			AlignmentMember almtMember) {
 		List<LabeledQueryAminoAcid> lqaas = new ArrayList<LabeledQueryAminoAcid>();
 		ReferenceSequence relatedRef = alignment.getRelatedRef(cmdContext, getRelatedRefName());
 		Translator translator = new CommandContextTranslator(cmdContext);
 		for(RegionSelector regionSelector: this.regionSelectors) {
 			AminoAcidRegionSelector aaRegionSelector = (AminoAcidRegionSelector) regionSelector;
-			lqaas.addAll(aaRegionSelector.generateAminoAcidAlmtRow(cmdContext, relatedRef, translator, selectedLabeledCodons, almtMember));
+			lqaas.addAll(aaRegionSelector.generateAminoAcidAlmtRow(cmdContext, relatedRef, translator, almtMember));
 		}
 		return lqaas;
 	}

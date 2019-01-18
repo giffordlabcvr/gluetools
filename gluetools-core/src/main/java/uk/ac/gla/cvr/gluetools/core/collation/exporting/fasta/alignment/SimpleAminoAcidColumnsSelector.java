@@ -88,13 +88,12 @@ public class SimpleAminoAcidColumnsSelector implements IAminoAcidAlignmentColumn
 	// which should rely on AARegionSelector.translateQueryNucleotides
 	@Override
 	public List<LabeledQueryAminoAcid> generateAminoAcidAlmtRow(
-			CommandContext cmdContext,
-			List<LabeledCodon> selectedLabeledCodons, Alignment alignment,
+			CommandContext cmdContext, Alignment alignment,
 			AlignmentMember almtMember) {
 		ReferenceSequence relatedRef = alignment.getRelatedRef(cmdContext, getRelatedRefName());
 		Translator translator = new CommandContextTranslator(cmdContext);
 		return this.aaRegionSelector
-					.generateAminoAcidAlmtRow(cmdContext, relatedRef, translator, selectedLabeledCodons, almtMember);
+					.generateAminoAcidAlmtRow(cmdContext, relatedRef, translator, almtMember);
 	}
 
 	@Override

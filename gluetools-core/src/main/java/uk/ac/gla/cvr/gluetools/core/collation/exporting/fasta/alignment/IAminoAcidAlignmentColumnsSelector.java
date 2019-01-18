@@ -97,12 +97,11 @@ public interface IAminoAcidAlignmentColumnsSelector extends IAlignmentColumnsSel
 		int offset = 0;
 		int processed = 0;
 		int batchSize = 500;
-		List<LabeledCodon> selectedLabeledCodons = selectLabeledCodons(cmdContext);
 		while(offset < numMembers) {
 			Alignment alignment = memberSupplier.supplyAlignment(cmdContext);
 			List<AlignmentMember> almtMembers = memberSupplier.supplyMembers(cmdContext, offset, batchSize);
 			for(AlignmentMember almtMember: almtMembers) {
-				List<LabeledQueryAminoAcid> lqaas = generateAminoAcidAlmtRow(cmdContext, selectedLabeledCodons, alignment, almtMember);
+				List<LabeledQueryAminoAcid> lqaas = generateAminoAcidAlmtRow(cmdContext, alignment, almtMember);
 				if((!excludeEmptyRows) || !lqaas.isEmpty()) {
 					lqaaAlmtRowConsumer.consumeAlmtRow(cmdContext, almtMember, lqaas);
 				}
@@ -117,7 +116,7 @@ public interface IAminoAcidAlignmentColumnsSelector extends IAlignmentColumnsSel
 	
 	public List<LabeledCodon> selectLabeledCodons(CommandContext cmdContext);
 	
-	public List<LabeledQueryAminoAcid> generateAminoAcidAlmtRow(CommandContext cmdContext, List<LabeledCodon> selectedLabeledCodons, Alignment alignment, AlignmentMember almtMember);
+	public List<LabeledQueryAminoAcid> generateAminoAcidAlmtRow(CommandContext cmdContext, Alignment alignment, AlignmentMember almtMember);
 
 	
 	/**

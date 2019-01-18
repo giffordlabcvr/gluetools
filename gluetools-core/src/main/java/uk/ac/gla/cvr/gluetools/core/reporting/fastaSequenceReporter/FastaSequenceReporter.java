@@ -55,6 +55,7 @@ public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
 	public FastaSequenceReporter() {
 		super();
 		registerModulePluginCmdClass(FastaSequenceAminoAcidCommand.class);
+		registerModulePluginCmdClass(FastaSequenceStringPlusAlignmentAminoAcidCommand.class);
 		registerModulePluginCmdClass(FastaSequenceVariationScanCommand.class);
 		registerModulePluginCmdClass(FastaSequenceStringVariationScanCommand.class);
 		registerModulePluginCmdClass(FastaSequenceStringPlusAlignmentVariationScanCommand.class);

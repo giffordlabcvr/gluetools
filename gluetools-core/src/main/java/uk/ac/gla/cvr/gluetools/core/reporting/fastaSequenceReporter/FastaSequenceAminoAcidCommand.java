@@ -31,8 +31,6 @@ import java.util.Map.Entry;
 import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
-import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAminoAcidAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -40,16 +38,9 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
-import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SimpleNucleotideContentProvider;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
-import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
-import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 
 @CommandClass(
 		commandWords={"amino-acid"}, 
@@ -77,7 +68,7 @@ import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 				"The translated amino acids will be limited to the specified feature location. ",
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class FastaSequenceAminoAcidCommand extends FastaSequenceReporterCommand<FastaSequenceAminoAcidResult> 
+public class FastaSequenceAminoAcidCommand extends FastaSequenceBaseAminoAcidCommand 
 	implements ProvidedProjectModeCommand{
 
 	
@@ -107,33 +98,10 @@ public class FastaSequenceAminoAcidCommand extends FastaSequenceReporterCommand<
 		AlignerResult alignerResult = fastaSequenceReporter
 				.alignToTargetReference(consoleCmdContext, targetRefName, fastaID, fastaNTSeq);
 		
-		ReferenceSequence targetRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(targetRefName));
-
-		AlignmentMember linkingAlmtMember = targetRef.getLinkingAlignmentMembership(getLinkingAlmtName());
-		Alignment linkingAlmt = linkingAlmtMember.getAlignment();
-
-		IAminoAcidAlignmentColumnsSelector aaColumnsSelector = getAminoAcidAlignmentColumnsSelector(cmdContext);
-		aaColumnsSelector.checkAminoAcidSelector(cmdContext);
-		
 		// extract segments from aligner result
 		List<QueryAlignedSegment> queryToTargetRefSegs = alignerResult.getQueryIdToAlignedSegments().get(fastaID);
 
-		// translate segments to linking alignment coordinate space
-		List<QueryAlignedSegment> queryToLinkingAlmtSegs = linkingAlmt.translateToAlmt(cmdContext, 
-				linkingAlmtMember.getSequence().getSource().getName(), linkingAlmtMember.getSequence().getSequenceID(), 
-				queryToTargetRefSegs);
-		
-		ReferenceSequence relatedRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(aaColumnsSelector.getRelatedRefName()));
-
-		// translate segments to related reference
-		List<QueryAlignedSegment> queryToRelatedRef = linkingAlmt.translateToRelatedRef(cmdContext, queryToLinkingAlmtSegs, relatedRef);
-
-		String fastaNTs = fastaNTSeq.getSequenceAsString();
-
-		Translator translator = new CommandContextTranslator(cmdContext);
-		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = 
-				aaColumnsSelector.translateQueryNucleotides(cmdContext, translator, queryToRelatedRef, new SimpleNucleotideContentProvider(fastaNTs));
-		return new FastaSequenceAminoAcidResult(labeledQueryAminoAcids);
+		return super.executeAux(consoleCmdContext, fastaSequenceReporter, fastaID, fastaNTSeq, targetRefName, queryToTargetRefSegs);
 		
 	}
 
