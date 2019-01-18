@@ -251,10 +251,19 @@ public class SamAminoAcidCommand extends ReferenceLinkedSamReporterCommand<SamAm
 							flrs.refSegs = new ArrayList<ReferenceSegment>();
 							featureNameToFlrs.put(featureName, flrs);
 						}
-						flrs.refSegs.addAll(lc.getLcRefSegments());
+						List<LabeledCodonReferenceSegment> lcRefSegs = lc.getLcRefSegments();
+						List<ReferenceSegment> overlaps = ReferenceSegment.intersection(flrs.refSegs, lcRefSegs, ReferenceSegment.cloneLeftSegMerger());
+						List<LabeledCodonReferenceSegment> newBits = ReferenceSegment.subtract(lcRefSegs, overlaps);
+						flrs.refSegs.addAll(newBits);
+						ReferenceSegment.sortByRefStart(flrs.refSegs);
 					}
 					context.featureLocRefSegs = new ArrayList<FeatureLocRefSegs>(featureNameToFlrs.values());
-					context.featureLocRefSegs.forEach(flrs -> { ReferenceSegment.sortByRefStart(flrs.refSegs); } );
+					context.featureLocRefSegs.forEach(flrs -> 
+						{ 
+							flrs.refSegs = ReferenceSegment.mergeAbutting(flrs.refSegs, 
+									ReferenceSegment.mergeAbuttingFunctionReferenceSegment(),
+									ReferenceSegment.abutsPredicateReferenceSegment()); 
+						} );
 				}
 				// clone these segments
 				synchronized(samRefToRelatedRefSegs) {
