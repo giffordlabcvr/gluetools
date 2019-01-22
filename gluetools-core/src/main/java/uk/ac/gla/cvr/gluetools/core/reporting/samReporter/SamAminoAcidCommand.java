@@ -298,7 +298,9 @@ public class SamAminoAcidCommand extends ReferenceLinkedSamReporterCommand<SamAm
 								aminoAcidReadCount.labeledCodon, 
 								new String(new char[]{aminoAcid}),
 								aminoAcidReadCount.samRefNt, 
-								numReads, percentReadsWithAminoAcid));
+								numReads,
+								aminoAcidReadCount.totalReadsAtCodon - numReads,
+								percentReadsWithAminoAcid));
 						return true;
 					}
 				});

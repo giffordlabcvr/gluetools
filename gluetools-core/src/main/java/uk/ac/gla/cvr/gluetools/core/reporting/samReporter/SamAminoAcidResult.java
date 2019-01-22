@@ -38,6 +38,7 @@ public class SamAminoAcidResult extends BaseTableResult<LabeledAminoAcidReadCoun
 		REL_REF_NT = "relRefNt",
 		AMINO_ACID = "aminoAcid",
 		READS_WITH_AA = "readsWithAA",
+		READS_WITH_DIFFERENT_AA = "readsWithDifferentAA",
 		PERCENT_AA_READS = "pctAaReads";
 
 
@@ -50,6 +51,7 @@ public class SamAminoAcidResult extends BaseTableResult<LabeledAminoAcidReadCoun
 				column(REL_REF_NT, laarc -> laarc.getLabeledCodon().getNtStart()),
 				column(AMINO_ACID, laarc -> laarc.getAminoAcid()), 
 				column(READS_WITH_AA, laarc -> laarc.getReadsWithAminoAcid()), 
+				column(READS_WITH_DIFFERENT_AA, laarc -> laarc.getReadsWithDifferentAminoAcid()), 
 				column(PERCENT_AA_READS, laarc -> laarc.getPercentReadsWithAminoAcid()));
 	}
 

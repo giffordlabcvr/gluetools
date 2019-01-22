@@ -33,16 +33,18 @@ public class LabeledAminoAcidReadCount {
 	private String aminoAcid;
 	private int samRefNt;
 	private int readsWithAminoAcid;
+	private int readsWithDifferentAminoAcid;
 	private double percentReadsWithAminoAcid;
 	
 	public LabeledAminoAcidReadCount(LabeledCodon labeledCodon, String aminoAcid,
-			int samRefNt, int readsWithAminoAcid, double percentReadsWithAminoAcid) {
+			int samRefNt, int readsWithAminoAcid, int readsWithDifferentAminoAcid, double percentReadsWithAminoAcid) {
 		super();
 		this.labeledCodon = labeledCodon;
 		this.aminoAcid = aminoAcid;
 		this.samRefNt = samRefNt;
 		this.readsWithAminoAcid = readsWithAminoAcid;
 		this.percentReadsWithAminoAcid = percentReadsWithAminoAcid;
+		this.readsWithDifferentAminoAcid = readsWithDifferentAminoAcid;
 	}
 
 	public LabeledCodon getLabeledCodon() {
@@ -63,6 +65,10 @@ public class LabeledAminoAcidReadCount {
 
 	public int getSamRefNt() {
 		return samRefNt;
+	}
+
+	public int getReadsWithDifferentAminoAcid() {
+		return readsWithDifferentAminoAcid;
 	}
 	
 	
