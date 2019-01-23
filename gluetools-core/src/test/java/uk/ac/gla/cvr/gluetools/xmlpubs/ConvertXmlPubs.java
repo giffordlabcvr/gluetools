@@ -15,7 +15,7 @@ public class ConvertXmlPubs {
 	
 	public static void main(String[] args) throws Exception {
 		
-		try(InputStream is = new FileInputStream(new File("/Users/joshsinger/gitrepos_ssh/BTV-GLUE/pubs.xml"))) {
+		try(InputStream is = new FileInputStream(new File("/Users/joshsinger/pubs.xml"))) {
 			Document doc = GlueXmlUtils.documentFromStream(is);
 			List<String> pmids = GlueXmlUtils.getXPathStrings(doc, "/Publications/PubmedArticle/MedlineCitation/PMID/text()");
 			System.out.println("id\ttitle\tauthors_short\tauthors_full\tyear\tjournal\tvolume\tissue\tpages\turl\tdoi");
