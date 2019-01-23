@@ -212,6 +212,8 @@ public class VariationScanResult<M extends VariationScannerMatchResult> {
 		cmdObject.set("featureName", vsr.getVariationFeatureName());
 		cmdObject.set("variationName", vsr.getVariationName());
 		cmdObject.set("variationType", vsr.getVariationType().name());
+		cmdObject.set("present", vsr.isPresent());
+		cmdObject.set("sufficientCoverage", vsr.isSufficientCoverage());
 		CommandArray matchesArray = cmdObject.setArray("matches");
 		for(VariationScannerMatchResult vsmr: vsr.getVariationScannerMatchResults()) {
 			CommandObject matchObject = matchesArray.addObject();
