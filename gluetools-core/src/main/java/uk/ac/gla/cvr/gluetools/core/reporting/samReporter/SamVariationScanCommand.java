@@ -240,10 +240,15 @@ public class SamVariationScanCommand extends ReferenceLinkedSamReporterCommand<S
 							// build a segment tree of the variations.
 							for(Variation variation: variationsToScan) {
 								BaseVariationScanner<?> scanner = variation.getScanner(cmdContext);
-								scanner.getSegmentsToCover()
+								List<ReferenceSegment> segmentsToCover = scanner.getSegmentsToCover();
+								segmentsToCover
 								.forEach(seg2cover -> 
 									context.varCovSegTree.add(
 										new VariationCoverageSegment(scanner, seg2cover.getRefStart(), seg2cover.getRefEnd())));
+								
+								String name = variation.getName();
+								Map<String, String> pkMap = variation.pkMap();
+								context.variationNameToInfo.put(name, new VariationInfo(pkMap, ReferenceSegment.minRefStart(segmentsToCover), ReferenceSegment.maxRefEnd(segmentsToCover)));
 							}
 						}
 						synchronized(samRefToRelatedRefSegs) {
@@ -268,8 +273,13 @@ public class SamVariationScanCommand extends ReferenceLinkedSamReporterCommand<S
 							.map(vInfo -> {
 								int readsWherePresent = vInfo.readsConfirmedPresent;
 								int readsWhereAbsent = vInfo.readsConfirmedAbsent;
-								double pctWherePresent = 100.0 * readsWherePresent / (readsWherePresent + readsWhereAbsent);
-								double pctWhereAbsent = 100.0 * readsWhereAbsent / (readsWherePresent + readsWhereAbsent);
+								int numReadsDenom = readsWherePresent + readsWhereAbsent;
+								double pctWherePresent = 0.0;
+								double pctWhereAbsent = 0.0;
+								if(numReadsDenom > 0) {
+									pctWherePresent = 100.0 * readsWherePresent / numReadsDenom;
+									pctWhereAbsent = 100.0 * readsWhereAbsent / numReadsDenom;
+								}
 								return new VariationScanReadCount(vInfo.variationPkMap,
 										vInfo.refStart, vInfo.refEnd,
 										readsWherePresent, pctWherePresent, 
@@ -296,10 +306,6 @@ public class SamVariationScanCommand extends ReferenceLinkedSamReporterCommand<S
 		for(VariationScanResult<?> variationScanResult: variationScanResults) {
 			String variationName = variationScanResult.getVariationName();
 			VariationInfo variationInfo = context.variationNameToInfo.get(variationName);
-			if(variationInfo == null) {
-				variationInfo = new VariationInfo(variationScanResult.getVariationPkMap(), variationScanResult.getRefStart(), variationScanResult.getRefEnd());
-				context.variationNameToInfo.put(variationName, variationInfo);
-			}
 			if(variationScanResult.isSufficientCoverage()) {
 				variationInfo.contributingReads++;
 				if(variationScanResult.isPresent()) {
