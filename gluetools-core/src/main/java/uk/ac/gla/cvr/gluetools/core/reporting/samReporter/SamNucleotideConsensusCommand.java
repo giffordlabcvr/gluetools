@@ -120,6 +120,19 @@ public class SamNucleotideConsensusCommand extends BaseSamReporterCommand<Comman
 			}
 		}
 	}
+	
+	public int getConsensusMinQScore(SamReporter samReporter) {
+		return getSuppliedMinQScore().orElse(super.getConsensusMinQScore(samReporter));
+	}
+
+	public int getConsensusMinDepth(SamReporter samReporter) {
+		return getSuppliedMinDepth().orElse(super.getConsensusMinDepth(samReporter));
+	}
+
+	public int getConsensusMinMapQ(SamReporter samReporter) {
+		return getSuppliedMinMapQ().orElse(super.getConsensusMinMapQ(samReporter));
+	}
+
 
 	@CompleterClass
 	public static class Completer extends BaseSamReporterCommand.Completer {

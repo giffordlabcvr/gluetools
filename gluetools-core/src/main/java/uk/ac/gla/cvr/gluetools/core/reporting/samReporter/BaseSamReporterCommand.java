@@ -104,6 +104,18 @@ public abstract class BaseSamReporterCommand<R extends CommandResult> extends Mo
 		return samRefSense.orElse(samReporter.getDefaultSamRefSense());
 	}
 	
+	protected Optional<Integer> getSuppliedMinQScore() {
+		return minQScore;
+	}
+
+	protected Optional<Integer> getSuppliedMinDepth() {
+		return minDepth;
+	}
+
+	protected Optional<Integer> getSuppliedMinMapQ() {
+		return minMapQ;
+	}
+
 	protected static class SamRefInfo {
 		private int samRefIndex;
 		private String samRefName;
@@ -187,6 +199,18 @@ public abstract class BaseSamReporterCommand<R extends CommandResult> extends Mo
 			registerVariableInstantiator("samRefName", new SamRefNameInstantiator());
 		}
 		
+	}
+
+	public int getConsensusMinDepth(SamReporter samReporter) {
+		return samReporter.getConsensusMinDepth();
+	}
+
+	public int getConsensusMinQScore(SamReporter samReporter) {
+		return samReporter.getConsensusMinQScore();
+	}
+
+	public int getConsensusMinMapQ(SamReporter samReporter) {
+		return samReporter.getConsensusMinMapQ();
 	}
 	
 }

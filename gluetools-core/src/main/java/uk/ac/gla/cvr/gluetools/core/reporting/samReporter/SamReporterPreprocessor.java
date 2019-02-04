@@ -307,9 +307,9 @@ public class SamReporterPreprocessor {
 		
 		public ConsensusKey(SamReporter samReporter, BaseSamReporterCommand<?> samReporterCommand) {
 			super();
-			this.minDepth = samReporterCommand.getMinDepth(samReporter);
-			this.minQScore = samReporterCommand.getMinQScore(samReporter);
-			this.minMapQ = samReporterCommand.getMinMapQ(samReporter);
+			this.minDepth = samReporterCommand.getConsensusMinDepth(samReporter);
+			this.minQScore = samReporterCommand.getConsensusMinQScore(samReporter);
+			this.minMapQ = samReporterCommand.getConsensusMinMapQ(samReporter);
 			this.samRefSense = samReporterCommand.getSamRefSense(samReporter);
 			this.suppliedSamRefName = samReporterCommand.getSuppliedSamRefName();
 		}

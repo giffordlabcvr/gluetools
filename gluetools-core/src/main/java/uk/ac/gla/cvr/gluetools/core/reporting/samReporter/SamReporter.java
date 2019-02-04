@@ -72,7 +72,11 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 	public static final String DEFAULT_MIN_DEPTH = "defaultMinDepth";
 	public static final String DEFAULT_MIN_MAP_Q = "defaultMinMapQ";
 	public static final String DEFAULT_SAM_REF_SENSE = "defaultSamRefSense";
-	
+
+	public static final String CONSENSUS_MIN_Q_SCORE = "consensusMinQScore";
+	public static final String CONSENSUS_MIN_DEPTH = "consensusMinDepth";
+	public static final String CONSENSUS_MIN_MAP_Q = "consensusMinMapQ";
+
 	public enum SamRefSense {
 		FORWARD, // assume SAM reference is in the same sense as the GLUE reference
 		REVERSE_COMPLEMENT, // assume SAM reference is reverse complement relative to GLUE reference
@@ -103,6 +107,17 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 	
 	// samRefSense used by commands if no samRefSense is supplied.
 	private SamRefSense defaultSamRefSense;
+
+	// minimum quality score used by consensus-calling
+	private int consensusMinQScore;
+
+	// minimum mapping quality used by consensus-calling
+	private int consensusMinMapQ;
+
+	
+	// minimum read depth used by consensus-calling
+	private int consensusMinDepth;
+	
 	
 	public SamReporter() {
 		super();
@@ -122,7 +137,11 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		addSimplePropertyName(DEFAULT_MIN_Q_SCORE);
 		addSimplePropertyName(DEFAULT_MIN_MAP_Q);
 		addSimplePropertyName(DEFAULT_SAM_REF_SENSE);
-		
+
+		addSimplePropertyName(CONSENSUS_MIN_DEPTH);
+		addSimplePropertyName(CONSENSUS_MIN_Q_SCORE);
+		addSimplePropertyName(CONSENSUS_MIN_MAP_Q);
+
 	}
 
 	@Override
@@ -139,6 +158,9 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		this.defaultMinMapQ = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, DEFAULT_MIN_MAP_Q, 0, true, 99, true, false)).orElse(0);
 		this.defaultMinDepth = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, DEFAULT_MIN_DEPTH, 0, true, null, false, false)).orElse(0);
 		this.defaultSamRefSense = Optional.ofNullable(PluginUtils.configureEnumProperty(SamRefSense.class, configElem, DEFAULT_SAM_REF_SENSE, false)).orElse(SamRefSense.FORWARD);
+		this.consensusMinQScore = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, CONSENSUS_MIN_Q_SCORE, 0, true, 99, true, false)).orElse(0);
+		this.consensusMinMapQ = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, CONSENSUS_MIN_MAP_Q, 0, true, 99, true, false)).orElse(0);
+		this.consensusMinDepth = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, CONSENSUS_MIN_DEPTH, 0, true, null, false, false)).orElse(0);
 	}
 
 	public String getAlignerModuleName() {
@@ -238,5 +260,17 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 	public SamRefSense getDefaultSamRefSense() {
 		return defaultSamRefSense;
 	}
-	
+
+	public int getConsensusMinQScore() {
+		return consensusMinQScore;
+	}
+
+	public int getConsensusMinMapQ() {
+		return consensusMinMapQ;
+	}
+
+	public int getConsensusMinDepth() {
+		return consensusMinDepth;
+	}
+
 }
