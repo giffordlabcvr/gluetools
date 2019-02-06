@@ -23,7 +23,7 @@ public class SamExportNucleotideAlignmentCommandContext extends SamBaseNucleotid
 			List<QueryAlignedSegment> samRefToRelatedRefSegs, SamRefSense samRefSense,
 			List<ReferenceSegment> selectedRefSegs, 
 			SamRecordFilter samRecordFilter) {
-		super(samReporter, samRefInfo, samRefToRelatedRefSegs, samRefSense, samRecordFilter);
+		super(samReporter, samRefInfo, samRefToRelatedRefSegs, selectedRefSegs, samRefSense, samRecordFilter);
 		int almtRowNt = 0;
 		for(ReferenceSegment refSeg: selectedRefSegs) {
 			for(int i = refSeg.getRefStart(); i <= refSeg.getRefEnd(); i++) {

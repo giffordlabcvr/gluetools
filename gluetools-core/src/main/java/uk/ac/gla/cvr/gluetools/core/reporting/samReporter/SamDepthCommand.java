@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
 import htsjdk.samtools.SamReader;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
@@ -149,7 +150,11 @@ public class SamDepthCommand extends SamBaseNucleotideCommand
 	@Override
 	protected Supplier<SamDepthCommandContext> getContextSupplier(SamRecordFilter samRecordFilter, SamRefInfo samRefInfo, SamRefSense samRefSense, List<QueryAlignedSegment> samRefToRelatedRefSegs, List<ReferenceSegment> selectedRefSegs, SamReporter samReporter) {
 		return () -> {
-			SamDepthCommandContext context = new SamDepthCommandContext(samReporter, samRefInfo, QueryAlignedSegment.cloneList(samRefToRelatedRefSegs), samRefSense, samRecordFilter);
+			SamDepthCommandContext context = new SamDepthCommandContext(samReporter, samRefInfo, 
+					QueryAlignedSegment.cloneList(samRefToRelatedRefSegs), 
+					ReferenceSegment.cloneListR(selectedRefSegs),
+					samRefSense, samRecordFilter);
+			TIntObjectMap<SamContributingReadsCount> relatedRefNtToInfo = context.getRelatedRefNtToInfo();
 			for(QueryAlignedSegment samRefToRelatedRefSeg: context.getSamRefToRelatedRefSegs()) {
 				for(int samRefNt = samRefToRelatedRefSeg.getQueryStart(); samRefNt <= samRefToRelatedRefSeg.getQueryEnd(); samRefNt++) {
 					int relatedRefNt = samRefNt+samRefToRelatedRefSeg.getQueryToReferenceOffset();
@@ -158,7 +163,14 @@ public class SamDepthCommand extends SamBaseNucleotideCommand
 						// we want to report results in the SAM file's own coordinates.
 						resultSamRefNt = ReferenceSegment.reverseLocationSense(context.getSamRefInfo().getSamRefLength(), samRefNt);
 					}
-					context.getRelatedRefNtToInfo().put(relatedRefNt, new SamContributingReadsCount(resultSamRefNt, relatedRefNt));
+					relatedRefNtToInfo.put(relatedRefNt, new SamContributingReadsCount(resultSamRefNt, relatedRefNt));
+				}
+			}
+			for(ReferenceSegment refSeg: context.getSelectedRefSegs()) {
+				for(int relatedRefNt = refSeg.getRefStart(); relatedRefNt <= refSeg.getRefEnd(); relatedRefNt++) {
+					if(!relatedRefNtToInfo.containsKey(relatedRefNt)) {
+						relatedRefNtToInfo.put(relatedRefNt, new SamContributingReadsCount(null, relatedRefNt));
+					}
 				}
 			}
 			return context;

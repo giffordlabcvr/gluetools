@@ -156,7 +156,9 @@ public class SamNucleotideCommand extends SamBaseNucleotideCommand
 	@Override
 	protected Supplier<SamNucleotideCommandContext> getContextSupplier(SamRecordFilter samRecordFilter, SamRefInfo samRefInfo, SamRefSense samRefSense, List<QueryAlignedSegment> samRefToRelatedRefSegs, List<ReferenceSegment> selectedRefSegs, SamReporter samReporter) {
 		return () -> {
-			SamNucleotideCommandContext context = new SamNucleotideCommandContext(samReporter, samRefInfo, QueryAlignedSegment.cloneList(samRefToRelatedRefSegs), samRefSense, samRecordFilter);
+			SamNucleotideCommandContext context = new SamNucleotideCommandContext(samReporter, samRefInfo, 
+					QueryAlignedSegment.cloneList(samRefToRelatedRefSegs), 
+					ReferenceSegment.cloneListR(selectedRefSegs), samRefSense, samRecordFilter);
 			for(QueryAlignedSegment samRefToRelatedRefSeg: context.getSamRefToRelatedRefSegs()) {
 				for(int samRefNt = samRefToRelatedRefSeg.getQueryStart(); samRefNt <= samRefToRelatedRefSeg.getQueryEnd(); samRefNt++) {
 					int relatedRefNt = samRefNt+samRefToRelatedRefSeg.getQueryToReferenceOffset();

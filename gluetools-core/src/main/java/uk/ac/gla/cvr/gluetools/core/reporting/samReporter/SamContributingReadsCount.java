@@ -26,12 +26,12 @@
 package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
 public class SamContributingReadsCount {
-	private int samRefNt;
+	private Integer samRefNt;	// may be null in case where we were unable to map sam ref NT to related ref NT.
 	private int relatedRefNt;
 	
 	private int totalContributingReads;
 	
-	public SamContributingReadsCount(int samRefNt, int acRefNt) {
+	public SamContributingReadsCount(Integer samRefNt, int acRefNt) {
 		super();
 		this.samRefNt = samRefNt;
 		this.relatedRefNt = acRefNt;
@@ -41,7 +41,7 @@ public class SamContributingReadsCount {
 		return totalContributingReads;
 	}
 	
-	public int getSamRefNt() {
+	public Integer getSamRefNt() {
 		return samRefNt;
 	}
 

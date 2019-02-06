@@ -409,6 +409,10 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 		return segList.getFirst().getRefStart();
 	}
 
+	public static List<ReferenceSegment> cloneListR(List<ReferenceSegment> segs) {
+		return segs.stream().map(seg -> seg.clone()).collect(Collectors.toList());
+	}
+	
 	public static <SA extends IReferenceSegment, SB extends IReferenceSegment> BiFunction<SA, SB, SA> cloneLeftSegMerger() {
 		return new BiFunction<SA, SB, SA>() {
 			@Override
