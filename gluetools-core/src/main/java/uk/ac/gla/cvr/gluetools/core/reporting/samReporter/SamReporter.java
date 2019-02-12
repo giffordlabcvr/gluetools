@@ -304,4 +304,19 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		return consensusMinDepth;
 	}
 
+	public boolean getConsensusProduceAmbiguityCodes() {
+		return consensusProduceAmbiguityCodes;
+	}
+
+	public double getConsensusAmbiguityMinProportion() {
+		return consensusAmbiguityMinProportion;
+	}
+
+	public int getConsensusAmbiguityMinReads() {
+		return consensusAmbiguityMinReads;
+	}
+
+	
+	
+	
 }

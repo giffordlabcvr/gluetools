@@ -19,7 +19,9 @@ import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtilsException.Code
 public class SamConsensusGenerator implements SamPairedParallelProcessor<SamConsensusGenerator.ConsensusContext, SamConsensusGenerator.ConsensusResult>{
 
 	public String getNgsConsensus(ConsoleCommandContext cmdContext, SamReporterPreprocessorSession samReporterPreprocessorSession, ValidationStringency validationStringency, 
-			String samRefName, int minQScore, int minMapQ, int minDepth, SamRefSense samRefSense) {
+			String samRefName, int minQScore, int minMapQ, int minDepth, SamRefSense samRefSense,
+			boolean mayGenerateAmbiguities, 
+			boolean consensusProduceAmbiguityCodes, double consensusAmbiguityMinProportion, int consensusAmbiguityMinReads) {
 	
 		if(!EnumSet.of(SamRefSense.FORWARD, SamRefSense.REVERSE_COMPLEMENT).contains(samRefSense)) {
 			throw new RuntimeException("SAM ref sense should be determined by the point of forming the consensus");

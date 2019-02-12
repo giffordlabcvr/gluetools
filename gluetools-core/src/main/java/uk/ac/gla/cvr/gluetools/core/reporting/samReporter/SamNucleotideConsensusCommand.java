@@ -107,7 +107,7 @@ public class SamNucleotideConsensusCommand extends BaseSamReporterCommand<Comman
 
 		String samFileName = getFileName();
 		try(SamReporterPreprocessorSession samReporterPreprocessorSession = SamReporterPreprocessor.getPreprocessorSession(consoleCmdContext, samFileName, samReporter)) {
-			DNASequence consensusSequence = samReporterPreprocessorSession.getConsensus(consoleCmdContext, samReporter, this);
+			DNASequence consensusSequence = samReporterPreprocessorSession.getConsensus(consoleCmdContext, samReporter, this, true);
 
 			Map<String, DNASequence> samNtConsensusMap = new LinkedHashMap<String, DNASequence>();
 			samNtConsensusMap.put(this.consensusID, consensusSequence);

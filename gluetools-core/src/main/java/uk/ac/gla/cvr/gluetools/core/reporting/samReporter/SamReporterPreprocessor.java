@@ -224,8 +224,8 @@ public class SamReporterPreprocessor {
 		}
 		
 		public DNASequence getConsensus(ConsoleCommandContext consoleCmdContext, 
-				SamReporter samReporter, BaseSamReporterCommand<?> samReporterCommand) {
-			ConsensusKey consensusKey = new ConsensusKey(samReporter, samReporterCommand);
+				SamReporter samReporter, BaseSamReporterCommand<?> samReporterCommand, boolean mayGenerateAmbiguities) {
+			ConsensusKey consensusKey = new ConsensusKey(samReporter, samReporterCommand, mayGenerateAmbiguities);
 			return getConsensus(consoleCmdContext, consensusKey);
 		}
 
@@ -236,13 +236,16 @@ public class SamReporterPreprocessor {
 			}
 			SamReporter samReporter = Module.resolveModulePlugin(consoleCmdContext, SamReporter.class, samReporterName);
 			consensusSequence = SamUtils.getSamConsensus(consoleCmdContext, bamPath, this, 
-					samReporter.getSamReaderValidationStringency(), consensusKey.suppliedSamRefName, consensusKey.minQScore, consensusKey.minMapQ, consensusKey.minDepth, consensusKey.samRefSense);
+					samReporter.getSamReaderValidationStringency(), 
+					consensusKey.suppliedSamRefName, consensusKey.minQScore, consensusKey.minMapQ, consensusKey.minDepth, 
+					consensusKey.samRefSense, consensusKey.mayGenerateAmbiguities, 
+					samReporter.getConsensusProduceAmbiguityCodes(), samReporter.getConsensusAmbiguityMinProportion(), samReporter.getConsensusAmbiguityMinReads());
 			cachedConsensus.put(consensusKey, consensusSequence);
 			return consensusSequence;
 		}
 		
 		public ReferenceSequence getTargetRefBasedOnPlacer(ConsoleCommandContext consoleCmdContext, SamReporter samReporter, BaseSamReporterCommand<?> samReporterCommand) {
-			ConsensusKey consensusKey = new ConsensusKey(samReporter, samReporterCommand);
+			ConsensusKey consensusKey = new ConsensusKey(samReporter, samReporterCommand, false);
 			String targetRefName = cachedTargetRefName.get(consensusKey);
 			ReferenceSequence targetRef;
 			if(targetRefName != null) {
@@ -258,7 +261,7 @@ public class SamReporterPreprocessor {
 		}
 		
 		public List<QueryAlignedSegment> getSamRefToTargetRefSegs(ConsoleCommandContext consoleCmdContext, SamReporter samReporter, BaseSamReporterCommand<?> samReporterCommand, String targetRefName) {
-			ConsensusKey consensusKey = new ConsensusKey(samReporter, samReporterCommand);
+			ConsensusKey consensusKey = new ConsensusKey(samReporter, samReporterCommand, false);
 			SamToTargetSegsKey samToTargetSegsKey = new SamToTargetSegsKey(consensusKey, targetRefName);
 			List<QueryAlignedSegment> samRefToTargetRefSegs = cachedSamRefToTargetRefSegs.get(samToTargetSegsKey);
 			if(samRefToTargetRefSegs != null) {
@@ -267,7 +270,7 @@ public class SamReporterPreprocessor {
 			// auto-align consensus to target ref
 			Aligner<?, ?> aligner = Aligner.getAligner(consoleCmdContext, samReporter.getAlignerModuleName());
 			// compute consensus if necessary.
-			DNASequence consensusSequence = getConsensus(consoleCmdContext, samReporter, samReporterCommand);
+			DNASequence consensusSequence = getConsensus(consoleCmdContext, samReporter, samReporterCommand, false);
 			Map<String, DNASequence> samConsensus = new LinkedHashMap<String, DNASequence>();
 			samConsensus.put("samConsensus", consensusSequence);
 			AlignerResult alignerResult = aligner.computeConstrained(consoleCmdContext, targetRefName, samConsensus);
@@ -308,20 +311,23 @@ public class SamReporterPreprocessor {
 		private int minQScore;
 		private int minMapQ;
 		private SamRefSense samRefSense;
+		private boolean mayGenerateAmbiguities;
 		
-		public ConsensusKey(SamReporter samReporter, BaseSamReporterCommand<?> samReporterCommand) {
+		public ConsensusKey(SamReporter samReporter, BaseSamReporterCommand<?> samReporterCommand, boolean mayGenerateAmbiguities) {
 			super();
 			this.minDepth = samReporterCommand.getConsensusMinDepth(samReporter);
 			this.minQScore = samReporterCommand.getConsensusMinQScore(samReporter);
 			this.minMapQ = samReporterCommand.getConsensusMinMapQ(samReporter);
 			this.samRefSense = samReporterCommand.getSamRefSense(samReporter);
 			this.suppliedSamRefName = samReporterCommand.getSuppliedSamRefName();
+			this.mayGenerateAmbiguities = mayGenerateAmbiguities;
 		}
 
 		@Override
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
+			result = prime * result + (mayGenerateAmbiguities ? 1231 : 1237);
 			result = prime * result + minDepth;
 			result = prime * result + minMapQ;
 			result = prime * result + minQScore;
@@ -339,6 +345,8 @@ public class SamReporterPreprocessor {
 			if (getClass() != obj.getClass())
 				return false;
 			ConsensusKey other = (ConsensusKey) obj;
+			if (mayGenerateAmbiguities != other.mayGenerateAmbiguities)
+				return false;
 			if (minDepth != other.minDepth)
 				return false;
 			if (minMapQ != other.minMapQ)
@@ -354,6 +362,8 @@ public class SamReporterPreprocessor {
 				return false;
 			return true;
 		}
+
+		
 		
 		
 		

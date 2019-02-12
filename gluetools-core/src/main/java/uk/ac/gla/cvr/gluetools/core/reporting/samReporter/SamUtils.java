@@ -123,10 +123,11 @@ public class SamUtils {
 		}
 		return samReaderFactory.open(SamInputResource.of(samInputStream));
 	}
-
+	
 	public static DNASequence getSamConsensus(ConsoleCommandContext cmdContext, String fileName, 
 			SamReporterPreprocessorSession samReporterPreprocessorSession, ValidationStringency validationStringency, String samRefName,
-			int minQScore, int minMapQ, int minDepth, SamRefSense samRefSense) {
+			int minQScore, int minMapQ, int minDepth, SamRefSense samRefSense, 
+			boolean mayGenerateAmbiguities, boolean consensusProduceAmbiguityCodes, double consensusAmbiguityMinProportion, int consensusAmbiguityMinReads) {
 		Map<String, DNASequence> consensusMap;
 		try(SamReader samReader = newSamReader(cmdContext, fileName, validationStringency)) {
 
@@ -135,7 +136,8 @@ public class SamUtils {
 			SamConsensusGenerator samConsensusGenerator = new SamConsensusGenerator();
 			
 			String ngsConsensus = samConsensusGenerator.getNgsConsensus(cmdContext, samReporterPreprocessorSession, validationStringency, 
-					samReference.getSequenceName(), minQScore, minMapQ, minDepth, samRefSense);
+					samReference.getSequenceName(), minQScore, minMapQ, minDepth, samRefSense, 
+					mayGenerateAmbiguities, consensusProduceAmbiguityCodes, consensusAmbiguityMinProportion, consensusAmbiguityMinReads);
 			if(ngsConsensus.replaceAll("N", "").isEmpty()) {
 				throw new SamReporterCommandException(SamReporterCommandException.Code.NO_SAM_CONSENSUS, 
 						Integer.toString(minQScore), Integer.toString(minMapQ), Integer.toString(minDepth));
