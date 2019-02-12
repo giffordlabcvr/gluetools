@@ -116,20 +116,23 @@ public class RerootAlignmentPhylogenyCommand extends BaseRerootCommand {
 				PhyloExporter.exportAlignmentPhyloTree(cmdContext, alignment, fieldName, false);
 		PhyloBranch rerootBranch = null;
 		BigDecimal rerootDistance = null;
+		PhyloTree rerootedTree;
 		if(outgroupWhereClause != null) {
 			rerootBranch = phyloUtility.findOutgroupBranch(cmdContext, alignment, outgroupWhereClause, phyloTree);
 			rerootDistance = rerootBranch.getLength().divide(new BigDecimal(2.0));
+			rerootedTree = phyloUtility.rerootPhylogeny(rerootBranch, rerootDistance);
+			if(removeOutgroup) {
+				// find the same branch again, but this time in the rerooted tree (which is a clone)
+				PhyloBranch rerootBranch2 = phyloUtility.findOutgroupBranch(cmdContext, alignment, outgroupWhereClause, rerootedTree);
+				removeOutgroupSubtree(rerootedTree, rerootBranch2.getSubtree());
+			}
 		} else {
 			// midpoint rooting
 			PhyloTreeMidpointFinder midpointFinder = new PhyloTreeMidpointFinder();
 			PhyloTreeMidpointResult midPointResult = midpointFinder.findMidPoint(phyloTree);
 			rerootBranch = midPointResult.getBranch();
 			rerootDistance = midPointResult.getRootDistance();
-		}
-		PhyloTree rerootedTree = phyloUtility.rerootPhylogeny(rerootBranch, rerootDistance);
-		if(outgroupWhereClause != null && removeOutgroup) {
-			// TODO
-			throw new CommandException(Code.COMMAND_FAILED_ERROR, "--removeOutgroup unimplemented at the moment.");
+			rerootedTree = phyloUtility.rerootPhylogeny(rerootBranch, rerootDistance);
 		}
 		super.saveRerootedTree(cmdContext, rerootedTree);
 		return new OkResult();
