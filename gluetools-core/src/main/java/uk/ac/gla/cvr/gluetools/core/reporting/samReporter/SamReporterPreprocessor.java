@@ -77,8 +77,12 @@ public class SamReporterPreprocessor {
 				if(samRecord.getReadUnmappedFlag()) {
 					return;
 				}
-				boolean firstOfPair = samRecord.getFirstOfPairFlag();
-				boolean secondOfPair = samRecord.getSecondOfPairFlag();
+				boolean firstOfPair = false;
+				boolean secondOfPair = false;
+				if(samRecord.getReadPairedFlag()) {
+					firstOfPair = samRecord.getFirstOfPairFlag();
+					secondOfPair = samRecord.getSecondOfPairFlag();
+				}
 				if(firstOfPair || secondOfPair) {
 					String readName = samRecord.getReadName();
 					ReadPair readPair = nameToPair.remove(readName);

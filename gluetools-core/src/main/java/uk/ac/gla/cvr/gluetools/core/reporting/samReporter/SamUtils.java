@@ -297,13 +297,13 @@ public class SamUtils {
 		@Override
 		public R call() throws Exception {
 			SamUtils.iterateOverSamReader(samReader, samRecord -> {
-				if(samRecord.getFirstOfPairFlag()) {
+				if(samRecord.getReadPairedFlag() && samRecord.getFirstOfPairFlag()) {
 					if(read1 == null) {
 						read1 = samRecord;
 					} else {
 						throw new SamUtilsException(Code.SAM_PAIRED_READS_ERROR, "Expected paired read "+read1.getReadName()+" 1/2 to be followed by 2/2");
 					}
-				} else if(samRecord.getSecondOfPairFlag()) {
+				} else if(samRecord.getReadPairedFlag() && samRecord.getSecondOfPairFlag()) {
 					if(read1 == null) {
 						throw new SamUtilsException(Code.SAM_PAIRED_READS_ERROR, "Expected paired read "+read1.getReadName()+" 2/2 to be preceded by 1/2");
 					} else {
