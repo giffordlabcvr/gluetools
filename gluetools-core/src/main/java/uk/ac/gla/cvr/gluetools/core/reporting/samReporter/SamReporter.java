@@ -77,6 +77,16 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 	public static final String CONSENSUS_MIN_DEPTH = "consensusMinDepth";
 	public static final String CONSENSUS_MIN_MAP_Q = "consensusMinMapQ";
 
+	// boolean -- if true the nucleotide-consensus command may produce ambiguity codes
+	public static final String CONSENSUS_PRODUCE_AMBIGUITY_CODES = "consensusProduceAmbiguityCodes";
+	// double -- at a given nucleotide position, a specific base must represent at least this proportion of reads
+	// to contribute to the ambiguity code.
+	public static final String CONSENSUS_AMBIGUITY_MIN_PROPORTION = "consensusAmbiguityMinProportion";
+	// integer -- at a given nucleotide position, a specific base must occur on at least this number of reads
+	// to contribute to the ambiguity code.
+	public static final String CONSENSUS_AMBIGUITY_MIN_READS = "consensusAmbiguityMinReads";
+
+	
 	public enum SamRefSense {
 		FORWARD, // assume SAM reference is in the same sense as the GLUE reference
 		REVERSE_COMPLEMENT, // assume SAM reference is reverse complement relative to GLUE reference
@@ -119,6 +129,17 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 	private int consensusMinDepth;
 	
 	
+	
+	private boolean consensusProduceAmbiguityCodes;
+	// double -- at a given nucleotide position, a specific base must represent at least this proportion of reads
+	// to contribute to the ambiguity code.
+	private double consensusAmbiguityMinProportion;
+	// integer -- at a given nucleotide position, a specific base must occur on at least this number of reads
+	// to contribute to the ambiguity code.
+	public int consensusAmbiguityMinReads;
+	
+	
+	
 	public SamReporter() {
 		super();
 		registerModulePluginCmdClass(SamVariationScanCommand.class);
@@ -142,6 +163,11 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		addSimplePropertyName(CONSENSUS_MIN_Q_SCORE);
 		addSimplePropertyName(CONSENSUS_MIN_MAP_Q);
 
+		addSimplePropertyName(CONSENSUS_PRODUCE_AMBIGUITY_CODES);
+		addSimplePropertyName(CONSENSUS_AMBIGUITY_MIN_PROPORTION);
+		addSimplePropertyName(CONSENSUS_AMBIGUITY_MIN_READS);
+
+		
 	}
 
 	@Override
@@ -161,6 +187,11 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		this.consensusMinQScore = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, CONSENSUS_MIN_Q_SCORE, 0, true, 99, true, false)).orElse(0);
 		this.consensusMinMapQ = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, CONSENSUS_MIN_MAP_Q, 0, true, 99, true, false)).orElse(0);
 		this.consensusMinDepth = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, CONSENSUS_MIN_DEPTH, 0, true, null, false, false)).orElse(0);
+
+		this.consensusProduceAmbiguityCodes = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, CONSENSUS_PRODUCE_AMBIGUITY_CODES, false)).orElse(false);
+		this.consensusAmbiguityMinProportion = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, CONSENSUS_AMBIGUITY_MIN_PROPORTION, 0.0, false, 0.5, true, false)).orElse(0.05);
+		this.consensusAmbiguityMinReads = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, CONSENSUS_AMBIGUITY_MIN_READS, 1, true, null, false, false)).orElse(1);
+
 	}
 
 	public String getAlignerModuleName() {
