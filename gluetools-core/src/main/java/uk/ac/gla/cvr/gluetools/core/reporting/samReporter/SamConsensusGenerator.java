@@ -15,6 +15,7 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamReporterPreprocessorSession;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtilsException.Code;
+import uk.ac.gla.cvr.gluetools.core.translation.ResidueUtils;
 
 public class SamConsensusGenerator implements SamPairedParallelProcessor<SamConsensusGenerator.ConsensusContext, SamConsensusGenerator.ConsensusResult>{
 
@@ -36,26 +37,45 @@ public class SamConsensusGenerator implements SamPairedParallelProcessor<SamCons
 		};
 		ConsensusResult mergedResult = SamUtils.pairedParallelSamIterate(contextSupplier, cmdContext, samReporterPreprocessorSession, validationStringency, this);
 		
-	    StringBuffer consensus = new StringBuffer();
-	    char[] bases = {'A', 'C', 'G', 'T'};
+	    StringBuffer consensus = new StringBuffer();	  
 	    int[] counts = new int[4];
 		char next;
 		int best;
 	    for(int i = 0; i < mergedResult.depth.length; i++) {
 	    	next = 'N';
-	    	if(mergedResult.depth[i] >= minDepth) {
+	    	int totalDepth = mergedResult.depth[i];
+			if(totalDepth >= minDepth) {
 	    		best = 0;
-	    		counts[0] = mergedResult.aCounts[i];
-	    		counts[1] = mergedResult.cCounts[i];
-	    		counts[2] = mergedResult.gCounts[i];
-	    		counts[3] = mergedResult.tCounts[i];
-	    		for(int j = 0; j < 4; j++) {
-	    			if(counts[j] > best) {
-	    				next = bases[j];
-	    				best = counts[j];
-	    			} else if(counts[j] == best) {
-	    				next = 'N';
-	    			}
+	    		counts[ResidueUtils.CONCRETE_NT_A] = mergedResult.aCounts[i];
+	    		counts[ResidueUtils.CONCRETE_NT_C] = mergedResult.cCounts[i];
+	    		counts[ResidueUtils.CONCRETE_NT_G] = mergedResult.gCounts[i];
+	    		counts[ResidueUtils.CONCRETE_NT_T] = mergedResult.tCounts[i];
+	    		if(mayGenerateAmbiguities && consensusProduceAmbiguityCodes) {
+	    			int concreteNtsBitmap = 0;
+		    		for(int j = 0; j < 4; j++) {
+		    			double proportion = 0;
+		    			if(totalDepth > 0) {
+		    				proportion = counts[j] / (double) totalDepth;
+		    			}
+		    			if(counts[j] >= consensusAmbiguityMinReads && proportion >= consensusAmbiguityMinProportion) {
+		    				concreteNtsBitmap |= 1 << j;
+		    			}
+		    		}
+		    		if(concreteNtsBitmap == 0) {
+		    			next = 'N';
+		    		} else {
+		    			int ambigNtint = ResidueUtils.concreteNtsBitmapToAmbigNt(concreteNtsBitmap);
+						next = ResidueUtils.intToAmbigNt(ambigNtint);
+		    		}
+	    		} else {
+		    		for(int j = 0; j < 4; j++) {
+		    			if(counts[j] > best) {
+		    				next = ResidueUtils.intToConcreteNt(j);
+		    				best = counts[j];
+		    			} else if(counts[j] == best) {
+		    				next = 'N';
+		    			}
+		    		}
 	    		}
 	    	}
 			consensus.append(next);
