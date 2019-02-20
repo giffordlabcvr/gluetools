@@ -146,6 +146,7 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		registerModulePluginCmdClass(SamNucleotideCommand.class);
 		registerModulePluginCmdClass(SamDepthCommand.class);
 		registerModulePluginCmdClass(SamAminoAcidCommand.class);
+		registerModulePluginCmdClass(SamCodonTripletsCommand.class);
 		registerModulePluginCmdClass(SamNucleotideConsensusCommand.class);
 		registerModulePluginCmdClass(ListSamReferenceCommand.class);
 		registerModulePluginCmdClass(SamExportNucleotideAlignmentCommand.class);
