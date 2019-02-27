@@ -72,15 +72,22 @@ GLUE> module exampleSamReporter depth -i ngsData.bam -r REF_MASTER_M73218 -f ORF
 </div>
 </p>
 
-<p>The option <code>-r REF_MASTER_M73218</code> specifies the "related" reference sequence: the reference sequence within the project which 
-defines the genome feature we are interested in. The <code>-f ORF1</code> option names this feature (for the command to work, a feature location
-for ORF1 must be defined on the related reference). The option <code>-t REF_3a_AF082843</code> specifies the "target" reference sequence; 
+<p>One key aspect of the <tt>samReporter</tt> commands is the use of genome features defined on reference sequences within the 
+GLUE project. These are used to provide a meaningful coordinate space for deep sequencing data. 
+The option <code>-r REF_MASTER_M73218</code> in the above command specifies the "related" reference sequence: the reference sequence 
+within the project which defines the genome feature we are interested in; we will ultimately "relate" our reads back to this reference sequence. 
+The <code>-f ORF1</code> option names the feature (for the command to work, a feature location
+for ORF1 must be defined on the related reference). </p>
+
+<p>The option <code>-t REF_3a_AF082843</code> specifies the "target" reference sequence; 
 a reference sequence within the project which we believe is closely related to the strain of virus within the input file <code>ngsData.bam</code>.
 The <code>-l</code> option directs the <tt>samReporter</tt> to "auto-align" the consensus of the BAM file with the target reference; it will 
 actually use the module <code>exampleCompoundAligner</code> (specified in the <code>exampleSamReporter</code> config) to establish a 
-pairwise alignment between the consensus and the target reference. The idea here is to allow the BAM file to use whatever reference sequence is best
-for representing the deep sequencing data, including for example <em>de novo</em> contigs. 
+pairwise alignment between the consensus and the target reference. Rather than mandating that BAM files must use reference sequences present 
+in the project for their coordinate space, the idea here is to allow the BAM file to use whatever reference coordinate 
+space is best for representing the deep sequencing data, including for example <em>de novo</em> contigs. </p>
 
+Finally the option <code>-a AL_UNCONSTRAINED</code> specifies a "linking" alignment. 
 
 <h4 id="nucleotides">Analysing nucleotides</h4>
 
