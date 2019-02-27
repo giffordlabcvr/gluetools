@@ -1,0 +1,92 @@
+<h2>{{deepSequencingDataMenuTitle}}</h2>
+<ol>
+	<li><a ng-click="scrollTo('introduction')">Introduction</a></li>
+	<li><a ng-click="scrollTo('samReporter')">The <tt>samReporter</tt> module type</a></li>
+	<li><a ng-click="scrollTo('gettingStarted')">Getting started</a></li>
+	<li><a ng-click="scrollTo('readDepth')">Analysing read depth</a></li>
+	<li><a ng-click="scrollTo('nucleotides')">Analysing nucleotides</a></li>
+	<li><a ng-click="scrollTo('aminoAcids')">Analysing amino acids</a></li>
+	<li><a ng-click="scrollTo('variations')">Scanning for variations</a></li>
+</ol>
+
+<h4 id="introduction">Introduction</h4>
+
+Using deep sequencing technologies such as Illumina, it is possible to
+obtain reads from the viral RNA population revealing the viral genome
+diversity within a single host. A range of software tools and pipelines
+can assemble raw deep sequencing reads into Sequence Alignment Map (SAM)
+files, or BAM files, their more compact equivalents. The GLUE
+<module-type name="samReporter"></module-type>
+module type can perform simple analysis on SAM or BAM files, for example
+translating reads to amino acids with standard codon numbering. In this
+way GLUE provides a means of analysing this within-host diversity.
+
+<h4 id="samReporter">The <tt>samReporter</tt> module type</h4>
+
+To use GLUE's deep sequence data features, you need to create a 
+<module-type name="samReporter"></module-type> module. In this tutorial 
+we will use <tt>exampleSamReporter</tt>, which is defined as part 
+of the <a href="#exampleProject">example project</a> build. For reference, this 
+module's configuration document is shown below; we will explain the meaning of 
+the various options later. To find out more about how GLUE modules 
+work in general, refer to the <a href="modules">module system documentation</a>
+<p><div hljs source="exampleSamReporterConfig"></div></p>
+
+<h4 id="gettingStarted">Getting started</h4>
+
+There are a couple of GLUE engine configuration properties you should
+ensure are set up correctly in your <code>gluetools-config.xml</code>
+file. These are shown below:
+
+<p><div hljs source="samConfig"></div></p>
+
+<p>The <code>gluetools.core.sam.temp.dir</code> property refers to a directory 
+where various temporary files will be stored. The <code>gluetools.core.sam.cpus</code> 
+configures the maximum number of threads which will be used during <tt>samReporter</tt> 
+command operation.</p>
+
+<p>Ensure you have started GLUE in the <code>exampleProject</code> directory, and you have built the example project. There is a 
+hepatitis E BAM file <code>ngsData.bam</code> in this directory which we will use for
+illustrating the various <tt>samReporter</tt> commands. Start GLUE and enter project mode:</p>
+
+<p>
+<div hljs language="json" no-escape>
+<pre>
+Mode path: /
+GLUE> project example 
+OK
+Mode path: /project/example
+GLUE></pre>
+</div>
+</p>
+
+<h4 id="readDepth">Analysing read depth</h4>
+
+The first command we will run will analyse the depth of reads within <code>ngsData.bam</code> in the ORF1 region of the hepatitis E genome. 
+
+<p>
+<div hljs language="json" no-escape>
+<pre>
+Mode path: /project/example
+GLUE> module exampleSamReporter depth -i ngsData.bam -r REF_MASTER_M73218 -f ORF1 -l -t REF_3a_AF082843 -a AL_UNCONSTRAINED</pre>
+</div>
+</p>
+
+<p>The option <code>-r REF_MASTER_M73218</code> specifies the "related" reference sequence: the reference sequence within the project which 
+defines the genome feature we are interested in. The <code>-f ORF1</code> option names this feature (for the command to work, a feature location
+for ORF1 must be defined on the related reference). The option <code>-t REF_3a_AF082843</code> specifies the "target" reference sequence; 
+a reference sequence within the project which we believe is closely related to the strain of virus within the input file <code>ngsData.bam</code>.
+The <code>-l</code> option directs the <tt>samReporter</tt> to "auto-align" the consensus of the BAM file with the target reference; it will 
+actually use the module <code>exampleCompoundAligner</code> (specified in the <code>exampleSamReporter</code> config) to establish a 
+pairwise alignment between the consensus and the target reference. The idea here is to allow the BAM file to use whatever reference sequence is best
+for representing the deep sequencing data, including for example <em>de novo</em> contigs. 
+
+
+<h4 id="nucleotides">Analysing nucleotides</h4>
+
+<h4 id="aminoAcids">Analysing amino acids</h4>
+
+<h4 id="variations">Scanning for variations</h4>
+
+
+

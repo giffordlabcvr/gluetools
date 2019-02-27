@@ -33,7 +33,7 @@ public class SamNucleotideResult extends BaseTableResult<SamNucleotideResidueCou
 
 	public static final String 
 		SAM_REFERENCE_NT = "samRefNt",
-		AC_REFERENCE_NT = "acRefNt",
+		REL_REF_NT = "relRefNt",
 		READS_WITH_A = "readsWithA",
 		READS_WITH_C = "readsWithC",
 		READS_WITH_G = "readsWithG",
@@ -44,7 +44,7 @@ public class SamNucleotideResult extends BaseTableResult<SamNucleotideResidueCou
 		super("samNucleotidesResult", 
 				rowData,
 				column(SAM_REFERENCE_NT, nrc -> nrc.getSamRefNt()),
-				column(AC_REFERENCE_NT, nrc -> nrc.getRelatedRefNt()), 
+				column(REL_REF_NT, nrc -> nrc.getRelatedRefNt()), 
 				column(READS_WITH_A, nrc -> nrc.getReadsWithA()),
 				column(READS_WITH_C, nrc -> nrc.getReadsWithC()), 
 				column(READS_WITH_G, nrc -> nrc.getReadsWithG()), 

@@ -1,0 +1,16 @@
+<gluetools>
+	<!-- .... -->
+	<properties>
+	<!-- .... -->
+		<!-- SAM/BAM file processing -->
+		<property>
+			<name>gluetools.core.sam.temp.dir</name>
+			<value>/home/fred/gluetools/tmp/samfiles</value>
+		</property>
+		<property>
+			<name>gluetools.core.sam.cpus</name>
+			<value>4</value>
+		</property>
+	<!-- .... -->
+	</properties>
+</gluetools>

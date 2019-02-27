@@ -33,7 +33,7 @@ public class SamDepthResult extends BaseTableResult<SamContributingReadsCount> {
 
 	public static final String 
 		SAM_REFERENCE_NT = "samRefNt",
-		AC_REFERENCE_NT = "acRefNt",
+		REL_REF_NT = "relRefNt",
 		DEPTH = "depth";
 
 
@@ -41,7 +41,7 @@ public class SamDepthResult extends BaseTableResult<SamContributingReadsCount> {
 		super("samDepthResult", 
 				rowData,
 				column(SAM_REFERENCE_NT, nrc -> nrc.getSamRefNt()),
-				column(AC_REFERENCE_NT, nrc -> nrc.getRelatedRefNt()), 
+				column(REL_REF_NT, nrc -> nrc.getRelatedRefNt()), 
 				column(DEPTH, nrc -> nrc.getTotalContributingReads()));
 	}
 

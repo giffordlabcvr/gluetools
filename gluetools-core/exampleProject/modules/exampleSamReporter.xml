@@ -3,4 +3,7 @@
     <samReaderValidationStringency>SILENT</samReaderValidationStringency>
     <maxLikelihoodPlacerModuleName>exampleMaxLikelihoodPlacer</maxLikelihoodPlacerModuleName>
     <alignerModuleName>exampleCompoundAligner</alignerModuleName>
+    <consensusAmbiguityMinReads>5</consensusAmbiguityMinReads>
+    <consensusAmbiguityMinProportion>0.05</consensusAmbiguityMinProportion>
+    <consensusProduceAmbiguityCodes>true</consensusProduceAmbiguityCodes>
 </samReporter>

@@ -57,6 +57,15 @@
 			<name>gluetools.core.programs.mafft.temp.dir</name>
 			<value>/home/fred/gluetools/tmp/mafftfiles</value>
 		</property>
+		<!-- SAM/BAM file processing -->
+		<property>
+			<name>gluetools.core.sam.temp.dir</name>
+			<value>/home/fred/gluetools/tmp/samfiles</value>
+		</property>
+		<property>
+			<name>gluetools.core.sam.cpus</name>
+			<value>4</value>
+		</property>
 		<!-- Cayenne -->
 		<property>
 			<name>cayenne.querycache.size</name>

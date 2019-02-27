@@ -109,6 +109,10 @@ gluetoolsApp.config(['$routeProvider',
             templateUrl: './pages/userGuide/variations/page.html',
             controller: 'variationsCtrl'
           }).
+    	when('/deepSequencingData', {
+            templateUrl: './pages/userGuide/deepSequencingData/page.html',
+            controller: 'deepSequencingDataCtrl'
+          }).
       	when('/commandModes', {
             templateUrl: './pages/referenceDocumentation/commandModes/page.html',
             controller: 'commandModesCtrl'
@@ -188,6 +192,7 @@ gluetoolsApp.controller('gluetoolsCtrl',
     $scope.scriptingLayerMenuTitle = "Scripting Layer";
     $scope.schemaExtensionsMenuTitle = "Schema Extensions";
     $scope.freemarkerTemplatesMenuTitle = "Freemarker templates";
+  	$scope.deepSequencingDataMenuTitle = "Working with deep sequencing data";
     $scope.variationsMenuTitle = "Variations";
     $scope.buildingAnAlignmentTreeMenuTitle = "Building an Alignment Tree";
     $scope.maximumLikelihoodCladeAssignmentMenuTitle = "Maximum Likelihood Clade Assignment";

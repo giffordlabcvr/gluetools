@@ -6,9 +6,9 @@
 			<attribute name="gradle_used_by_scope" value="main,test"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
 	<classpathentry kind="output" path="bin/default"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8/"/>
-	<classpathentry kind="con" path="org.eclipse.jst.j2ee.internal.web.container"/>
 	<classpathentry kind="src" path="/gluetools-core">
 		<attributes>
 			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
@@ -117,6 +117,12 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.apache.bcel/bcel/6.0/206dfd32271b9b0150d8211070e5dbbe69cf5154/bcel-6.0-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.apache.bcel/bcel/6.0/7d08bcac4832f81467d3e2ca5bd58ad627288656/bcel-6.0.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/junit/junit/4.13-beta-2/82aeb67084890746098fe1319eef2fe8c65dd67a/junit-4.13-beta-2-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/junit/junit/4.13-beta-2/2470c41ebd351f7edceac9eea7c414ac847a154/junit-4.13-beta-2.jar">
 		<attributes>
 			<attribute name="gradle_used_by_scope" value="main,test"/>
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
@@ -278,6 +284,12 @@
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.hamcrest/hamcrest-core/1.3/1dc37250fbc78e23a65a67fbbaf71d2e9cbc3c0b/hamcrest-core-1.3-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.hamcrest/hamcrest-core/1.3/42a25dc3219429f0e5d060061f71acb49bf010a0/hamcrest-core-1.3.jar">
+		<attributes>
+			<attribute name="gradle_used_by_scope" value="main,test"/>
+			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.jvnet.mimepull/mimepull/1.9.5/5b8fcbebc4a90092a00048cfac5eaa9cc2fc6e42/mimepull-1.9.5-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.jvnet.mimepull/mimepull/1.9.5/4ae665c707798da16886f916cda02ec61ea538f6/mimepull-1.9.5.jar">
 		<attributes>
 			<attribute name="gradle_used_by_scope" value="main,test"/>
@@ -366,18 +378,6 @@
 		<attributes>
 			<attribute name="gradle_used_by_scope" value="main,test"/>
 			<attribute name="org.eclipse.jst.component.dependency" value="/WEB-INF/lib"/>
-		</attributes>
-	</classpathentry>
-	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/junit/junit/4.13-beta-1/9dce6ee8700922293d5fe52ac9435cc2707bd2ba/junit-4.13-beta-1-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/junit/junit/4.13-beta-1/1bc4a3b4a2d01a08c3a2cc8143666565b846ed17/junit-4.13-beta-1.jar">
-		<attributes>
-			<attribute name="gradle_used_by_scope" value="test"/>
-			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
-		</attributes>
-	</classpathentry>
-	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.hamcrest/hamcrest-core/1.3/1dc37250fbc78e23a65a67fbbaf71d2e9cbc3c0b/hamcrest-core-1.3-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/org.hamcrest/hamcrest-core/1.3/42a25dc3219429f0e5d060061f71acb49bf010a0/hamcrest-core-1.3.jar">
-		<attributes>
-			<attribute name="gradle_used_by_scope" value="test"/>
-			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
 		</attributes>
 	</classpathentry>
 </classpath>
