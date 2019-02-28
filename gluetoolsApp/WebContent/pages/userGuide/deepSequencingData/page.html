@@ -14,7 +14,8 @@
 Using deep sequencing technologies such as Illumina, it is possible to
 obtain reads from the viral RNA population revealing the viral genome
 diversity within a single host. A range of software tools and pipelines
-can assemble raw deep sequencing reads into Sequence Alignment Map (SAM)
+can assemble raw deep sequencing reads into
+<a href="https://samtools.github.io/hts-specs/SAMv1.pdf" target = "_blank">Sequence Alignment Map (SAM)</a>
 files, or BAM files, their more compact equivalents. The GLUE
 <module-type name="samReporter"></module-type>
 module type can perform simple analysis on SAM or BAM files, for example
@@ -23,13 +24,20 @@ way GLUE provides a means of analysing this within-host diversity.
 
 <h4 id="samReporter">The <tt>samReporter</tt> module type</h4>
 
-To use GLUE's deep sequence data features, you need to create a 
+<p>To use GLUE's deep sequence data features, you need to create a 
 <module-type name="samReporter"></module-type> module. In this tutorial 
 we will use <tt>exampleSamReporter</tt>, which is defined as part 
 of the <a href="#exampleProject">example project</a> build. For reference, this 
-module's configuration document is shown below; we will explain the meaning of 
-the various options later. To find out more about how GLUE modules 
-work in general, refer to the <a href="modules">module system documentation</a>
+module's configuration document is shown below. The <tt>samReporter</tt> actually 
+uses <a href="https://github.com/samtools/htsjdk" target="_blank">Htsjdk</a> to 
+process SAM and BAM files: the <code>samReaderValidationStringency</code> option
+may be set to <code>SILENT</code>, <code>LENIENT</code> or <code>STRICT</code>, 
+controlling how strictly we will require SAM/BAM files to conform to the standard.
+We will explain the meaning of 
+the various other module configuration options later. To find out more about how GLUE modules 
+work in general, refer to the <a href="modules">module system documentation</a>.
+</p>
+
 <p><div hljs source="exampleSamReporterConfig"></div></p>
 
 <h4 id="gettingStarted">Getting started</h4>
@@ -47,7 +55,7 @@ command operation.</p>
 
 <p>Ensure you have started GLUE in the <code>exampleProject</code> directory, and you have built the example project. There is a 
 hepatitis E BAM file <code>ngsData.bam</code> in this directory which we will use for
-illustrating the various <tt>samReporter</tt> commands. Start GLUE and enter project mode:</p>
+illustrating the various <tt>samReporter</tt> commands. Start GLUE and enter project mode, then module mode for the <code>exampleSamReporter</code>:</p>
 
 <p>
 <div hljs language="json" no-escape>
@@ -56,44 +64,252 @@ Mode path: /
 GLUE> project example 
 OK
 Mode path: /project/example
+GLUE> module exampleSamReporter
+OK
+Mode path: /project/example/module/exampleSamReporter
 GLUE></pre>
 </div>
 </p>
 
 <h4 id="readDepth">Analysing read depth</h4>
 
-The first command we will run will analyse the depth of reads within <code>ngsData.bam</code> in the ORF1 region of the hepatitis E genome. 
+We will run the <module-command module="samReporter" command="depth"></module-command> command to 
+analyse the depth of reads within <code>ngsData.bam</code> in the ORF1 region of the hepatitis E genome. 
 
 <p>
 <div hljs language="json" no-escape>
 <pre>
-Mode path: /project/example
-GLUE> module exampleSamReporter depth -i ngsData.bam -r REF_MASTER_M73218 -f ORF1 -l -t REF_3a_AF082843 -a AL_UNCONSTRAINED</pre>
+Mode path: /project/example/module/exampleSamReporter
+GLUE> depth -i ngsData.bam -r REF_MASTER_M73218 -f ORF1 -l -t REF_3a_AF082843 -a AL_UNCONSTRAINED</pre>
 </div>
 </p>
 
+The output table looks something like this:
+
+<p>
+<div hljs language="json" no-escape>
+<pre>+==========+==========+=======+
+| samRefNt | relRefNt | depth |
++==========+==========+=======+
+| 27       | 28       | 1125  |
+| 28       | 29       | 1127  |
+| 29       | 30       | 1127  |
+| 30       | 31       | 1128  |
+| 31       | 32       | 1131  |
+| 32       | 33       | 1132  |
+| 33       | 34       | 1132  |
+| 34       | 35       | 1133  |
+| 35       | 36       | 1133  |
+| 36       | 37       | 1135  |
+| 37       | 38       | 1135  |
+| 38       | 39       | 1135  |
+| 39       | 40       | 1135  |
+| 40       | 41       | 1135  |
+| 41       | 42       | 1136  |
++==========+==========+=======+
+Rows 1 to 15 of 5082 [F:first, L:last, P:prev, N:next, Q:quit]</pre>
+</div>
+</p>
+
+
+<div class="row">
+	<div class="col-md-9">
+<p>The <tt>samRefNt</tt> column in the output table refers to the nucleotide coordinate location according to the BAM file's coordinate space. 
+The <tt>depth</tt> column tells us how many reads populate this column with a nucleotide. But what is the meaning of the <tt>relRefNt</tt> column?</p>
+
 <p>One key aspect of the <tt>samReporter</tt> commands is the use of genome features defined on reference sequences within the 
-GLUE project. These are used to provide a meaningful coordinate space for deep sequencing data. 
-The option <code>-r REF_MASTER_M73218</code> in the above command specifies the "related" reference sequence: the reference sequence 
-within the project which defines the genome feature we are interested in; we will ultimately "relate" our reads back to this reference sequence. 
+GLUE project. These provide a meaningful coordinate space for deep sequencing reads. 
+The option <code>-r REF_MASTER_M73218</code> in the above command specifies the "master" reference sequence which defines the genome
+feature we are interested in; we will ultimately map our reads back to this reference sequence. 
 The <code>-f ORF1</code> option names the feature (for the command to work, a feature location
-for ORF1 must be defined on the related reference). </p>
+for ORF1 must be defined on the master reference). </p>
 
 <p>The option <code>-t REF_3a_AF082843</code> specifies the "target" reference sequence; 
-a reference sequence within the project which we believe is closely related to the strain of virus within the input file <code>ngsData.bam</code>.
+a reference sequence within the project which should be closely related to the strain of virus within the input file <code>ngsData.bam</code>.
 The <code>-l</code> option directs the <tt>samReporter</tt> to "auto-align" the consensus of the BAM file with the target reference; it will 
-actually use the module <code>exampleCompoundAligner</code> (specified in the <code>exampleSamReporter</code> config) to establish a 
-pairwise alignment between the consensus and the target reference. Rather than mandating that BAM files must use reference sequences present 
-in the project for their coordinate space, the idea here is to allow the BAM file to use whatever reference coordinate 
+actually use the module <code>exampleCompoundAligner</code> (specified in the <code>exampleSamReporter</code> configuration) to establish a 
+pairwise alignment between the consensus and the target. Rather than mandating that the BAM file must use a reference sequence present 
+in the project for its coordinate space, the idea here is to allow it to use whatever coordinate 
 space is best for representing the deep sequencing data, including for example <em>de novo</em> contigs. </p>
+<p>
+Finally the option <code>-a AL_UNCONSTRAINED</code> specifies the "linking" alignment. This is an unconstrained alignment which contains 
+both the target reference and the master reference. Together these options specify a "chain of homologies", 
+mapping the coordinates of each read in the BAM file back to the master reference (see diagram). The <tt>relRefNt</tt> column in the 
+output table tells us the homologous nucleotide position in the master reference <code>REF_MASTER_M73218</code>.</p>
+	</div>
+<div class="col-md-3">
+	<p>
+		<a href="images/homologyChain.png" ><img width="100%" src="images/homologyChain.png" /></a>
+	</p>
+	<div align="center">
+		<small><p>The chain of homologies from reads to master reference. Click image to see a larger version.</p></small>
+	</div>
+</div>
+</div>
 
-Finally the option <code>-a AL_UNCONSTRAINED</code> specifies a "linking" alignment. 
+<p>How did we know to use <code>REF_3a_AF082843</code> as the target reference? One way to establish the target reference is to use the 
+<module-command module="samReporter" command="target-reference"></module-command> command within the <tt>samReporter</tt> module: </p>
+
+<p>
+<div hljs language="json" no-escape>
+<pre>
+Mode path: /project/example/module/exampleSamReporter
+GLUE> target-reference -i ngsData.bam</pre>
+</div>
+</p>
+<p>
+This will use the module <code>exampleMaxLikelihoodPlacer</code> (specified in the <code>exampleSamReporter</code> configuration) to 
+place the consensus of the BAM file within the project's reference phylogeny. It selects as the target reference whichever reference 
+sequence is closest in terms of patristic distance. For convenience, <code>samReporter</code> commands such as 
+<module-command module="samReporter" command="depth"></module-command> can optionally take a <code>-p</code> option, which replaces both 
+the <code>-l</code> and the <code>-t &lt;targetRefName&gt;</code> options. The target reference will then be selected during command operation,
+using maximum-likelihood placement. This makes the command a bit more convenient to enter, but it can then take considerably longer. 
+</p>
 
 <h4 id="nucleotides">Analysing nucleotides</h4>
 
+The <module-command module="samReporter" command="nucleotide"></module-command> command takes very similar arguments but outputs the 
+number of reads with each nucleotide base. In this example we use the <code>-p</code> option mentioned above:
+
+<p>
+<div hljs language="json" no-escape>
+<pre>
+Mode path: /project/example/module/exampleSamReporter
+GLUE> nucleotide -i ngsData.bam -r REF_MASTER_M73218 -f ORF1 -p -a AL_UNCONSTRAINED</pre>
+</div>
+</p>
+
+The output table is similar, but rather than a depth column, there are four columns reporting the number of reads with each base:
+
+<p>
+<div hljs language="json" no-escape>
+<pre>+==========+==========+============+============+============+============+
+| samRefNt | relRefNt | readsWithA | readsWithC | readsWithG | readsWithT |
++==========+==========+============+============+============+============+
+| 27       | 28       | 1122       | 1          | 0          | 2          |
+| 28       | 29       | 1          | 0          | 1          | 1125       |
+| 29       | 30       | 0          | 1          | 1124       | 2          |
+| 30       | 31       | 1          | 0          | 1122       | 5          |
+| 31       | 32       | 1125       | 2          | 1          | 3          |
+| 32       | 33       | 2          | 3          | 1117       | 10         |
+| 33       | 34       | 1          | 3          | 1119       | 9          |
+| 34       | 35       | 0          | 1133       | 0          | 0          |
+| 35       | 36       | 2          | 1127       | 1          | 3          |
+| 36       | 37       | 1          | 1132       | 0          | 2          |
+| 37       | 38       | 1131       | 4          | 0          | 0          |
+| 38       | 39       | 0          | 1135       | 0          | 0          |
+| 39       | 40       | 1          | 1130       | 1          | 3          |
+| 40       | 41       | 1131       | 2          | 0          | 2          |
+| 41       | 42       | 0          | 1          | 1134       | 1          |
++==========+==========+============+============+============+============+
+Rows 1 to 15 of 5082 [F:first, L:last, P:prev, N:next, Q:quit]</pre>
+</div>
+</p>
+
+<p>The <module-command module="samReporter" command="nucleotide"></module-command> command, 
+like most other <code>samReporter</code> commands, allows you to filter when reads will contribute to the output table.
+There are three options for this:
+<ul>
+<li>The <code>-q 25</code> option will filter out reads when the Phred base quality is less than 25. </li>
+<li>The <code>-g 30</code> option will filter out reads when the mapping quality is less than 30. </li>
+<li>The <code>-d 2000</code> option will filter out rows of the table where the set of filtered reads contributing to the row is less than 2000. </li>
+</ul>
+</p>
+
+<p>The <code>samReporter</code> has a simple method for generating consensus files from SAM / BAM files, which is used by the 
+<module-command module="samReporter" command="nucleotide-consensus"></module-command> command, for example like this:</p>
+
+<p>
+<div hljs language="json" no-escape>
+<pre>
+Mode path: /project/example/module/exampleSamReporter
+GLUE> nucleotide-consensus -i ngsData.bam -o samConsensusSequence.fasta</pre>
+</div>
+</p>
+
+<p>This generates a file <code>samConsensusSequence.fasta</code> with one nucleotide character per position in the 
+SAM / BAM file reference space. Three options in the <code>samReporter</code> configuration document (shown above) configure how 
+IUPAC ambiguous nucleotide codes are generated within the file. </p>
+<ul>
+<li>The <code>consensusProduceAmbiguityCodes</code> option enables the generation of ambiguity codes (disabled by default). </li>
+<li>The <code>consensusAmbiguityMinProportion</code> option specifies the minimum proportion of reads with a given base at a given position for that base to be incorporated into the ambiguity code at that position. </li>
+<li>The <code>consensusAmbiguityMinReads</code> option specifies the minimum number of reads with a given base for that base to be incorporated. </li>
+</ul>
+
+<p>It may be of interest to feed sections of SAM / BAM files into other forms of analysis. 
+The <module-command module="samReporter" command="export_nucleotide-alignment"></module-command> command allows you to extract a section of the 
+SAM/BAM nucleotide alignment and export it to a FASTA file. </p>
+
 <h4 id="aminoAcids">Analysing amino acids</h4>
+<p>The <module-command module="samReporter" command="amino-acid"></module-command> command allows you to 
+view the SAM / BAM read data in the form of translated amino acid residues. For example: </p>
+<p>
+<div hljs language="json" no-escape>
+<pre>
+Mode path: /project/example/module/exampleSamReporter
+GLUE> amino-acid -i ngsData.bam -r REF_MASTER_M73218 -f ORF1 -c 246 249 -p -a AL_UNCONSTRAINED</pre>
+</div>
+</p>
+<p>In this case we have used the optional <code>-c</code> to limit the output to the region where codon locations 
+are numbered 246 to 249 on the master reference. Most of the other <tt>samReporter</tt> commands allow this option;
+there is also an alternative where a region on the master reference is specified by nucleotide positions. 
+The output table of of our command shows that there may be some distinct minor variants at positions 246 and 248:</p> 
+
+<p>
+<div hljs language="json" no-escape>
+<pre>+=========+============+==========+==========+===========+=============+======================+============+
+| feature | codonLabel | samRefNt | relRefNt | aminoAcid | readsWithAA | readsWithDifferentAA | pctAaReads |
++=========+============+==========+==========+===========+=============+======================+============+
+| ORF1    | 246        | 762      | 763      | V         | 62          | 13                   | 82.67      |
+| ORF1    | 246        | 762      | 763      | T         | 11          | 64                   | 14.67      |
+| ORF1    | 246        | 762      | 763      | G         | 1           | 74                   | 1.33       |
+| ORF1    | 246        | 762      | 763      | F         | 1           | 74                   | 1.33       |
+| ORF1    | 247        | 765      | 766      | A         | 1           | 74                   | 1.33       |
+| ORF1    | 247        | 765      | 766      | V         | 2           | 73                   | 2.67       |
+| ORF1    | 247        | 765      | 766      | G         | 72          | 3                    | 96.00      |
+| ORF1    | 248        | 768      | 769      | D         | 57          | 18                   | 76.00      |
+| ORF1    | 248        | 768      | 769      | Y         | 1           | 74                   | 1.33       |
+| ORF1    | 248        | 768      | 769      | N         | 13          | 62                   | 17.33      |
+| ORF1    | 248        | 768      | 769      | H         | 2           | 73                   | 2.67       |
+| ORF1    | 248        | 768      | 769      | E         | 2           | 73                   | 2.67       |
+| ORF1    | 249        | 771      | 772      | Q         | 3           | 72                   | 4.00       |
+| ORF1    | 249        | 771      | 772      | H         | 72          | 3                    | 96.00      |
++=========+============+==========+==========+===========+=============+======================+============+</pre>
+</div>
+</p>
+
+The <module-command module="samReporter" command="codon-triplets"></module-command> command takes identical arguments to 
+the <tt>amino-acid</tt> command but instead outputs now many reads contain each nucleotide triplet at each 
+codon position.
 
 <h4 id="variations">Scanning for variations</h4>
 
+The <module-command module="samReporter" command="variation_scan"></module-command> command allows reads to be scanned for GLUE variations: 
+defined patterns of residues within virus sequences. The <a href="#variations">Variations documentation</a> explains
+in detail how these data objects are structured. Make sure the PSAP hepatitis E motif, given as an example in the Variations documentation,
+has been defined. Then enter this <tt>samReporter</tt> command: 
 
+<p>
+<div hljs language="json" no-escape>
+<pre>
+Mode path: /project/example/module/exampleSamReporter
+GLUE> variation scan -i ngsData.bam -r REF_MASTER_M73218 -f ORF3 -p -a AL_UNCONSTRAINED</pre>
+</div>
+</p>
 
+<p>The BAM file reads will be scanned for the presence of any variations defined within the ORF3 feature 
+location of the master reference. The <module-command module="samReporter" command="variation_scan"></module-command>
+command also optionally accepts a <a href="queryingGlue">whereClause</a> to limit further which variations 
+are scanned for. The result table shows that 32 reads spanned the 96-108 region of ORF3 
+and contained the PSAP, motif while 5 reads spanned this region and did not contain the motif. </p>
+<p>
+<div hljs language="json" no-escape>
+<pre>+===================+=============+===============+==============+============+=============+===========+
+|   referenceName   | featureName | variationName | readsPresent | pctPresent | readsAbsent | pctAbsent |
++===================+=============+===============+==============+============+=============+===========+
+| REF_MASTER_M73218 | ORF3        | PSAP          | 32           | 86.49      | 5           | 13.51     |
++===================+=============+===============+==============+============+=============+===========+</pre>
+</div>
+</p>
+<p>Note that since this BAM file contains mostly paired-end data, <tt>samReporter</tt> will actually merge the two 
+reads in each pair before scanning the merged read for variations.</p>

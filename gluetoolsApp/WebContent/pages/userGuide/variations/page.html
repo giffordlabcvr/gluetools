@@ -454,14 +454,14 @@ example project which is based on HEV:
 <pre>
 reference REF_MASTER_M73218
   feature-location ORF3 
-    create variation PSAP -t aminoAcidSimplePolymorphism --labeledCodon 80 120
+    create variation PSAP -t aminoAcidSimplePolymorphism --labeledCodon 96 108
     variation PSAP
       set metatag SIMPLE_AA_PATTERN PSAP
       exit
     exit
   exit
 </pre>
-Here we will scan for the PSAP motif anywhere between locations 80 and 120 on our master 
+Here we will scan for the PSAP motif anywhere between locations 96 and 108 on our master 
 reference M73218, so this will detect where sequences have two copies of the motif in this genome region.
 Note that the coordinates will be slightly different from those mentioned in Nagashima et al. as a different reference
 sequence was used.
