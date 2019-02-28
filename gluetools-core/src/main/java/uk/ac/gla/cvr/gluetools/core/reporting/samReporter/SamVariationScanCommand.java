@@ -81,7 +81,7 @@ import uk.ac.gla.cvr.gluetools.utils.StringUtils;
 				"-n <samRefSense>, --samRefSense <samRefSense>              SAM ref seq sense",
 				"-s <samRefName>, --samRefName <samRefName>                 Specific SAM ref seq",
 				"-r <relRefName>, --relRefName <relRefName>                 Related reference sequence",
-				"-f <featureName>, --featureName <featureName>              Feature to translate",
+				"-f <featureName>, --featureName <featureName>              Feature containing variations",
 				"-d, --descendentFeatures                                   Include descendent features",
 				"-p, --maxLikelihoodPlacer                                  Use ML placer module",
 				"-l, --autoAlign                                            Auto-align consensus",

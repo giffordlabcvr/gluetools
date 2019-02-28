@@ -26,6 +26,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.MemberDistance;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.session.SamFileSession;
@@ -250,15 +251,46 @@ public class SamReporterPreprocessor {
 			ReferenceSequence targetRef;
 			if(targetRefName != null) {
 				targetRef = GlueDataObject.lookup(consoleCmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(targetRefName));
+				samReporter.log(Level.FINE, "Cached target reference found: "+targetRef.getName());
 			} else {
-				DNASequence consensus = getConsensus(consoleCmdContext, consensusKey);
-				AlignmentMember targetRefAlmtMember = samReporter.establishTargetRefMemberUsingPlacer(consoleCmdContext, consensus);
-				targetRef = targetRefAlmtMember.targetReferenceFromMember();
-				cachedTargetRefName.put(consensusKey, targetRef.getName());
+				targetRef = getTargetRefDistance(consoleCmdContext, samReporter, consensusKey).getTargetRef();
 			}
-			samReporter.log(Level.FINE, "Max likelihood placement of consensus sequence selected target reference "+targetRef.getName());
 			return targetRef;
 		}
+
+		public ReferenceDistance getTargetRefDistanceBasedOnPlacer(ConsoleCommandContext consoleCmdContext, SamReporter samReporter, BaseSamReporterCommand<?> samReporterCommand) {
+			ConsensusKey consensusKey = new ConsensusKey(samReporter, samReporterCommand, false);
+			return getTargetRefDistance(consoleCmdContext, samReporter, consensusKey);
+		}
+		
+		private ReferenceDistance getTargetRefDistance(ConsoleCommandContext consoleCmdContext, SamReporter samReporter,
+				ConsensusKey consensusKey) {
+			ReferenceSequence targetRef;
+			DNASequence consensus = getConsensus(consoleCmdContext, consensusKey);
+			MemberDistance memberDistance = samReporter.establishTargetRefMemberUsingPlacer(consoleCmdContext, consensus);
+			AlignmentMember targetRefAlmtMember = memberDistance.getMember();
+			targetRef = targetRefAlmtMember.targetReferenceFromMember();
+			cachedTargetRefName.put(consensusKey, targetRef.getName());
+			samReporter.log(Level.FINE, "Max likelihood placement of consensus sequence selected target reference "+targetRef.getName()+", distance: "+memberDistance.getDistance());
+			return new ReferenceDistance(targetRef, memberDistance.getDistance());
+		}
+		
+		public class ReferenceDistance {
+			private ReferenceSequence targetRef;
+			private Double distance;
+			public ReferenceDistance(ReferenceSequence targetRef, Double distance) {
+				super();
+				this.targetRef = targetRef;
+				this.distance = distance;
+			}
+			public ReferenceSequence getTargetRef() {
+				return targetRef;
+			}
+			public Double getDistance() {
+				return distance;
+			}
+		}
+		
 		
 		public List<QueryAlignedSegment> getSamRefToTargetRefSegs(ConsoleCommandContext consoleCmdContext, SamReporter samReporter, BaseSamReporterCommand<?> samReporterCommand, String targetRefName) {
 			ConsensusKey consensusKey = new ConsensusKey(samReporter, samReporterCommand, false);

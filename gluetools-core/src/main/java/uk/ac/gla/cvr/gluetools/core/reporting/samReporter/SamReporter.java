@@ -150,6 +150,7 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		registerModulePluginCmdClass(SamNucleotideConsensusCommand.class);
 		registerModulePluginCmdClass(ListSamReferenceCommand.class);
 		registerModulePluginCmdClass(SamExportNucleotideAlignmentCommand.class);
+		registerModulePluginCmdClass(SamTargetReferenceCommand.class);
 		addSimplePropertyName(MAX_LIKELIHOOD_PLACER_MODULE_NAME);
 		addSimplePropertyName(MAX_LIKELIHOOD_PLACER_DISTANCE_CUTOFF);
 		addSimplePropertyName(ALIGNER_MODULE_NAME);
@@ -214,7 +215,7 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		throw new SamReporterCommandException(Code.NO_TARGET_REFERENCE_DEFINED);
 	}
 	
-	public AlignmentMember establishTargetRefMemberUsingPlacer(CommandContext cmdContext, DNASequence consensusSequence) {
+	public MemberDistance establishTargetRefMemberUsingPlacer(CommandContext cmdContext, DNASequence consensusSequence) {
 		MaxLikelihoodPlacer maxLikelihoodPlacer = Module.resolveModulePlugin(cmdContext, MaxLikelihoodPlacer.class, maxLikelihoodPlacerModuleName);
 		
 		Map<String, DNASequence> consensusSequenceMap = new LinkedHashMap<String, DNASequence>();
@@ -243,9 +244,24 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		PlacementNeighbour nearestNeighbour = placementNeighbours.get(0);
 		String neighbourLeafName = nearestNeighbour.getPhyloLeaf().getName();
 		Map<String,String> neighbourMemberPkMap = PhyloImporter.memberLeafNodeNameToPkMap(neighbourLeafName);
-		return GlueDataObject.lookup(cmdContext, AlignmentMember.class, neighbourMemberPkMap);
+		return new MemberDistance(GlueDataObject.lookup(cmdContext, AlignmentMember.class, neighbourMemberPkMap), nearestNeighbour.getDistance().doubleValue());
 	}
 	
+	public class MemberDistance {
+		private AlignmentMember member;
+		private Double distance;
+		public MemberDistance(AlignmentMember member, Double distance) {
+			super();
+			this.member = member;
+			this.distance = distance;
+		}
+		public AlignmentMember getMember() {
+			return member;
+		}
+		public Double getDistance() {
+			return distance;
+		}
+	}
 	
 	
 	
