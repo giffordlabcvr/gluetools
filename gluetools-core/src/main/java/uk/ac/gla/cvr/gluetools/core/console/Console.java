@@ -753,7 +753,7 @@ public class Console implements InteractiveCommandResultRenderingContext
 	private String bannerLines() {
 		StringBuffer buffer = new StringBuffer();
 		buffer.append("GLUE Version ").append(GluetoolsEngine.getInstance().getGluecoreProperties().getProperty("version", "unknown")).append("\n");
-		buffer.append("Copyright (C) 2018 The University of Glasgow\n");	
+		buffer.append("Copyright (C) 2015-2019 The University of Glasgow\n");	
 		buffer.append(
 		"This program comes with ABSOLUTELY NO WARRANTY. This is free software, and you\n"+
 		"are welcome to redistribute it under certain conditions. For details see\n"+
