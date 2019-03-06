@@ -3,9 +3,12 @@ package uk.ac.gla.cvr.gluetools.core.reporting.nexusExporter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.Set;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.w3c.dom.Element;
@@ -30,6 +33,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.reporting.memberAnnotationGenerator.AnnotationGeneratorGroupFactory;
 import uk.ac.gla.cvr.gluetools.core.reporting.memberAnnotationGenerator.MemberAnnotationGenerator;
 import uk.ac.gla.cvr.gluetools.core.reporting.memberAnnotationGenerator.MemberAnnotationGeneratorFactory;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.PhyloExporter;
@@ -48,7 +52,7 @@ public class NexusExporter extends ModulePlugin<NexusExporter> {
 	private static final String FIGTREE_PROPERTY = "figtreeProperty";
 	
 	private String phyloFieldName;
-	private List<MemberAnnotationGenerator> memberAnnotationGenerators;
+	private List<Object> annotationGeneratorsAndGroups;
 	private Template memberNameTemplate;
 	private Map<String, Object> figtreeProperties;
 
@@ -59,10 +63,8 @@ public class NexusExporter extends ModulePlugin<NexusExporter> {
 		this.memberNameTemplate = 
 				Optional.ofNullable(PluginUtils.configureFreemarkerTemplateProperty(pluginConfigContext, configElem, MEMBER_NAME_TEMPLATE, false))
 				.orElse(defaultTemplate(pluginConfigContext.getFreemarkerConfiguration()));
-		MemberAnnotationGeneratorFactory annotationGeneratorFactory = PluginFactory.get(MemberAnnotationGeneratorFactory.creator);
-		String alternateElemsXPath = GlueXmlUtils.alternateElemsXPath(annotationGeneratorFactory.getElementNames());
-		List<Element> annotationGeneratorElems = PluginUtils.findConfigElements(configElem, alternateElemsXPath);
-		this.memberAnnotationGenerators = annotationGeneratorFactory.createFromElements(pluginConfigContext, annotationGeneratorElems);
+		this.annotationGeneratorsAndGroups = MemberAnnotationGenerator.configureAnnotationGeneratorsAndGroups(pluginConfigContext, configElem);
+
 		this.figtreeProperties = defaultFigtreeProperties();
 		List<Element> figtreePropertyElems = PluginUtils.findConfigElements(configElem, FIGTREE_PROPERTY);
 		for(Element figtreePropertyElem: figtreePropertyElems) {
@@ -86,6 +88,8 @@ public class NexusExporter extends ModulePlugin<NexusExporter> {
 						" of type "+type+" incorrectly formatted"); }
 		}
 	}
+
+	
 	
 	private Map<String, Object> defaultFigtreeProperties() {
 		Map<String, Object> figtreeProperties = new LinkedHashMap<String, Object>();
@@ -193,6 +197,9 @@ public class NexusExporter extends ModulePlugin<NexusExporter> {
 	}
 
 	public String exportNexus(CommandContext cmdContext, Alignment alignment) {
+		
+		
+		
 		boolean recursive;
 		if(alignment.isConstrained()) {
 			recursive = true;
@@ -229,13 +236,17 @@ public class NexusExporter extends ModulePlugin<NexusExporter> {
 		buf.append("\tdimensions ntax=").append(Integer.toString(almtMembers.size())).append(";\n");
 		buf.append("\ttaxlabels\n");
 		for(AlignmentMember almtMember: almtMembers) {
+			LinkedHashMap<String, String> annotations = MemberAnnotationGenerator.generateAnnotations(cmdContext, almtMember,
+					annotationGeneratorsAndGroups);
+			
 			String memberName = templateMemberName(almtMember);
 			buf.append("\t'").append(memberName).append("'[&");
-			for(int i = 0; i < memberAnnotationGenerators.size(); i++) {
+			List<Map.Entry<String, String>> annotationEntries = new ArrayList<Map.Entry<String, String>>(annotations.entrySet());
+			for(int i = 0; i < annotationEntries.size(); i++) {
 				if(i > 0) { buf.append(","); }
-				MemberAnnotationGenerator annotationGenerator = memberAnnotationGenerators.get(i);
-				buf.append(annotationGenerator.getAnnotationName()).append("=");
-				buf.append("\"").append(StringEscapeUtils.escapeJava(annotationGenerator.renderAnnotation(almtMember))).append("\"");
+				Entry<String, String> annotationEntry = annotationEntries.get(i);
+				buf.append(annotationEntry.getKey()).append("=");
+				buf.append("\"").append(StringEscapeUtils.escapeJava(annotationEntry.getValue())).append("\"");
 			}
 			buf.append("]\n");
 		}
@@ -289,6 +300,8 @@ public class NexusExporter extends ModulePlugin<NexusExporter> {
 		return buf.toString();
 		
 	}
+
+
 
 	private String templateMemberName(AlignmentMember almtMember) {
 		return FreemarkerUtils.processTemplate(memberNameTemplate, FreemarkerUtils.templateModelForObject(almtMember));	

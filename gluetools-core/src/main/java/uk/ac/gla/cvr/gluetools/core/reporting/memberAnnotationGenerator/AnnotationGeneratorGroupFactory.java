@@ -28,17 +28,14 @@ package uk.ac.gla.cvr.gluetools.core.reporting.memberAnnotationGenerator;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
-public class MemberAnnotationGeneratorFactory extends PluginFactory<MemberAnnotationGenerator> {
+public class AnnotationGeneratorGroupFactory extends PluginFactory<AnnotationGeneratorGroup> {
 
-	public static Multiton.Creator<MemberAnnotationGeneratorFactory> creator = new
-			Multiton.SuppliedCreator<>(MemberAnnotationGeneratorFactory.class, MemberAnnotationGeneratorFactory::new);
+	public static Multiton.Creator<AnnotationGeneratorGroupFactory> creator = new
+			Multiton.SuppliedCreator<>(AnnotationGeneratorGroupFactory.class, AnnotationGeneratorGroupFactory::new);
 	
-	private MemberAnnotationGeneratorFactory() {
+	private AnnotationGeneratorGroupFactory() {
 		super();
-		registerPluginClass(FreemarkerAnnotationGenerator.class);
-		registerPluginClass(AminoAcidAnnotationGenerator.class);
-		registerPluginClass(NucleotideAnnotationGenerator.class);
-		registerPluginClass(VariationPresenceAnnotationGenerator.class);
+		registerPluginClass(AminoAcidAnnotationGeneratorGroup.class);
 	}
 	
 }

@@ -23,22 +23,25 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.reporting.memberAnnotationGenerator;
+package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment;
 
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
-import uk.ac.gla.cvr.gluetools.utils.Multiton;
+import java.util.List;
 
-public class MemberAnnotationGeneratorFactory extends PluginFactory<MemberAnnotationGenerator> {
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 
-	public static Multiton.Creator<MemberAnnotationGeneratorFactory> creator = new
-			Multiton.SuppliedCreator<>(MemberAnnotationGeneratorFactory.class, MemberAnnotationGeneratorFactory::new);
-	
-	private MemberAnnotationGeneratorFactory() {
-		super();
-		registerPluginClass(FreemarkerAnnotationGenerator.class);
-		registerPluginClass(AminoAcidAnnotationGenerator.class);
-		registerPluginClass(NucleotideAnnotationGenerator.class);
-		registerPluginClass(VariationPresenceAnnotationGenerator.class);
+public class SimpleLqaaAlmtRowConsumer extends AbstractLqaaAlmtRowConsumer {
+
+	private List<LabeledQueryAminoAcid> result;
+
+	@Override
+	public void consumeAlmtRow(CommandContext cmdContext, AlignmentMember almtMember, List<LabeledQueryAminoAcid> lqaas) {
+		this.result = lqaas;
 	}
+	
+	public List<LabeledQueryAminoAcid> getResult() {
+		return result;
+	};
 	
 }

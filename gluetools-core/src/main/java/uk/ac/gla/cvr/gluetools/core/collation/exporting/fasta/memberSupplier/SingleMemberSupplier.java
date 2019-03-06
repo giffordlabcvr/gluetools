@@ -23,22 +23,18 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.reporting.memberAnnotationGenerator;
+package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier;
 
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
-import uk.ac.gla.cvr.gluetools.utils.Multiton;
+import java.util.Arrays;
 
-public class MemberAnnotationGeneratorFactory extends PluginFactory<MemberAnnotationGenerator> {
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 
-	public static Multiton.Creator<MemberAnnotationGeneratorFactory> creator = new
-			Multiton.SuppliedCreator<>(MemberAnnotationGeneratorFactory.class, MemberAnnotationGeneratorFactory::new);
-	
-	private MemberAnnotationGeneratorFactory() {
-		super();
-		registerPluginClass(FreemarkerAnnotationGenerator.class);
-		registerPluginClass(AminoAcidAnnotationGenerator.class);
-		registerPluginClass(NucleotideAnnotationGenerator.class);
-		registerPluginClass(VariationPresenceAnnotationGenerator.class);
+public class SingleMemberSupplier extends ExplicitMemberSupplier {
+
+	public SingleMemberSupplier(AlignmentMember almtMember) {
+		super(almtMember.getAlignment().getName(), Arrays.asList(almtMember.pkMap()));
 	}
+
+	
 	
 }

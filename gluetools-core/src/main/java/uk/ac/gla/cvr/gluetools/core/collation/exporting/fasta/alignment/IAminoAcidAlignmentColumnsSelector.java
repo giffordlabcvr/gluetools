@@ -93,9 +93,9 @@ public interface IAminoAcidAlignmentColumnsSelector extends IAlignmentColumnsSel
 			AbstractMemberSupplier memberSupplier, AbstractLqaaAlmtRowConsumer lqaaAlmtRowConsumer) {
 		checkAminoAcidSelector(cmdContext);
 		int numMembers = memberSupplier.countMembers(cmdContext);
-		GlueLogger.getGlueLogger().log(Level.FINE, "processing "+numMembers+" alignment members");
+		//GlueLogger.getGlueLogger().log(Level.FINE, "processing "+numMembers+" alignment members");
 		int offset = 0;
-		int processed = 0;
+		//int processed = 0;
 		int batchSize = 500;
 		while(offset < numMembers) {
 			Alignment alignment = memberSupplier.supplyAlignment(cmdContext);
@@ -106,8 +106,8 @@ public interface IAminoAcidAlignmentColumnsSelector extends IAlignmentColumnsSel
 					lqaaAlmtRowConsumer.consumeAlmtRow(cmdContext, almtMember, lqaas);
 				}
 			}
-			processed += almtMembers.size();
-			GlueLogger.getGlueLogger().log(Level.FINE, "processed "+processed+" alignment members");
+			//processed += almtMembers.size();
+			//GlueLogger.getGlueLogger().log(Level.FINE, "processed "+processed+" alignment members");
 			offset += batchSize;
 			cmdContext.newObjectContext();
 		}

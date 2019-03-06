@@ -292,7 +292,7 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 			}
 		}
 		if(leafTextAnnotationGenerator == null) {
-			throw new CommandException(Code.COMMAND_FAILED_ERROR, "TreeVisualiser module has no generator for annotations named '"+leafTextAnnotationName+"'");
+			throw new CommandException(Code.COMMAND_FAILED_ERROR, "TreeVisualiser module has no generator with annotationName = '"+leafTextAnnotationName+"'");
 		}
 		final MemberAnnotationGenerator leafTextAnnotationGeneratorFinal = leafTextAnnotationGenerator;
 		
@@ -384,7 +384,7 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 						if(storedAlmtMember) {
 							Map<String, String> memberPkMap = Project.targetPathToPkMap(ConfigurableTable.alignment_member, phyloLeafName);
 							AlignmentMember member = GlueDataObject.lookup(cmdContext, AlignmentMember.class, memberPkMap);
-							leafText = leafTextAnnotationGeneratorFinal.renderAnnotation(member);
+							leafText = leafTextAnnotationGeneratorFinal.renderAnnotation(cmdContext, member);
 						} else {
 							leafText = phyloLeafName;
 						}

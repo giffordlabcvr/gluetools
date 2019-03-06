@@ -6,6 +6,7 @@ import org.w3c.dom.Element;
 
 import freemarker.template.Configuration;
 import freemarker.template.Template;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -32,7 +33,7 @@ public class FreemarkerAnnotationGenerator extends MemberAnnotationGenerator {
 	}
 
 	@Override
-	public String renderAnnotation(AlignmentMember member) {
+	public String renderAnnotation(CommandContext cmdContext, AlignmentMember member) {
 		return FreemarkerUtils.processTemplate(template, FreemarkerUtils.templateModelForObject(member));
 	}
 }
