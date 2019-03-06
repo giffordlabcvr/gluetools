@@ -69,8 +69,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 			"-p, --preview                                  Preview only"},
 		metaTags = {CmdMeta.consoleOnly}, 
 		furtherHelp = "Imports a phylogenetic tree from a file, and uses it to populate a custom column of the "+
-		"alignment table, for a single unconstrained alignment object, or one or more alignment objects within an alignment tree."+
-		"The the leaf nodes of the imported tree matched up with the alignment members selected by the "+
+		"alignment table, for a single unconstrained alignment object, or one or more alignment objects within an alignment tree. "+
+		"The leaf nodes of the imported tree are matched up with the alignment members selected by the "+
 		"<alignmentName>, --recursive and <whereClause>/--allMembers options. "+
 		"There must be exactly one leaf node per selected member, otherwise an error will be thrown. "+
 		"Leaf nodes are mapped to alignment member objects by having the format: "+
