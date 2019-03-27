@@ -126,7 +126,7 @@ public class ScriptObjectMirrorUtils {
 			if(doubleVal == num.doubleValue()) {
 				commandArray.addInt(num.intValue());
 			} else {
-				commandArray.addDouble(doubleVal);
+				commandArray.addDouble(num.doubleValue());
 			}
 		} else {
 			throw new ScriptObjectMirrorUtilsException(Code.JS_OBJECT_TO_COMMAND_DOCUMENT_ERROR, "GLUE array may not contain JavaScript value "+value);

@@ -366,7 +366,8 @@ public class BaseTableResult<D> extends CommandResult {
 			buf = new StringBuffer();
 			for(int i = 0; i < columnHeaders.size(); i++) {
 				String header = columnHeaders.get(i);
-				buf.append(RenderUtils.render(rowData.get(header), renderCtx));
+				// use default render context for row data, avoiding e.g. double rounding.
+				buf.append(RenderUtils.render(rowData.get(header)));
 				if(i < columnHeaders.size() - 1) {
 					buf.append(delimiter);
 				}
