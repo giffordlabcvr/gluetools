@@ -22,10 +22,15 @@ public class ConjunctionScanner extends BaseVariationScanner<ConjunctionMatchRes
 			VariationMetatagType.CONJUNCT_NAME_2, 
 			VariationMetatagType.CONJUNCT_NAME_3, 
 			VariationMetatagType.CONJUNCT_NAME_4, 
-			VariationMetatagType.CONJUNCT_NAME_5);
+			VariationMetatagType.CONJUNCT_NAME_5,
+			VariationMetatagType.CONJUNCT_NAME_6, 
+			VariationMetatagType.CONJUNCT_NAME_7, 
+			VariationMetatagType.CONJUNCT_NAME_8, 
+			VariationMetatagType.CONJUNCT_NAME_9, 
+			VariationMetatagType.CONJUNCT_NAME_10);
 	private static final List<VariationMetatagType> requiredMetatagTypes = Arrays.asList(VariationMetatagType.CONJUNCT_NAME_1);
 
-	private static int MAX_CONJUNCT_INDEX = 5;
+	private static int MAX_CONJUNCT_INDEX = 10;
 
 	private List<BaseVariationScanner<?>> conjunctScanners = new ArrayList<BaseVariationScanner<?>>();
 	private int numConjuncts;

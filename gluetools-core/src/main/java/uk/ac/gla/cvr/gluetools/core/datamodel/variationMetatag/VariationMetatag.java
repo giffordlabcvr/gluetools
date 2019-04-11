@@ -86,6 +86,11 @@ public class VariationMetatag extends _VariationMetatag {
 		CONJUNCT_NAME_3,
 		CONJUNCT_NAME_4,
 		CONJUNCT_NAME_5,
+		CONJUNCT_NAME_6,
+		CONJUNCT_NAME_7,
+		CONJUNCT_NAME_8,
+		CONJUNCT_NAME_9,
+		CONJUNCT_NAME_10,
 		
 	}
 
