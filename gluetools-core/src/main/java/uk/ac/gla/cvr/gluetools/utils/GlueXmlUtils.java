@@ -82,6 +82,11 @@ public class GlueXmlUtils {
 		dbFactory.setNamespaceAware(true);
 		DocumentBuilder dBuilder;
 		try {
+			// these settings suppress DTD lookup, which in the case of NCBI, fails when behind an HTTPS proxy
+			dbFactory.setValidating(false);
+			dbFactory.setFeature("http://xml.org/sax/features/validation", false);
+			dbFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
+			dbFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
 			dBuilder = dbFactory.newDocumentBuilder();
 		} catch (ParserConfigurationException e) {
 			throw new RuntimeException(e);
