@@ -8,14 +8,8 @@ RUN apt-get install --no-install-recommends -y debconf-utils \
 	python-software-properties \
 	software-properties-common	    
 	    
-# Oracle Java 8
-# this repo contains Oracle Java installer 
-RUN add-apt-repository -y ppa:webupd8team/java
-RUN apt-get update
-# accept oracle license
-RUN echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | debconf-set-selections
-# install java8 jdk
-RUN apt-get install --no-install-recommends -y oracle-java8-installer
+# OpenJDK
+RUN apt-get install --no-install-recommends -y default-jre
 
 # various stuff required for MAFFT, RAxML 
 RUN apt-get install --no-install-recommends -y git
