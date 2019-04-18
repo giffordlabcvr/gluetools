@@ -62,6 +62,7 @@ import uk.ac.gla.cvr.gluetools.core.document.CommandArray;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
+import uk.ac.gla.cvr.gluetools.core.translation.ResidueUtils;
 
 public class FastaUtils {
 	
@@ -257,44 +258,11 @@ public class FastaUtils {
 		char[] resultChars = new char[length];
 		for(int i = 0; i < length; i++) {
 			char nt = nts.charAt(i);
-			char compNt = complementChar(nt);
+			char compNt = ResidueUtils.complementAmbigNtChar(nt);
 			resultChars[(length-1) - i] = compNt;
 		}
 		return new String(resultChars);
 		
-	}
-
-	public static char complementChar(char nt) {
-		char compNt;
-		switch(nt) {
-		case 'a':
-			compNt = 't';
-			break;
-		case 'A':
-			compNt = 'T';
-			break;
-		case 't':
-			compNt = 'a';
-			break;
-		case 'T':
-			compNt = 'A';
-			break;
-		case 'g':
-			compNt = 'c';
-			break;
-		case 'G':
-			compNt = 'C';
-			break;
-		case 'c':
-			compNt = 'g';
-			break;
-		case 'C':
-			compNt = 'G';
-			break;
-		default:
-			compNt = nt;
-		}
-		return compNt;
 	}
 
 	public static CommandDocument ntFastaMapToCommandDocument(Map<String, DNASequence> fastaMap) {

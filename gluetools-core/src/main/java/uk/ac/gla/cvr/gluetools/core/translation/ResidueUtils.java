@@ -25,6 +25,8 @@
 */
 package uk.ac.gla.cvr.gluetools.core.translation;
 
+import gnu.trove.map.TCharCharMap;
+import gnu.trove.map.hash.TCharCharHashMap;
 import uk.ac.gla.cvr.gluetools.core.bitmap.BitmapUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationException.Code;
 
@@ -228,6 +230,35 @@ public class ResidueUtils {
 		}
 	}
 	
+	
+	private static char[][] ntComplements = {
+	    {'A',	'T'},
+	    {'C',	'G'},
+	    {'G',	'C'},
+	    {'T',	'A'},
+	    {'U',	'A'},
+	    {'W',	'W'},
+	    {'S',	'S'},
+	    {'M',	'K'},
+	    {'K',	'M'},
+	    {'R',	'Y'},
+	    {'Y',	'R'},
+	    {'B',	'V'},
+	    {'D',	'H'},
+	    {'H',	'D'},
+	    {'V',	'B'},
+	    {'N',	'N'},
+	    {'Z',	'Z'}
+	};
+	
+	private static TCharCharMap ambigNtCharToComplement = new TCharCharHashMap();
+	
+	static {
+		for(int i = 0; i < ntComplements.length; i++) {
+			ambigNtCharToComplement.put(ntComplements[i][0], ntComplements[i][1]);
+		}
+	}
+	
 	// map ambiguous NT to an array of the underlying concrete NTs
 	private static int[][] ambigNtToConcreteNts = new int[16][];
 	// map a bitmap of concrete NTs to an ambiguous NT
@@ -306,5 +337,23 @@ public class ResidueUtils {
 		return concreteNtsBitmapToAmbigNt[concreteNtsBitmap];
 	}
 
+	public static char complementAmbigNtChar(char ambigNtChar) {
+		char upperCaseANC = ambigNtChar;
+		boolean isLowerCase = false;
+		if(Character.isLowerCase(ambigNtChar)) {
+			upperCaseANC = Character.toUpperCase(ambigNtChar);
+			isLowerCase = true;
+		}
+		char complement;
+		if(ambigNtCharToComplement.containsKey(upperCaseANC)) {
+			complement = ambigNtCharToComplement.get(upperCaseANC);
+		} else {
+			complement = upperCaseANC;
+		}
+		if(isLowerCase) {
+			complement = Character.toLowerCase(complement);
+		}
+		return complement;
+	}
 	
 }

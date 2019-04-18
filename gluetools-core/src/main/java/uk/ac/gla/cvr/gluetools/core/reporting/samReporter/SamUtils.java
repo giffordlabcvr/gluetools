@@ -51,6 +51,7 @@ import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSens
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamReporterPreprocessorSession;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtilsException.Code;
 import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
+import uk.ac.gla.cvr.gluetools.core.translation.ResidueUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 public class SamUtils {
@@ -78,7 +79,7 @@ public class SamUtils {
 		case FORWARD:
 			return readBase;
 		case REVERSE_COMPLEMENT:
-			return FastaUtils.complementChar(readBase);
+			return ResidueUtils.complementAmbigNtChar(readBase);
 		default:
 			throw new RuntimeException("SAM ref sense should be determined by the point of using a read base");
 		}
