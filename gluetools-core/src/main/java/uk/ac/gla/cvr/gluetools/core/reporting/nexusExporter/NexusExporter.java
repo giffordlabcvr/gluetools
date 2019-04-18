@@ -3,12 +3,10 @@ package uk.ac.gla.cvr.gluetools.core.reporting.nexusExporter;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.Set;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.w3c.dom.Element;
@@ -31,14 +29,10 @@ import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeVisitor;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.reporting.memberAnnotationGenerator.AnnotationGeneratorGroupFactory;
 import uk.ac.gla.cvr.gluetools.core.reporting.memberAnnotationGenerator.MemberAnnotationGenerator;
-import uk.ac.gla.cvr.gluetools.core.reporting.memberAnnotationGenerator.MemberAnnotationGeneratorFactory;
 import uk.ac.gla.cvr.gluetools.core.treerenderer.PhyloExporter;
 import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtils;
-import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 
 @PluginClass(elemName="nexusExporter", 
