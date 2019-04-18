@@ -25,11 +25,14 @@
 */
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
-import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
@@ -38,35 +41,37 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 
 @CommandClass( 
-	commandWords={"create", "sequence"}, 
+	commandWords={"create", "sequence-from-string"}, 
 	docoptUsages={
-		"<sourceName> <sequenceID> <format> -b <data>"
+		"<sourceName> <sequenceID> <sequenceString>"
 	}, 
-	metaTags={CmdMeta.updatesDatabase, CmdMeta.consumesBinary},
-	docoptOptions={
-		"-b <data>, --base64 <data>  Sequence data encoded as Base64"},
-	description="Create a new sequence") 
-public class CreateSequenceCommand extends BaseCreateSequenceCommand {
+	metaTags={CmdMeta.updatesDatabase},
+	docoptOptions={},
+	description="Create a new Sequence Object from a FASTA String") 
+public class CreateSequenceFromStringCommand extends BaseCreateSequenceCommand {
 
-	public static final String FORMAT = "format";
-	public static final String BASE64 = Command.BINARY_INPUT_PROPERTY;
+	public static final String SEQUENCE_STRING = "sequenceString";
 
-	private SequenceFormat format;
-	private byte[] originalData;
+	private String sequenceString;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		format = PluginUtils.configureEnumProperty(SequenceFormat.class, configElem, FORMAT, true);
-		originalData = PluginUtils.configureBase64BytesProperty(configElem, BASE64, true);
+		sequenceString = PluginUtils.configureStringProperty(configElem, SEQUENCE_STRING, true);
 	}
 
 	@Override
 	public CreateResult execute(CommandContext cmdContext) {
-		return super.executeCreateSequence(cmdContext, format, originalData);
+		DNASequence dnaSequence = FastaUtils.ntStringToSequence(sequenceString);
+		Map<String, DNASequence> fastaMap = new LinkedHashMap<String, DNASequence>();
+		fastaMap.put(getSequenceID(), dnaSequence);
+		byte[] fastaBytes = FastaUtils.mapToFasta(fastaMap, LineFeedStyle.LF);
+		return super.executeCreateSequence(cmdContext, SequenceFormat.FASTA, fastaBytes);
 	}
 
 	@CompleterClass
@@ -74,7 +79,6 @@ public class CreateSequenceCommand extends BaseCreateSequenceCommand {
 		public Completer() {
 			super();
 			registerDataObjectNameLookup("sourceName", Source.class, Source.NAME_PROPERTY);
-			registerEnumLookup("format", SequenceFormat.class);
 		}
 	}
 	
