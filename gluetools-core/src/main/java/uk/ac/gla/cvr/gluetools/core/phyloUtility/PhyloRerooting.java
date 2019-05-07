@@ -28,7 +28,9 @@ package uk.ac.gla.cvr.gluetools.core.phyloUtility;
 import java.math.BigDecimal;
 import java.util.LinkedList;
 
+import uk.ac.gla.cvr.gluetools.core.newick.NewickBootstrapsToPhyloTreeParser;
 import uk.ac.gla.cvr.gluetools.core.newick.NewickToPhyloTreeParser;
+import uk.ac.gla.cvr.gluetools.core.newick.PhyloTreeToNewickBootstrapsGenerator;
 import uk.ac.gla.cvr.gluetools.core.newick.PhyloTreeToNewickGenerator;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
@@ -176,7 +178,7 @@ public class PhyloRerooting {
 		 */
 		PhyloBranch case1RerootBranch = findSubtree(startTree, "C").getParentPhyloBranch();
 		PhyloTree case1Tree = treeRerooter.rerootPhylogeny(case1RerootBranch, new BigDecimal(2.0));
-		check("(C:2,(D:2,(E:5,G:3)F:5)B:2);", treeToString(case1Tree));
+		check("(C:2,(D:2,(E:5,G:3)F:5)B:2);", treeToString_NEWICK(case1Tree));
 		/* 
 		 * Case 2: Rerooting at point Y should produce
 		 * 
@@ -185,7 +187,7 @@ public class PhyloRerooting {
 		PhyloBranch case2RerootBranch = findSubtree(startTree, "C").getParentPhyloBranch()
 					.getParentPhyloInternal().getParentPhyloBranch();
 		PhyloTree case2Tree = treeRerooter.rerootPhylogeny(case2RerootBranch, new BigDecimal(2.0));
-		check("((C:4,D:2)B:1,(E:5,G:3)F:4);", treeToString(case2Tree));
+		check("((C:4,D:2)B:1,(E:5,G:3)F:4);", treeToString_NEWICK(case2Tree));
 		/*
 		 * Case 3: Rerooting at point Z should produce
 		 * 
@@ -193,7 +195,7 @@ public class PhyloRerooting {
 		 */
 		PhyloBranch case3RerootBranch = findSubtree(startTree, "E").getParentPhyloBranch();
 		PhyloTree case3Tree = treeRerooter.rerootPhylogeny(case3RerootBranch, new BigDecimal(1.0));
-		check("(E:4,(G:3,(C:4,D:2)B:5)F:1);", treeToString(case3Tree));
+		check("(E:4,(G:3,(C:4,D:2)B:5)F:1);", treeToString_NEWICK(case3Tree));
 		/*
 		 * Case where there is a polytomy at the root.
 		 * 
@@ -220,7 +222,41 @@ public class PhyloRerooting {
 		PhyloBranch polytomyCase1RerootBranch = findSubtree(polytomyStartTree, "E").getParentPhyloBranch()
 				.getParentPhyloInternal().getParentPhyloBranch();
 		PhyloTree polytomyCase1Tree = treeRerooter.rerootPhylogeny(polytomyCase1RerootBranch, new BigDecimal(1.0));
-		check("((E:5,G:3):1,((C:4,D:2):3,F:10):1);", treeToString(polytomyCase1Tree));
+		check("((E:5,G:3):1,((C:4,D:2):3,F:10):1);", treeToString_NEWICK(polytomyCase1Tree));
+		
+		
+		
+		
+		/*
+		 * Test case adapted from Czech et al. 2017, to test whether bootstraps (represented as internal node names)
+		 * are in the correct locations after rerooting. Adapted with unit branch lengths implicit in the diagram.
+		 * 
+		 *      +---------------E
+		 *      |        
+		 *      |       +---Y---X
+		 *      +---2---3
+		 *      |   |   +-------B
+		 *      |   |    
+		 *      |   +-----------A
+		 *      |
+		 *      |        +------D
+		 *      +--------1
+		 *               +------C
+		 */      
+		NewickBootstrapsToPhyloTreeParser bootstrapsParser = new NewickBootstrapsToPhyloTreeParser();
+		PhyloTree czech2017StartTree = bootstrapsParser.parseNewick("((C:1,D:1)1:1,(A:1,(B:1,X:1)3:1)2:1,E:1);");
+		/*
+		 * Rerooting at point Y should produce
+		 * 
+		 * (X:0.5,(B:1,(A:1,((C:1,D:1)1:1,E:1)2:1)3:1):0.5);
+		 */
+		PhyloBranch czech2017RerootBranch = findSubtree(czech2017StartTree, "X").getParentPhyloBranch();
+		PhyloTree czech2017RerootedTree = treeRerooter.rerootPhylogeny(czech2017RerootBranch, new BigDecimal(0.5));
+		check("(X:0.5,(B:1,(A:1,((C:1,D:1)1:1,E:1)2:1)3:1):0.5);", treeToString_NEWICK_BOOTSTRAPS(czech2017RerootedTree));
+
+		
+		
+		
 		
 	}
 
@@ -258,10 +294,16 @@ public class PhyloRerooting {
 		return rerootedTree;
 	}
 
-	private static String treeToString(PhyloTree tree) {
+	private static String treeToString_NEWICK(PhyloTree tree) {
 		PhyloTreeToNewickGenerator newickPhyloTreeVisitor = new PhyloTreeToNewickGenerator();
 		tree.accept(newickPhyloTreeVisitor);
 		return newickPhyloTreeVisitor.getNewickString();
+	}
+
+	private static String treeToString_NEWICK_BOOTSTRAPS(PhyloTree tree) {
+		PhyloTreeToNewickBootstrapsGenerator newickBootstrapsPhyloTreeVisitor = new PhyloTreeToNewickBootstrapsGenerator();
+		tree.accept(newickBootstrapsPhyloTreeVisitor);
+		return newickBootstrapsPhyloTreeVisitor.getNewickString();
 	}
 
 }
