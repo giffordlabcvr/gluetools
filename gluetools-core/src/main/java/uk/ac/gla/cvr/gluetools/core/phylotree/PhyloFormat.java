@@ -90,6 +90,12 @@ public enum PhyloFormat {
 			return stringWriter.toString().getBytes();
 		}
 	},
+	// Newick format, allowing the following constructs:
+	// -- optional internal name, e.g. X, set as "name" property on PhyloTree internal node
+	// -- optional leaf name, e.g. X, set as "name" property on PhyloTree leaf node
+	// -- optional branch length, e.g. :0.10334, signified by a colon, set as "length" property on PhyloTree branches
+	// -- optional branch labels e.g. {123}, comes after branch length, set as "label" property on PhyloTree branches
+	// -- optional branch comments e.g. [xyz234098], comes after branch length, set as "comment" property on PhyloTree branches
 	NEWICK {
 		@Override
 		public PhyloTree parse(byte[] bytes) {
@@ -104,6 +110,11 @@ public enum PhyloFormat {
 			return phyloTreeToNewickGenerator.getNewickString().getBytes();
 		}
 	},
+	// as NEWICK, but any internal name string is not set as a "name" property on PhyloTree internal nodes, but as a 
+	// "bootstrap" property on the internal node's parent branch. This is expected to be an integer between 0 and 100.
+	// NEWICK_BOOTSTRAPS is produced by RAxML 8.x in the RAxML_bipartitions file. 
+	// NEWICK_BOOTSTRAPS is also the input format for ClusterPicker.
+	// FigTree will allow you to import NEWICK_BOOTSTRAPS and prompt you to name the node property.
 	NEWICK_BOOTSTRAPS {
 		@Override
 		public PhyloTree parse(byte[] bytes) {
@@ -118,6 +129,11 @@ public enum PhyloFormat {
 			return phyloTreeToNewickBootstrapsGenerator.getNewickString().getBytes();
 		}
 	},
+	// as NEWICK, but expects each branch to have an integer branch label. These are stored using the key "jPlaceBranchLabel"
+	// in PhyloTree branches.
+	// This variant is specified in the jPlace standard:
+	// https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0031009
+	// and is produced by RAxML-EPA
 	NEWICK_JPLACE {
 		@Override
 		public PhyloTree parse(byte[] bytes) {
