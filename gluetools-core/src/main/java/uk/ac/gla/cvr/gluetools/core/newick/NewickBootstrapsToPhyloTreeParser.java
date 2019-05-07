@@ -25,6 +25,10 @@
 */
 package uk.ac.gla.cvr.gluetools.core.newick;
 
+import java.util.Map;
+
+import uk.ac.gla.cvr.gluetools.core.newick.PhyloNewickException.Code;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
 
 public class NewickBootstrapsToPhyloTreeParser extends NewickToPhyloTreeParser {
@@ -33,9 +37,28 @@ public class NewickBootstrapsToPhyloTreeParser extends NewickToPhyloTreeParser {
 		super(new NewickInterpreter() {
 			@Override
 			public void parseInternalName(PhyloInternal phyloInternal, String internalName) {
-				phyloInternal.ensureUserData().put("bootstraps", Integer.parseInt(internalName));
+				PhyloBranch parentBranch = phyloInternal.getParentPhyloBranch();
+				if(parentBranch == null) {
+					throw new PhyloNewickException(Code.FORMAT_ERROR, "NEWICK_BOOTSTRAPS format should not try to annotate a bootstraps value as an internal name of the root node");
+				}
+				Integer bootstraps;
+				try {
+					bootstraps = Integer.parseInt(internalName);
+				} catch(NumberFormatException nfe) {
+					throw new PhyloNewickException(Code.FORMAT_ERROR, "NEWICK_BOOTSTRAPS internal node names should be integers");
+				}
+				if(bootstraps < 0 || bootstraps > 100) {
+					throw new PhyloNewickException(Code.FORMAT_ERROR, "NEWICK_BOOTSTRAPS internal node names should be between 0 and 100 inclusive");
+				};
+				
+				Map<String, Object> parentBranchUserData = parentBranch.ensureUserData();
+				Integer existingValue = (Integer) parentBranchUserData.get("bootstraps");
+				if(existingValue != null && !existingValue.equals(bootstraps)) {
+					throw new PhyloNewickException(Code.FORMAT_ERROR, "NEWICK_BOOTSTRAPS internal node names of the children of the root node should be equal as they are bootstraps for the same edge");					
+				} 
+				parentBranchUserData.put("bootstraps", bootstraps);
 			}
 		});
 	}
-
+	
 }

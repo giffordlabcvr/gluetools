@@ -22,6 +22,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.newick.NewickGenerator;
 import uk.ac.gla.cvr.gluetools.core.newick.PhyloTreeToNewickGenerator;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
@@ -261,9 +262,12 @@ public class NexusExporter extends ModulePlugin<NexusExporter> {
 					}
 					@Override
 					public String generateInternalComment(PhyloInternal phyloInternal) {
-						Integer bootstraps = (Integer) phyloInternal.ensureUserData().get("bootstraps");
-						if(bootstraps != null) {
-							return "&bootstraps="+Integer.toString(bootstraps); 
+						PhyloBranch parentBranch = phyloInternal.getParentPhyloBranch();
+						if(parentBranch != null) {
+							Integer bootstraps = (Integer) parentBranch.ensureUserData().get("bootstraps");
+							if(bootstraps != null) {
+								return "&bootstraps="+Integer.toString(bootstraps); 
+							}
 						}
 						return null;
 					}
