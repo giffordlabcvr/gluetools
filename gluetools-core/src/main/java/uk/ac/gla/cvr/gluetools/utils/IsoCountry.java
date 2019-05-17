@@ -175,7 +175,7 @@ public enum IsoCountry {
 	MU("MUS", "Mauritius", "MU", "480"),
 	YT("MYT", "Mayotte", "YT", "175"),
 	MX("MEX", "Mexico", "MX", "484"),
-	FM("FSM", "Federated States of Micronesia", "FM", "583"),
+	FM("FSM", "Micronesia", "Federated States of Micronesia", "FM", "583", "Micronesia", "Federated States of Micronesia"),
 	MD("MDA", "Moldova", "MD", "498"),
 	MC("MCO", "Monaco", "MC", "492"),
 	MN("MNG", "Mongolia", "MN", "496"),
