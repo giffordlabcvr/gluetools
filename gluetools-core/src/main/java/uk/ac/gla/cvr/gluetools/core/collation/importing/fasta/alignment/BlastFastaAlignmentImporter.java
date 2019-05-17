@@ -127,7 +127,7 @@ public class BlastFastaAlignmentImporter extends FastaNtAlignmentImporter<BlastF
 			blastDbManager.removeTempSingleSeqBlastDB(cmdContext, uuid);
 		}
 		Map<String, List<QueryAlignedSegment>> blastResultsToAlignedSegmentsMap = 
-				BlastUtils.blastNResultsToAlignedSegmentsMap("glueSequenceRef", blastResults, null);
+				BlastUtils.blastNResultsToAlignedSegmentsMap("glueSequenceRef", blastResults, null, true);
 		List<QueryAlignedSegment> blastAlignedSegments = blastResultsToAlignedSegmentsMap.get("alignmentRowNTs");
 		int navRegionOffset = navRegionStart-1;
 		if(navRegionOffset != 0) {

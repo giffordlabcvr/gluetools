@@ -40,7 +40,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 public class BlastUtils {
 
 	public static Map<String, List<QueryAlignedSegment>> blastNResultsToAlignedSegmentsMap(String refName, 
-			List<BlastResult> blastResults, BlastHspFilter blastHspFilter) {
+			List<BlastResult> blastResults, BlastHspFilter blastHspFilter, boolean respectQueryOrder) {
 		LinkedHashMap<String, List<QueryAlignedSegment>> fastaIdToAlignedSegments = 
 				new LinkedHashMap<String, List<QueryAlignedSegment>>();
 		for(BlastResult blastResult: blastResults) {
@@ -57,7 +57,7 @@ public class BlastUtils {
 					.collect(Collectors.toList());
 	
 			// merge/rationalise the segments;
-			BlastSegmentList mergedSegments = mergeSegments(perHspAlignedSegments);
+			BlastSegmentList mergedSegments = mergeSegments(perHspAlignedSegments, respectQueryOrder);
 			// store merged segments against the query fasta ID.
 			fastaIdToAlignedSegments.put(queryFastaId, new ArrayList<QueryAlignedSegment>(mergedSegments));
 		}
@@ -66,7 +66,7 @@ public class BlastUtils {
 
 	
 	public static Map<String, List<QueryAlignedSegment>> tBlastNResultsToAlignedSegmentsMap(String refName, 
-			List<BlastResult> blastResults, BlastHspFilter blastHspFilter, Function<Integer, Integer> queryAAToNTCoordMapper) {
+			List<BlastResult> blastResults, BlastHspFilter blastHspFilter, Function<Integer, Integer> queryAAToNTCoordMapper, boolean respectQueryOrder) {
 		LinkedHashMap<String, List<QueryAlignedSegment>> fastaIdToAlignedSegments = 
 				new LinkedHashMap<String, List<QueryAlignedSegment>>();
 		for(BlastResult blastResult: blastResults) {
@@ -83,7 +83,7 @@ public class BlastUtils {
 					.collect(Collectors.toList());
 	
 			// merge/rationalise the segments;
-			BlastSegmentList mergedSegments = mergeSegments(perHspAlignedSegments);
+			BlastSegmentList mergedSegments = mergeSegments(perHspAlignedSegments, respectQueryOrder);
 			// store merged segments against the query fasta ID.
 			fastaIdToAlignedSegments.put(queryFastaId, new ArrayList<QueryAlignedSegment>(mergedSegments));
 		}
@@ -118,7 +118,7 @@ public class BlastUtils {
 	}
 
 	private static BlastSegmentList mergeSegments(
-			List<BlastSegmentList> perHspAlignedSegments) {
+			List<BlastSegmentList> perHspAlignedSegments, boolean respectQueryOrder) {
 		if(perHspAlignedSegments.isEmpty()) {
 			return new BlastSegmentList();
 		}
@@ -130,7 +130,7 @@ public class BlastUtils {
 		while(!perHspAlignedSegments.isEmpty()) {
 			BlastSegmentList nextSegments = perHspAlignedSegments.remove(0);
 			nextSegments = IReferenceSegment.sortByRefStart(nextSegments, BlastSegmentList::new);
-			mergedSegments.mergeInSegmentList(nextSegments);
+			mergedSegments.mergeInSegmentList(nextSegments, respectQueryOrder);
 		}
 		return mergedSegments;
 	}

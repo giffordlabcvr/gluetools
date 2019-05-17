@@ -146,7 +146,7 @@ public class CodonAwareBlastAligner extends AbstractBlastAligner<CodonAwareBlast
 		for(String queryId: queryIdToNucleotides.keySet()) {
 			Map<String, List<QueryAlignedSegment>> alignedSegsMap = 
 					BlastUtils.tBlastNResultsToAlignedSegmentsMap(queryId, blastResults, 
-							new MyBlastHspFilter(), queryAAToNTCoordMapper);
+							new MyBlastHspFilter(), queryAAToNTCoordMapper, true);
 			
 			List<QueryAlignedSegment> alignedSegs = alignedSegsMap.get(queryAAFastaID);
 			if(alignedSegs == null) {

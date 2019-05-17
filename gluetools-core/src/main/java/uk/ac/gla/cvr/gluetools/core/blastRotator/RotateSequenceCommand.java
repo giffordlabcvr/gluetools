@@ -23,7 +23,7 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.blastRecogniser;
+package uk.ac.gla.cvr.gluetools.core.blastRotator;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -51,16 +51,16 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 @CommandClass(
-		commandWords={"recognise", "sequence"}, 
-		description = "Apply recognition to stored sequences", 
+		commandWords={"rotate", "sequence"}, 
+		description = "Apply rotation to stored sequences", 
 		docoptUsages = { "(-w <whereClause> | -a)" },
 		docoptOptions = { 
-				"-w <whereClause>, --whereClause <whereClause>  Qualify the sequences to be recognised",
-				"-a, --allSequences                             Recognise all sequences in the project"
+				"-w <whereClause>, --whereClause <whereClause>  Qualify the sequences to be rotated",
+				"-a, --allSequences                             Rotate all sequences in the project"
 		},
 		metaTags = {}	
 		)
-public class RecogniseSequenceCommand extends ModulePluginCommand<BlastSequenceRecogniserResult, BlastSequenceRecogniser> 
+public class RotateSequenceCommand extends ModulePluginCommand<BlastSequenceRotatorResult, BlastSequenceRotator> 
 	implements ProvidedProjectModeCommand {
 
 	public final static String WHERE_CLAUSE = "whereClause";
@@ -80,7 +80,7 @@ public class RecogniseSequenceCommand extends ModulePluginCommand<BlastSequenceR
 	}
 
 	@Override
-	protected BlastSequenceRecogniserResult execute(CommandContext cmdContext, BlastSequenceRecogniser blastSequenceRecogniser) {
+	protected BlastSequenceRotatorResult execute(CommandContext cmdContext, BlastSequenceRotator blastSequenceRotator) {
 		SelectQuery selectQuery;
 		if(this.allSequences) {
 			selectQuery = new SelectQuery(Sequence.class);
@@ -89,7 +89,7 @@ public class RecogniseSequenceCommand extends ModulePluginCommand<BlastSequenceR
 		}
 		
 		
-		List<BlastSequenceRecogniserResultRow> resultRows = new ArrayList<BlastSequenceRecogniserResultRow>();
+		List<RotationResultRow> resultRows = new ArrayList<RotationResultRow>();
 		
 		int totalNumSeqs = GlueDataObject.count(cmdContext, selectQuery);
 		int batchSize = 200;
@@ -108,17 +108,15 @@ public class RecogniseSequenceCommand extends ModulePluginCommand<BlastSequenceR
 				querySequenceMap.put(seq.getSource().getName()+"/"+seq.getSequenceID(), 
 						FastaUtils.ntStringToSequence(seq.getSequenceObject().getNucleotides(cmdContext)));
 			});
-			GlueLogger.getGlueLogger().finest("Recognising sequences");
-			Map<String, List<RecognitionCategoryResult>> queryIdToCatResult = blastSequenceRecogniser.recognise(cmdContext, querySequenceMap);
-			resultRows.addAll(BlastSequenceRecogniserResultRow.rowsFromMap(queryIdToCatResult));
-
+			GlueLogger.getGlueLogger().finest("Rotating sequences");
+			Map<String, RotationResultRow> queryIdToResultRow = blastSequenceRotator.rotate(cmdContext, querySequenceMap);
+			resultRows.addAll(queryIdToResultRow.values());
 			offset += batchSize;
 			processed += sequences.size();
 			GlueLogger.getGlueLogger().finest("Processed "+processed+" of "+totalNumSeqs+" sequences");
 			cmdContext.newObjectContext();
 		}
-		return new BlastSequenceRecogniserResult(resultRows);
-		
+		return new BlastSequenceRotatorResult(resultRows);
 	}
 
 	@CompleterClass

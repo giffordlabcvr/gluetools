@@ -25,10 +25,10 @@
 */
 package uk.ac.gla.cvr.gluetools.core.segments;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.function.Supplier;
 
 public interface IQueryAlignedSegment extends IReferenceSegment {
 
@@ -57,8 +57,9 @@ public interface IQueryAlignedSegment extends IReferenceSegment {
 		return 100.0 * referenceNTs / referenceLength;
 	}
 
-	public static <S extends IQueryAlignedSegment> List<S> sortByQueryStart(List<S> segments) {
-		ArrayList<S> sorted = new ArrayList<S>(segments);
+	public static<L extends List<S>, S extends IQueryAlignedSegment> L sortByQueryStart(L segments, Supplier<L> listSupplier) {
+		L sorted = listSupplier.get();
+		sorted.addAll(segments);
 		Collections.sort(sorted, new QueryStartComparator());
 		return sorted;
 	}

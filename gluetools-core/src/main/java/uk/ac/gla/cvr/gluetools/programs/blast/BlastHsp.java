@@ -208,6 +208,11 @@ public class BlastHsp {
 		}
 		return segments;
 	}
+	@Override
+	public String toString() {
+		return "BlastHsp [hitFrom=" + hitFrom + ", hitTo=" + hitTo + ", queryFrom=" + queryFrom + ", queryTo=" + queryTo
+				+ ", bitScore=" + bitScore + ", identity=" + identity + ", evalue=" + evalue + ", score=" + score + "]";
+	}
 	
 	
 }

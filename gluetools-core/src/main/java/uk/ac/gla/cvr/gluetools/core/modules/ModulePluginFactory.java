@@ -26,6 +26,7 @@
 package uk.ac.gla.cvr.gluetools.core.modules;
 
 import uk.ac.gla.cvr.gluetools.core.blastRecogniser.BlastSequenceRecogniser;
+import uk.ac.gla.cvr.gluetools.core.blastRotator.BlastSequenceRotator;
 import uk.ac.gla.cvr.gluetools.core.clusterPickerRunner.ClusterPickerRunner;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.Kuiken2006CodonLabeler;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExporter;
@@ -159,6 +160,7 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(WebAnalysisTool.class);
 
 		setModulePluginGroup(null); // OTHER
+		registerPluginClass(BlastSequenceRotator.class);
 		registerPluginClass(BlastSequenceRecogniser.class);
 		registerPluginClass(AlignmentBasedSequenceMerger.class);
 		registerPluginClass(Kuiken2006CodonLabeler.class);

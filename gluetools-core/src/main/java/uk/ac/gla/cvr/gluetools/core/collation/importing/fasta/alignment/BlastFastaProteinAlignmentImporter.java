@@ -143,7 +143,7 @@ public class BlastFastaProteinAlignmentImporter extends BaseFastaAlignmentImport
 			List<BlastResult> blastResults = runTBlastN(cmdContext, "alignmentAAs", alignmentAAsRowGapless.toString(), "glueSequenceRef", foundSequenceNTs);
 			
 			Map<String, List<QueryAlignedSegment>> blastResultsToAlignedSegmentsMap = 
-					BlastUtils.tBlastNResultsToAlignedSegmentsMap("glueSequenceRef", blastResults, null, gaplessAAtoGappedNTMapper);
+					BlastUtils.tBlastNResultsToAlignedSegmentsMap("glueSequenceRef", blastResults, null, gaplessAAtoGappedNTMapper, true);
 
 			List<QueryAlignedSegment> queryAlignedSegs = blastResultsToAlignedSegmentsMap.getOrDefault("alignmentAAs", new ArrayList<QueryAlignedSegment>());
 

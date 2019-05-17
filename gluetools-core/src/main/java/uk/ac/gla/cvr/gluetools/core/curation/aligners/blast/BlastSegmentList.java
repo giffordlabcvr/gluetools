@@ -29,6 +29,9 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.function.Function;
 
+import uk.ac.gla.cvr.gluetools.core.segments.IQueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
+
 public class BlastSegmentList extends LinkedList<BlastAlignedSegment> {
 	public BlastSegmentList(BlastAlignedSegment ... segments) {
 		super(Arrays.asList(segments));
@@ -36,18 +39,22 @@ public class BlastSegmentList extends LinkedList<BlastAlignedSegment> {
 	public BlastSegmentList(BlastSegmentList other) {
 		super(other);
 	}
+
+	public void mergeInSegmentList(BlastSegmentList newSegments0) {
+		mergeInSegmentList(newSegments0, true);
+	}
 	
 	/**
 	 * add segments from the provided list into this list. 
 	 * segments in this list cannot be overwritten by segments in the provided list
 	 * if they overlap on the reference or on the query.
-	 * Also, segments on the provided list will be ignored if they do not respect the query sequence
-	 * segment ordering which is implicit in this list.
+	 * Also (if respectQueryOrder == true), segments on the provided list will be ignored 
+	 * if they do not respect the query sequence segment ordering which is implicit in this list.
 	 * 
 	 * The provided list will be emptied by this operation, and its segments may be modified.
 	 * @param newSegments0
 	 */
-	public void mergeInSegmentList(BlastSegmentList newSegments0) {
+	public void mergeInSegmentList(BlastSegmentList newSegments0, boolean respectQueryOrder) {
 	
 		// remove new segments which overlap existing segments on the reference sequence
 		BlastSegmentList existingSegments1 = new BlastSegmentList();
@@ -68,8 +75,23 @@ public class BlastSegmentList extends LinkedList<BlastAlignedSegment> {
 			getQueryStart = BlastAlignedSegment::getQueryStart,
 			getQueryEnd = BlastAlignedSegment::getQueryEnd;
 	
+		// if respectQueryOrder is false, sort both existing and new by query start
+		// before removing overlaps on the query, since this is one of the assumptions of removeNewOverlaps.
+		// and this assumption may be violated in this case.
+		if(!respectQueryOrder) {
+			existingSegments1 = IQueryAlignedSegment.sortByQueryStart(existingSegments1, BlastSegmentList::new);
+			newSegments1 = IQueryAlignedSegment.sortByQueryStart(newSegments1, BlastSegmentList::new);
+		}
+		
 		BlastAlignedSegment.removeNewOverlaps(existingSegments1, newSegments1, existingSegments2, newSegments2, 
 				getQueryStart, getQueryEnd);
+
+		if(!respectQueryOrder) {
+			// revert to order by ref start.
+			existingSegments2 = IReferenceSegment.sortByRefStart(existingSegments2, BlastSegmentList::new);
+			newSegments2 = IReferenceSegment.sortByRefStart(newSegments2, BlastSegmentList::new);
+		}
+
 		
 		// final pass, merge existing and new: new segments should only be added to the merged list 
 		// only if they conform to the query order.
@@ -88,8 +110,12 @@ public class BlastSegmentList extends LinkedList<BlastAlignedSegment> {
 				nextQueryStart = BlastAlignedSegment.updateNextStart(existingSegments2, getQueryStart);
 			} else {
 				BlastAlignedSegment newSegment = newSegments2.removeFirst();
-				if(newSegment.getQueryStart() > lastQueryEnd &&
-						newSegment.getQueryEnd() < nextQueryStart) {
+				if(respectQueryOrder) {
+					if(newSegment.getQueryStart() > lastQueryEnd &&
+							newSegment.getQueryEnd() < nextQueryStart) {
+						merged.add(newSegment);
+					}
+				} else {
 					merged.add(newSegment);
 				}
 			}

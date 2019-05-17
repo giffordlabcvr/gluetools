@@ -86,7 +86,7 @@ public class BlastAligner extends AbstractBlastAligner<BlastAligner.BlastAligner
 				SingleReferenceBlastDB refDB = blastDbManager.ensureSingleReferenceDB(cmdContext, refName);
 				List<BlastResult> blastResults = getBlastRunner().executeBlast(cmdContext, BlastType.BLASTN, refDB, fastaBytes);
 				fastaIdToAlignedSegments.putAll(BlastUtils.blastNResultsToAlignedSegmentsMap(refName, blastResults, 
-						new MyBlastHspFilter()));
+						new MyBlastHspFilter(), true));
 			} else {
 				FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(refName, featureName), true);
 				if(featureLoc != null) {
@@ -108,7 +108,7 @@ public class BlastAligner extends AbstractBlastAligner<BlastAligner.BlastAligner
 						} finally {
 							blastDbManager.removeTempSingleSeqBlastDB(cmdContext, uuid);
 						}
-						fastaIdToAlignedSegments.putAll(BlastUtils.blastNResultsToAlignedSegmentsMap(blastRefName, blastResults, new MyBlastHspFilter()));
+						fastaIdToAlignedSegments.putAll(BlastUtils.blastNResultsToAlignedSegmentsMap(blastRefName, blastResults, new MyBlastHspFilter(), true));
 						int offset = refSeg.getRefStart()-1;
 						fastaIdToAlignedSegments.forEach( (fastaId, alignedSegments) -> {
 							alignedSegments.forEach(seg -> {
