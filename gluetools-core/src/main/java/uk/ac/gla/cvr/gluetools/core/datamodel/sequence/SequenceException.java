@@ -32,6 +32,7 @@ public class SequenceException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 		SEQUENCE_FORMAT_ERROR("errorText"),
+		SEQUENCE_FIELD_ERROR("errorText"),
 		UNKNOWN_SEQUENCE_FORMAT("unknownFormat"),
 		NO_DATA_PROVIDED(),
 		BASE_64_FORMAT_EXCEPTION("errorText"),

@@ -84,7 +84,7 @@ public class Sequence extends _Sequence {
 	}
 
 	private AbstractSequenceObject buildSequenceObject() {
-		AbstractSequenceObject sequenceObject = getSequenceFormat().sequenceObject();
+		AbstractSequenceObject sequenceObject = getSequenceFormat().sequenceObject(this);
 		sequenceObject.fromPackedData(getSeqOrigData().getPackedData());
 		return sequenceObject;
 	}
@@ -94,7 +94,7 @@ public class Sequence extends _Sequence {
 	}
 	
 	public void setOriginalData(byte[] originalData) {
-		AbstractSequenceObject sequenceObject = getSequenceFormat().sequenceObject();
+		AbstractSequenceObject sequenceObject = getSequenceFormat().sequenceObject(this);
 		sequenceObject.fromOriginalData(originalData);
 		getSeqOrigData().setPackedData(sequenceObject.toPackedData());
 		this.sequenceObject = sequenceObject;

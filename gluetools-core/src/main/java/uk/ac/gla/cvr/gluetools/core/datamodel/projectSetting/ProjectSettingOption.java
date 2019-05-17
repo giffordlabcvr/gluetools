@@ -46,6 +46,8 @@ public enum ProjectSettingOption {
 	TRANSLATE_BEYOND_POSSIBLE_STOP("translate-beyond-possible-stop", "If \"true\" translation to proteins will continue beyond a possible but not definite stop codon such as NNN", "false", new String[]{"true", "false"}),
 	TRANSLATE_BEYOND_DEFINITE_STOP("translate-beyond-definite-stop", "If \"true\" translation to proteins will continue beyond a definite stop codon", "false", new String[]{"true", "false"}),
 	INFER_FEATURE_DISPLAY_ORDER("infer-feature-display-order", "If \"true\", feature display order will be inferred from the order in which the features were created.", "false", new String[]{"true", "false"}),
+	SEQUENCE_REVERSE_COMPLEMENT_BOOLEAN_FIELD("sequence-reverse-complement-boolean-field", "Name of custom boolean field on sequence table storing indicating whether reverse complement is to be applied internally when the engine reads the sequence nucleotides", null, null),
+	SEQUENCE_ROTATION_INTEGER_FIELD("sequence-rotation-integer-field", "Name of custom integer field on sequence table storing a rotation transformation to be applied internally when the engine reads the sequence nucleotides", null, null),
 	MIN_ENGINE_VERSION("min-engine-version", "Minimum GLUE engine version required to build the project", null, null) {
 		@Override
 		public void onSet(CommandContext cmdContext, String oldVersion, String projectMinVersion) {

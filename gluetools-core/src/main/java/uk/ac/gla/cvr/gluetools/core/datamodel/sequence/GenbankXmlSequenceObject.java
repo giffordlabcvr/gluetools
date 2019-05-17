@@ -46,8 +46,8 @@ public class GenbankXmlSequenceObject extends AbstractSequenceObject {
 	private String nucleotides;
 	private Document document;
 
-	public GenbankXmlSequenceObject() {
-		super(SequenceFormat.GENBANK_XML);
+	public GenbankXmlSequenceObject(Sequence sequence) {
+		super(SequenceFormat.GENBANK_XML, sequence);
 	}
 
 	@Override

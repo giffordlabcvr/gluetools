@@ -32,11 +32,8 @@ import java.io.InputStream;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceShowCreationTimeCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceShowSequenceCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.ReferenceShowSequenceCommand.ReferenceShowSequenceResult;
-import uk.ac.gla.cvr.gluetools.core.command.project.sequence.OriginalDataResult;
-import uk.ac.gla.cvr.gluetools.core.command.project.sequence.ShowOriginalDataCommand;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
@@ -126,33 +123,9 @@ public class SingleReferenceBlastDB extends BlastDB<SingleReferenceBlastDB> {
 
 	
 	private String referenceSequenceNtString(CommandContext cmdContext, String refName) {
-		OriginalDataResult refSeqOriginalData = getReferenceSeqOriginalData(cmdContext, refName);
-		AbstractSequenceObject refSeqObject = refSeqOriginalData.getSequenceObject();
-		return refSeqObject.getNucleotides(cmdContext);
+		ReferenceSequence refSeq = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(refName));
+		return refSeq.getSequence().getSequenceObject().getNucleotides(cmdContext);
 	}
-
-	private OriginalDataResult getReferenceSeqOriginalData(
-			CommandContext cmdContext, String refName) {
-		// enter the reference command mode to get the reference sourceName and sequence ID.
-		ReferenceShowSequenceResult showSequenceResult = getReferenceSequenceResult(cmdContext, refName);
-		return getOriginalData(cmdContext, showSequenceResult.getSourceName(), showSequenceResult.getSequenceID());
-	}
-
-
-	private OriginalDataResult getOriginalData(CommandContext cmdContext, String sourceName, String seqId) {
-		// enter the sequence command mode to get the sequence original data.
-		try (ModeCloser refSeqMode = cmdContext.pushCommandMode("sequence", sourceName, seqId)) {
-			return cmdContext.cmdBuilder(ShowOriginalDataCommand.class).execute();
-		}
-	}
-
-	private ReferenceShowSequenceResult getReferenceSequenceResult(CommandContext cmdContext, String refName) {
-		try (ModeCloser refMode = cmdContext.pushCommandMode("reference", refName)) {
-			return cmdContext.cmdBuilder(ReferenceShowSequenceCommand.class).execute();
-		}
-	}
-
-	
 
 	
 }

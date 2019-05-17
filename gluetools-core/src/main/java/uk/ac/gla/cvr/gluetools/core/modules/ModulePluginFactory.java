@@ -70,7 +70,6 @@ import uk.ac.gla.cvr.gluetools.core.reporting.freemarkerDocTransformer.Freemarke
 import uk.ac.gla.cvr.gluetools.core.reporting.nexusExporter.NexusExporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.objectRenderer.freemarker.FreemarkerObjectRenderer;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter;
-import uk.ac.gla.cvr.gluetools.core.reporting.webAnalysisTool.WebAnalysisTool;
 import uk.ac.gla.cvr.gluetools.core.samFileGenerator.SamFileGenerator;
 import uk.ac.gla.cvr.gluetools.core.tabularUtility.TabularUtility;
 import uk.ac.gla.cvr.gluetools.core.textToQuery.TextToQueryTransformer;
@@ -157,7 +156,6 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(ModelTester.class);
 		registerPluginClass(DigsImporter.class);
 		registerPluginClass(GbRefBuilder.class);
-		registerPluginClass(WebAnalysisTool.class);
 
 		setModulePluginGroup(null); // OTHER
 		registerPluginClass(BlastSequenceRotator.class);

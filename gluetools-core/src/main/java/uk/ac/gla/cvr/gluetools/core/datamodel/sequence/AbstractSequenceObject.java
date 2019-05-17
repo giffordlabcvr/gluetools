@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
 import uk.ac.gla.cvr.gluetools.core.segments.IQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.NtQueryAlignedSegment;
@@ -40,10 +41,12 @@ public abstract class AbstractSequenceObject implements NucleotideContentProvide
 
 	private SequenceFormat seqFormat;
 	private String processedNucleotides = null;
+	private Sequence sequence;
 	
-	public AbstractSequenceObject(SequenceFormat seqFormat) {
+	public AbstractSequenceObject(SequenceFormat seqFormat, Sequence sequence) {
 		super();
 		this.seqFormat = seqFormat;
+		this.sequence = sequence;
 	}
 
 	public SequenceFormat getSeqFormat() {
@@ -56,9 +59,51 @@ public abstract class AbstractSequenceObject implements NucleotideContentProvide
 			if(cmdContext.getProjectSettingValue(ProjectSettingOption.IGNORE_NT_SEQUENCE_HYPHENS).equals("true")) {
 				processedNucleotides = processedNucleotides.replaceAll("-", "");
 			}
+			String reverseComplementFieldName = cmdContext.getProjectSettingValue(ProjectSettingOption.SEQUENCE_REVERSE_COMPLEMENT_BOOLEAN_FIELD);
+			if(reverseComplementFieldName != null) {
+				Object reverseComplementFieldValueObj = sequence.readProperty(reverseComplementFieldName);
+				if(reverseComplementFieldValueObj != null) {
+					if(reverseComplementFieldValueObj instanceof Boolean) {
+						if((Boolean) reverseComplementFieldValueObj) {
+							processedNucleotides = FastaUtils.reverseComplement(processedNucleotides);
+						}
+					} else {
+						throw new SequenceException(Code.SEQUENCE_FIELD_ERROR, "Sequence field '"+reverseComplementFieldName+"' must be of type BOOLEAN");
+					}
+				}
+			}
+			String rotationFieldName = cmdContext.getProjectSettingValue(ProjectSettingOption.SEQUENCE_ROTATION_INTEGER_FIELD);
+			if(rotationFieldName != null) {
+				Object rotationFieldValueObj = sequence.readProperty(rotationFieldName);
+				if(rotationFieldValueObj != null) {
+					if(rotationFieldValueObj instanceof Integer) {
+						Integer rotationFieldValueInt = (Integer) rotationFieldValueObj;
+						int ntLength = processedNucleotides.length();
+						if(rotationFieldValueInt < 0 || rotationFieldValueInt >= ntLength ) {
+							throw new SequenceException(Code.SEQUENCE_FIELD_ERROR, "Rotation field value "+rotationFieldValueInt+
+									" out of range for sequence "+sequence.getSource().getName()+"/"+sequence.getSequenceID());
+						}
+						if(rotationFieldValueInt > 0) {
+							processedNucleotides = rightRotate(processedNucleotides, rotationFieldValueInt);
+						}
+					} else {
+						throw new SequenceException(Code.SEQUENCE_FIELD_ERROR, "Sequence field '"+rotationFieldName+"' must be of type INTEGER");
+					}
+				}
+			}
 		}
 		return processedNucleotides;
 	}
+	
+	 // rotates s towards left by d  
+    private String leftRotate(String str, int d) { 
+    	return str.substring(d) + str.substring(0, d); 
+    } 
+  
+    // rotates s towards right by d  
+    private String rightRotate(String str, int d) { 
+    	return leftRotate(str, str.length() - d); 
+    } 
 	
 	protected abstract String getNucleotidesInternal(CommandContext cmdContext);
 	
@@ -134,7 +179,6 @@ public abstract class AbstractSequenceObject implements NucleotideContentProvide
 		String nucleotides = getNucleotides(cmdContext);
 		return FastaUtils.find(nucleotides, sequence, from);
 	}
-
 	
 	
 }

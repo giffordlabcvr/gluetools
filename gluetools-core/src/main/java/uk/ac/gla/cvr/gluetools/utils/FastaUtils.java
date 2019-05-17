@@ -27,14 +27,11 @@ package uk.ac.gla.cvr.gluetools.utils;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.util.Collections;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 
 import org.biojava.nbio.core.exceptions.CompoundNotFoundException;
 import org.biojava.nbio.core.sequence.AccessionID;
@@ -53,11 +50,8 @@ import org.biojava.nbio.core.sequence.template.Compound;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.FastaSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
 import uk.ac.gla.cvr.gluetools.core.document.CommandArray;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
@@ -172,22 +166,6 @@ public class FastaUtils {
 		
 	}
 
-	public static List<AbstractSequenceObject> seqObjectsFromSeqData(
-			byte[] sequenceData) {
-		SequenceFormat format = SequenceFormat.detectFormatFromBytes(sequenceData);
-		List<AbstractSequenceObject> seqObjects;
-		if(format == SequenceFormat.FASTA) {
-			Map<String, DNASequence> fastaMap = parseFasta(sequenceData);
-			seqObjects = fastaMap.entrySet().stream()
-					.map(ent -> new FastaSequenceObject(ent.getKey(), ent.getValue().toString()))
-					.collect(Collectors.toList());
-		} else {
-			AbstractSequenceObject seqObj = format.sequenceObject();
-			seqObj.fromOriginalData(sequenceData);
-			seqObjects = Collections.singletonList(seqObj);
-		}
-		return seqObjects;
-	}
 
 	public static char nt(String nucleotides, int position) {
 		return nucleotides.charAt(position-1);

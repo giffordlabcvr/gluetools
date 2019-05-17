@@ -123,12 +123,11 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 		if(alignment.isConstrained()) {
 			GlueLogger.getGlueLogger().finest("Searching for members to align");
 			// enter the alignment command mode to get the member ID maps selected by the where clause
-			List<Map<String, Object>> memberIDs = AlignmentComputationUtils.getMemberSequenceIdMaps(cmdContext, alignmentName, whereClause);
-			GlueLogger.getGlueLogger().finest("Found "+memberIDs.size()+" members to align");
-			ArrayList<Map<String, Object>> memberIDsList = new ArrayList<Map<String,Object>>(memberIDs);
+			List<Map<String, String>> memberPkMaps = AlignmentComputationUtils.getMemberPkMaps(cmdContext, alignmentName, whereClause);
+			GlueLogger.getGlueLogger().finest("Found "+memberPkMaps.size()+" members to align");
 			@SuppressWarnings("unchecked")
 			SupportsComputeConstrained supportsComputeConstrained = ((SupportsComputeConstrained) alignerModule);
-			resultListOfMaps = getComputeConstrainedResults(cmdContext, supportsComputeConstrained, memberIDsList, alignment.getRefSequence().getName());
+			resultListOfMaps = getComputeConstrainedResults(cmdContext, supportsComputeConstrained, memberPkMaps, alignment.getRefSequence().getName());
 		} else {
 			@SuppressWarnings("unchecked")
 			SupportsComputeUnconstrained supportsComputeUnconstrained = ((SupportsComputeUnconstrained) alignerModule);
@@ -154,16 +153,16 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 
 
 	private <R extends AlignerResult, C extends Command<R>> List<Map<String, Object>> getComputeConstrainedResults(
-			CommandContext cmdContext, SupportsComputeConstrained supportsComputeConstrained, ArrayList<Map<String, Object>> memberIDs, String refName) {
+			CommandContext cmdContext, SupportsComputeConstrained supportsComputeConstrained, List<Map<String, String>> memberPkMaps, String refName) {
 		@SuppressWarnings("unchecked")
 		Class<C> alignCommandClass = (Class<C>) supportsComputeConstrained.getComputeConstrainedCommandClass();
 		
 		int membersAligned = 0;
 		List<Map<String, Object>> resultListOfMaps = new ArrayList<Map<String, Object>>();
 		
-		while(membersAligned < memberIDs.size()) {
-			int nextMembersAligned = Math.min(membersAligned+batchSize, memberIDs.size());
-			List<Map<String, Object>> membersBatch = memberIDs.subList(membersAligned, nextMembersAligned);
+		while(membersAligned < memberPkMaps.size()) {
+			int nextMembersAligned = Math.min(membersAligned+batchSize, memberPkMaps.size());
+			List<Map<String, String>> membersBatch = memberPkMaps.subList(membersAligned, nextMembersAligned);
 			getBatchResult(cmdContext, membersBatch, refName, alignCommandClass, resultListOfMaps);
 			membersAligned = nextMembersAligned;
 			GlueLogger.getGlueLogger().finest("Aligned "+membersAligned+" members");
@@ -175,15 +174,15 @@ public class ComputeAlignmentCommand extends ProjectModeCommand<ComputeAlignment
 
 	private <R extends AlignerResult, C extends Command<R>> void getBatchResult(
 			CommandContext cmdContext,
-			List<Map<String, Object>> memberIDs, String refName,
+			List<Map<String, String>> memberPkMaps, String refName,
 			Class<C> alignCommandClass,
 			List<Map<String, Object>> resultListOfMaps) {
-		Map<String,String> queryIdToNucleotides = AlignmentComputationUtils.getMembersNtMap(cmdContext, memberIDs);
+		Map<String,String> queryIdToNucleotides = AlignmentComputationUtils.getMembersNtMap(cmdContext, memberPkMaps);
 		R alignerResult = getAlignerResult(cmdContext, alignCommandClass, refName, queryIdToNucleotides);
 		Map<String, List<QueryAlignedSegment>> queryIdToAlignedSegments = alignerResult.getQueryIdToAlignedSegments();
-		for(Map<String, Object> memberIDmap: memberIDs) {
-			String memberSourceName = (String) memberIDmap.get(AlignmentMember.SOURCE_NAME_PATH);
-			String memberSeqId = (String) memberIDmap.get(AlignmentMember.SEQUENCE_ID_PATH);
+		for(Map<String, String> memberPkMap: memberPkMaps) {
+			String memberSourceName = memberPkMap.get(AlignmentMember.SOURCE_NAME_PATH);
+			String memberSeqId = memberPkMap.get(AlignmentMember.SEQUENCE_ID_PATH);
 			String memberFastaId = AlignmentComputationUtils.constructQueryId(memberSourceName, memberSeqId);
 			List<QueryAlignedSegment> memberAlignedSegments = queryIdToAlignedSegments.get(memberFastaId);
 			Map<String, Object> memberResultMap = AlignmentComputationUtils.applyMemberAlignedSegments(cmdContext,alignmentName,

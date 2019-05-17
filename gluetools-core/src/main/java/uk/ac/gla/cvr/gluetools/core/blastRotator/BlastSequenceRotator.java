@@ -129,7 +129,7 @@ public class BlastSequenceRotator extends ModulePlugin<BlastSequenceRotator> {
 			if(qaSegs.isEmpty()) {
 				rotationResultRow = new RotationResultRow(queryId, Status.NO_ACCEPTABLE_HSPS, null);
 			} else {
-				rotationResultRow = qaSegsToRotationResult(queryId, qaSegs);
+				rotationResultRow = qaSegsToRotationResult(queryId, queries.get(queryId).getSequenceAsString().length(), qaSegs);
 			}
 			queryIdToRotationResult.put(queryId, rotationResultRow);
 		} );
@@ -137,7 +137,7 @@ public class BlastSequenceRotator extends ModulePlugin<BlastSequenceRotator> {
 		return queryIdToRotationResult;
 	}
 
-	private RotationResultRow qaSegsToRotationResult(String queryId, List<QueryAlignedSegment> qaSegs) {
+	private RotationResultRow qaSegsToRotationResult(String queryId, int sequenceLength, List<QueryAlignedSegment> qaSegs) {
 		qaSegs.sort(new Comparator<QueryAlignedSegment>(){
 			@Override
 			public int compare(QueryAlignedSegment o1, QueryAlignedSegment o2) {
@@ -164,7 +164,8 @@ public class BlastSequenceRotator extends ModulePlugin<BlastSequenceRotator> {
 				if(lastQaSeg != null) {
 					if(qaSeg.getRefStart() < lastQaSeg.getRefStart()) {
 						status = Status.ROTATION_NECESSARY;
-						rotationNts = -(qaSeg.getQueryStart() - 1);
+						GlueLogger.log(Level.FINEST, "Rotation identified cut point at qaSeg: "+qaSeg.toString());
+						rotationNts = sequenceLength-(qaSeg.getQueryStart() - 1);
 					}
 				}
 			} 

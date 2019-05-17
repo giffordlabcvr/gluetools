@@ -44,12 +44,12 @@ public class FastaSequenceObject extends AbstractSequenceObject {
 	private String header;
 	private String nucleotides;
 	
-	public FastaSequenceObject() {
-		super(SequenceFormat.FASTA);
+	public FastaSequenceObject(Sequence sequence) {
+		super(SequenceFormat.FASTA, sequence);
 	}
 	
-	public FastaSequenceObject(String header, String nucleotides) {
-		this();
+	public FastaSequenceObject(String header, String nucleotides, Sequence sequence) {
+		this(sequence);
 		this.header = header;
 		this.nucleotides = nucleotides.toUpperCase();
 	}

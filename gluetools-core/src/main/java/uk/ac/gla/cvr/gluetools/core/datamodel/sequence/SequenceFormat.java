@@ -43,8 +43,8 @@ public enum SequenceFormat {
 					data[0] == (byte) '>';
 		}
 		@Override
-		public AbstractSequenceObject sequenceObject() {
-			return new FastaSequenceObject();
+		public AbstractSequenceObject sequenceObject(Sequence sequence) {
+			return new FastaSequenceObject(sequence);
 		}
 		@Override
 		public String getGeneratedFileExtension(CommandContext cmdContext) {
@@ -60,8 +60,8 @@ public enum SequenceFormat {
 			return ByteScanningUtils.indexOf(data, "<GBSeq>".getBytes(), 0) >= 0;
 		}
 		@Override
-		public AbstractSequenceObject sequenceObject() {
-			return new GenbankXmlSequenceObject();
+		public AbstractSequenceObject sequenceObject(Sequence sequence) {
+			return new GenbankXmlSequenceObject(sequence);
 		}
 	}; 
 
@@ -92,7 +92,7 @@ public enum SequenceFormat {
 		return generatedFileExtension;
 	}
 
-	public abstract AbstractSequenceObject sequenceObject();
+	public abstract AbstractSequenceObject sequenceObject(Sequence sequence);
 	
 	public abstract boolean detectFromBytes(byte[] data);
 	

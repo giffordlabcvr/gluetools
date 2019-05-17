@@ -25,43 +25,36 @@
 */
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.apache.cayenne.exp.Expression;
 
-import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.QueryMemberSupplier;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
 import uk.ac.gla.cvr.gluetools.core.command.project.ExtendAlignmentCommand.ExtendAlignmentResult;
-import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.MemberAddSegmentCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.MemberRemoveSegmentCommand;
-import uk.ac.gla.cvr.gluetools.core.command.project.sequence.OriginalDataResult;
-import uk.ac.gla.cvr.gluetools.core.command.project.sequence.ShowOriginalDataCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CreateResult;
-import uk.ac.gla.cvr.gluetools.core.command.result.ListResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceFormat;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.segments.IQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 
 public class AlignmentComputationUtils {
 
-	public static Map<String, String> getMembersNtMap(CommandContext cmdContext, List<Map<String, Object>> memberIDs) {
+	public static Map<String, String> getMembersNtMap(CommandContext cmdContext, List<Map<String, String>> memberPkMaps) {
 		Map<String, String> queryIdToNucleotides = new LinkedHashMap<String, String>();
-		for(Map<String, Object> memberIDmap: memberIDs) {
-			String memberSourceName = (String) memberIDmap.get(AlignmentMember.SOURCE_NAME_PATH);
-			String memberSeqId = (String) memberIDmap.get(AlignmentMember.SEQUENCE_ID_PATH);
-			OriginalDataResult memberSeqOriginalData = getOriginalData(cmdContext, memberSourceName, memberSeqId);
-			SequenceFormat memberSeqFormat = memberSeqOriginalData.getFormat();
-			byte[] base64Bytes = memberSeqOriginalData.getBase64Bytes();
-			AbstractSequenceObject memberSeqObject = memberSeqFormat.sequenceObject();
-			memberSeqObject.fromOriginalData(base64Bytes);
-			String nucleotides = memberSeqObject.getNucleotides(cmdContext);
-			String queryId = constructQueryId(memberSourceName, memberSeqId);
+		for(Map<String, String> memberPkMap: memberPkMaps) {
+			AlignmentMember almtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, memberPkMap);
+			Sequence sequence = almtMember.getSequence();
+			String nucleotides = sequence.getSequenceObject().getNucleotides(cmdContext);
+			String queryId = constructQueryId(sequence.getSource().getName(), sequence.getSequenceID());
 			queryIdToNucleotides.put(queryId, nucleotides);
 		}
 		return queryIdToNucleotides;
@@ -125,24 +118,21 @@ public class AlignmentComputationUtils {
 		return memberResultMap;
 	}
 
-	public static OriginalDataResult getOriginalData(CommandContext cmdContext, String sourceName, String seqId) {
-		// enter the sequence command mode to get the sequence original data.
-		try (ModeCloser refSeqMode = cmdContext.pushCommandMode("sequence", sourceName, seqId)) {
-			return cmdContext.cmdBuilder(ShowOriginalDataCommand.class).execute();
+	public static List<Map<String, String>> getMemberPkMaps(CommandContext cmdContext, String alignmentName, Expression whereClause) {
+		List<Map<String, String>> memberPkMaps = new ArrayList<Map<String, String>>();
+		
+		QueryMemberSupplier memberSupplier = new QueryMemberSupplier(alignmentName, false, Optional.of(whereClause));
+		
+		int numMembers = memberSupplier.countMembers(cmdContext);
+		int offset = 0;
+		int batchSize = 500;
+		while(offset < numMembers) {
+			List<AlignmentMember> almtMembers = memberSupplier.supplyMembers(cmdContext, offset, batchSize);
+			almtMembers.forEach(memb -> memberPkMaps.add(memb.pkMap()));
+			offset += batchSize;
+			cmdContext.newObjectContext();
 		}
-	}
-
-	public static List<Map<String, Object>> getMemberSequenceIdMaps(CommandContext cmdContext, String alignmentName, Expression whereClause) {
-		try (ModeCloser refMode = cmdContext.pushCommandMode("alignment", alignmentName)) {
-			CommandBuilder<ListResult, AlignmentListMemberCommand> cmdBuilder = cmdContext.cmdBuilder(AlignmentListMemberCommand.class);
-			if(whereClause != null) {
-				cmdBuilder.set(AbstractListCTableCommand.WHERE_CLAUSE, whereClause.toString());
-			}
-			cmdBuilder.setArray(AbstractListCTableCommand.FIELD_NAME)
-				.add(AlignmentMember.SOURCE_NAME_PATH)
-				.add(AlignmentMember.SEQUENCE_ID_PATH);
-			return cmdBuilder.execute().asListOfMaps();
-		}
+		return memberPkMaps;
 	}
 
 
