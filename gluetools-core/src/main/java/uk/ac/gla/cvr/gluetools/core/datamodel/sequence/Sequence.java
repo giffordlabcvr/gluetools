@@ -28,9 +28,11 @@ package uk.ac.gla.cvr.gluetools.core.datamodel.sequence;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Source;
+import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
 
 @GlueDataClass(
@@ -81,6 +83,24 @@ public class Sequence extends _Sequence {
 			sequenceObject = buildSequenceObject();
 		}
 		return sequenceObject;
+	}
+
+	
+	
+	@Override
+	public void writeProperty(String name, Object value) {
+		super.writeProperty(name, value);
+		CommandContext cmdContext = getCmdContext();
+		if(cmdContext != null) {
+			// if we are changing the reverse complement boolean or the rotation integer
+			// then assume that the cached AbstractSequenceObject is out of date and needs to be recalculated.
+			String reverseComplementFieldName = cmdContext.getProjectSettingValue(ProjectSettingOption.SEQUENCE_REVERSE_COMPLEMENT_BOOLEAN_FIELD);
+			String rotationFieldName = cmdContext.getProjectSettingValue(ProjectSettingOption.SEQUENCE_ROTATION_INTEGER_FIELD);
+			if( ( reverseComplementFieldName != null && name.equals(reverseComplementFieldName) ) || 
+					rotationFieldName != null && name.equals(rotationFieldName)  ) {
+				this.sequenceObject = null;
+			}
+		}
 	}
 
 	private AbstractSequenceObject buildSequenceObject() {

@@ -57,10 +57,17 @@ public abstract class GlueDataObject extends CayenneDataObject {
 		return timeSpentInDbOperations;
 	}
 	
-	
+	private CommandContext cmdContext;
 	
 	public abstract void setPKValues(Map <String, String> pkMap);
 	
+	public CommandContext getCmdContext() {
+		return cmdContext;
+	}
+
+	protected void setCmdContext(CommandContext cmdContext) {
+		this.cmdContext = cmdContext;
+	}
 
 	public static <C extends GlueDataObject> C lookup(CommandContext cmdContext, Class<C> objClass, Map<String, String> pkMap) {
 		return lookup(cmdContext, objClass, pkMap, false);
@@ -96,6 +103,7 @@ public abstract class GlueDataObject extends CayenneDataObject {
 			throw new DataModelException(Code.MULTIPLE_OBJECTS_FOUND, objClass.getSimpleName(), qualifier.toString());
 		}
 		C object = objClass.cast(results.get(0));
+		object.setCmdContext(cmdContext);
 		return object;
 
 	}
@@ -138,6 +146,7 @@ public abstract class GlueDataObject extends CayenneDataObject {
 			long start2 = System.currentTimeMillis();
 			List<C> classMappedResults = queryResults.stream().map(obj -> { 
 				C dataObject = objClass.cast(obj);
+				dataObject.setCmdContext(cmdContext);
 				return dataObject;
 			}).collect(Collectors.toList());
 			//System.out.println("Time spent casting results to GlueDataObject class: "+(System.currentTimeMillis() - start2));
@@ -215,6 +224,7 @@ public abstract class GlueDataObject extends CayenneDataObject {
 		});
 		
 		newObject.setPKValues(pkMap);
+		newObject.setCmdContext(cmdContext);
 		return newObject;
 	}
 
