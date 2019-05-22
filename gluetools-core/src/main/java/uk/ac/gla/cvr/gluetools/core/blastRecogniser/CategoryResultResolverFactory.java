@@ -38,6 +38,7 @@ public class CategoryResultResolverFactory extends PluginFactory<CategoryResultR
 		registerPluginClass(MaxBitScoreCategoryResultResolver.class);
 		registerPluginClass(TotalAlignLengthCategoryResultResolver.class);
 		registerPluginClass(MaxIdentityPctCategoryResultResolver.class);
+		registerPluginClass(CategoryNameResultResolver.class);
 	}
 	
 }

@@ -212,11 +212,11 @@ public class BlastSequenceRecogniser extends ModulePlugin<BlastSequenceRecognise
 							RecognitionCategoryResult catResult2 = o2.getKey();
 							List<BlastHsp> hsps2 = o2.getValue();
 							int comp = categoryResolver.compare(catResult1, hsps1, catResult2, hsps2);
-							if(comp == -1) {
+							if(comp < 0) {
 								retained.remove(catResult1);
 								discarded.add(catResult1);
 								break;
-							} else if(comp == 1) {
+							} else if(comp > 0) {
 								retained.remove(catResult2);
 								discarded.add(catResult2);
 								break;
