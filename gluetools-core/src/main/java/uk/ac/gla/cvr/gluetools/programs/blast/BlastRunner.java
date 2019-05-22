@@ -45,7 +45,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastException.Code;
-import uk.ac.gla.cvr.gluetools.programs.blast.BlastResultBuilder.BlastXPath;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.BlastDB;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.BlastDbManager;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
@@ -228,12 +227,9 @@ public class BlastRunner implements Plugin {
 	}
 
 	private List<BlastResult> constructBlastResults(List<Document> resultDocs) throws GlueException {
-		// use same xPathEngine across results, should save some init time.
-		// guess a faster way may be to use a SAX parser.
-		BlastXPath blastXPath = new BlastXPath();
 		List<BlastResult> blastResults = new ArrayList<BlastResult>();
 		for(Document resultDoc: resultDocs) {
-			blastResults.add(BlastResultBuilder.blastResultFromDocument(blastXPath, resultDoc));
+			blastResults.add(BlastResultBuilder.blastResultFromDocument(resultDoc));
 		}
 		return blastResults;
 	}

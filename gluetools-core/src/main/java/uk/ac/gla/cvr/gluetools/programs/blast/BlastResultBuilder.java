@@ -27,90 +27,75 @@ package uk.ac.gla.cvr.gluetools.programs.blast;
 
 import java.util.List;
 
-import javax.xml.xpath.XPath;
-import javax.xml.xpath.XPathExpression;
-import javax.xml.xpath.XPathExpressionException;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
-import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils.XmlNamespaceContext;
 
 public class BlastResultBuilder {
 
-	public static class BlastXPath {
-		private XPath xPathEngine = initXPathEngine();
-		private XPathExpression search = xpathExp(xPathEngine, "/b:BlastOutput2/b:report/b:Report/b:results/b:Results/b:search/b:Search");
-		private XPathExpression queryTitleText = xpathExp(xPathEngine, "b:query-title/text()");
-		private XPathExpression hitHits = xpathExp(xPathEngine, "b:hits/b:Hit");
-		private XPathExpression descriptionHitDescrTitleText = xpathExp(xPathEngine, "b:description/b:HitDescr/b:title/text()");
-		private XPathExpression hspsHsp = xpathExp(xPathEngine, "b:hsps/b:Hsp");
-
-		private XPathExpression bitScoreText = xpathExp(xPathEngine, "b:bit-score/text()");
-		private XPathExpression scoreText = xpathExp(xPathEngine, "b:score/text()");
-		private XPathExpression evalueText = xpathExp(xPathEngine, "b:evalue/text()");
-		private XPathExpression identityText = xpathExp(xPathEngine, "b:identity/text()");
-		private XPathExpression queryFromText = xpathExp(xPathEngine, "b:query-from/text()");
-		private XPathExpression queryToText = xpathExp(xPathEngine, "b:query-to/text()");
-		private XPathExpression hitFromText = xpathExp(xPathEngine, "b:hit-from/text()");
-		private XPathExpression hitToText = xpathExp(xPathEngine, "b:hit-to/text()");
-		private XPathExpression alignLenText = xpathExp(xPathEngine, "b:align-len/text()");
-		private XPathExpression gapsText = xpathExp(xPathEngine, "b:gaps/text()");
-		private XPathExpression qseqText = xpathExp(xPathEngine, "b:qseq/text()");
-		private XPathExpression hseqText = xpathExp(xPathEngine, "b:hseq/text()");
-
-	}
-	
-	public static BlastResult blastResultFromDocument(BlastXPath xPath, Document blastDoc) {
+	public static BlastResult blastResultFromDocument(Document blastDoc) {
 		BlastResult blastResult = new BlastResult();
-		Element searchElem = GlueXmlUtils.getXPathElement(blastDoc, xPath.search);
-		blastResult.setQueryFastaId(GlueXmlUtils.getXPathString(searchElem, xPath.queryTitleText));
-		List<Element> hitElems = GlueXmlUtils.getXPathElements(searchElem, xPath.hitHits);
+		Element searchElem = getPathElement(blastDoc, "BlastOutput2", "report", "Report", "results", "Results", "search", "Search");
+		blastResult.setQueryFastaId(getPathElemText(searchElem, "query-title"));
+		List<Element> hitElems = getPathElements(searchElem, "hits", "Hit");
 		for(Element hitElem: hitElems) {
 			BlastHit blastHit = new BlastHit(blastResult);
 			blastResult.addHit(blastHit);
-			blastHit.setReferenceName(GlueXmlUtils.getXPathString(hitElem, xPath.descriptionHitDescrTitleText));
-			List<Element> hspElems = GlueXmlUtils.getXPathElements(hitElem, xPath.hspsHsp);
+			blastHit.setReferenceName(getPathElemText(hitElem, "description", "HitDescr", "title"));
+			List<Element> hspElems = getPathElements(hitElem, "hsps", "Hsp");
 			for(Element hspElem : hspElems) {
 				BlastHsp blastHsp = new BlastHsp(blastHit);
 				blastHit.addHsp(blastHsp);
-				blastHsp.setBitScore(GlueXmlUtils.getXPathDouble(hspElem, xPath.bitScoreText));
-				blastHsp.setScore(GlueXmlUtils.getXPathInt(hspElem, xPath.scoreText));
-				blastHsp.setEvalue(GlueXmlUtils.getXPathDouble(hspElem, xPath.evalueText));
-				blastHsp.setIdentity(GlueXmlUtils.getXPathInt(hspElem, xPath.identityText));
-				blastHsp.setQueryFrom(GlueXmlUtils.getXPathInt(hspElem, xPath.queryFromText));
-				blastHsp.setQueryTo(GlueXmlUtils.getXPathInt(hspElem, xPath.queryToText));
-				blastHsp.setHitFrom(GlueXmlUtils.getXPathInt(hspElem, xPath.hitFromText));
-				blastHsp.setHitTo(GlueXmlUtils.getXPathInt(hspElem, xPath.hitToText));
-				blastHsp.setAlignLen(GlueXmlUtils.getXPathInt(hspElem, xPath.alignLenText));
-				blastHsp.setGaps(GlueXmlUtils.getXPathInt(hspElem, xPath.gapsText));
-				blastHsp.setQseq(GlueXmlUtils.getXPathString(hspElem, xPath.qseqText));
-				blastHsp.setHseq(GlueXmlUtils.getXPathString(hspElem, xPath.hseqText));
+				blastHsp.setBitScore(getPathElemDouble(hspElem, "bit-score"));
+				blastHsp.setScore(getPathElemInt(hspElem, "score"));
+				blastHsp.setEvalue(getPathElemDouble(hspElem, "evalue"));
+				blastHsp.setIdentity(getPathElemInt(hspElem, "identity"));
+				blastHsp.setQueryFrom(getPathElemInt(hspElem, "query-from"));
+				blastHsp.setQueryTo(getPathElemInt(hspElem, "query-to"));
+				blastHsp.setHitFrom(getPathElemInt(hspElem, "hit-from"));
+				blastHsp.setHitTo(getPathElemInt(hspElem, "hit-to"));
+				blastHsp.setAlignLen(getPathElemInt(hspElem, "align-len"));
+				blastHsp.setGaps(getPathElemInt(hspElem, "gaps"));
+				blastHsp.setQseq(getPathElemText(hspElem, "qseq"));
+				blastHsp.setHseq(getPathElemText(hspElem, "hseq"));
 			}
 		}
 		return blastResult;
 	}
 
+	private static Element getPathElement(Node startNode, String...path) {
+		Node node = startNode;
+		for(String pathBit: path) {
+			node = GlueXmlUtils.findChildElement(node, pathBit);
+		}
+		return (Element) node;
+	}
 
+	private static String getPathElemText(Node startNode, String...path) {
+		return getPathElement(startNode, path).getTextContent();
+	}
+
+	private static Integer getPathElemInt(Node startNode, String...path) {
+		return Integer.parseInt(getPathElemText(startNode, path));
+	}
+
+	private static Double getPathElemDouble(Node startNode, String...path) {
+		return Double.parseDouble(getPathElemText(startNode, path));
+	}
 
 	
-	private static XPathExpression xpathExp(XPath xPathEngine, String xPathString) {
-		XPathExpression searchResultExpression;
-		try {
-			searchResultExpression = xPathEngine.compile(xPathString);
-		} catch (XPathExpressionException e) {
-			throw new RuntimeException(e);
+	
+	private static List<Element> getPathElements(Node startNode, String...path) {
+		Node node = startNode;
+		for(int i = 0; i < path.length - 1; i++) {
+			String pathBit = path[i];
+			node = GlueXmlUtils.findChildElement(node, pathBit);
 		}
-		return searchResultExpression;
+		return GlueXmlUtils.findChildElements(node, path[path.length-1]);
 	}
 
-	private static XPath initXPathEngine() {
-		XmlNamespaceContext namespaceContext = new XmlNamespaceContext();
-		namespaceContext.addNamespace("b", "http://www.ncbi.nlm.nih.gov");
-		XPath xPathEngine = GlueXmlUtils.createXPathEngine();
-		xPathEngine.setNamespaceContext(namespaceContext);
-		return xPathEngine;
-	}
+
 	
 }
