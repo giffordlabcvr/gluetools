@@ -48,7 +48,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 				"-w <whereClause>, --whereClause <whereClause>  Qualify updated objects", 
 				"-a, --allObjects                               Update all objects in table",
 				"-b <batchSize>, --batchSize <batchSize>        Update batch size" },
-		description="Unset a field's value for one or more sequences", 
+		description="Unset a field's value for one or more configurable objects", 
 		furtherHelp="The <tableName> argument specifies a configurable object table. "+
 				" Possible values are "+ModelBuilder.configurableTablesString+" or a custom table name"+
 				". Unsetting means reverting the link target to null."+
