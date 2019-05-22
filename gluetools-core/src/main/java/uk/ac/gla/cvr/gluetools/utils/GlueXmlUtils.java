@@ -31,6 +31,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
@@ -119,13 +120,25 @@ public class GlueXmlUtils {
 		return elem;
 	}
 	
-	public static List<Element> findChildElements(Element parentElement, String elemName) {
+	public static List<Element> findChildElements(Node parentElement, String elemName) {
 		return findChildElements(parentElement).stream().
 				filter(e -> e.getNodeName().equals(elemName)).collect(Collectors.toList());
 	}
 
+	public static Element findChildElement(Node parentElement, String elemName) {
+		List<Element> childElementsWithName = findChildElements(parentElement).stream().
+				filter(e -> e.getNodeName().equals(elemName)).collect(Collectors.toList());
+		if(childElementsWithName.size() == 0) {
+			throw new GlueXmlUtilsException(Code.XML_PARSE_EXCEPTION, "Expected exactly one child element of "+parentElement.getNodeName()+" with name "+elemName+", found zero");
+		}
+		if(childElementsWithName.size() > 1) {
+			throw new GlueXmlUtilsException(Code.XML_PARSE_EXCEPTION, "Expected exactly one child element of "+parentElement.getNodeName()+" with name "+elemName+", found multiple");
+		}
+		return childElementsWithName.get(0);
+	}
+
 	
-	public static List<Element> findChildElements(Element parentElement) {
+	public static List<Element> findChildElements(Node parentElement) {
 		List<Element> childElems = new ArrayList<Element>();
 		NodeList childNodes = parentElement.getChildNodes();
 		for(int i = 0; i < childNodes.getLength(); i++) {
