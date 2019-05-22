@@ -108,7 +108,7 @@ public class RecogniseSequenceCommand extends ModulePluginCommand<BlastSequenceR
 				querySequenceMap.put(seq.getSource().getName()+"/"+seq.getSequenceID(), 
 						FastaUtils.ntStringToSequence(seq.getSequenceObject().getNucleotides(cmdContext)));
 			});
-			GlueLogger.getGlueLogger().finest("Recognising sequences");
+			GlueLogger.getGlueLogger().finest("Recognising "+sequences.size()+" sequences");
 			Map<String, List<RecognitionCategoryResult>> queryIdToCatResult = blastSequenceRecogniser.recognise(cmdContext, querySequenceMap);
 			resultRows.addAll(BlastSequenceRecogniserResultRow.rowsFromMap(queryIdToCatResult));
 
