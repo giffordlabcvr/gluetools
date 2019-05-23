@@ -32,6 +32,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
@@ -142,8 +143,9 @@ public class MultiReferenceBlastDB extends BlastDB<MultiReferenceBlastDB> {
 	}
 
 	private List<ReferenceSequence> getReferenceSequences(CommandContext cmdContext) {
-		SelectQuery selectQuery = new SelectQuery(ReferenceSequence.class, ExpressionFactory.inExp(ReferenceSequence.NAME_PROPERTY, referenceNames));
-		return GlueDataObject.query(cmdContext, ReferenceSequence.class, selectQuery);
+		return referenceNames.stream()
+				.map(rn -> GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(rn)))
+				.collect(Collectors.toList());
 	}
 
 	
