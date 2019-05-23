@@ -26,6 +26,7 @@
 package uk.ac.gla.cvr.gluetools.core.blastRecogniser;
 
 import java.util.List;
+import java.util.Optional;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 
@@ -35,7 +36,7 @@ public class BlastSequenceRecogniserResult extends BaseTableResult<BlastSequence
 		super("blastSequenceRecogniserResult", rowObjects, 
 				column("querySequenceId", row -> row.getQuerySequenceId()), 
 				column("categoryId", row -> row.getCategoryId()), 
-				column("direction", row -> row.getDirection().name()));
+				column("direction", row -> Optional.ofNullable(row.getDirection()).map(d -> d.name()).orElse(null)));
 	}
 
 }

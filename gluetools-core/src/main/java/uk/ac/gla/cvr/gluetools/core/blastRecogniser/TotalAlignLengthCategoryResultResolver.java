@@ -23,10 +23,9 @@ public class TotalAlignLengthCategoryResultResolver extends CategoryResultResolv
 
 	@Override
 	public int compare(RecognitionCategoryResult recCatResult1,
-			List<BlastHsp> hsps1, RecognitionCategoryResult recCatResult2,
-			List<BlastHsp> hsps2) {
-		int totalAlignLen1 = hsps1.stream().mapToInt(BlastHsp::getAlignLen).sum();
-		int totalAlignLen2 = hsps2.stream().mapToInt(BlastHsp::getAlignLen).sum();
+			List<BlastHsp> hsps1, int totalAlignLen1, RecognitionCategoryResult recCatResult2,
+			List<BlastHsp> hsps2, int totalAlignLen2) {
+		
 		if(totalAlignLen2 > totalAlignLen1 + minDifference) {
 			return -1;
 		}
@@ -35,5 +34,4 @@ public class TotalAlignLengthCategoryResultResolver extends CategoryResultResolv
 		}
 		return 0;
 	}
-
 }

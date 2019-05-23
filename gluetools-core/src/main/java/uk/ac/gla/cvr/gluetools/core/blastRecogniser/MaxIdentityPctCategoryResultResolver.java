@@ -23,8 +23,8 @@ public class MaxIdentityPctCategoryResultResolver extends CategoryResultResolver
 
 	@Override
 	public int compare(RecognitionCategoryResult recCatResult1,
-			List<BlastHsp> hsps1, RecognitionCategoryResult recCatResult2,
-			List<BlastHsp> hsps2) {
+			List<BlastHsp> hsps1, int totalAlignLen1, RecognitionCategoryResult recCatResult2,
+			List<BlastHsp> hsps2, int totalAlignLen2) {
 		double maxIdentityPct1 = hsps1.stream().mapToDouble(BlastHsp::getIdentityPct).max().getAsDouble();
 		double maxIdentityPct2 = hsps2.stream().mapToDouble(BlastHsp::getIdentityPct).max().getAsDouble();
 		if(maxIdentityPct2 > maxIdentityPct1 + minDifference) {

@@ -25,6 +25,7 @@
 */
 package uk.ac.gla.cvr.gluetools.core.blastRecogniser;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -58,6 +59,37 @@ import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.MultiReferenceBlastDB;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
+
+/**
+ * 
+ * Design
+ * 
+ * Categories are defined with an ID and a set of reference sequences.
+ * The idea is that each query can potentially get a positive forward and/or reverse match with a given category.
+ * A category plus direction is called a category result.
+ * 
+ * Categories can define minimum identity / e-value / bit score / score for HSPs and a minimum total align length for hits.
+ * 
+ * Query sequences are BLASTed against all reference sequences.
+ * 
+ * For each BLAST hit that comes back
+ *   -- the HSPs are partitioned into forward and reverse direciton HSPs.
+ *   -- the HSPs that don't meet the minimum values defined on the category are filtered out.
+ * This gives, for each query/category result:
+ *  - a filtered set of HSPs (possibly across multiple reference sequences within the category)
+ *  - a best total alignment length amongst the reference sequences.
+ *  
+ * The module config can also define a series of category resolvers. 
+ * Each of these can, when applied to a given pair of category results for a given query, decide to eliminate one, or to retain both.
+ * 
+ * Example: if a maxIdentityPctCategoryResultResolver with a minDifference of 1.0 compares to category results A and B.
+ * If the best identity for any HSP in A is 1.0 better than the best in B, B is discarded.
+ * If the best identity for any HSP in B is 1.0 better than the best in A, A is discarded.
+ * Otherwise, both A and B are retained.
+ *
+ * For each pair of category results, each resolver in turn is given the chance to eliminate one category result, with the next 
+ * resolver in the sequence being applied only if the current resolver retains both.
+ */
 
 @PluginClass(elemName="blastSequenceRecogniser",
 		description="Classifies sequences based on a nucleotide BLAST against a set of ReferenceSequences")
@@ -162,6 +194,7 @@ public class BlastSequenceRecogniser extends ModulePlugin<BlastSequenceRecognise
 			String queryId = blastResult.getQueryFastaId();
 			GlueLogger.getGlueLogger().finest("Applying recognition categories for "+queryId);
 			Map<RecognitionCategoryResult, List<BlastHsp>> categoryResultToValidHsps = new LinkedHashMap<RecognitionCategoryResult, List<BlastHsp>>();
+			Map<RecognitionCategoryResult, Integer> categoryResultToMaxTotalAlignLength = new LinkedHashMap<RecognitionCategoryResult, Integer>();
 			List<BlastHit> hits = blastResult.getHits();
 			for(BlastHit hit: hits) {
 				String referenceName = hit.getReferenceName();
@@ -178,7 +211,7 @@ public class BlastSequenceRecogniser extends ModulePlugin<BlastSequenceRecognise
 									" ("+direction.name().toLowerCase()+")"+
 									": allowed HSP on query ["+hsp.getQueryFrom()+", "+
 									hsp.getQueryTo()+"] with identity: "+
-									hsp.getIdentityPct()+"%, score: "+
+									hsp.getIdentityPct()+"% with reference "+referenceName+", score: "+
 									hsp.getScore()+", bit score: "+hsp.getBitScore());
 							totalAlignLen += hsp.getAlignLen();
 						}
@@ -191,6 +224,10 @@ public class BlastSequenceRecogniser extends ModulePlugin<BlastSequenceRecognise
 							}
 							validHsps.addAll(hsps);
 						}
+						Integer oldMaxTotalAlignLength = categoryResultToMaxTotalAlignLength.get(recCatResult);
+						if(oldMaxTotalAlignLength == null || totalAlignLen > oldMaxTotalAlignLength) {
+							categoryResultToMaxTotalAlignLength.put(recCatResult, totalAlignLen);
+						}
 					}
 				}
 			}
@@ -198,7 +235,7 @@ public class BlastSequenceRecogniser extends ModulePlugin<BlastSequenceRecognise
 			if(this.categoryResolvers.isEmpty() || categoryResultToValidHsps.isEmpty()) {
 				finalCatResults = new ArrayList<RecognitionCategoryResult>(categoryResultToValidHsps.keySet());
 			} else {
-				Set<RecognitionCategoryResult> discarded = new LinkedHashSet<RecognitionCategoryResult>();
+				Map<RecognitionCategoryResult, String> discarded = new LinkedHashMap<RecognitionCategoryResult, String>();
 				Set<RecognitionCategoryResult> retained = new LinkedHashSet<RecognitionCategoryResult>(categoryResultToValidHsps.keySet());
 				List<Entry<RecognitionCategoryResult, List<BlastHsp>>> entryList = 
 						new ArrayList<Entry<RecognitionCategoryResult, List<BlastHsp>>>(categoryResultToValidHsps.entrySet());
@@ -209,30 +246,39 @@ public class BlastSequenceRecogniser extends ModulePlugin<BlastSequenceRecognise
 						for(CategoryResultResolver categoryResolver: categoryResolvers) {
 							RecognitionCategoryResult catResult1 = o1.getKey();
 							List<BlastHsp> hsps1 = o1.getValue();
+							Integer totalAlignLen1 = categoryResultToMaxTotalAlignLength.getOrDefault(catResult1, 0);
 							RecognitionCategoryResult catResult2 = o2.getKey();
 							List<BlastHsp> hsps2 = o2.getValue();
-							int comp = categoryResolver.compare(catResult1, hsps1, catResult2, hsps2);
+							Integer totalAlignLen2 = categoryResultToMaxTotalAlignLength.getOrDefault(catResult2, 0);
+							int comp = categoryResolver.compare(catResult1, hsps1, totalAlignLen1, catResult2, hsps2, totalAlignLen2);
 							if(comp < 0) {
 								retained.remove(catResult1);
-								discarded.add(catResult1);
+								discarded.put(catResult1, categoryResolver.getClass().getSimpleName());
 								break;
 							} else if(comp > 0) {
 								retained.remove(catResult2);
-								discarded.add(catResult2);
+								discarded.put(catResult2, categoryResolver.getClass().getSimpleName());
 								break;
 							}
 						}
 					}
 				}
 				finalCatResults = new ArrayList<RecognitionCategoryResult>(retained);
-				discarded.forEach(recCatResult ->{
+				discarded.forEach((recCatResult, crClass) ->{
 					log(Level.FINEST, "Category "+recCatResult.getCategoryId()+
 							" ("+recCatResult.getDirection().name().toLowerCase()+")"+
-							": discarded by category resolvers");
+							": discarded by category resolver of type "+crClass);
 
 				});
 			}
 			queryIdToCategoryResults.put(queryId, finalCatResults);
+		}
+		
+		// null rows for unrecognised seqs.
+		for(List<RecognitionCategoryResult> resultList: queryIdToCategoryResults.values()) {
+			if(resultList.isEmpty()) {
+				resultList.add(new RecognitionCategoryResult(null, null));
+			}
 		}
 		
 		return queryIdToCategoryResults;

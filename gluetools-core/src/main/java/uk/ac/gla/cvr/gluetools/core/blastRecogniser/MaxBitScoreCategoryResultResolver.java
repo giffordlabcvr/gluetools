@@ -23,8 +23,8 @@ public class MaxBitScoreCategoryResultResolver extends CategoryResultResolver {
 
 	@Override
 	public int compare(RecognitionCategoryResult recCatResult1,
-			List<BlastHsp> hsps1, RecognitionCategoryResult recCatResult2,
-			List<BlastHsp> hsps2) {
+			List<BlastHsp> hsps1, int totalAlignLen1, RecognitionCategoryResult recCatResult2,
+			List<BlastHsp> hsps2, int totalAlignLen2) {
 		double maxBitScore1 = hsps1.stream().mapToDouble(BlastHsp::getBitScore).max().getAsDouble();
 		double maxBitScore2 = hsps2.stream().mapToDouble(BlastHsp::getBitScore).max().getAsDouble();
 		if(maxBitScore2 > maxBitScore1 + minDifference) {
