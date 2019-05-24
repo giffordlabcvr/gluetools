@@ -121,7 +121,7 @@ public class AlignmentComputationUtils {
 	public static List<Map<String, String>> getMemberPkMaps(CommandContext cmdContext, String alignmentName, Expression whereClause) {
 		List<Map<String, String>> memberPkMaps = new ArrayList<Map<String, String>>();
 		
-		QueryMemberSupplier memberSupplier = new QueryMemberSupplier(alignmentName, false, Optional.of(whereClause));
+		QueryMemberSupplier memberSupplier = new QueryMemberSupplier(alignmentName, false, Optional.ofNullable(whereClause));
 		
 		int numMembers = memberSupplier.countMembers(cmdContext);
 		int offset = 0;
