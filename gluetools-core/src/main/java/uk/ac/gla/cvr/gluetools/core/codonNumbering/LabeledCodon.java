@@ -37,16 +37,18 @@ public class LabeledCodon {
 	private int ntStart;
 	private int ntMiddle;
 	private int ntEnd;
+	private int transcriptionIndex;
 	private List<LabeledCodonReferenceSegment> lcRefSegs;
 	
 	
-	public LabeledCodon(String featureName, String codonLabel, int ntStart, int ntMiddle, int ntEnd) {
+	public LabeledCodon(String featureName, String codonLabel, int ntStart, int ntMiddle, int ntEnd, int transcriptionIndex) {
 		super();
 		this.featureName = featureName;
 		this.codonLabel = codonLabel;
 		this.ntStart = ntStart;
 		this.ntMiddle = ntMiddle;
 		this.ntEnd = ntEnd;
+		this.transcriptionIndex = transcriptionIndex;
 	}
 
 	public String getFeatureName() {
@@ -67,6 +69,10 @@ public class LabeledCodon {
 
 	public int getNtEnd() {
 		return ntEnd;
+	}
+
+	public int getTranscriptionIndex() {
+		return transcriptionIndex;
 	}
 
 	public int getNtLength() {

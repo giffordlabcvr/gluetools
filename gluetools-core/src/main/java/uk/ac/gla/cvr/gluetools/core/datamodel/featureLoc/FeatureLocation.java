@@ -55,6 +55,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocationException.Code;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag.FeatureMetatagType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.NucleotideContentProvider;
@@ -116,21 +117,23 @@ public class FeatureLocation extends _FeatureLocation {
 			CodonLabeler codonLabeler = codonNumberingAncestorLocation.getFeature().getCodonLabelerModule(cmdContext);
 			if(codonLabeler == null) {
 				Integer codon1Start = getCodon1Start(cmdContext);
-				List<FeatureSegment> segments = getSegments();
+				List<ReferenceSegment> segments = getRotatedReferenceSegments();
 				labeledCodons = new ArrayList<LabeledCodon>();
 				if(segments.isEmpty()) { return labeledCodons; }
 				int segIndex = 0;
-				FeatureSegment currentSegment = segments.get(segIndex);
+				ReferenceSegment currentSegment = segments.get(segIndex);
 				int refNt = currentSegment.getRefStart();
 				int refNtMinus1 = -1;
 				int refNtMinus2 = -1;
 				int startRefNt = refNt;
 				int normalisedCodon1Start = (codon1Start - startRefNt) + 1;
 				int featureNt = 1; // number of nucleotides through the feature.
+				int transcriptionIndex = 0;
 				while(segIndex < segments.size() && refNt <= currentSegment.getRefEnd()) {
 					if(TranslationUtils.isAtEndOfCodon(normalisedCodon1Start, featureNt)) {
 						String codonLabel = Integer.toString(TranslationUtils.getCodon(normalisedCodon1Start, featureNt-2));
-						labeledCodons.add(new LabeledCodon(codonNumberingAncestorLocation.getFeature().getName(), codonLabel, refNtMinus2, refNtMinus1, refNt));
+						labeledCodons.add(new LabeledCodon(codonNumberingAncestorLocation.getFeature().getName(), codonLabel, refNtMinus2, refNtMinus1, refNt, transcriptionIndex));
+						transcriptionIndex++;
 					}
 					refNtMinus2 = refNtMinus1;
 					refNtMinus1 = refNt;
@@ -317,7 +320,7 @@ public class FeatureLocation extends _FeatureLocation {
 		if(codonNumberingAncestorLocation == null) {
 			throw new FeatureLocationException(Code.FEATURE_OR_ANCESTOR_MUST_HAVE_OWN_CODON_NUMBERING, getFeature().getName());
 		}
-		List<FeatureSegment> segments = codonNumberingAncestorLocation.getSegments();
+		List<ReferenceSegment> segments = codonNumberingAncestorLocation.getRotatedReferenceSegments();
 		if(!segments.isEmpty()) {
 			// first segment establishes codon1start
 			return segments.get(0).getRefStart();
@@ -380,10 +383,51 @@ public class FeatureLocation extends _FeatureLocation {
 		return GlueDataObject.query(cmdContext, Variation.class, query);
 	}
 
-
+	private List<ReferenceSegment> getRotatedReferenceSegments() {
+		List<ReferenceSegment> featureLocRefSegs = this.segmentsAsReferenceSegments();
+		ReferenceSegment.sortByRefStart(featureLocRefSegs);
+		Feature feature = getFeature();
+		if(feature.circularBridging()) {
+			String flocStartTranscriptionField = feature.flocStartTranscriptionField();
+			if(flocStartTranscriptionField == null) {
+				throw new FeatureLocationException(Code.CIRCULAR_GENOME_ERROR, getReferenceSequence().getName(), feature.getName(), 
+						"Feature is defined as circular-bridging but no FLOC_START_TRANSCRIPTION_FIELD metatag is defined");
+			}
+			Object flocStartTranscriptionObj = readProperty(flocStartTranscriptionField);
+			if(flocStartTranscriptionObj == null) {
+				throw new FeatureLocationException(Code.CIRCULAR_GENOME_ERROR, getReferenceSequence().getName(), feature.getName(), 
+						"Feature is defined as circular-bridging but feature location has no value set for field '"+flocStartTranscriptionField+"'");
+			}
+			if(!(flocStartTranscriptionObj instanceof Integer)) {
+				throw new FeatureLocationException(Code.CIRCULAR_GENOME_ERROR, getReferenceSequence().getName(), feature.getName(), 
+						"Feature location value for field '"+flocStartTranscriptionField+"' is not an integer");
+			}
+			int flocStartTranscription = (Integer) flocStartTranscriptionObj;
+			List<ReferenceSegment> rotatedRefSegs = new ArrayList<ReferenceSegment>();
+			Integer startSegIndex = null;
+			for(int i = 0; i < featureLocRefSegs.size(); i++) {
+				if(featureLocRefSegs.get(i).getRefStart().equals(flocStartTranscription)) {
+					startSegIndex = i;
+					break;
+				}
+			}
+			if(startSegIndex == null) {
+				throw new FeatureLocationException(Code.CIRCULAR_GENOME_ERROR, getReferenceSequence().getName(), feature.getName(), 
+						"No reference segment in feature location has refStart at specified "+flocStartTranscriptionField+":"+flocStartTranscription+"");
+				
+			}
+			rotatedRefSegs.addAll(featureLocRefSegs.subList(startSegIndex, featureLocRefSegs.size()));
+			rotatedRefSegs.addAll(featureLocRefSegs.subList(0, startSegIndex));
+			featureLocRefSegs = rotatedRefSegs;
+		}
+		return featureLocRefSegs;
+	}
+	
+	
 	public List<LabeledQueryAminoAcid> getReferenceAminoAcidContent(CommandContext cmdContext) {
 		// feature area coordinates.
-		List<ReferenceSegment> featureLocRefSegs = this.segmentsAsReferenceSegments();
+		List<ReferenceSegment> featureLocRefSegs = getRotatedReferenceSegments();
+		
 		// maps reference to itself in the feature area.
 		List<QueryAlignedSegment> featureLocQaSegs = ReferenceSegment.asQueryAlignedSegments(featureLocRefSegs);
 		AbstractSequenceObject refSeqObj = this.getReferenceSequence().getSequence().getSequenceObject();
@@ -448,7 +492,9 @@ public class FeatureLocation extends _FeatureLocation {
 		} else {
 			// one segment per labeled codon associating it with its reference location.
 			List<LabeledCodonReferenceSegment> labeledCodonReferenceSegments = this.getLabeledCodonReferenceSegments(cmdContext);
-
+			// have to do this, otherwise the intersection call will not work properly.
+			ReferenceSegment.sortByRefStart(labeledCodonReferenceSegments);
+			ReferenceSegment.sortByRefStart(queryToRefSegs);
 
 			List<LabeledCodonQueryAlignedSegment> lcQaSegs = 
 					ReferenceSegment.intersection(queryToRefSegs, labeledCodonReferenceSegments,
@@ -483,7 +529,7 @@ public class FeatureLocation extends _FeatureLocation {
 			labeledCodons.sort(new Comparator<LabeledCodon>() {
 				@Override
 				public int compare(LabeledCodon o1, LabeledCodon o2) {
-					return Integer.compare(o1.getNtStart(), o2.getNtStart());
+					return Integer.compare(o1.getTranscriptionIndex(), o2.getTranscriptionIndex());
 				}
 			});
 
