@@ -89,6 +89,7 @@ public class LabeledCodon {
 			lcRefSegs = ReferenceSegment.mergeAbutting(lcRefSegs,
 				LabeledCodonReferenceSegment.mergeAbuttingFunctionLabeledCodonReferenceSegment(), 
 				ReferenceSegment.abutsPredicateReferenceSegment());
+			ReferenceSegment.sortByRefStart(lcRefSegs);
 		}
 		return lcRefSegs;
 	}
