@@ -490,12 +490,15 @@ public class FeatureLocation extends _FeatureLocation {
 			}
 			return labeledQueryAminoAcids;
 		} else {
-			// one segment per labeled codon associating it with its reference location.
+			// List of reference segments, with each one associated with a labeled codon.
+			// May be multiple reference segments per labeled codon
 			List<LabeledCodonReferenceSegment> labeledCodonReferenceSegments = this.getLabeledCodonReferenceSegments(cmdContext);
 			// have to do this, otherwise the intersection call will not work properly.
 			ReferenceSegment.sortByRefStart(labeledCodonReferenceSegments);
 			ReferenceSegment.sortByRefStart(queryToRefSegs);
 
+			// use the intersection function to (a) intersect queryToRefSegs with labeledCodonReferenceSegments
+			// (b) produce LabeledCodonQueryAlignedSegment, i.e. qaSegs annotated with labeled codons.
 			List<LabeledCodonQueryAlignedSegment> lcQaSegs = 
 					ReferenceSegment.intersection(queryToRefSegs, labeledCodonReferenceSegments,
 							new BiFunction<QueryAlignedSegment, LabeledCodonReferenceSegment, LabeledCodonQueryAlignedSegment>() {
@@ -506,6 +509,7 @@ public class FeatureLocation extends _FeatureLocation {
 							LabeledCodonQueryAlignedSegment lcQaSeg = new LabeledCodonQueryAlignedSegment(lcRefSeg.getLabeledCodon(), 
 									qaSeg.getRefStart(), qaSeg.getRefEnd(), 
 									qaSeg.getQueryStart(), qaSeg.getQueryEnd());
+							// these lines ensure that the merged segment covers only the reference intersection.
 							int leftOverhang = lcRefSeg.getRefStart() - qaSeg.getRefStart();
 							if(leftOverhang > 0) {
 								lcQaSeg.truncateLeft(leftOverhang);
