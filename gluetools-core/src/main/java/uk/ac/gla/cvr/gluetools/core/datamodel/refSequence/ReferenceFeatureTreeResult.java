@@ -145,6 +145,9 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 		Feature feature = featureLocation.getFeature();
 		ReferenceFeatureTreeResult featureTreeResult = addFeature(feature);
 		CommandObject commandObject = featureTreeResult.getCommandObject();
+		if(feature.circularBridging()) {
+			commandObject.setInt("startTranscription", featureLocation.getStartTranscription());
+		}
 		if(feature.codesAminoAcids() && includeLabeledCodons) {
 			Integer codon1Start = featureLocation.getCodon1Start(cmdContext);
 			commandObject.setInt("codon1Start", codon1Start);
@@ -200,6 +203,11 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 		return getCommandObject().getInteger("codon1Start");
 	}
 
+	public Integer getStartTranscription() {
+		return getCommandObject().getInteger("startTranscription");
+	}
+
+	
 	public String getOrfAncestorFeatureName() {
 		return getCommandObject().getString("orfAncestorFeature");
 	}
@@ -231,6 +239,10 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 
 	public boolean isIncludedInSummary() {
 		return getFeatureMetatags().contains(FeatureMetatag.FeatureMetatagType.INCLUDE_IN_SUMMARY.name());
+	}
+
+	public boolean isCircularBridging() {
+		return getFeatureMetatags().contains(FeatureMetatag.FeatureMetatagType.CIRCULAR_BRIDGING.name());
 	}
 
 }

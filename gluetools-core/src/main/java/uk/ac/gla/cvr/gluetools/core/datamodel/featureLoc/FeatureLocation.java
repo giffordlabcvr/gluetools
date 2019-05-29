@@ -271,6 +271,7 @@ public class FeatureLocation extends _FeatureLocation {
 	
 	public void validate(CommandContext cmdContext) {
 		List<FeatureSegment> segments = getSegments();
+		ReferenceSegment.sortByRefStart(segments);
 		Feature feature = getFeature();
 		if(segments.isEmpty()) {
 			throw new FeatureLocationException(FeatureLocationException.Code.FEATURE_LOCATION_HAS_NO_SEGMENTS, 
@@ -283,12 +284,15 @@ public class FeatureLocation extends _FeatureLocation {
 					getReferenceSequence().getName(), feature.getName(), nextAncestorFeature.getName());
 		}
 		if(nextAncestorFeatureLocation != null) {
-			if(!ReferenceSegment.covers(nextAncestorFeatureLocation.getSegments(), segments)) {
+			List<FeatureSegment> ancestorSegments = nextAncestorFeatureLocation.getSegments();
+			ReferenceSegment.sortByRefStart(ancestorSegments);
+			if(!ReferenceSegment.covers(ancestorSegments, segments)) {
 				throw new FeatureLocationException(FeatureLocationException.Code.FEATURE_LOCATION_NOT_CONTAINED_WITHIN_NEXT_ANCESTOR, 
 						getReferenceSequence().getName(), feature.getName(), nextAncestorFeature.getName());
 			}
 		}
-		if(feature.codesAminoAcids()) {
+		if(feature.codesAminoAcids() && !feature.circularBridging()) {
+			// skip circular bridging features for now.
 			Integer codon1Start = getCodon1Start(cmdContext);
 			int codon1Int = codon1Start.intValue();
 			segments.forEach(seg -> {
@@ -383,9 +387,7 @@ public class FeatureLocation extends _FeatureLocation {
 		return GlueDataObject.query(cmdContext, Variation.class, query);
 	}
 
-	private List<ReferenceSegment> getRotatedReferenceSegments() {
-		List<ReferenceSegment> featureLocRefSegs = this.segmentsAsReferenceSegments();
-		ReferenceSegment.sortByRefStart(featureLocRefSegs);
+	public Integer getStartTranscription() {
 		Feature feature = getFeature();
 		if(feature.circularBridging()) {
 			String flocStartTranscriptionField = feature.flocStartTranscriptionField();
@@ -402,7 +404,17 @@ public class FeatureLocation extends _FeatureLocation {
 				throw new FeatureLocationException(Code.CIRCULAR_GENOME_ERROR, getReferenceSequence().getName(), feature.getName(), 
 						"Feature location value for field '"+flocStartTranscriptionField+"' is not an integer");
 			}
-			int flocStartTranscription = (Integer) flocStartTranscriptionObj;
+			return (Integer) flocStartTranscriptionObj;
+		} 
+		return null;
+	}
+	
+	private List<ReferenceSegment> getRotatedReferenceSegments() {
+		List<ReferenceSegment> featureLocRefSegs = this.segmentsAsReferenceSegments();
+		ReferenceSegment.sortByRefStart(featureLocRefSegs);
+		Feature feature = getFeature();
+		if(feature.circularBridging()) {
+			int flocStartTranscription = getStartTranscription();
 			List<ReferenceSegment> rotatedRefSegs = new ArrayList<ReferenceSegment>();
 			Integer startSegIndex = null;
 			for(int i = 0; i < featureLocRefSegs.size(); i++) {
@@ -413,7 +425,7 @@ public class FeatureLocation extends _FeatureLocation {
 			}
 			if(startSegIndex == null) {
 				throw new FeatureLocationException(Code.CIRCULAR_GENOME_ERROR, getReferenceSequence().getName(), feature.getName(), 
-						"No reference segment in feature location has refStart at specified "+flocStartTranscriptionField+":"+flocStartTranscription+"");
+						"No reference segment in feature location has refStart at specified "+feature.flocStartTranscriptionField()+":"+flocStartTranscription+"");
 				
 			}
 			rotatedRefSegs.addAll(featureLocRefSegs.subList(startSegIndex, featureLocRefSegs.size()));

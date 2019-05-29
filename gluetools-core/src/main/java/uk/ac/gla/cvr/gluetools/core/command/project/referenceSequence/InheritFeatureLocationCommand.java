@@ -167,21 +167,41 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 			List<QueryAlignedSegment> intersection = 
 					ReferenceSegment.intersection(relRefFeatureLocSegs, relRefAlignedSegments, ReferenceSegment.cloneRightSegMerger());
 			
-			if(spanGaps && intersection.size() > 1) {
-				QueryAlignedSegment firstSeg = intersection.get(0);
-				QueryAlignedSegment lastSeg = intersection.get(intersection.size() - 1);
-				
-				// ref points are pretty irrelevant here, as only the query points are used.
-				QueryAlignedSegment spanningSegment = new QueryAlignedSegment(firstSeg.getRefStart(), lastSeg.getRefEnd(), 
-						firstSeg.getQueryStart(), lastSeg.getQueryEnd());
-				intersection = Collections.singletonList(spanningSegment);
-			}
+			List<QueryAlignedSegment> newFeatureQaSegs;
 			
-			if(intersection.size() == 0) {
-				return; // no segments // nothing added.
+			Integer newStartTranscription = null;
+			if(featureTreeResult.isCircularBridging()) {
+				int refStartTranscription = featureTreeResult.getStartTranscription();
+				// partition the intersection into potentially two parts (1) which is post the transcription start point
+				// on the genome and (2) which is pre the transcription start point
+				List<QueryAlignedSegment> intersection1 = new ArrayList<QueryAlignedSegment>(); 
+				List<QueryAlignedSegment> intersection2 = new ArrayList<QueryAlignedSegment>(); 
+				
+				for(QueryAlignedSegment qaSeg: intersection) {
+					if(qaSeg.getRefStart() >= refStartTranscription) {
+						intersection1.add(qaSeg);
+					} else {
+						intersection2.add(qaSeg);
+					}
+				}
+				intersection1 = applySpanning(intersection1);
+				intersection2 = applySpanning(intersection2);
+				newFeatureQaSegs = new ArrayList<QueryAlignedSegment>(); 
+				newFeatureQaSegs.addAll(intersection2);
+				newFeatureQaSegs.addAll(intersection1);
+				newStartTranscription = QueryAlignedSegment.minQueryStart(intersection1);
+				if(newStartTranscription == null) {
+					newStartTranscription = QueryAlignedSegment.minQueryStart(intersection2);
+				}
+				
+			} else {
+				intersection = applySpanning(intersection);
+				newFeatureQaSegs = intersection;
 			}
 
-			List<QueryAlignedSegment> newFeatureQaSegs = intersection;
+			if(newFeatureQaSegs.size() == 0) {
+				return; // no segments // nothing added.
+			}
 
 			if(truncateCdn && currentFeature.codesAminoAcids()) {
 				// assumes parent feature loc is codon aligned
@@ -191,9 +211,12 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 			}
 
 			
-			currentFeatureLoc = GlueDataObject.create(cmdContext, FeatureLocation.class,  featureLocPkMap, false);
+			currentFeatureLoc = GlueDataObject.create(cmdContext, FeatureLocation.class, featureLocPkMap, false);
 			currentFeatureLoc.setFeature(currentFeature);
 			currentFeatureLoc.setReferenceSequence(thisRefSeq);
+			if(newStartTranscription != null) {
+				currentFeatureLoc.writeProperty(currentFeature.flocStartTranscriptionField(), newStartTranscription);
+			}
 			cmdContext.commit();
 
 			
@@ -213,6 +236,20 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 			addFeatureLocs(cmdContext, thisRefSeq, relatedRefSeq, relRefAlignedSegments, childTreeResult, resultRowData);
 		}		
 		
+	}
+
+
+	private List<QueryAlignedSegment> applySpanning(List<QueryAlignedSegment> intersection) {
+		if(spanGaps && intersection.size() > 1) {
+			QueryAlignedSegment firstSeg = intersection.get(0);
+			QueryAlignedSegment lastSeg = intersection.get(intersection.size() - 1);
+			
+			// ref points are pretty irrelevant here, as only the query points are used.
+			QueryAlignedSegment spanningSegment = new QueryAlignedSegment(firstSeg.getRefStart(), lastSeg.getRefEnd(), 
+					firstSeg.getQueryStart(), lastSeg.getQueryEnd());
+			intersection = Collections.singletonList(spanningSegment);
+		}
+		return intersection;
 	}
 
 
