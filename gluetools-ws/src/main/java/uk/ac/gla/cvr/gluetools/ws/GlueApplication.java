@@ -35,6 +35,7 @@ import java.util.logging.Logger;
 
 import javax.naming.Context;
 import javax.naming.InitialContext;
+import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -70,17 +71,21 @@ public class GlueApplication extends ResourceConfig implements ServletContextLis
         String configFilePath = null;
         String logLevelString = null;
         Boolean migrateSchema = null;
-		try {
-			Context ctx = new InitialContext();
-	        configFilePath = (String) ctx.lookup("java:comp/env/configFilePath");
-	        logLevelString = (String) ctx.lookup("java:comp/env/logLevel");
-	        migrateSchema = (Boolean) ctx.lookup("java:comp/env/migrateSchema");
+        try {
+        	Context ctx = new InitialContext();
+        	configFilePath = (String) ctx.lookup("java:comp/env/configFilePath");
+        	try {
+        		logLevelString = (String) ctx.lookup("java:comp/env/logLevel");
+        	} catch(NameNotFoundException nnfe) {
+        		logLevelString = "INFO";
+        	}
+        	migrateSchema = (Boolean) ctx.lookup("java:comp/env/migrateSchema");
 		} catch (NamingException e) {
 			throw new GlueApplicationException("JNDI error. Please ensure the correct webapp config file exists in $CATALINA_BASE/conf/[enginename]/[hostname]/ or elsewhere", e);
 		}
     	GluetoolsEngine.initInstance(configFilePath, migrateSchema);
     	
-		Level glueLogLevel = logLevelString == null ? Level.INFO : Level.parse(logLevelString);
+		Level glueLogLevel = Level.parse(logLevelString);
 		GlueLogger.setLogLevel(glueLogLevel);
 		ConsoleHandler handler = new ConsoleHandler();
 		handler.setLevel(glueLogLevel);
