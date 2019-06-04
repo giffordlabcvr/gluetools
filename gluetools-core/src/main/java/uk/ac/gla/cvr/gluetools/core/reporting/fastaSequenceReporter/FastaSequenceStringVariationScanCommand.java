@@ -73,7 +73,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 				"area will not appear in the results. "+
 				"If --showMatchesAsTable is used, a table is returned with one row for each individual match. In this case the "+
 				"selected variations must all be of the same type. "+
-				"If --showMatchsAsDocument is used, a document is returned with an object for each individual match.",
+				"If --showMatchesAsDocument is used, a document is returned with an object for each individual match.",
 		metaTags = {}	
 )
 public class FastaSequenceStringVariationScanCommand extends FastaSequenceBaseVariationScanCommand 
