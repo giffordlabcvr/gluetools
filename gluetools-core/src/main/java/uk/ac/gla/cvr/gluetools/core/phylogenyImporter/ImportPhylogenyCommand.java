@@ -52,13 +52,14 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.phylogenyImporter.PhyloImporter.AlignmentPhylogeny;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloFormat;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeReconciler;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass(
 		commandWords={"import", "phylogeny"}, 
 		description = "Import a phylogeny into an alignment / alignment tree", 
-		docoptUsages={"<alignmentName> [-c] [-n] (-w <whereClause> | -a) -i <inputFile> <inputFormat> (-f <fieldName> | -p)"},
+		docoptUsages={"<alignmentName> [-c] [-n] (-w <whereClause> | -a) -i <inputFile> <inputFormat> (-f <fieldName> [-m] | -p) "},
 		docoptOptions={
 			"-c, --recursive                                Include descendent members",
 			"-n, --anyAlignment                             Allow match to any alignment",
@@ -66,7 +67,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		    "-a, --allMembers                               All members",
 			"-i <inputFile>, --inputFile <inputFile>        Phylogeny input file",
 			"-f <fieldName>, --fieldName <fieldName>        Phylogeny field name",
-			"-p, --preview                                  Preview only"},
+			"-p, --preview                                  Preview only", 
+			"-m, --merge                                    Merge imported with existing"},
 		metaTags = {CmdMeta.consoleOnly}, 
 		furtherHelp = "Imports a phylogenetic tree from a file, and uses it to populate a custom column of the "+
 		"alignment table, for a single unconstrained alignment object, or one or more alignment objects within an alignment tree. "+
@@ -80,7 +82,9 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		"alignment members set. "+
 		"For alignment trees, the gross phylogenetic structure of the imported tree must match the structure of the alignment tree, "+
 		"otherwise an error is thrown. "+
-		"The imported tree will be broken up if necessary with the relavent sections annotating each alignment in the alignment tree."
+		"The imported tree will be broken up if necessary with the relavent sections annotating each alignment in the alignment tree."+
+		"The --merge option can be used to merge imported trees with existing trees in the same field. The two trees must have identical structures "+
+		"and values must not clash on any property. The merged tree will contain the union of properties."
 )
 public class ImportPhylogenyCommand extends ModulePluginCommand<ImportPhylogenyResult, PhyloImporter>{
 
@@ -94,6 +98,7 @@ public class ImportPhylogenyCommand extends ModulePluginCommand<ImportPhylogenyR
 	public static final String INPUT_FORMAT = "inputFormat";
 	public static final String FIELD_NAME = "fieldName";
 	public static final String PREVIEW = "preview";
+	public static final String MERGE = "merge";
 	
 	private String alignmentName;
 	private Boolean recursive;
@@ -105,6 +110,7 @@ public class ImportPhylogenyCommand extends ModulePluginCommand<ImportPhylogenyR
 	private PhyloFormat inputFormat;
 	private String fieldName;
 	private Boolean preview;
+	private Boolean merge;
 	
 
 	@Override
@@ -120,12 +126,17 @@ public class ImportPhylogenyCommand extends ModulePluginCommand<ImportPhylogenyR
 		inputFormat = PluginUtils.configureEnumProperty(PhyloFormat.class, configElem, INPUT_FORMAT, true);
 		fieldName = PluginUtils.configureStringProperty(configElem, FIELD_NAME, false);
 		preview = PluginUtils.configureBooleanProperty(configElem, PREVIEW, false);
+		merge = PluginUtils.configureBooleanProperty(configElem, MERGE, false);
 
 		if(!whereClause.isPresent() && !allMembers || whereClause.isPresent() && allMembers) {
 			usageError1();
 		}
-		if((fieldName != null && preview != null && preview) || (fieldName == null && (preview == null || !preview)) ) {
+		if((fieldName != null && preview != null && preview) || 
+				(fieldName == null && (preview == null || !preview)) ) {
 			usageError2();
+		}
+		if(merge != null && merge && fieldName == null) {
+			usageError3();
 		}
 	}
 
@@ -135,6 +146,10 @@ public class ImportPhylogenyCommand extends ModulePluginCommand<ImportPhylogenyR
 
 	private void usageError2() {
 		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <fieldName> or --preview must be specified, but not both");
+	}
+
+	private void usageError3() {
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "The --merge option may only be used if <fieldName> is specified");
 	}
 
 	@Override
@@ -148,14 +163,55 @@ public class ImportPhylogenyCommand extends ModulePluginCommand<ImportPhylogenyR
 		if(fieldName != null) {
 			for(AlignmentPhylogeny almtPhylogeny: almtPhylogenies) {
 				// save string to field in format based on project setting.
+				PhyloTree updatedPhyloTree;
+				if(merge) {
+					Object existingPhyloTreeObj = almtPhylogeny.getAlignment().readProperty(fieldName);
+					if(existingPhyloTreeObj == null) {
+						updatedPhyloTree = almtPhylogeny.getPhyloTree();
+					} else {
+						if(!(existingPhyloTreeObj instanceof String)) {
+							throw new CommandException(Code.COMMAND_FAILED_ERROR, "Alignment field '"+fieldName+"' was not a string");
+						}
+						PhyloTree existingPhyloTree = 
+								Alignment.getPhylogenyPhyloFormat(cmdContext).parse(((String) existingPhyloTreeObj).getBytes());
+						updatedPhyloTree = mergeTrees(existingPhyloTree, almtPhylogeny.getPhyloTree());
+					}
+				} else {
+					updatedPhyloTree = almtPhylogeny.getPhyloTree();
+				}
+				
+				
 				PropertyCommandDelegate.executeSetField(cmdContext, project, ConfigurableTable.alignment.name(), 
 						almtPhylogeny.getAlignment(), fieldName, 
-						new String(Alignment.getPhylogenyPhyloFormat(cmdContext).generate(almtPhylogeny.getPhyloTree())), true);
+						new String(Alignment.getPhylogenyPhyloFormat(cmdContext).generate(updatedPhyloTree)), true);
 				
 			}
 			cmdContext.commit();
 		}
 		return new ImportPhylogenyResult(almtPhylogenies);
+	}
+
+
+	private PhyloTree mergeTrees(PhyloTree phyloTree1, PhyloTree phyloTree2) {
+		PhyloTreeReconciler reconciler = new PhyloTreeReconciler(phyloTree1);
+		phyloTree2.accept(reconciler);
+		reconciler.getSuppliedToVisited().forEach((obj1, obj2) -> {
+			Map<String, Object> userData1 = obj1.ensureUserData();
+			Map<String, Object> userData2 = obj2.ensureUserData();
+			
+			userData1.forEach( (key,val1) -> {
+				Object val2 = userData2.get(key);
+				if(val2 == null) {
+					userData2.put(key, val1);
+				} else if(val2.equals(val1)) {
+					// do nothing 
+				} else {
+					throw new ImportPhylogenyException(ImportPhylogenyException.Code.TREE_PROPERTY_MISMATCH, "Missmatched values for property '"+key+"' on tree objects of type "+obj1.getClass().getSimpleName());
+				}
+			} );
+			
+		});
+		return phyloTree2;
 	}
 
 

@@ -36,9 +36,11 @@ import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.newick.NewickBootstrapsToPhyloTreeParser;
 import uk.ac.gla.cvr.gluetools.core.newick.NewickJPlaceToPhyloTreeParser;
 import uk.ac.gla.cvr.gluetools.core.newick.NewickToPhyloTreeParser;
+import uk.ac.gla.cvr.gluetools.core.newick.NewickTransferBootstrapsToPhyloTreeParser;
 import uk.ac.gla.cvr.gluetools.core.newick.PhyloTreeToNewickBootstrapsGenerator;
 import uk.ac.gla.cvr.gluetools.core.newick.PhyloTreeToNewickGenerator;
 import uk.ac.gla.cvr.gluetools.core.newick.PhyloTreeToNewickJPlaceGenerator;
+import uk.ac.gla.cvr.gluetools.core.newick.PhyloTreeToNewickTransferBootstrapsGenerator;
 import uk.ac.gla.cvr.gluetools.core.phylotree.document.DocumentToPhyloTreeTransformer;
 import uk.ac.gla.cvr.gluetools.core.phylotree.document.PhyloTreeToDocumentTransformer;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentJsonUtils;
@@ -127,6 +129,25 @@ public enum PhyloFormat {
 			PhyloTreeToNewickBootstrapsGenerator phyloTreeToNewickBootstrapsGenerator = new PhyloTreeToNewickBootstrapsGenerator();
 			phyloTree.accept(phyloTreeToNewickBootstrapsGenerator);
 			return phyloTreeToNewickBootstrapsGenerator.getNewickString().getBytes();
+		}
+	},
+	// as NEWICK, but any internal name string is not set as a "name" property on PhyloTree internal nodes, but as a 
+	// "transfer_bootsrap" property on the internal node's parent branch. This is expected to be an floating point number between 0 and 1.0.
+	// NEWICK_TRANSFER_BOOTSTRAPS is produced by RAxML-NG if --bs-metric tbe is requested. 
+	// NEWICK_TRANSFER_BOOTSTRAPS can also be input for ClusterPicker.
+	// FigTree will allow you to import NEWICK_BOOTSTRAPS and prompt you to name the node property.
+	NEWICK_TRANSFER_BOOTSTRAPS {
+		@Override
+		public PhyloTree parse(byte[] bytes) {
+			NewickTransferBootstrapsToPhyloTreeParser newickTransferBootstrapsToPhyloTreeParser = new NewickTransferBootstrapsToPhyloTreeParser();
+			return newickTransferBootstrapsToPhyloTreeParser.parseNewick(new String(bytes));
+		}
+
+		@Override
+		public byte[] generate(PhyloTree phyloTree) {
+			PhyloTreeToNewickTransferBootstrapsGenerator phyloTreeToNewickTransferBootstrapsGenerator = new PhyloTreeToNewickTransferBootstrapsGenerator();
+			phyloTree.accept(phyloTreeToNewickTransferBootstrapsGenerator);
+			return phyloTreeToNewickTransferBootstrapsGenerator.getNewickString().getBytes();
 		}
 	},
 	// as NEWICK, but expects each branch to have an integer branch label. These are stored using the key "jPlaceBranchLabel"

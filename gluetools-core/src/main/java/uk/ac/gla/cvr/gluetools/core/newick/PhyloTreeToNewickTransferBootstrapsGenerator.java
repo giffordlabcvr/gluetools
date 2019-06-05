@@ -23,36 +23,27 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.phylogenyImporter;
+package uk.ac.gla.cvr.gluetools.core.newick;
 
-import uk.ac.gla.cvr.gluetools.core.GlueException;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
 
-public class ImportPhylogenyException extends GlueException {
+public class PhyloTreeToNewickTransferBootstrapsGenerator extends PhyloTreeToNewickGenerator {
 
-	public enum Code implements GlueErrorCode {
-		MEMBER_LEAF_MISMATCH("errorTxt"),
-		PHYLOGENY_INCONSISTENT("errorTxt"),
-		TREE_PROPERTY_MISMATCH("errorTxt");
-		
-		private String[] argNames;
-		private Code(String... argNames) {
-			this.argNames = argNames;
-		}
-		@Override
-		public String[] getArgNames() {
-			return argNames;
-		}
-		
-	}
-	
-	public ImportPhylogenyException(Code code, Object... errorArgs) {
-		super(code, errorArgs);
+	public PhyloTreeToNewickTransferBootstrapsGenerator() {
+		super(new NewickGenerator() {
+			@Override
+			public String generateInternalName(PhyloInternal phyloInternal) {
+				PhyloBranch parentBranch = phyloInternal.getParentPhyloBranch();
+				if(parentBranch != null) {
+					Double transferBootstraps = (Double) parentBranch.ensureUserData().get("transferBootstraps");
+					if(transferBootstraps != null) {
+						return Double.toString(transferBootstraps); 
+					}
+				}
+				return null;
+			}
+		});
 	}
 
-	public ImportPhylogenyException(Throwable cause, Code code,
-			Object... errorArgs) {
-		super(cause, code, errorArgs);
-	}
-
-	
 }

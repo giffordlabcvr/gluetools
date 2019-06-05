@@ -264,10 +264,19 @@ public class NexusExporter extends ModulePlugin<NexusExporter> {
 					public String generateInternalComment(PhyloInternal phyloInternal) {
 						PhyloBranch parentBranch = phyloInternal.getParentPhyloBranch();
 						if(parentBranch != null) {
+							List<String> comments = new ArrayList<String>();
 							Integer bootstraps = (Integer) parentBranch.ensureUserData().get("bootstraps");
 							if(bootstraps != null) {
-								return "&bootstraps="+Integer.toString(bootstraps); 
+								comments.add("bootstraps="+Integer.toString(bootstraps)); 
 							}
+							Double transferBootstraps = (Double) parentBranch.ensureUserData().get("transferBootstraps");
+							if(transferBootstraps != null) {
+								comments.add("transferBootstraps="+Double.toString(transferBootstraps)); 
+							}
+							if(comments.size() > 0) {
+								return "&"+String.join(",", comments);
+							}
+							return null;
 						}
 						return null;
 					}

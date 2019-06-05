@@ -32,35 +32,35 @@ import uk.ac.gla.cvr.gluetools.core.newick.PhyloNewickException.Code;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
 
-public class NewickBootstrapsToPhyloTreeParser extends NewickToPhyloTreeParser {
+public class NewickTransferBootstrapsToPhyloTreeParser extends NewickToPhyloTreeParser {
 
-	public NewickBootstrapsToPhyloTreeParser() {
+	public NewickTransferBootstrapsToPhyloTreeParser() {
 		super(new NewickInterpreter() {
 			@Override
 			public void parseInternalName(PhyloInternal phyloInternal, String internalName) {
 				PhyloBranch parentBranch = phyloInternal.getParentPhyloBranch();
 				if(parentBranch == null) {
 					// changed this to a warning to work around possible bug in RAXML-NG
-					// throw new PhyloNewickException(Code.FORMAT_ERROR, "NEWICK_BOOTSTRAPS format should not try to annotate a bootstraps value as an internal name of the root node");
-					GlueLogger.getGlueLogger().warning("Ignoring bootstrap value annotated as an internal name of the root node");
+					// throw new PhyloNewickException(Code.FORMAT_ERROR, "NEWICK_TRANSFER_BOOTSTRAPS format should not try to annotate a bootstraps value as an internal name of the root node");
+					GlueLogger.getGlueLogger().warning("Ignoring transfer bootstrap value annotated as an internal name of the root node");
 					return;
 				}
-				Integer bootstraps;
+				Double transferBootstraps;
 				try {
-					bootstraps = Integer.parseInt(internalName);
+					transferBootstraps = Double.parseDouble(internalName);
 				} catch(NumberFormatException nfe) {
-					throw new PhyloNewickException(Code.FORMAT_ERROR, "NEWICK_BOOTSTRAPS internal node names should be integers");
+					throw new PhyloNewickException(Code.FORMAT_ERROR, "NEWICK_TRANSFER_BOOTSTRAPS internal node names should be floating point numbers");
 				}
-				if(bootstraps < 0 || bootstraps > 100) {
-					throw new PhyloNewickException(Code.FORMAT_ERROR, "NEWICK_BOOTSTRAPS internal node names should be between 0 and 100 inclusive");
+				if(transferBootstraps < 0 || transferBootstraps > 1.0) {
+					throw new PhyloNewickException(Code.FORMAT_ERROR, "NEWICK_TRANSFER_BOOTSTRAPS internal node names should be between 0 and 1.0 inclusive");
 				};
 				
 				Map<String, Object> parentBranchUserData = parentBranch.ensureUserData();
-				Integer existingValue = (Integer) parentBranchUserData.get("bootstraps");
-				if(existingValue != null && !existingValue.equals(bootstraps)) {
-					throw new PhyloNewickException(Code.FORMAT_ERROR, "NEWICK_BOOTSTRAPS internal node names of the children of the root node should be equal as they are bootstraps for the same edge");					
+				Double existingValue = (Double) parentBranchUserData.get("transferBootstraps");
+				if(existingValue != null && !existingValue.equals(transferBootstraps)) {
+					throw new PhyloNewickException(Code.FORMAT_ERROR, "NEWICK_TRANSFER_BOOTSTRAPS internal node names of the children of the root node should be equal as they are transfer bootstraps for the same edge");					
 				} 
-				parentBranchUserData.put("bootstraps", bootstraps);
+				parentBranchUserData.put("transferBootstraps", transferBootstraps);
 			}
 		});
 	}
