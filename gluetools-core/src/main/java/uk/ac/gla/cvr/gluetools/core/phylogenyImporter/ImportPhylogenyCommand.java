@@ -57,7 +57,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass(
 		commandWords={"import", "phylogeny"}, 
-		description = "Import a phylogeny into an alignment tree", 
+		description = "Import a phylogeny into an alignment / alignment tree", 
 		docoptUsages={"<alignmentName> [-c] [-n] (-w <whereClause> | -a) -i <inputFile> <inputFormat> (-f <fieldName> | -p)"},
 		docoptOptions={
 			"-c, --recursive                                Include descendent members",
