@@ -30,6 +30,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.newick.NewickLexer.Token;
+import uk.ac.gla.cvr.gluetools.core.newick.NewickLexer.TokenType;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
@@ -51,6 +52,21 @@ public class NewickToPhyloTreeParser {
 		ArrayList<Token> tokens = NewickLexer.lex(newickString);
 		List<Token> meaningfulTokens = NewickLexer.meaningfulTokens(tokens);
 
+		int numTokens = meaningfulTokens.size();
+		// delete :0.0 before final semicolon, allowing us to accept the Tree -> Branch production as long as it is a zero-length branch
+		if(numTokens >= 3) {
+			if(meaningfulTokens.get(numTokens-1).getType() == TokenType.SEMICOLON &&
+					meaningfulTokens.get(numTokens-2).getType() == TokenType.NUMBER && 
+					meaningfulTokens.get(numTokens-3).getType() == TokenType.COLON) {
+				if(Double.parseDouble(meaningfulTokens.get(numTokens-2).getData()) == 0.0) {
+					meaningfulTokens.remove(meaningfulTokens.size()-2);
+					meaningfulTokens.remove(meaningfulTokens.size()-2);
+				} else {
+					throw new PhyloNewickException(PhyloNewickException.Code.FORMAT_ERROR, "Can parse Tree->Branch production but only if root branch is of length 0.0");
+				}
+			}
+		}
+		
 		LinkedList<State> stateStack = new LinkedList<State>();
 		TreeState treeState = new TreeState();
 		push(null, stateStack, treeState);
@@ -321,8 +337,10 @@ public class NewickToPhyloTreeParser {
 		parser.test("(A,B,(C,D));");
 		parser.test("(A,B,(C,D)E)F;");
 		parser.test("(:0.1,:0.2,(:0.3,:0.4):0.5);");
-		// we don't support the Tree -> Branch ; production, exemplified by this case.
-		// parser.test("(:0.1,:0.2,(:0.3,:0.4):0.5):0.0;");
+		// support the Tree -> Branch ; production, but only if root branch is of length 0.
+		parser.test("(:0.1,:0.2,(:0.3,:0.4):0.5):0.0;");
+		// non length zero example
+		// parser.test("(:0.1,:0.2,(:0.3,:0.4):0.5):0.000000000000001;");
 		parser.test("(A:0.1,B:0.2,(C:0.3,D:0.4):0.5);");
 		parser.test("(A:0.1,B:0.2,(C:0.3,D:0.4)E:0.5)F;");
 		parser.test("((B:0.2,(C:0.3,D:0.4)E:0.5)F:0.1)A;");
