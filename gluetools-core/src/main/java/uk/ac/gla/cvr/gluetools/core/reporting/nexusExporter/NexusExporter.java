@@ -188,6 +188,7 @@ public class NexusExporter extends ModulePlugin<NexusExporter> {
 	public NexusExporter() {
 		super();
 		registerModulePluginCmdClass(ExportTreeCommand.class);
+		registerModuleDocumentCmdClass(AddAnnotationGeneratorFreemarkerCommand.class);
 		addSimplePropertyName(PHYLO_FIELD_NAME);
 	}
 
