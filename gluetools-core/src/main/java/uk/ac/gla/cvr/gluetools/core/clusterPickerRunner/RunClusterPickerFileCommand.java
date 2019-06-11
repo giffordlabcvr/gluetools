@@ -61,7 +61,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
-@CommandClass(commandWords={"run", "cluster-picker"},
+@CommandClass(commandWords={"run", "cluster-picker", "file"},
 	docoptUsages="-a <alignmentName> [-w <whereClause>] -t <treeFileName> <treeFileFormat> [-d <dataDir>]",
 	docoptOptions={
 		"-t <treeFileName>, --treeFileName <treeFileName>     Phylogenetic tree file path",
@@ -74,7 +74,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 			"members selected by the <whereClause>. Otherwise, it must correspond to the set of all alignment "+
 			"members.", 
 	metaTags = { CmdMeta.consoleOnly } )
-public class RunClusterPickerCommand extends ModulePluginCommand<ClusterPickerResult, ClusterPickerRunner> {
+public class RunClusterPickerFileCommand extends ModulePluginCommand<ClusterPickerResult, ClusterPickerRunner> {
 
 	private String alignmentName;
 	private Optional<Expression> whereClause;

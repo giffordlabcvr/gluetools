@@ -74,12 +74,17 @@ public class ClusterPickerRunner extends ModulePlugin<ClusterPickerRunner> {
 	public static final String GENETIC_THRESHOLD = "geneticThreshold";
 	public static final String LARGE_CLUSTER_THRESHOLD = "largeClusterThreshold";
 	public static final String DIFF_TYPE = "diffType";
+	public static final String PHYLO_FIELD_NAME = "phyloFieldName";
+	public static final String NODE_THRESHOLD_TYPE = "nodeThresholdType";
 	
+	
+	private String phyloFieldName;
 	private double initialThreshold;
 	private double supportThreshold;
 	private double geneticThreshold;
 	private int largeClusterThreshold;
 	private DiffType diffType;
+	private NodeThresholdType nodeThresholdType;
 	
 	public enum DiffType {
 		gap,
@@ -88,19 +93,30 @@ public class ClusterPickerRunner extends ModulePlugin<ClusterPickerRunner> {
 		ambiguity
 	}
 	
+	public enum NodeThresholdType {
+		BOOTSTRAPS, 
+		TRANSFER_BOOTSTRAPS
+	}
+
+
+	
 	public ClusterPickerRunner() {
 		super();
-		registerModulePluginCmdClass(RunClusterPickerCommand.class);
+		registerModulePluginCmdClass(RunClusterPickerFieldCommand.class);
+		registerModulePluginCmdClass(RunClusterPickerFileCommand.class);
 		addSimplePropertyName(INITIAL_THRESHOLD);
 		addSimplePropertyName(SUPPORT_THRESHOLD);
 		addSimplePropertyName(GENETIC_THRESHOLD);
 		addSimplePropertyName(LARGE_CLUSTER_THRESHOLD);
 		addSimplePropertyName(DIFF_TYPE);
+		addSimplePropertyName(PHYLO_FIELD_NAME);
+		addSimplePropertyName(NODE_THRESHOLD_TYPE);
 	}
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
+		this.phyloFieldName = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, PHYLO_FIELD_NAME, false)).orElse("phylogeny");
 		// note that defaults of 95.0 and 75.0 for bootstrap thresholds match the fact
 		// that RAxML outputs trees annotated with bootstraps out of 100.
 		this.initialThreshold = Optional.ofNullable(PluginUtils
@@ -114,6 +130,10 @@ public class ClusterPickerRunner extends ModulePlugin<ClusterPickerRunner> {
 		this.diffType = Optional
 				.ofNullable(PluginUtils
 				.configureEnumProperty(DiffType.class, configElem, DIFF_TYPE, false)).orElse(DiffType.gap);
+		this.nodeThresholdType = Optional
+				.ofNullable(PluginUtils
+				.configureEnumProperty(NodeThresholdType.class, configElem, NODE_THRESHOLD_TYPE, false)).orElse(NodeThresholdType.BOOTSTRAPS);
+
 	}
 
 	private String getClusterPickerJarPath(CommandContext cmdContext) {
@@ -146,7 +166,18 @@ public class ClusterPickerRunner extends ModulePlugin<ClusterPickerRunner> {
 			writeFile(alignmentFile, alignmentBytes);
 
 			File treeFile = new File(tempDir, INPUT_TREE_FILENAME+".nwk");
-			byte[] treeBytes = PhyloFormat.NEWICK_BOOTSTRAPS.generate(tree);
+			PhyloFormat clusterPickerInputTreeFormat;
+			switch(this.nodeThresholdType) {
+			case BOOTSTRAPS:
+				clusterPickerInputTreeFormat = PhyloFormat.NEWICK_BOOTSTRAPS;
+				break;
+			case TRANSFER_BOOTSTRAPS:
+				clusterPickerInputTreeFormat = PhyloFormat.NEWICK_TRANSFER_BOOTSTRAPS;
+				break;
+			default:
+				throw new ClusterPickerException(Code.CLUSTER_PICKER_CONFIG_EXCEPTION, "Unknown node threshold type: "+this.nodeThresholdType.name());
+			}
+			byte[] treeBytes = clusterPickerInputTreeFormat.generate(tree);
 			writeFile(treeFile, treeBytes);
 			
 			List<String> commandWords = new ArrayList<String>();
@@ -180,7 +211,10 @@ public class ClusterPickerRunner extends ModulePlugin<ClusterPickerRunner> {
 		
 	}
 	
-	
+	public String getPhyloFieldName() {
+		return phyloFieldName;
+	}
+
 	private List<ClusterPickerResultLine> resultListFromTempDir(File tempDir) {
 		File clusterPicksListFile = new File(tempDir, INPUT_TREE_FILENAME+"_clusterPicks_list.txt");
 		byte[] clusterPicksListBytes = readFile(clusterPicksListFile);
