@@ -42,7 +42,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass(
 		commandWords={"variation", "scan"}, 
 		description = "Scan a FASTA file for variations", 
-		docoptUsages = { "-i <fileName> -r <acRefName> -f <featureName> [-d] -t <targetRefName> -a <linkingAlmtName> [-w <whereClause>] [-e] [-c] [-v | -o]"+
+		docoptUsages = { "-i <fileName> -r <relRefName> -f <featureName> [-d] -t <targetRefName> -a <linkingAlmtName> [-w <whereClause>] [-e] [-c] [-v | -o]"+
 		""},
 		docoptOptions = { 
 				"-i <fileName>, --fileName <fileName>                       FASTA input file",
