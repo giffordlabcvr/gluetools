@@ -124,7 +124,8 @@ public class AminoAcidSimplePolymorphismScanner extends BaseAminoAcidVariationSc
 						AminoAcidSimplePolymorphismMatchResult aaspmr = 
 								new AminoAcidSimplePolymorphismMatchResult(firstRefCodon, lastRefCodon, 
 										refNtStart, refNtEnd, 
-										queryNtStart, queryNtEnd, queryAAs, polymorphismQueryNts, tripletInfosMatch.combinedTripletFraction);
+										queryNtStart, queryNtEnd, queryAAs, polymorphismQueryNts, 
+										tripletInfosMatch.combinedTripletFraction, tripletInfosMatch.reliesOnNonDefiniteAa);
 						if(qualityString != null) {
 							aaspmr.setWorstContributingQScore(SamUtils.worstQScore(qualityString, queryNtStart, queryNtEnd));
 						}
@@ -150,6 +151,9 @@ public class AminoAcidSimplePolymorphismScanner extends BaseAminoAcidVariationSc
 		int index;
 		StringBuffer queryAas = new StringBuffer();
 		double combinedTripletFraction = 1.0;
+		// if this is set to true, the match relies on an AA translation that 
+		// is possible (consistent with the ambiguous nucleotides), but not definite.
+		boolean reliesOnNonDefiniteAa = false;
 	}
 
 	private TripletInfosMatch tripletInfosMatch(List<LabeledQueryAminoAcid> contiguousLqaaSection, int fromIndex, String pattern, double minCombinedTripletFraction) {
@@ -166,6 +170,9 @@ public class AminoAcidSimplePolymorphismScanner extends BaseAminoAcidVariationSc
 				if(tripletInfosMatch.combinedTripletFraction < minCombinedTripletFraction) {
 					match = false;
 					break;
+				}
+				if(!ambigNtTripletInfo.getDefiniteAminoAcids().contains(aa)) {
+					tripletInfosMatch.reliesOnNonDefiniteAa = true;
 				}
 			}
 			if(match) {

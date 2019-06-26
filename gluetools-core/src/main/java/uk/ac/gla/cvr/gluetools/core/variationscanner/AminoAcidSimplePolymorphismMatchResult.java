@@ -28,10 +28,14 @@ public class AminoAcidSimplePolymorphismMatchResult extends VariationScannerMatc
 	// product of the triplet fractions of each triplet in the match.
 	private Double combinedTripletFraction;
 	
+	// if this is set to true, the match relies on an AA translation that 
+	// is possible (consistent with the ambiguous nucleotides), but not definite.
+	private Boolean reliesOnNonDefiniteAa;
+	
 	public AminoAcidSimplePolymorphismMatchResult(String firstRefCodon,
 			String lastRefCodon, int refNtStart, int refNtEnd,
 			int queryNtStart, int queryNtEnd, String queryAAs, String queryNts, 
-			Double combinedTripletFraction) {
+			Double combinedTripletFraction, Boolean reliesOnNonDefiniteAa) {
 		super();
 		this.firstRefCodon = firstRefCodon;
 		this.lastRefCodon = lastRefCodon;
@@ -42,6 +46,7 @@ public class AminoAcidSimplePolymorphismMatchResult extends VariationScannerMatc
 		this.queryAAs = queryAAs;
 		this.queryNts = queryNts;
 		this.combinedTripletFraction = combinedTripletFraction;
+		this.reliesOnNonDefiniteAa = reliesOnNonDefiniteAa;
 	}
 
 	public String getFirstRefCodon() {
@@ -85,6 +90,10 @@ public class AminoAcidSimplePolymorphismMatchResult extends VariationScannerMatc
 		return combinedTripletFraction;
 	}
 
+	public Boolean getReliesOnNonDefiniteAa() {
+		return reliesOnNonDefiniteAa;
+	}
+
 	@SuppressWarnings("unchecked")
 	public static List<TableColumn<AminoAcidSimplePolymorphismMatchResult>> getTableColumns() {
 		return Arrays.asList(
@@ -96,7 +105,8 @@ public class AminoAcidSimplePolymorphismMatchResult extends VariationScannerMatc
 				column("queryNtStart", aapmr -> aapmr.getQueryNtStart()),
 				column("queryNtEnd", aapmr -> aapmr.getQueryNtEnd()),
 				column("queryNts", aapmr -> aapmr.getQueryNts()),
-				column("combinedTripletFraction", aapmr -> aapmr.getCombinedTripletFraction())
+				column("combinedTripletFraction", aapmr -> aapmr.getCombinedTripletFraction()),
+				column("reliesOnNonDefiniteAa", aapmr -> aapmr.getReliesOnNonDefiniteAa())
 		);
 	}
 
