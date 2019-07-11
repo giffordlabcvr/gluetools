@@ -12,7 +12,7 @@ import uk.ac.gla.cvr.gluetools.core.requestQueue.Request;
 public class RequestGatekeeper extends BaseRequestFilter {
 
 	@Override
-	protected boolean fiterRequestInternal(Request request) {
+	protected boolean allowRequestLocal(Request request) {
 		return true;
 	}
 	

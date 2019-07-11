@@ -1,7 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.requestGatekeeper;
 
-import java.util.List;
-
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
@@ -26,8 +24,8 @@ public class CommandWordsRequestFilter extends BaseRequestFilter {
 	}
 
 	@Override
-	protected boolean fiterRequestInternal(Request request) {
-		List<String> commandWordsList = request.getCommandWords();
+	protected boolean allowRequestLocal(Request request) {
+		String[] commandWordsList = request.getCommandWords();
 		String commandWordsString = String.join(" ", commandWordsList);
 		return commandWordsString.equals(commandWords);
 	}

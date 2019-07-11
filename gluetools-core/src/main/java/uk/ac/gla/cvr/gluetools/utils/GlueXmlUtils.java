@@ -303,7 +303,7 @@ public class GlueXmlUtils {
 		return xPathResult;
 	}	
 
-	private static Object runXPath(Node startNode, XPathExpression xPathExpression, QName name) {
+	public static Object runXPath(Node startNode, XPathExpression xPathExpression, QName name) {
 		try {
 			return xPathExpression.evaluate(startNode, name);
 		} catch (XPathExpressionException e) {

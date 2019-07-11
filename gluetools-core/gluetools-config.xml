@@ -4,6 +4,20 @@
 		<password>gluetools</password>
 		<jdbcUrl>jdbc:mysql://localhost:3306/GLUE_TOOLS?characterEncoding=UTF-8</jdbcUrl>
 	</database>
+	<requestGatekeeper>
+		<modePathRegexFilter>
+			<regex>^/project/hcv</regex>
+		</modePathRegexFilter>
+		<modePathRegexFilter>
+			<regex>^/project/hev</regex>
+		</modePathRegexFilter>
+		<modePathRegexFilter>
+			<regex>^/project/btv</regex>
+		</modePathRegexFilter>
+		<modePathRegexFilter>
+			<regex>^/project/rabv</regex>
+		</modePathRegexFilter>
+	</requestGatekeeper>
 	<properties>
 		<!-- Web files -->
 	    <property>

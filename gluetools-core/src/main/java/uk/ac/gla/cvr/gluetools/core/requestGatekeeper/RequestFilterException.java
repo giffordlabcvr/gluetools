@@ -31,7 +31,8 @@ public class RequestFilterException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 		
-		CONFIG_ERROR("errorTxt");
+		CONFIG_ERROR("errorTxt"),
+		REQUEST_DENIED("errorTxt");
 
 		private String[] argNames;
 		private Code(String... argNames) {

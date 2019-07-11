@@ -112,13 +112,15 @@ public abstract class CommandMode<C extends Command> {
 	}
 	
 	protected void appendModeConfigToElem(Element elem, String name, Object value) {
+		Element newElem;
 		if(value == null) {
-			Element newElem = GlueXmlUtils.appendElement(elem, name);
+			newElem = GlueXmlUtils.appendElement(elem, name);
 			CommandDocumentXmlUtils.setGlueType(newElem, GlueTypeUtils.GlueType.Null, false);
 		} else {
-			Element newElem = (Element) GlueXmlUtils.appendElementWithText(elem, name, value.toString()).getParentNode();
+			newElem = (Element) GlueXmlUtils.appendElementWithText(elem, name, value.toString()).getParentNode();
 			CommandDocumentXmlUtils.setGlueType(newElem, GlueTypeUtils.glueTypeFromObject(value), false);
 		}
+		newElem.setUserData("modeConfig", Boolean.TRUE, null);
 	}
 
 

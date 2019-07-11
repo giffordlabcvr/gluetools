@@ -42,6 +42,7 @@ import org.w3c.dom.Element;
 
 import freemarker.template.Configuration;
 import uk.ac.gla.cvr.gluetools.core.classloader.GlueClassLoader;
+import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.config.DatabaseConfiguration;
 import uk.ac.gla.cvr.gluetools.core.config.PropertiesConfiguration;
@@ -55,6 +56,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtils;
+import uk.ac.gla.cvr.gluetools.core.requestGatekeeper.RequestGatekeeper;
 import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManager;
 import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManagerException;
 import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesUtils;
@@ -95,6 +97,7 @@ public class GluetoolsEngine implements Plugin {
 	private ExecutorService samExecutorService;
 	private WebFilesManager webFilesManager;
 
+	private RequestGatekeeper requestGatekeeper;
 	
 	private GluetoolsEngine(String configFilePath) {
 		gluecoreProperties = new Properties();
@@ -138,6 +141,11 @@ public class GluetoolsEngine implements Plugin {
 		Element propertiesConfigElem = PluginUtils.findConfigElement(configElem, "properties");
 		if(propertiesConfigElem != null) {
 			PluginFactory.configurePlugin(pluginConfigContext, propertiesConfigElem, propertiesConfiguration);
+		}
+		Element requestGatekeeperElem = PluginUtils.findConfigElement(configElem, "requestGatekeeper");
+		if(requestGatekeeperElem != null) {
+			this.requestGatekeeper = new RequestGatekeeper();
+			PluginFactory.configurePlugin(pluginConfigContext, requestGatekeeperElem, this.requestGatekeeper);
 		}
 	}
 
@@ -257,6 +265,10 @@ public class GluetoolsEngine implements Plugin {
 		synchronized(classNameToBytes) {
 			return classNameToBytes.get(className);
 		}
+	}
+
+	public RequestGatekeeper getRequestGatekeeper() {
+		return requestGatekeeper;
 	}
 
 	public <X> X runWithGlueClassloader(Supplier<X> supplier) {

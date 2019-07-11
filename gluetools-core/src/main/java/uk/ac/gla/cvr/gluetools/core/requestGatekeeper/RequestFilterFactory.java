@@ -35,9 +35,9 @@ public class RequestFilterFactory extends PluginFactory<RequestFilter> {
 	
 	private RequestFilterFactory() {
 		super();
-		registerPluginClass(ModePathRequestFilter.class);
+		registerPluginClass(ModePathRegexRequestFilter.class);
 		registerPluginClass(CommandWordsRequestFilter.class);
-		registerPluginClass(CommandArgumentsRequestFilter.class);
+		registerPluginClass(CommandXPathRequestFilter.class);
 		registerPluginClass(QueueAssignmentRequestFilter.class);
 	}
 	

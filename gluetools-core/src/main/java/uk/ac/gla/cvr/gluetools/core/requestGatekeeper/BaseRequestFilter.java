@@ -24,20 +24,24 @@ public abstract class BaseRequestFilter implements RequestFilter {
 	}
 
 	@Override
-	public final boolean filterRequest(Request request) {
-		boolean locallyAllowed = fiterRequestInternal(request);
-		if(locallyAllowed) {
-			for(RequestFilter childRequestFilter: childRequestFilters) {
-				boolean childAllowed = childRequestFilter.filterRequest(request);
-				if(childAllowed) {
-					return true;
-				}
+	public final boolean allowRequest(Request request) {
+		boolean locallyAllowed = allowRequestLocal(request);
+		if(!locallyAllowed) {
+			return false;
+		}
+		if(childRequestFilters.isEmpty()) {
+			return true;
+		}
+		for(RequestFilter childRequestFilter: childRequestFilters) {
+			boolean childAllowed = childRequestFilter.allowRequest(request);
+			if(childAllowed) {
+				return true;
 			}
 		}
 		return false;
 	}
 
-	protected abstract boolean fiterRequestInternal(Request request);
+	protected abstract boolean allowRequestLocal(Request request);
 
 	
 	

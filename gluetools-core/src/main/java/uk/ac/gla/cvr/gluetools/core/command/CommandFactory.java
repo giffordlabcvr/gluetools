@@ -187,6 +187,12 @@ public abstract class CommandFactory {
 					commandModeStack.get(i).addModeConfigToCommandElem(cmdClass, element);
 				}
 				Command command = cmdPluginFactory.createFromElement(pluginConfigContext, element);
+				List<Element> childElems = GlueXmlUtils.findChildElements(element);
+				for(Element childElem: childElems) {
+					if(childElem.getUserData("modeConfig") == Boolean.TRUE) {
+						element.removeChild(childElem);
+					}
+				}
 				command.setCmdElem(element);
 				return command;
 			} else {
