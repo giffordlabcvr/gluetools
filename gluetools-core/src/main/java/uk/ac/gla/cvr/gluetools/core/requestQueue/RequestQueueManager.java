@@ -81,7 +81,7 @@ public class RequestQueueManager implements Plugin {
 							if(ticket.getCommandFuture().isDone()) {
 								Long completionTime = ticket.getCompletionTime();
 								if(completionTime == null) {
-									completionTime = System.currentTimeMillis();
+									ticket.setCompletionTime(System.currentTimeMillis());
 								} else {
 									if(System.currentTimeMillis() - completionTime > RETAIN_OUTSTANDING_TICKETS_LIMIT_MS) {
 										requestIDsToRemove.add(ticket.getId());
@@ -94,13 +94,14 @@ public class RequestQueueManager implements Plugin {
 							outstandingTickets.remove(requestID);
 						}
 					}
+					try {
+						Thread.sleep(OUTSTANDING_TICKETS_THREAD_SLEEP_TIME_MS);
+					} catch (InterruptedException e) {}
 				}
-				try {
-					Thread.sleep(OUTSTANDING_TICKETS_THREAD_SLEEP_TIME_MS);
-				} catch (InterruptedException e) {}
 			}
 			
 		}, "Request queue manager uncollected tickets thread");
+		this.uncollectedTicketsThread.start();
 		this.isInited = true;
 	}
 	
@@ -114,7 +115,7 @@ public class RequestQueueManager implements Plugin {
 		} catch (InterruptedException e) {}
 	}
 	
-	public RequestTicket submitRequest(CommandContext cmdContext, Request request) {
+	public String submitRequest(CommandContext cmdContext, Request request) {
 		String queueName = request.getQueueName();
 		RequestQueue requestQueue = getQueue(queueName);
 		if(requestQueue == null) {
@@ -123,8 +124,9 @@ public class RequestQueueManager implements Plugin {
 		}
 
 		RequestTicket requestTicket;
+		String requestID;
 		synchronized(outstandingTickets) {
-			String requestID = Integer.toString(nextRequestID);
+			requestID = Integer.toString(nextRequestID);
 			nextRequestID++;
 			Future<CommandResult> cmdResultFuture = requestQueue.getExecutorService().submit(new Callable<CommandResult>() {
 				@Override
@@ -147,9 +149,18 @@ public class RequestQueueManager implements Plugin {
 			requestTicket = new RequestTicket(requestID, cmdResultFuture);
 			outstandingTickets.put(requestID, requestTicket);
 		}
-		
-		return requestTicket;
+		return requestID;
 	}
 	
-	
+	public CommandResult collectRequestSync(String id) {
+		RequestTicket requestTicket;
+		synchronized(outstandingTickets) {
+			requestTicket = outstandingTickets.remove(id);
+		}
+		if(requestTicket == null) {
+			throw new RequestQueueManagerException(RequestQueueManagerException.Code.EXPIRED_OR_NON_EXISTENT_REQUEST, 
+					"Request with ID "+id+" is expired or non-existent.");
+		}
+		return requestTicket.getCommandResult();
+	}
 }

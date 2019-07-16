@@ -282,9 +282,9 @@ public class WsCmdContext extends CommandContext {
 		}
 		RequestQueueManager requestQueueManager = gluetoolsEngine.getRequestQueueManager();
 		
-		RequestTicket requestTicket = requestQueueManager.submitRequest(this, request);
-		logger.info("Request ticket "+requestTicket.getId()+" allocated to command : "+commandString);
-		return requestTicket.getCommandResult();
+		String requestID = requestQueueManager.submitRequest(this, request);
+		logger.info("Request ticket "+requestID+" allocated to command : "+commandString);
+		return requestQueueManager.collectRequestSync(requestID);
 	}
 	
 	private void addCacheDisablingHeaders(HttpServletResponse response) {
