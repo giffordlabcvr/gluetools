@@ -45,7 +45,7 @@ public class CommandXPathRequestFilter extends BaseRequestFilter {
 
 	@Override
 	protected boolean allowRequestLocal(Request request) {
-		Document cmdXmlDoc = request.getCmdXmlDoc();
+		Document cmdXmlDoc = request.getCommand().getCmdElem().getOwnerDocument();
 		return (Boolean) GlueXmlUtils.runXPath(cmdXmlDoc, xPathExpression, XPathConstants.BOOLEAN);
 	}
 

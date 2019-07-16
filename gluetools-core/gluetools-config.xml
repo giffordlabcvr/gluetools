@@ -4,6 +4,16 @@
 		<password>gluetools</password>
 		<jdbcUrl>jdbc:mysql://localhost:3306/GLUE_TOOLS?characterEncoding=UTF-8</jdbcUrl>
 	</database>
+	<requestQueueManager>
+		<requestQueue>
+			<queueName>default</queueName>
+			<numWorkers>1</numWorkers>		
+		</requestQueue>
+		<requestQueue>
+			<queueName>analysis</queueName>
+			<numWorkers>1</numWorkers>		
+		</requestQueue>
+	</requestQueueManager>
 	<requestGatekeeper>
 		<modePathRegexFilter>
 			<regex>^/project/hcv</regex>

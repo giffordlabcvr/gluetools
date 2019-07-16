@@ -13,6 +13,7 @@ public class RequestGatekeeper extends BaseRequestFilter {
 
 	@Override
 	protected boolean allowRequestLocal(Request request) {
+		// allow anything by default.
 		return true;
 	}
 	

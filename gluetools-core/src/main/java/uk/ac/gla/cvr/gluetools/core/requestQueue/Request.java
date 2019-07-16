@@ -1,22 +1,21 @@
 package uk.ac.gla.cvr.gluetools.core.requestQueue;
 
-import java.util.List;
-
-import org.w3c.dom.Document;
+import uk.ac.gla.cvr.gluetools.core.command.Command;
+import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 
 public class Request {
 
 	private String modePath;
+	private Command<?> command;
 	private String[] commandWords;
-	private Document cmdXmlDoc;
 	
-	private String queueName;
+	private String queueName = RequestQueue.DEFAULT_QUEUE_NAME;
 	
-	public Request(String modePath, String[] commandWords, Document cmdXmlDoc) {
+	public Request(String modePath, Command<?> command) {
 		super();
 		this.modePath = modePath;
-		this.commandWords = commandWords;
-		this.cmdXmlDoc = cmdXmlDoc;
+		this.command = command;
+		this.commandWords = CommandUsage.cmdWordsForCmdClass(command.getClass());
 	}
 
 	public String getModePath() {
@@ -35,8 +34,8 @@ public class Request {
 		return queueName;
 	}
 
-	public Document getCmdXmlDoc() {
-		return cmdXmlDoc;
+	public Command<?> getCommand() {
+		return command;
 	}
 
 }

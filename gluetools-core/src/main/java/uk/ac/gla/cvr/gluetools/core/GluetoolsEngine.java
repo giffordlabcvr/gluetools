@@ -42,7 +42,6 @@ import org.w3c.dom.Element;
 
 import freemarker.template.Configuration;
 import uk.ac.gla.cvr.gluetools.core.classloader.GlueClassLoader;
-import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.config.DatabaseConfiguration;
 import uk.ac.gla.cvr.gluetools.core.config.PropertiesConfiguration;
@@ -57,6 +56,8 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamUtils;
 import uk.ac.gla.cvr.gluetools.core.requestGatekeeper.RequestGatekeeper;
+import uk.ac.gla.cvr.gluetools.core.requestQueue.RequestQueue;
+import uk.ac.gla.cvr.gluetools.core.requestQueue.RequestQueueManager;
 import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManager;
 import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManagerException;
 import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesUtils;
@@ -98,6 +99,7 @@ public class GluetoolsEngine implements Plugin {
 	private WebFilesManager webFilesManager;
 
 	private RequestGatekeeper requestGatekeeper;
+	private RequestQueueManager requestQueueManager;
 	
 	private GluetoolsEngine(String configFilePath) {
 		gluecoreProperties = new Properties();
@@ -142,10 +144,18 @@ public class GluetoolsEngine implements Plugin {
 		if(propertiesConfigElem != null) {
 			PluginFactory.configurePlugin(pluginConfigContext, propertiesConfigElem, propertiesConfiguration);
 		}
+		this.requestGatekeeper = new RequestGatekeeper();
 		Element requestGatekeeperElem = PluginUtils.findConfigElement(configElem, "requestGatekeeper");
 		if(requestGatekeeperElem != null) {
-			this.requestGatekeeper = new RequestGatekeeper();
 			PluginFactory.configurePlugin(pluginConfigContext, requestGatekeeperElem, this.requestGatekeeper);
+		}
+		this.requestQueueManager = new RequestQueueManager();
+		Element requestQueueManagerElem = PluginUtils.findConfigElement(configElem, "requestQueueManager");
+		if(requestQueueManagerElem != null) {
+			PluginFactory.configurePlugin(pluginConfigContext, requestQueueManagerElem, this.requestQueueManager);
+		} else {
+			int availableProcessors = Runtime.getRuntime().availableProcessors();
+			this.requestQueueManager.addQueue(new RequestQueue(RequestQueue.DEFAULT_QUEUE_NAME, availableProcessors));
 		}
 	}
 
@@ -203,6 +213,7 @@ public class GluetoolsEngine implements Plugin {
 			// this is to allow the use of AWT font classes (e.g. for predicting text widths) without 
 			// popping up a window.
 			System.setProperty("java.awt.headless", "true"); 
+			
 		} catch(Exception e) {
 			throw new GluetoolsEngineException(e, GluetoolsEngineException.Code.DB_CONNECTION_ERROR, e.getMessage());
 		} finally {
@@ -238,6 +249,9 @@ public class GluetoolsEngine implements Plugin {
 		}
 		if(webFilesManager != null) {
 			webFilesManager.setKeepRunning(false);
+		}
+		if(requestQueueManager != null) {
+			requestQueueManager.dispose();
 		}
 	}
 
@@ -291,7 +305,14 @@ public class GluetoolsEngine implements Plugin {
 		}
 		return mafftExecutorService;
 	}
-	
+
+	public synchronized RequestQueueManager getRequestQueueManager() {
+		if(!requestQueueManager.isInited()) {
+			requestQueueManager.init();
+		}
+		return requestQueueManager;
+	}
+
 	// used to parellize SAM file processing.
 	public synchronized ExecutorService getSamExecutorService() {
 		if(samExecutorService == null) {

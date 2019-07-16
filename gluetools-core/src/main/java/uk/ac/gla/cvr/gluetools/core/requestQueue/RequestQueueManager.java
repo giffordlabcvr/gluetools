@@ -1,11 +1,19 @@
 package uk.ac.gla.cvr.gluetools.core.requestQueue;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import java.util.function.Supplier;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
@@ -14,8 +22,24 @@ import uk.ac.gla.cvr.gluetools.core.requestQueue.RequestQueueManagerException.Co
 
 public class RequestQueueManager implements Plugin {
 
+	/**
+	 * Uncollected tickets removed from the map after a certain amount of time so that results get garbage collected.
+	 * Clients should be polling for tickets more frequently.
+	 */
+	private static final long RETAIN_OUTSTANDING_TICKETS_LIMIT_MS = 10000;
+
+	private static final long OUTSTANDING_TICKETS_THREAD_SLEEP_TIME_MS = 5000;
+
 	private Map<String, RequestQueue> requestQueues = new LinkedHashMap<String, RequestQueue>();
+
+	private Map<String, RequestTicket> outstandingTickets = new LinkedHashMap<String, RequestTicket>();
 	
+	private boolean isInited;
+	
+	private int nextRequestID = 1;
+	
+	private Thread uncollectedTicketsThread;
+	private boolean keepRunning = true;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -31,6 +55,101 @@ public class RequestQueueManager implements Plugin {
 		}
 	}
 
+	public void addQueue(RequestQueue requestQueue) {
+		requestQueues.put(requestQueue.getQueueName(), requestQueue);
+	}
+	
+	public RequestQueue getQueue(String queueName) {
+		return requestQueues.get(queueName);
+	}
+	
+	public boolean isInited() {
+		return isInited;
+	}
+
+	public void init() {
+		for(RequestQueue requestQueue: requestQueues.values()) {
+			requestQueue.init();
+		}
+		this.uncollectedTicketsThread = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				while(keepRunning) {
+					synchronized(outstandingTickets) {
+						List<String> requestIDsToRemove = new ArrayList<String>();
+						for(RequestTicket ticket: outstandingTickets.values()) {
+							if(ticket.getCommandFuture().isDone()) {
+								Long completionTime = ticket.getCompletionTime();
+								if(completionTime == null) {
+									completionTime = System.currentTimeMillis();
+								} else {
+									if(System.currentTimeMillis() - completionTime > RETAIN_OUTSTANDING_TICKETS_LIMIT_MS) {
+										requestIDsToRemove.add(ticket.getId());
+									}
+								}
+							}
+						}
+						for(String requestID: requestIDsToRemove) {
+							GlueLogger.getGlueLogger().finest("Removing uncollected ticket for request "+requestID);
+							outstandingTickets.remove(requestID);
+						}
+					}
+				}
+				try {
+					Thread.sleep(OUTSTANDING_TICKETS_THREAD_SLEEP_TIME_MS);
+				} catch (InterruptedException e) {}
+			}
+			
+		}, "Request queue manager uncollected tickets thread");
+		this.isInited = true;
+	}
+	
+	public void dispose() {
+		for(RequestQueue requestQueue: requestQueues.values()) {
+			requestQueue.dispose();
+		}
+		this.keepRunning = false;
+		try {
+			this.uncollectedTicketsThread.join();
+		} catch (InterruptedException e) {}
+	}
+	
+	public RequestTicket submitRequest(CommandContext cmdContext, Request request) {
+		String queueName = request.getQueueName();
+		RequestQueue requestQueue = getQueue(queueName);
+		if(requestQueue == null) {
+			throw new RequestQueueManagerException(RequestQueueManagerException.Code.QUEUE_ASSIGNMENT_ERROR, 
+					"Request was assigned to queue '"+queueName+"' but no queue with this name has been configured");
+		}
+
+		RequestTicket requestTicket;
+		synchronized(outstandingTickets) {
+			String requestID = Integer.toString(nextRequestID);
+			nextRequestID++;
+			Future<CommandResult> cmdResultFuture = requestQueue.getExecutorService().submit(new Callable<CommandResult>() {
+				@Override
+				public CommandResult call() throws Exception {
+					CommandResult cmdResult;
+					try {
+						cmdResult = GluetoolsEngine.getInstance().runWithGlueClassloader(new Supplier<CommandResult>(){
+							@Override
+							public CommandResult get() {
+								GlueLogger.getGlueLogger().info("Executing request "+requestID+" on queue '"+queueName+"'");
+								return request.getCommand().execute(cmdContext);
+							}
+						});
+					} finally {
+						cmdContext.dispose();
+					}
+					return cmdResult;
+				}
+			});
+			requestTicket = new RequestTicket(requestID, cmdResultFuture);
+			outstandingTickets.put(requestID, requestTicket);
+		}
+		
+		return requestTicket;
+	}
 	
 	
 }

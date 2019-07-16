@@ -72,6 +72,8 @@ import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.requestGatekeeper.RequestFilterException;
 import uk.ac.gla.cvr.gluetools.core.requestGatekeeper.RequestGatekeeper;
 import uk.ac.gla.cvr.gluetools.core.requestQueue.Request;
+import uk.ac.gla.cvr.gluetools.core.requestQueue.RequestQueueManager;
+import uk.ac.gla.cvr.gluetools.core.requestQueue.RequestTicket;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentJsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
@@ -105,7 +107,6 @@ public class WsCmdContext extends CommandContext {
 	@Produces(MediaType.APPLICATION_JSON)
 	@SuppressWarnings("rawtypes")
 	public String postAsCommand(@Context HttpHeaders requestHeaders, String commandString, @Context HttpServletResponse response) {
-		logger.info("Command string: "+commandString);
 		GlueDataObject.resetTimeSpentInDbOperations();
 		CommandDocument commandDocument = CommandFormatUtils.commandDocumentFromJsonString(commandString);
 		Document cmdXmlDocument = CommandDocumentXmlUtils.commandDocumentToXmlDocument(commandDocument);
@@ -120,7 +121,7 @@ public class WsCmdContext extends CommandContext {
 		}
 		@SuppressWarnings("unused")
 		long cmdExecutionStart = System.currentTimeMillis();
-		CommandResult cmdResult = invokeCommand(command);
+		CommandResult cmdResult = invokeCommand(commandString, command);
 		String cmdResultString = serializeToJson(cmdResult);
 		addCacheDisablingHeaders(response);
 		return cmdResultString;
@@ -153,7 +154,6 @@ public class WsCmdContext extends CommandContext {
 	@SuppressWarnings({ "rawtypes" })
 	private String multipartCommand(InputStream fileInputStream,
 			String commandString, HttpServletResponse response) {
-		logger.info("Command string: "+commandString);
 		GlueDataObject.resetTimeSpentInDbOperations();
 		CommandDocument commandDocument = CommandFormatUtils.commandDocumentFromJsonString(commandString);
 		Document commandXmlDocument = CommandDocumentXmlUtils.commandDocumentToXmlDocument(commandDocument);
@@ -183,7 +183,7 @@ public class WsCmdContext extends CommandContext {
 		}
 		@SuppressWarnings("unused")
 		long cmdExecutionStart = System.currentTimeMillis();
-		CommandResult cmdResult = invokeCommand(command);
+		CommandResult cmdResult = invokeCommand(commandString, command);
 
 		// logger.info("Time spent in database operations: "+(GlueDataObject.getTimeSpentInDbOperations())+"ms");
 		//logger.info("Time spent in command execution: "+(System.currentTimeMillis() - cmdExecutionStart )+"ms");
@@ -270,33 +270,21 @@ public class WsCmdContext extends CommandContext {
 		}
 	}
 	
-	private CommandResult invokeCommand(Command<?> command) {
-		GluetoolsEngine gluetoolsEngine = getGluetoolsEngine();
+	private CommandResult invokeCommand(final String commandString, final Command<?> command) {
+		final GluetoolsEngine gluetoolsEngine = getGluetoolsEngine();
 		RequestGatekeeper requestGatekeeper = gluetoolsEngine.getRequestGatekeeper();
-		if(requestGatekeeper != null) {
-			String[] commandWords = CommandUsage.cmdWordsForCmdClass(command.getClass());
-			String modePath = getModePath();
-			Request request = new Request(modePath, commandWords, command.getCmdElem().getOwnerDocument());
-			boolean allowRequest = requestGatekeeper.allowRequest(request);
-			if(!allowRequest) {
-				throw new RequestFilterException(RequestFilterException.Code.REQUEST_DENIED, 
-						"Not authorised to run the command in this GLUE web server");
-			}
-			
+		String modePath = getModePath();
+		Request request = new Request(modePath, command);
+		boolean allowRequest = requestGatekeeper.allowRequest(request);
+		if(!allowRequest) {
+			throw new RequestFilterException(RequestFilterException.Code.REQUEST_DENIED, 
+					"Not authorised to run the command in this GLUE web server");
 		}
+		RequestQueueManager requestQueueManager = gluetoolsEngine.getRequestQueueManager();
 		
-		CommandResult cmdResult;
-		try {
-			cmdResult = gluetoolsEngine.runWithGlueClassloader(new Supplier<CommandResult>(){
-				@Override
-				public CommandResult get() {
-					return command.execute(WsCmdContext.this);
-				}
-			});
-		} finally {
-			dispose();
-		}
-		return cmdResult;
+		RequestTicket requestTicket = requestQueueManager.submitRequest(this, request);
+		logger.info("Request ticket "+requestTicket.getId()+" allocated to command : "+commandString);
+		return requestTicket.getCommandResult();
 	}
 	
 	private void addCacheDisablingHeaders(HttpServletResponse response) {

@@ -25,13 +25,26 @@
 */
 package uk.ac.gla.cvr.gluetools.core.requestQueue;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.function.Supplier;
+
 import uk.ac.gla.cvr.gluetools.core.GlueException;
+import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 
 public class RequestQueueManagerException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 		
-		CONFIG_ERROR("errorTxt");
+		CONFIG_ERROR("errorTxt"),
+		QUEUE_ASSIGNMENT_ERROR("errorTxt"),
+		REQUEST_ERROR("errorTxt"),
+		REQUEST_INTERRUPTED("errorTxt"),
+		REQUEST_CANCELLED("errorTxt");
 
 		private String[] argNames;
 		private Code(String... argNames) {
@@ -51,5 +64,39 @@ public class RequestQueueManagerException extends GlueException {
 			Object... errorArgs) {
 		super(cause, code, errorArgs);
 	}
+	
+	public CommandResult executeRequestSynchronously(CommandContext cmdContext, RequestQueue requestQueue, Request request) {
+		Future<CommandResult> cmdResultFuture = requestQueue.getExecutorService().submit(new Callable<CommandResult>() {
+			@Override
+			public CommandResult call() throws Exception {
+				CommandResult cmdResult;
+				try {
+					cmdResult = GluetoolsEngine.getInstance().runWithGlueClassloader(new Supplier<CommandResult>(){
+						@Override
+						public CommandResult get() {
+							return request.getCommand().execute(cmdContext);
+						}
+					});
+				} finally {
+					cmdContext.dispose();
+				}
+				return cmdResult;
+			}
+		});
+		try {
+			return cmdResultFuture.get();
+		} catch (ExecutionException e) {
+			Throwable cause = e.getCause();
+			if(cause instanceof GlueException) {
+				throw ((GlueException) cause);
+			}
+			throw new RequestQueueManagerException(cause, RequestQueueManagerException.Code.REQUEST_ERROR, cause.getLocalizedMessage());
+		} catch (InterruptedException e) {
+			throw new RequestQueueManagerException(e, RequestQueueManagerException.Code.REQUEST_INTERRUPTED, e.getLocalizedMessage());
+		} catch (CancellationException e) {
+			throw new RequestQueueManagerException(e, RequestQueueManagerException.Code.REQUEST_CANCELLED, e.getLocalizedMessage());
+		}
+	}
+	
 
 }
