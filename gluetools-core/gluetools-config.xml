@@ -17,6 +17,72 @@
 	<requestGatekeeper>
 		<modePathRegexFilter>
 			<regex>^/project/hcv</regex>
+			<modePathRegexFilter>
+				<regex>.*/alignment/.*</regex>
+				<commandWordsFilter>
+					<commandWords>render-object</commandWords>
+					<commandXPathFilter>
+						<xPath>render-object/rendererModuleName/text() = 'hcvAlignmentRenderer'</xPath>
+					</commandXPathFilter>
+				</commandWordsFilter>
+				<commandWordsFilter>
+					<commandWords>count member</commandWords>
+				</commandWordsFilter>
+				<commandWordsFilter>
+					<commandWords>list member</commandWords>
+				</commandWordsFilter>
+				<commandWordsFilter>
+					<commandWords>web-list member</commandWords>
+				</commandWordsFilter>
+			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/reference/.*</regex>
+				<commandWordsFilter>
+					<commandWords>show feature tree</commandWords>
+				</commandWordsFilter>
+			</modePathRegexFilter>
+
+			<modePathRegexFilter>
+				<regex>.*/module/fastaExporter$</regex>
+				<commandWordsFilter>
+						<commandWords>web-export-member</commandWords>
+				</commandWordsFilter>
+			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/module/fastaAlignmentExporter$</regex>
+				<commandWordsFilter>
+						<commandWords>web-export</commandWords>
+				</commandWordsFilter>
+			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/module/fastaProteinAlignmentExporter$</regex>
+				<commandWordsFilter>
+						<commandWords>web-export</commandWords>
+				</commandWordsFilter>
+			</modePathRegexFilter>
+
+
+			<commandWordsFilter>
+				<commandWords>multi-render</commandWords>
+				<commandXPathFilter>
+					<xPath>multi-render/tableName/text() = 'who_region' and multi-render/rendererModuleName/text() = 'whoRegionTreeRenderer'</xPath>
+				</commandXPathFilter>
+				<commandXPathFilter>
+					<xPath>multi-render/tableName/text() = 'var_almt_note' and multi-render/rendererModuleName/text() = 'phdrRasFrequencyRenderer'</xPath>
+				</commandXPathFilter>
+				<commandXPathFilter>
+					<xPath>multi-render/tableName/text() = 'phdr_alignment_ras_drug' ans multi-render/rendererModuleName/text() = 'phdrAlignmentRasDrugRenderer'</xPath>
+				</commandXPathFilter>
+			</commandWordsFilter>
+			<commandWordsFilter>
+				<commandWords>count var-almt-note</commandWords>
+			</commandWordsFilter>
+			<commandWordsFilter>
+				<commandWords>count custom-table-row</commandWords>
+				<commandXPathFilter>
+					<xPath>count/custom-table-row/tableName/text() = 'phdr_alignment_ras_drug'</xPath>
+				</commandXPathFilter>
+			</commandWordsFilter>
 		</modePathRegexFilter>
 		<modePathRegexFilter>
 			<regex>^/project/hev</regex>
