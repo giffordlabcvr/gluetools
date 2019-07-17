@@ -45,7 +45,8 @@ public class RequestQueueManagerException extends GlueException {
 		REQUEST_ERROR("errorTxt"),
 		REQUEST_INTERRUPTED("errorTxt"),
 		REQUEST_CANCELLED("errorTxt"),
-		EXPIRED_OR_NON_EXISTENT_REQUEST("errorTxt");
+		EXPIRED_OR_NON_EXISTENT_REQUEST("errorTxt"),
+		QUEUE_FULL("errorTxt");
 
 		private String[] argNames;
 		private Code(String... argNames) {

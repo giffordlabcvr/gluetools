@@ -6,10 +6,14 @@ var glueWS = angular.module('glueWS', ['glueWebToolConfig',
 
 glueWS.factory('glueWS', function ($http, glueWebToolConfig, $analytics, dialogs) {
 	var projectURL;
+	var asyncURL;
 	var urlListenerCallbacks = [];
 	return {
 		setProjectURL: function(newURL) {
 			projectURL = newURL;
+		},
+		setAsyncURL: function(newURL) {
+			asyncURL = newURL;
 		},
 		runGlueCommandLong: function(modePath, command, pleaseWaitMessage, glueHeaders) {
 			var dlg = null;
@@ -34,6 +38,14 @@ glueWS.factory('glueWS', function ($http, glueWebToolConfig, $analytics, dialogs
 					return this;
 				}
 			};
+		},
+		getGlueRequestStatus: function(requestID) {
+			var url = asyncURL+"/async/request-status/"+requestID;
+			return $http.get(url);
+		},
+		collectGlueRequestResult: function(requestID) {
+			var url = asyncURL+"/async/collect-result/"+requestID;
+			return $http.get(url);
 		},
 		runGlueCommand: function(modePath, command, glueHeaders) {
 			glueHeaders = glueHeaders || {};

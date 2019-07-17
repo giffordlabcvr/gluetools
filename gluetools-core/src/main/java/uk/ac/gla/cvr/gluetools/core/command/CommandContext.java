@@ -64,6 +64,7 @@ public class CommandContext {
 	private XPath xpathEngine;
 	private NashornContext nashornContext;
 	private Map<SessionKey, Session> currentSessions = new LinkedHashMap<SessionKey, Session>();
+	private String runningDescription = "Initialising";
 	
 	public CommandContext(GluetoolsEngine gluetoolsEngine, String description) {
 		super();
@@ -315,6 +316,14 @@ public class CommandContext {
 			throw new SessionException(SessionException.Code.SESSION_DOES_NOT_EXIST, "Cannot close session: "+sessionKey.toString());
 		}
 		session.close();
+	}
+
+	public synchronized String getRunningDescription() {
+		return runningDescription;
+	}
+
+	public synchronized void setRunningDescription(String runningDescription) {
+		this.runningDescription = runningDescription;
 	}
 
 }

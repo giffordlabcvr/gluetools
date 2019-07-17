@@ -5,18 +5,29 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import uk.ac.gla.cvr.gluetools.core.GlueException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 
 public class RequestTicket {
 
 	private String id;
-	private Future<CommandResult> commandFuture;
+	private Future<CommandResult> cmdResultFuture;
 	private Long completionTime;
 	
-	public RequestTicket(String id, Future<CommandResult> commandFuture) {
+	public enum Code {
+		QUEUED,
+		RUNNING,
+		COMPLETE,
+	}
+	
+	private Code code = Code.QUEUED;
+	private int placeInQueue;
+	private CommandContext cmdContext;
+	
+	public RequestTicket(String id, CommandContext cmdContext) {
 		super();
 		this.id = id;
-		this.commandFuture = commandFuture;
+		this.cmdContext = cmdContext;
 	}
 	
 	public String getId() {
@@ -24,7 +35,7 @@ public class RequestTicket {
 	}
 	
 	public Future<CommandResult> getCommandFuture() {
-		return commandFuture;
+		return cmdResultFuture;
 	}
 	
 	public Long getCompletionTime() {
@@ -37,7 +48,7 @@ public class RequestTicket {
 
 	public CommandResult getCommandResult() {
 		try {
-			return commandFuture.get();
+			return cmdResultFuture.get();
 		} catch (ExecutionException e) {
 			Throwable cause = e.getCause();
 			if(cause instanceof GlueException) {
@@ -49,5 +60,33 @@ public class RequestTicket {
 		} catch (CancellationException e) {
 			throw new RequestQueueManagerException(e, RequestQueueManagerException.Code.REQUEST_CANCELLED, e.getLocalizedMessage());
 		}
+	}
+
+	public synchronized Code getCode() {
+		return code;
+	}
+
+	public synchronized int getPlaceInQueue() {
+		return placeInQueue;
+	}
+
+	public synchronized void setCode(Code code) {
+		this.code = code;
+	}
+
+	public synchronized void setPlaceInQueue(int placeInQueue) {
+		this.placeInQueue = placeInQueue;
+	}
+
+	public synchronized void decrementPlaceInQueue() {
+		this.placeInQueue--;
+	}
+
+	public String getRunningDescription() {
+		return cmdContext.getRunningDescription();
+	}
+
+	public void setCmdResultFuture(Future<CommandResult> cmdResultFuture) {
+		this.cmdResultFuture = cmdResultFuture;
 	}
 }

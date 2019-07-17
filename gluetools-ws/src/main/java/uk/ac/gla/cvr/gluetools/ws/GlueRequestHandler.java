@@ -31,10 +31,15 @@ import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 
 @Path("/")
 public class GlueRequestHandler {
+
+	@Path("/async")
+	public Object async() {
+		return new AsyncHandler();
+	}
+
 	
 	@Path("/")
 	public Object handleRequest() {
-		WsCmdContext cmdContext = new WsCmdContext(GluetoolsEngine.getInstance());
-		return cmdContext;
+		return new WsCmdContext(GluetoolsEngine.getInstance());
 	}
 }

@@ -155,7 +155,7 @@ public class GluetoolsEngine implements Plugin {
 			PluginFactory.configurePlugin(pluginConfigContext, requestQueueManagerElem, this.requestQueueManager);
 		} else {
 			int availableProcessors = Runtime.getRuntime().availableProcessors();
-			this.requestQueueManager.addQueue(new RequestQueue(RequestQueue.DEFAULT_QUEUE_NAME, availableProcessors));
+			this.requestQueueManager.addQueue(new RequestQueue(RequestQueue.DEFAULT_QUEUE_NAME, availableProcessors, 20));
 		}
 	}
 

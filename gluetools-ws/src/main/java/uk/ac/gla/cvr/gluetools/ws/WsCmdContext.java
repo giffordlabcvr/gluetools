@@ -73,7 +73,7 @@ import uk.ac.gla.cvr.gluetools.core.requestGatekeeper.RequestFilterException;
 import uk.ac.gla.cvr.gluetools.core.requestGatekeeper.RequestGatekeeper;
 import uk.ac.gla.cvr.gluetools.core.requestQueue.Request;
 import uk.ac.gla.cvr.gluetools.core.requestQueue.RequestQueueManager;
-import uk.ac.gla.cvr.gluetools.core.requestQueue.RequestTicket;
+import uk.ac.gla.cvr.gluetools.core.requestQueue.RequestStatus;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentJsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
@@ -96,11 +96,6 @@ public class WsCmdContext extends CommandContext {
 	private String fullPath = "/";
 	
 	
-	// TODO if a GET is executed when command word is a single word with no arguments, try a list command with that word?
-	/*@GET()
-	@Produces(MediaType.APPLICATION_JSON)
-	public String getAsList() {
-	}*/
 
 	@POST()
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -121,20 +116,29 @@ public class WsCmdContext extends CommandContext {
 		}
 		@SuppressWarnings("unused")
 		long cmdExecutionStart = System.currentTimeMillis();
-		CommandResult cmdResult = invokeCommand(commandString, command);
-		String cmdResultString = serializeToJson(cmdResult);
+		String resultString;
+		if(glueAsync(requestHeaders)) {
+			RequestStatus requestStatus = invokeCommandAsync(commandString, command);
+			resultString = requestStatus.toJsonString();
+		} else {
+			CommandResult cmdResult = invokeCommandSync(commandString, command);
+			// logger.info("Time spent in database operations: "+(GlueDataObject.getTimeSpentInDbOperations())+"ms");
+			//logger.info("Time spent in command execution: "+(System.currentTimeMillis() - cmdExecutionStart )+"ms");
+			resultString = serializeToJson(cmdResult);
+		}
 		addCacheDisablingHeaders(response);
-		return cmdResultString;
+		return resultString;
 	}
 	
 	@POST()
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces(MediaType.APPLICATION_JSON)
 	public String postAsCommandMultipart(
+			@Context HttpHeaders requestHeaders, 
 			@FormDataParam("file") InputStream fileInputStream,
 			@FormDataParam("command") String commandString, 
 			@Context HttpServletResponse response) {
-		return multipartCommand(fileInputStream, commandString, response);
+		return multipartCommand(requestHeaders, fileInputStream, commandString, response);
 	}
 
 	// for some reason IE preferentially accepts text/html on multipart requests,
@@ -144,15 +148,16 @@ public class WsCmdContext extends CommandContext {
 	@Consumes(MediaType.MULTIPART_FORM_DATA)
 	@Produces(MediaType.TEXT_HTML)
 	public String postAsCommandMultipartInternetExplorer(
+			@Context HttpHeaders requestHeaders, 
 			@FormDataParam("file") InputStream fileInputStream,
 			@FormDataParam("command") String commandString, 
 			@Context HttpServletResponse response) {
-		return multipartCommand(fileInputStream, commandString, response);
+		return multipartCommand(requestHeaders, fileInputStream, commandString, response);
 	}
 
 	
 	@SuppressWarnings({ "rawtypes" })
-	private String multipartCommand(InputStream fileInputStream,
+	private String multipartCommand(HttpHeaders requestHeaders, InputStream fileInputStream,
 			String commandString, HttpServletResponse response) {
 		GlueDataObject.resetTimeSpentInDbOperations();
 		CommandDocument commandDocument = CommandFormatUtils.commandDocumentFromJsonString(commandString);
@@ -160,6 +165,9 @@ public class WsCmdContext extends CommandContext {
 		
 		Element cmdDocElem = commandXmlDocument.getDocumentElement();
 		Class<? extends Command> cmdClass = commandClassFromElement(cmdDocElem);
+		if(cmdClass == null) {
+			throw new CommandException(CommandException.Code.UNKNOWN_COMMAND, commandString, fullPath);
+		}
 		String[] cmdWords = CommandUsage.cmdWordsForCmdClass(cmdClass);
 		if(!CommandUsage.hasMetaTagForCmdClass(cmdClass, CmdMeta.consumesBinary)) {
 			throw new CommandException(CommandException.Code.COMMAND_DOES_NOT_CONSUME_BINARY, 
@@ -183,16 +191,27 @@ public class WsCmdContext extends CommandContext {
 		}
 		@SuppressWarnings("unused")
 		long cmdExecutionStart = System.currentTimeMillis();
-		CommandResult cmdResult = invokeCommand(commandString, command);
+		String resultString;
+		if(glueAsync(requestHeaders)) {
+			RequestStatus requestStatus = invokeCommandAsync(commandString, command);
+			resultString = requestStatus.toJsonString();
+		} else {
+			CommandResult cmdResult = invokeCommandSync(commandString, command);
+			// logger.info("Time spent in database operations: "+(GlueDataObject.getTimeSpentInDbOperations())+"ms");
+			//logger.info("Time spent in command execution: "+(System.currentTimeMillis() - cmdExecutionStart )+"ms");
+			resultString = serializeToJson(cmdResult);
+		}
 
-		// logger.info("Time spent in database operations: "+(GlueDataObject.getTimeSpentInDbOperations())+"ms");
-		//logger.info("Time spent in command execution: "+(System.currentTimeMillis() - cmdExecutionStart )+"ms");
-		String cmdResultString = serializeToJson(cmdResult);
 		addCacheDisablingHeaders(response);
-		return cmdResultString;
+		return resultString;
 	}
 
-	private String serializeToJson(CommandResult cmdResult) {
+	private boolean glueAsync(HttpHeaders requestHeaders) {
+		List<String> glueAsyncHeaderVal = requestHeaders.getRequestHeader("glue-async");
+		return glueAsyncHeaderVal != null && glueAsyncHeaderVal.size() > 0 && glueAsyncHeaderVal.get(0).equals("true");
+	}
+	
+	public static String serializeToJson(CommandResult cmdResult) {
 		@SuppressWarnings("unused")
 		long jsonSerializationStart = System.currentTimeMillis();
 		StringWriter stringWriter = new StringWriter();
@@ -270,8 +289,14 @@ public class WsCmdContext extends CommandContext {
 		}
 	}
 	
-	private CommandResult invokeCommand(final String commandString, final Command<?> command) {
-		final GluetoolsEngine gluetoolsEngine = getGluetoolsEngine();
+	private CommandResult invokeCommandSync(String commandString, Command<?> command) {
+		RequestStatus requestStatus = invokeCommandAsync(commandString, command);
+		RequestQueueManager requestQueueManager = getGluetoolsEngine().getRequestQueueManager();
+		return requestQueueManager.collectRequestSync(requestStatus.getRequestID());
+	}
+	
+	private RequestStatus invokeCommandAsync(String commandString, Command<?> command) {
+		GluetoolsEngine gluetoolsEngine = getGluetoolsEngine();
 		RequestGatekeeper requestGatekeeper = gluetoolsEngine.getRequestGatekeeper();
 		String modePath = getModePath();
 		Request request = new Request(modePath, command);
@@ -282,12 +307,12 @@ public class WsCmdContext extends CommandContext {
 		}
 		RequestQueueManager requestQueueManager = gluetoolsEngine.getRequestQueueManager();
 		
-		String requestID = requestQueueManager.submitRequest(this, request);
-		logger.info("Request ticket "+requestID+" allocated to command : "+commandString);
-		return requestQueueManager.collectRequestSync(requestID);
+		RequestStatus requestStatus = requestQueueManager.submitRequest(this, request);
+		logger.info("Request ticket "+requestStatus.getRequestID()+" allocated to command : "+commandString);
+		return requestStatus;
 	}
 	
-	private void addCacheDisablingHeaders(HttpServletResponse response) {
+	public static void addCacheDisablingHeaders(HttpServletResponse response) {
 		response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate"); // HTTP 1.1.
 		response.setHeader("Pragma", "no-cache"); // HTTP 1.0.
 		response.setHeader("Expires", "0"); // Proxies.

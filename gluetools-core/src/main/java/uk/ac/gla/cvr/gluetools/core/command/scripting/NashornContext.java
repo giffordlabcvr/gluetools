@@ -162,6 +162,10 @@ public class NashornContext {
 			}
 		}
 		
+		public void setRunningDescription(String runningDescription) {
+			cmdContext.setRunningDescription(runningDescription);
+		}
+		
 		public void popMode() {
 			cmdContext.popCommandMode();
 		}

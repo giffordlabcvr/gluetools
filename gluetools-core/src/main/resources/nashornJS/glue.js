@@ -144,6 +144,13 @@ var glue = {
 				throw recastException(x);
 			}
 		},
+		setRunningDescription: function(runningDescription) {
+			if(_.isString(runningDescription)) {
+				glueAux.setRunningDescription(runningDescription);
+			} else {
+				throw new Error("Non string running description: "+runningDescription);
+			}
+		},
 		popMode: function() {
 			try {
 				glueAux.popMode();

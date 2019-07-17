@@ -8,10 +8,17 @@
 		<requestQueue>
 			<queueName>default</queueName>
 			<numWorkers>1</numWorkers>		
+			<maxRequests>20</maxRequests>
+		</requestQueue>
+		<requestQueue>
+			<queueName>download</queueName>
+			<numWorkers>1</numWorkers>		
+			<maxRequests>20</maxRequests>
 		</requestQueue>
 		<requestQueue>
 			<queueName>analysis</queueName>
 			<numWorkers>1</numWorkers>		
+			<maxRequests>20</maxRequests>
 		</requestQueue>
 	</requestQueueManager>
 	<requestGatekeeper>
@@ -41,27 +48,45 @@
 					<commandWords>show feature tree</commandWords>
 				</commandWordsFilter>
 			</modePathRegexFilter>
-
+			<modePathRegexFilter>
+				<regex>.*/module/phdrReportingController$</regex>
+				<commandWordsFilter>
+					<commandWords>invoke-consumes-binary-function</commandWords>
+					<commandXPathFilter>
+						<xPath>invoke-consumes-binary-function/functionName/text() = 'reportFastaWeb'</xPath>
+						<queueAssignmentFilter>
+							<queueName>analysis</queueName>						
+						</queueAssignmentFilter>
+					</commandXPathFilter>
+				</commandWordsFilter>
+			</modePathRegexFilter>
 			<modePathRegexFilter>
 				<regex>.*/module/fastaExporter$</regex>
 				<commandWordsFilter>
 						<commandWords>web-export-member</commandWords>
+						<queueAssignmentFilter>
+							<queueName>download</queueName>						
+						</queueAssignmentFilter>
 				</commandWordsFilter>
 			</modePathRegexFilter>
 			<modePathRegexFilter>
 				<regex>.*/module/fastaAlignmentExporter$</regex>
 				<commandWordsFilter>
 						<commandWords>web-export</commandWords>
+						<queueAssignmentFilter>
+							<queueName>download</queueName>						
+						</queueAssignmentFilter>
 				</commandWordsFilter>
 			</modePathRegexFilter>
 			<modePathRegexFilter>
 				<regex>.*/module/fastaProteinAlignmentExporter$</regex>
 				<commandWordsFilter>
 						<commandWords>web-export</commandWords>
+						<queueAssignmentFilter>
+							<queueName>download</queueName>						
+						</queueAssignmentFilter>
 				</commandWordsFilter>
 			</modePathRegexFilter>
-
-
 			<commandWordsFilter>
 				<commandWords>multi-render</commandWords>
 				<commandXPathFilter>
@@ -71,7 +96,7 @@
 					<xPath>multi-render/tableName/text() = 'var_almt_note' and multi-render/rendererModuleName/text() = 'phdrRasFrequencyRenderer'</xPath>
 				</commandXPathFilter>
 				<commandXPathFilter>
-					<xPath>multi-render/tableName/text() = 'phdr_alignment_ras_drug' ans multi-render/rendererModuleName/text() = 'phdrAlignmentRasDrugRenderer'</xPath>
+					<xPath>multi-render/tableName/text() = 'phdr_alignment_ras_drug' and multi-render/rendererModuleName/text() = 'phdrAlignmentRasDrugRenderer'</xPath>
 				</commandXPathFilter>
 			</commandWordsFilter>
 			<commandWordsFilter>
