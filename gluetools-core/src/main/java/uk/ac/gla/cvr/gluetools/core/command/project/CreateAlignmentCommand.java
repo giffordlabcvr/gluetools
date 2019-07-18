@@ -32,7 +32,6 @@ import org.apache.cayenne.exp.ExpressionFactory;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -55,7 +54,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		"-r <refSeqName>, --refSeqName <refSeqName>  Constraining reference sequence",
 		"-p <parentName>, --parentName <parentName>  Parent alignment"},
 	description="Create a new alignment, optionally constrained to a reference sequence", 
-	metaTags={CmdMeta.updatesDatabase},
+	metaTags = {},
 	furtherHelp="An alignment is container for a proposed homology between segments of certain sequences. "+
 	"Alignments may be defined with a reference sequence, in which case they are constrained alignments. "+
 	"Constrained alignments propose pairwise homologies between the reference and zero or more member sequences. "+

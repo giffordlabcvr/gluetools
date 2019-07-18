@@ -64,7 +64,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 			"-s, --suppressSkipWarning                    Don't warn when a file is skipped",
 			"-m <maxImports>, --maxImports  <maxImports>  Set maximum on number imported",
 			"-b <batchSize>, --batchSize <batchSize>      Commit batch size [default: 250]"},
-	metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase },
+	metaTags = { CmdMeta.consoleOnly},
 	furtherHelp=
 		"The argument <sourcePath> names a directory, which may be relative to the current load-save-path. "+
 	    "The name of the source will be the name of this directory. "+

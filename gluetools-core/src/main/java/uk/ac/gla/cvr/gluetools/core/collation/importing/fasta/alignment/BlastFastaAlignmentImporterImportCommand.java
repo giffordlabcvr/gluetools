@@ -57,7 +57,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 				"-s <sourceName>, --sourceName <sourceName>     Restrict alignment members to a given source",
 				"-n <navAlmtName>, --navAlmtName <navAlmtName>  Use constrained alignment to navigate"},
 		description="Import an unconstrained alignment from a FASTA file", 
-		metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase },
+		metaTags = { CmdMeta.consoleOnly},
 		furtherHelp="The file is loaded from a location relative to the current load/save directory. "+
 		"An existing unconstrained alignment will be updated with new members, or a new unconstrained alignment will be created.") 
 public class BlastFastaAlignmentImporterImportCommand extends ModulePluginCommand<FastaAlignmentImporterResult, BlastFastaAlignmentImporter> implements ProvidedProjectModeCommand {

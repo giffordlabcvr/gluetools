@@ -39,7 +39,6 @@ import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
@@ -57,7 +56,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 		commandWords={"move","sequence"}, 
 		docoptUsages={"<toSourceName> (-w <whereClause> | -a) [-b <batchSize>]"},
-		metaTags={CmdMeta.updatesDatabase},
+		metaTags = {},
 		docoptOptions={
 				"-w <whereClause>, --whereClause <whereClause>  Qualify moved sequences",
 				"-a, --allSequences                             Move all sequences",

@@ -27,7 +27,6 @@ package uk.ac.gla.cvr.gluetools.core.command.configurableobject;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -42,7 +41,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 	docoptOptions={
 			"-C, --noCommit     Don't commit to the database [default: false]",
 	},
-	metaTags={CmdMeta.updatesDatabase},
+	metaTags = {},
 	description="Clear target objects on a link") 
 public class ConfigurableObjectClearLinkTargetCommand extends Command<UpdateResult> {
 

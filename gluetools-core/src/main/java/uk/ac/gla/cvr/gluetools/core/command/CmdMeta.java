@@ -40,11 +40,9 @@ public class CmdMeta {
 		consoleOnly = "consoleOnly",
 		/** command may only be executed via the web API */
 		webApiOnly = "webApiOnly",
-		/** command makes updates to the database */
-		updatesDatabase = "updatesDatabase",
 		/** command may not be executed in a single line within a mode. */
 		nonModeWrappable = "nonModeWrappable",
-		/** command may not be executed in a single line within a mode. */
+		/** suppress appearance of command in console docs. */
 		suppressDocs = "suppressDocs",
 		/** command consumes binary data as part of its input.
 		 *  this binary data must be provided in Base64 format using the property name specified in Command.BINARY_INPUT_PROPERTY */

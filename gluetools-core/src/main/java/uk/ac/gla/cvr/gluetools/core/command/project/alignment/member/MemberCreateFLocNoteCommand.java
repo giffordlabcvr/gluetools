@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -53,7 +52,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"create","member-floc-note"}, 
 	docoptUsages={"<refSeqName> <featureName>"},
 	description="Create a new member-featureLoc note", 
-	metaTags={CmdMeta.updatesDatabase}
+	metaTags={}
 	) 
 public class MemberCreateFLocNoteCommand extends MemberModeCommand<CreateResult> {
 

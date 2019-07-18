@@ -34,7 +34,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -57,7 +56,7 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 		description = "Add a custom field setting for generated variations", 
 		docoptUsages={"<fieldName> <fieldValue>"},
 		docoptOptions={},
-		metaTags = {CmdMeta.updatesDatabase}, 
+		metaTags = {}, 
 		furtherHelp = "The setting will be applied to all variations which the module generates"
 )
 public class AddVariationFieldSettingCommand extends ModuleDocumentCommand<OkResult> implements ModuleUpdateDocumentCommand {

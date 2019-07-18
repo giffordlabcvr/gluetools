@@ -45,7 +45,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		docoptOptions={
 			"-f <fileName>, --fileName <fileName>  FASTA file"},
 		description="Import sequences from a FASTA file", 
-		metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase },
+		metaTags = { CmdMeta.consoleOnly},
 		furtherHelp="The file is loaded from a location relative to the current load/save directory.") 
 public class FastaImporterImportCommand extends ModulePluginCommand<CreateResult, FastaImporter> implements ProvidedProjectModeCommand {
 

@@ -69,7 +69,7 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 				"\nIf no <moduleName> is specified, a name is auto-generated from the supplied <moduleType> or from the "+
 				"file part of <fileName> path, without the '.xml' extension. The module name is given a numeric suffix if "+
 				"necessary to ensure it is unique.",
-		metaTags={ CmdMeta.updatesDatabase, CmdMeta.consoleOnly } ) 
+		metaTags={ CmdMeta.consoleOnly } ) 
 	
 public class CreateModuleCommand extends Command<CreateResult> {
 

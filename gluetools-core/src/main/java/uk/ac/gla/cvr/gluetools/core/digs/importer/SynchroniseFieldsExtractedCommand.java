@@ -30,7 +30,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandBuilder;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -45,7 +44,7 @@ import uk.ac.gla.cvr.gluetools.core.digs.importer.ImportExtractedFieldRule.GlueF
 		docoptUsages = { "" },
 		docoptOptions = {
 		},
-		metaTags = { CmdMeta.updatesDatabase }, 
+		metaTags = {  }, 
 		furtherHelp = ""
 )
 public class SynchroniseFieldsExtractedCommand extends DigsImporterFieldsCommand<SynchroniseFieldsExtractedResult> {

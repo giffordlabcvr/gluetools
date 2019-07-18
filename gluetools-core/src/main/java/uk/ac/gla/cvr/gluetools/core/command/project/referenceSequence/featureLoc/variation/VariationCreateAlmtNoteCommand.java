@@ -28,7 +28,6 @@ package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLo
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
@@ -45,7 +44,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"create","var-almt-note"}, 
 	docoptUsages={"<alignmentName>"},
 	description="Create a new varation-alignment note", 
-	metaTags={CmdMeta.updatesDatabase}
+	metaTags={}
 	) 
 public class VariationCreateAlmtNoteCommand extends VariationModeCommand<CreateResult> {
 

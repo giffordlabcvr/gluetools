@@ -30,7 +30,6 @@ import java.util.Map;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
@@ -48,7 +47,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={"[-a] [-C] <tableName> <rowId>"},
 	docoptOptions={"-a, --allowExisting  Allow case where row ID <rowID> exists",
 			"-C, --noCommit     Don't commit to the database [default: false]"},
-	metaTags={CmdMeta.updatesDatabase},
+	metaTags = {},
 	description="Create a new row in a custom table") 
 public class CreateCustomTableRowCommand extends ProjectModeCommand<CreateResult> {
 

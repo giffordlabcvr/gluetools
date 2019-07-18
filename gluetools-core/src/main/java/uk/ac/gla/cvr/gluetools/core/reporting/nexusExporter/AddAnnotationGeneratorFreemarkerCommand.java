@@ -6,7 +6,6 @@ import java.util.List;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModuleDocumentCommand;
@@ -22,7 +21,7 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 		description = "Add a new annotation generator based on freemarker", 
 		docoptUsages={"<annotationName> <freemarkerTemplate>"},
 		docoptOptions={},
-		metaTags = {CmdMeta.updatesDatabase}, 
+		metaTags = {}, 
 		furtherHelp = ""
 )
 public class AddAnnotationGeneratorFreemarkerCommand extends ModuleDocumentCommand<OkResult> implements ModuleUpdateDocumentCommand {

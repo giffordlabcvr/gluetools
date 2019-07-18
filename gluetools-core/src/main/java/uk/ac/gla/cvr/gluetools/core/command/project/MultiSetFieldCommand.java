@@ -30,7 +30,6 @@ import java.util.Collections;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
@@ -50,7 +49,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 				"-a, --allObjects                               Update all objects in table",
 				"-b <batchSize>, --batchSize <batchSize>        Update batch size" },
 		description="Set a field value for one or more configurable table objects", 
-		metaTags={CmdMeta.updatesDatabase},
+		metaTags = {},
 		furtherHelp="The <tableName> argument specifies a configurable object table. "+
 		" Possible values are "+ModelBuilder.configurableTablesString+" or a custom table name"+
 		". Updates to the database are committed in batches, the default batch size is 250.") 

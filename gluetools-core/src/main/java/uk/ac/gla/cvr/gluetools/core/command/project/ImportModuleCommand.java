@@ -54,7 +54,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"import","module"}, 
 	docoptUsages={"[-r] <moduleName> <fileName>"},
 	docoptOptions={"-r, --reload  If module exists, reload its config"},
-	metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase },
+	metaTags = { CmdMeta.consoleOnly},
 	description="DEPRECATED: Create a new module, importing config from a file") 
 public class ImportModuleCommand extends ProjectModeCommand<OkResult> {
 

@@ -46,7 +46,7 @@ import uk.ac.gla.cvr.gluetools.utils.DateUtils;
 	docoptUsages={"<filePath>"},
 	docoptOptions={},
 	description="Run a JavaScript program from a file",
-	metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase }
+	metaTags = { CmdMeta.consoleOnly}
 ) 
 public class RunScriptCommand extends Command<OkResult> {
 

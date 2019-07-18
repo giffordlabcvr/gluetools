@@ -47,7 +47,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		"-r, --loadResources  Also load dependent resources",
 	},
 	description = "Load module configuration from a file", 
-	metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase } )
+	metaTags = { CmdMeta.consoleOnly} )
 public class ModuleLoadConfigurationCommand extends ModuleDocumentCommand<UpdateResult> {
 
 	private static final String FILE_NAME = "fileName";

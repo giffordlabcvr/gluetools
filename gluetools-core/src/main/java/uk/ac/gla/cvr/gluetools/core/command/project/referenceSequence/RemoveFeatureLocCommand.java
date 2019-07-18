@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
@@ -47,7 +46,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"remove", "feature-location"}, 
 	docoptUsages={"[-r] <featureName>"},
 	docoptOptions={"-r, --recursive  Also remove locations of descendent features"},
-	metaTags={CmdMeta.updatesDatabase},
+	metaTags = {},
 	description="Remove a feature location") 
 public class RemoveFeatureLocCommand extends ReferenceSequenceModeCommand<DeleteResult> {
 

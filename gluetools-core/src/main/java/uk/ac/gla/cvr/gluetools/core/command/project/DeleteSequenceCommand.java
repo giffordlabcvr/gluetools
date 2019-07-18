@@ -35,7 +35,6 @@ import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
@@ -52,7 +51,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 	commandWords={"delete","sequence"}, 
 	docoptUsages={"( <sourceName> <sequenceID> | -w <whereClause> | -a )"},
-	metaTags={CmdMeta.updatesDatabase},
+	metaTags = {},
 	docoptOptions={
 			"-w <whereClause>, --whereClause <whereClause>  Qualify which sequences should be deleted", 
 			"-a, --allSequences  Delete all sequences" },

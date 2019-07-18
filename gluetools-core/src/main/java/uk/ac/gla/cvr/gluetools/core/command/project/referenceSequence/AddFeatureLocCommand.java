@@ -28,7 +28,6 @@ package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
@@ -44,7 +43,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 	commandWords={"add","feature-location"}, 
 	docoptUsages={"<featureName>"},
-	metaTags={CmdMeta.updatesDatabase},
+	metaTags = {},
 	description="Define a feature's location on the reference", 
 	furtherHelp="Define a (possibly non-contiguous) region of the reference sequence which is where a named genome feature is located.") 
 public class AddFeatureLocCommand extends ReferenceSequenceModeCommand<CreateResult> {

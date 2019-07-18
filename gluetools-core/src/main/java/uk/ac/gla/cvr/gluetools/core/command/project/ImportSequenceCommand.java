@@ -47,7 +47,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={
 		"<sourceName> <sequenceID> <format> <fileName>"
 	}, 
-	metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase },
+	metaTags = { CmdMeta.consoleOnly},
 	furtherHelp=
 		"The <fileName> names the file containing the sequence data",
 	description="Import a new sequence from a file") 

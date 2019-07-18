@@ -32,7 +32,6 @@ import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
@@ -46,7 +45,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @CommandClass( 
 	commandWords={"delete", "module"}, 
-	metaTags={CmdMeta.updatesDatabase},
+	metaTags = {},
 	docoptUsages={"(<moduleName> | -w <whereClause>)"},
 	docoptOptions={
 	"-w <whereClause>, --whereClause <whereClause>  Qualify which modules should be deleted"},

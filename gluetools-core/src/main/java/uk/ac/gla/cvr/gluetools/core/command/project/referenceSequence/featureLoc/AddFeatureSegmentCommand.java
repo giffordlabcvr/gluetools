@@ -35,7 +35,6 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
@@ -56,7 +55,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 	docoptUsages={"( <refStart> <refEnd> | -l <lcStart> <lcEnd> )"},
 	docoptOptions={
 		"-l, --labeledCodon   Set location based on labeled codons"},
-	metaTags={CmdMeta.updatesDatabase},
+	metaTags = {},
 	description="Add a new segment of the reference sequence", 
 	furtherHelp="The segment endpoints can be set in different ways. "+ 
 			"If <refStart> and <refEnd> are used these define simply the nucleotide region of the feature location's reference sequence, "+

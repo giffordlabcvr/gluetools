@@ -25,7 +25,6 @@
 */
 package uk.ac.gla.cvr.gluetools.core.collation.populating.genbank;
 
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
@@ -40,7 +39,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 				"-p, --preview                                  Database will not be updated",
 				"-s, --silent                                   No result table"
 		},
-		metaTags={CmdMeta.updatesDatabase},
+		metaTags = {},
 		description="Create custom table rows based on Genbank XML",
 		furtherHelp=
 		"The <batchSize> argument allows you to control how often updates are committed to the database "+

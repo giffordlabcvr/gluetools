@@ -33,7 +33,6 @@ import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
@@ -51,8 +50,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 		commandWords={"delete", "custom-table"}, 
 		docoptUsages={"<tableName>"},
-		description="Delete a custom table",
-		metaTags={CmdMeta.updatesDatabase}) 
+		description="Delete a custom table") 
 public class DeleteCustomTableCommand extends ProjectSchemaModeCommand<DeleteResult> {
 
 	public static final String TABLE_NAME = "tableName";

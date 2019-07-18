@@ -38,7 +38,6 @@ import org.w3c.dom.Element;
 import gnu.trove.map.TIntIntMap;
 import gnu.trove.map.hash.TIntIntHashMap;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
@@ -55,7 +54,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 		commandWords={"score", "coverage"}, 
 		description="Score member sequences for coverage of the genome",
 		docoptUsages={"(-w <whereClause> | -a)"},
-		metaTags={CmdMeta.updatesDatabase},
+		metaTags = {},
 		docoptOptions={
 			"-w <whereClause>, --whereClause <whereClause>  Qualify selected members",
 		    "-a, --allMembers                               Select all members"},

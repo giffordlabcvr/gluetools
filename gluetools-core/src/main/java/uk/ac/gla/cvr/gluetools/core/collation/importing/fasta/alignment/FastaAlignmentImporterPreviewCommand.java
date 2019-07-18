@@ -56,7 +56,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		"-f <fileName>, --fileName <fileName>        FASTA file",
 		"-s <sourceName>, --sourceName <sourceName>  Restrict alignment members to a given source"},
 		description="Preview import of an unconstrained alignment from a FASTA file", 
-		metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase },
+		metaTags = { CmdMeta.consoleOnly},
 		furtherHelp="The file is loaded from a location relative to the current load/save directory. ") 
 public class FastaAlignmentImporterPreviewCommand extends ModulePluginCommand<FastaAlignmentImporterResult, FastaAlignmentImporter> implements ProvidedProjectModeCommand {
 

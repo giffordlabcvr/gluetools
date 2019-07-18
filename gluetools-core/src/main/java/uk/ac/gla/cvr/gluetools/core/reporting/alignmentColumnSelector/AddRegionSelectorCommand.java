@@ -29,7 +29,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
@@ -54,7 +53,7 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 				"-n, --nucleotide                               Add a nucleotide region selector", 
 				"-l, --labelledCodon                            Limit to labelled codon region", 
 				"-t, --ntRegion                                 Limit to nucleotide region",},
-		metaTags = {CmdMeta.updatesDatabase}, 
+		metaTags = {}, 
 		furtherHelp = "The setting will be applied to all variations which the module generates"
 )
 public class AddRegionSelectorCommand extends ModuleDocumentCommand<OkResult> implements ModuleUpdateDocumentCommand {

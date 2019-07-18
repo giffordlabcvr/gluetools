@@ -36,7 +36,6 @@ import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -65,7 +64,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 				"-r <refName>, --refName <refName>  Use a specific existing reference",
 				"-m, --member                       Use a specific alignment member"
 		},
-		metaTags={CmdMeta.updatesDatabase},
+		metaTags = {},
 		description="Create new child alignment, extracting its reference and members",
 		furtherHelp=
 		"If <refName> is specified, this names the reference of the new child. It must also "+

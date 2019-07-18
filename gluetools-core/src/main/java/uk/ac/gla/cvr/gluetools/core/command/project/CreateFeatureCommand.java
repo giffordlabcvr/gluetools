@@ -34,7 +34,6 @@ import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
@@ -51,7 +50,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"create","feature"}, 
 	docoptUsages={"<featureName> [-p <parent>] [<description>]"},
 	docoptOptions={"-p <featureName>, --parentName <featureName>  Name of parent feature"},
-	metaTags={CmdMeta.updatesDatabase},
+	metaTags = {},
 	description="Create a new genome feature", 
 	furtherHelp="A feature is a named genome region which is of particular interest.") 
 public class CreateFeatureCommand extends ProjectModeCommand<CreateResult> {

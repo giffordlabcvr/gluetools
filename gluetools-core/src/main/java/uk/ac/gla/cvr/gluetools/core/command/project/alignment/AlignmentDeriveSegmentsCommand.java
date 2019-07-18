@@ -39,7 +39,6 @@ import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -76,7 +75,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 			    "-a, --allMembers                                              Select all source members",
 			    "-e, --existingMembersOnly                                     Derive only for existing",
 			    "-m <mergeStrategy>, --mergeStrategy <mergeStrategy>           Segment merge strategy"},
-		metaTags={CmdMeta.updatesDatabase},
+		metaTags = {},
 		description="Derive alignment segments from an unconstrained alignment", 
 		furtherHelp=
 		"The source alignment named by <sourceAlmtName> must exist and be unconstrained. "+

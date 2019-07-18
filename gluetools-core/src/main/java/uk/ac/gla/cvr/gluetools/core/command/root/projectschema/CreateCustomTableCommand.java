@@ -30,7 +30,6 @@ import java.util.Optional;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
@@ -47,7 +46,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		docoptUsages={"<tableName> [-l <idFieldLength>]"},
 		docoptOptions={"-l <idFieldLength>, --idFieldLength <idFieldLength>  Max length of ID"},
 		description="Create a new custom table",
-		metaTags={CmdMeta.updatesDatabase},
+		metaTags = {},
 		furtherHelp="The table name must be a valid database identifier, e.g. my_table_1.") 
 public class CreateCustomTableCommand extends ProjectSchemaModeCommand<CreateResult> {
 

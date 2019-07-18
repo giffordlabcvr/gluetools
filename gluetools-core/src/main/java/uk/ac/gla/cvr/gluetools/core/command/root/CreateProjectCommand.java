@@ -31,7 +31,6 @@ import org.apache.cayenne.configuration.server.ServerRuntime;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext.ModeCloser;
@@ -54,7 +53,7 @@ import uk.ac.gla.cvr.gluetools.utils.VersionUtils;
 		"-n <minVersion>, --minVersion <minVersion>  Min GLUE version to build project",
 		"-x <maxVersion>, --maxVersion <maxVersion>  Max GLUE version to build project"},
 	description="Create a new project",
-	metaTags={CmdMeta.updatesDatabase},
+	metaTags = {},
 	furtherHelp="The project name must be a valid database identifier, e.g. my_project_1.\n"+
 		"The <minVersion> and <maxVersion> properties are optional, however <minVersion> is strongly recommended. "+
 		"The version strings, if used, must start with 3 positive integers separated by dots. "+

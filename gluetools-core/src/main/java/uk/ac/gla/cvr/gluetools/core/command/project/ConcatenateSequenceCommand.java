@@ -34,7 +34,6 @@ import org.apache.cayenne.exp.ExpressionFactory;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -66,7 +65,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 					"[<sourceName9> <sequenceID9>] "+ 
 					"[<sourceName10> <sequenceID10>]"
 		}, 
-		metaTags={CmdMeta.updatesDatabase},
+		metaTags = {},
 		docoptOptions={
 			"-g <gapChars>, --gapChars <gapChars>  Integer, number of N characters to insert between sequences"},
 		description="Create a new sequence by concatenating the nucleotides of two or more existing sequences") 

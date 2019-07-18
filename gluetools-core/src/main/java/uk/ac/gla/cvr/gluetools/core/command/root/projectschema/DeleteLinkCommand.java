@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -51,8 +50,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 		commandWords={"delete", "link"}, 
 		docoptUsages={"<srcTableName> <srcLinkName>"},
-		description="Delete a custom relational link",
-		metaTags={CmdMeta.updatesDatabase}) 
+		description="Delete a custom relational link") 
 public class DeleteLinkCommand extends ProjectSchemaModeCommand<DeleteResult> {
 
 	public static final String SRC_TABLE_NAME = "srcTableName";

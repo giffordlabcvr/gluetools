@@ -25,7 +25,6 @@
 */
 package uk.ac.gla.cvr.gluetools.core.command.project.settings.extension;
 
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
@@ -38,7 +37,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOptio
 @CommandClass( 
 		commandWords = {"unset", "extension-setting"},
 		docoptUsages = {"<extensionName> <extSettingName>"}, 
-		metaTags = { CmdMeta.updatesDatabase },
+		metaTags = {  },
 		description = "Unset a extension setting's value",
 		furtherHelp = "After unsetting, the default value will be in effect")
 public class ProjectUnsetExtensionSettingCommand extends ProjectExtensionSettingCommand<DeleteResult> {

@@ -30,7 +30,6 @@ import java.util.Map;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
@@ -48,7 +47,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		description = "Build a reference sequence from Genbank metadata", 
 		docoptUsages = { "<sourceName> <sequenceID> -r <refName>" },
 		docoptOptions = { "-r <refName>, --refName <refName>  Name of the reference sequence to create" },
-		metaTags = {CmdMeta.updatesDatabase},
+		metaTags = {},
 		furtherHelp = "The named sequence must exist and be in Genbank XML format."
 )
 public class BuildReferenceCommand extends ModulePluginCommand<CreateResult, GbRefBuilder> implements ProvidedProjectModeCommand {

@@ -56,7 +56,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		"-f <fileName>, --fileName <fileName>        FASTA file",
 		"-s <sourceName>, --sourceName <sourceName>  Restrict alignment members to a given source"},
 		description="Import an unconstrained alignment from a FASTA protein file", 
-		metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase },
+		metaTags = { CmdMeta.consoleOnly},
 		furtherHelp="The file is loaded from a location relative to the current load/save directory. "+
 		"An existing unconstrained alignment will be updated with new members, or a new unconstrained alignment will be created.") 
 public class BlastFastaProteinAlignmentImporterImportCommand extends ModulePluginCommand<FastaProteinAlignmentImporterResult, BlastFastaProteinAlignmentImporter> implements ProvidedProjectModeCommand {

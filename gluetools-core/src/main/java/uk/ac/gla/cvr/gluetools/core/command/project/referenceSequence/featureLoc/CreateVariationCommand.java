@@ -32,7 +32,6 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
@@ -57,7 +56,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 				"-n, --nucleotide                               Set location based on reference NT",
 				"-c, --labeledCodon                             Set location based on labeled codons"
 		},
-		metaTags={CmdMeta.updatesDatabase},
+		metaTags = {},
 		description="Create a new feature variation", 
 		furtherHelp="A variation is a known motif which may occur in a sequence aligned to a reference. "+
 		"The <type> of the variation defines what kind of variation is scanned for. "+

@@ -55,7 +55,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 				"-f <fileName>, --fileName <fileName>           Text file with field values"
 		},
 		description="Populate sequence field values based on a text file", 
-		metaTags = { CmdMeta.consoleOnly , CmdMeta.updatesDatabase},
+		metaTags = { CmdMeta.consoleOnly},
 		furtherHelp="The file is loaded from a location relative to the current load/save directory."+
 		"The <batchSize> argument allows you to control how often updates are committed to the database "+
 				"during the import. The default is every 250 text file lines. A larger <batchSize> means fewer database "+

@@ -29,7 +29,6 @@ import java.util.Map;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
@@ -43,7 +42,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 		commandWords={"unset", "metatag"},
 		docoptUsages={"<metatagName>"},
-		metaTags={CmdMeta.updatesDatabase},
+		metaTags = {},
 		description="Specify that this variation does not have a certain metatag",
 		furtherHelp="This command succeeds if the variation already does not have the metatag."
 	) 

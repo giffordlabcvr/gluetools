@@ -28,7 +28,6 @@ package uk.ac.gla.cvr.gluetools.core.commonAaAnalyser;
 import java.util.List;
 import java.util.Map;
 
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
@@ -47,7 +46,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
 			"-c, --recursive                                Include descendent members", 
 			"-w <whereClause>, --whereClause <whereClause>  Qualify members",
 		    "-a, --allMembers                               All members"},
-		metaTags = {CmdMeta.updatesDatabase}, 
+		metaTags = {}, 
 		furtherHelp = ""
 )
 public class GenerateVariationUncommonAasCommand extends AbstractAnalyseAasCommand<CreateResult> {

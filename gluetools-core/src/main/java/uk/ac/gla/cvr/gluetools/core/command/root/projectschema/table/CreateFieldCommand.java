@@ -28,7 +28,6 @@ package uk.ac.gla.cvr.gluetools.core.command.root.projectschema.table;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
@@ -48,7 +47,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"create", "field"}, 
 	docoptUsages={"<fieldName> <type> [<maxLength>]"},
 	description="Create a new field in the table",
-	metaTags={CmdMeta.updatesDatabase},
+	metaTags = {},
 	furtherHelp="The field name must be a valid database identifier, e.g. my_field_1") 
 public class CreateFieldCommand extends TableModeCommand<CreateResult> {
 

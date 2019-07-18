@@ -31,7 +31,6 @@ import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -51,7 +50,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 				"-p, --preview                                  Database will not be updated",
 				"-s, --silent                                   No result table"
 		},
-		metaTags={CmdMeta.updatesDatabase},
+		metaTags = {},
 		description="Populate sequence and other object values based on Genbank XML",
 		furtherHelp=
 		"The <batchSize> argument allows you to control how often updates are committed to the database "+

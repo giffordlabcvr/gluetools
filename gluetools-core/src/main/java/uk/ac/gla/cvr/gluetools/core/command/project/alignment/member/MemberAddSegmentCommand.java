@@ -32,7 +32,6 @@ import java.util.stream.Collectors;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
@@ -55,7 +54,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 	commandWords={"add","segment"}, 
 	docoptUsages={"<refStart> <refEnd> <memberStart> <memberEnd>"},
 	description="Add a new aligned segment", 
-	metaTags={CmdMeta.updatesDatabase},
+	metaTags = {},
 	furtherHelp=
 	"An aligned segment is a proposed homology between a contiguous region of the reference sequence "+
 	"and a contiguous region of the member sequence, where the two regions are of equal size. "+

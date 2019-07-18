@@ -25,7 +25,6 @@
 */
 package uk.ac.gla.cvr.gluetools.core.command.project.settings;
 
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
@@ -38,7 +37,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOptio
 @CommandClass( 
 		commandWords = {"unset", "setting"},
 		docoptUsages = {"<settingName>"}, 
-		metaTags = { CmdMeta.updatesDatabase },
+		metaTags = {  },
 		description = "Unset a project setting's value",
 		furtherHelp = "After unsetting, the default value will be in effect")
 public class ProjectUnsetSettingCommand extends ProjectSettingCommand<DeleteResult> {

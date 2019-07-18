@@ -31,7 +31,6 @@ import java.util.Optional;
 import org.apache.cayenne.exp.Expression;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
@@ -48,7 +47,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	commandWords={"remove", "member"}, 
 	description="Remove member sequences",
 	docoptUsages={"(-m <sourceName> <sequenceID> | -w <whereClause> | -a)"},
-	metaTags={CmdMeta.updatesDatabase},
+	metaTags = {},
 	docoptOptions={
 		"-m, --member                                   Remove specific member",
 		"-w <whereClause>, --whereClause <whereClause>  Qualify removed members",

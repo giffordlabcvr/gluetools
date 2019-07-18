@@ -49,7 +49,7 @@ import uk.ac.gla.cvr.gluetools.utils.DateUtils;
 			"-C, --no-comment-echo  Suppress batch comment echo",
 	   		"-O, --no-output        Suppress batch result output"},
 	description="Run batch commands from a file",
-	metaTags = { CmdMeta.consoleOnly, CmdMeta.updatesDatabase }
+	metaTags = { CmdMeta.consoleOnly}
 ) 
 public class RunFileCommand extends Command<OkResult> {
 

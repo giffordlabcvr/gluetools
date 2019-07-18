@@ -30,7 +30,6 @@ import java.util.Optional;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
@@ -44,7 +43,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		commandWords={"sync"}, 
 		docoptUsages={"[-d]"},
 		docoptOptions={"-d, --detailed  Show detailed per-sequence status"},
-		metaTags={CmdMeta.updatesDatabase},
+		metaTags = {},
 		description="Determine present/missing/surplus, download missing, delete surplus") 
 public class NcbiImporterSyncCommand extends ModulePluginCommand<CommandResult, NcbiImporter> implements ProvidedProjectModeCommand {
 

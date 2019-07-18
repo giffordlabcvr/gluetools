@@ -30,7 +30,6 @@ import java.util.Map;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandMode;
@@ -45,7 +44,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 @CommandClass( 
 		commandWords={"delete", "var-almt-note"}, 
 		docoptUsages={"<alignmentName>"},
-		metaTags={CmdMeta.updatesDatabase},
+		metaTags = {},
 		description="Delete a variation-alignment note") 
 public class VariationDeleteAlmtNoteCommand extends VariationModeCommand<DeleteResult> {
 

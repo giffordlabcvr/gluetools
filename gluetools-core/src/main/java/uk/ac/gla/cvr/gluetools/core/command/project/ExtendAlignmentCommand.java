@@ -37,7 +37,6 @@ import org.apache.cayenne.exp.ExpressionFactory;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -66,7 +65,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 				"-w <whereClause>, --whereClause <whereClause>  Qualify which members will be re-aligned",
 				"-b <batchSize>, --batchSize <batchSize>        Re-alignment batch size",
 				"-d <dataDir>, --dataDir <dataDir>              Directory to save temporary data in"},
-		metaTags={CmdMeta.updatesDatabase},
+		metaTags = {},
 		furtherHelp = "(Re-)computes the aligned segments of certain members of the specified unconstrained alignment, "+
 		"using a given aligner module. The specified member rows are (re-)computed using the existing unconstrained "+
 		"alignment as part of the input. The existing alignment will not be updated as a result, no gaps will be added.\n"+

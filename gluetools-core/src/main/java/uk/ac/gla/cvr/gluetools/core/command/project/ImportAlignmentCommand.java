@@ -59,7 +59,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	description="Import an alignment from a command document file",
 	furtherHelp="The format is a GLUE-specific (command document) JSON format, "+
 	"produced by the 'export command-document' command in alignment mode.",
-	metaTags={CmdMeta.updatesDatabase, CmdMeta.consoleOnly}
+	metaTags={CmdMeta.consoleOnly}
 	) 
 public class ImportAlignmentCommand extends ProjectModeCommand<CreateResult> {
 

@@ -35,7 +35,6 @@ import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -57,7 +56,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptOptions={
 			"-f <featureName>, --feature <featureName>  Delete from the named feature-location"
 	},
-	metaTags={CmdMeta.updatesDatabase},
+	metaTags = {},
 	description="Delete a set of variations") 
 public class ClearVariationCommand extends ReferenceSequenceModeCommand<DeleteResult> {
 

@@ -35,7 +35,6 @@ import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
@@ -63,7 +62,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		"-w <whereClause>, --whereClause <whereClause>  Qualify added sequences",
 	    "-a, --allSequences                             Add all project sequences"},
 	description="Add sequences as alignment members",
-	metaTags={CmdMeta.updatesDatabase},
+	metaTags = {},
 	furtherHelp=
 	"If both <sourceName> and <sequenceID> are specified, a single sequence is added.\n"+
 	"The -r <refName> usage can be used to add a reference sequence.\n"+

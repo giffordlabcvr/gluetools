@@ -33,7 +33,6 @@ import java.util.stream.Collectors;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -60,7 +59,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 				"-d <destLinkName>, --destLinkName <destLinkName>  Link name in dest table",
 				"-m <multiplicity>, --multiplicity <multiplicity>  Multiplicity"},
 		description="Create a new custom relational link",
-		metaTags={CmdMeta.updatesDatabase},
+		metaTags = {},
 		furtherHelp="If <srcLinkName> is not supplied then <destTableName> will be used if possible. "+
 		"Similarly if <destLinkName> is not supplied then <srcTableName> will be used. Any configured link name "+
 		"must be a valid DB identifier, e.g. my_link_1. "+

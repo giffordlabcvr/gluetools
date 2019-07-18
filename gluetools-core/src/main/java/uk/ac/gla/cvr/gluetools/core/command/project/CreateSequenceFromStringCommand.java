@@ -32,7 +32,6 @@ import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
-import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
@@ -50,7 +49,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 	docoptUsages={
 		"<sourceName> <sequenceID> <sequenceString>"
 	}, 
-	metaTags={CmdMeta.updatesDatabase},
+	metaTags = {},
 	docoptOptions={},
 	description="Create a new Sequence Object from a FASTA String") 
 public class CreateSequenceFromStringCommand extends BaseCreateSequenceCommand {

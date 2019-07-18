@@ -45,7 +45,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 	docoptUsages={
 		"<sourceName> <sequenceID> <format> -b <data>"
 	}, 
-	metaTags={CmdMeta.updatesDatabase, CmdMeta.consumesBinary},
+	metaTags={CmdMeta.consumesBinary},
 	docoptOptions={
 		"-b <data>, --base64 <data>  Sequence data encoded as Base64"},
 	description="Create a new sequence") 
