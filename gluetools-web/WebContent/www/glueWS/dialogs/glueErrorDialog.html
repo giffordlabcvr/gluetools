@@ -13,10 +13,13 @@
 	</div>
 	<div class="small" ng-show="error.showItems">
 		<h4>Details</h4>
-		<table style="width:40%" class="table table-condensed table-bordered">
+		<table style="width:100%" class="table table-condensed table-bordered">
 			<tr ng-repeat="item in error.items">
 				<td><b>{{item.name}}</b></td>
-				<td>{{item.value}}</td>
+				<td ng-if="item.name == 'commandXml'">
+					<span hljs source="item.value"></span>
+				</td>
+				<td ng-if="item.name != 'commandXml'">{{item.value}}</td>
 			</tr>
 		</table>
 	</div>

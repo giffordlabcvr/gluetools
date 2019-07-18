@@ -302,8 +302,12 @@ public class WsCmdContext extends CommandContext {
 		Request request = new Request(modePath, command);
 		boolean allowRequest = requestGatekeeper.allowRequest(request);
 		if(!allowRequest) {
+			String commandWords = String.join(" ", request.getCommandWords());
+			String xmlDocString = new String(GlueXmlUtils.prettyPrint(request.getCommand().getCmdElem().getOwnerDocument()));
 			throw new RequestFilterException(RequestFilterException.Code.REQUEST_DENIED, 
-					"Not authorised to run the command in this GLUE web server");
+					commandWords,
+					modePath,
+					xmlDocString);
 		}
 		RequestQueueManager requestQueueManager = gluetoolsEngine.getRequestQueueManager();
 		

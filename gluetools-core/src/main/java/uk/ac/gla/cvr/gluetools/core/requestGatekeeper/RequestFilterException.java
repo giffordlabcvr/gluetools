@@ -32,7 +32,7 @@ public class RequestFilterException extends GlueException {
 	public enum Code implements GlueErrorCode {
 		
 		CONFIG_ERROR("errorTxt"),
-		REQUEST_DENIED("errorTxt");
+		REQUEST_DENIED("commandWords", "modePath", "commandXml");
 
 		private String[] argNames;
 		private Code(String... argNames) {
