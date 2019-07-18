@@ -95,7 +95,6 @@ public class WsCmdContext extends CommandContext {
 	private Class<? extends Command> enterModeCommandClass;
 	private String fullPath = "/";
 	
-	
 
 	@POST()
 	@Consumes(MediaType.APPLICATION_JSON)
@@ -282,11 +281,6 @@ public class WsCmdContext extends CommandContext {
 					String.join(" ", CommandUsage.cmdWordsForCmdClass(cmdClass)), 
 					getDescription());
 		}
-		if(CommandUsage.hasMetaTagForCmdClass(cmdClass, CmdMeta.updatesDatabase)) {
-			throw new CommandException(Code.NOT_EXECUTABLE_IN_CONTEXT, 
-					String.join(" ", CommandUsage.cmdWordsForCmdClass(cmdClass)), 
-					getDescription());
-		}
 	}
 	
 	private CommandResult invokeCommandSync(String commandString, Command<?> command) {
@@ -320,6 +314,11 @@ public class WsCmdContext extends CommandContext {
 		response.setHeader("Cache-Control", "no-cache, no-store, must-revalidate"); // HTTP 1.1.
 		response.setHeader("Pragma", "no-cache"); // HTTP 1.0.
 		response.setHeader("Expires", "0"); // Proxies.
+	}
+
+	@Override
+	public synchronized boolean hasAuthorisation(String authorisationName) {
+		return false;
 	}
 	
 }

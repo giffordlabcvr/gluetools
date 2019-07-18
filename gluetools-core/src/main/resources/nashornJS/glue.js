@@ -151,6 +151,13 @@ var glue = {
 				throw new Error("Non string running description: "+runningDescription);
 			}
 		},
+		hasAuthorisation: function(authorisationName) {
+			if(_.isString(authorisationName)) {
+				glueAux.hasAuthorisation(authorisationName);
+			} else {
+				throw new Error("Non string authorisationName: "+authorisationName);
+			}
+		},
 		popMode: function() {
 			try {
 				glueAux.popMode();

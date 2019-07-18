@@ -162,6 +162,10 @@ public class NashornContext {
 			}
 		}
 		
+		public boolean hasAuthorisation(String authorisationName) {
+			return cmdContext.hasAuthorisation(authorisationName);
+		}
+		
 		public void setRunningDescription(String runningDescription) {
 			cmdContext.setRunningDescription(runningDescription);
 		}

@@ -54,7 +54,7 @@ import uk.ac.gla.cvr.gluetools.core.session.SessionKey;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 
-public class CommandContext {
+public abstract class CommandContext {
 	
 	private GluetoolsEngine gluetoolsEngine;
 	private List<ObjectContext> objectContextStack = new LinkedList<ObjectContext>();
@@ -65,6 +65,7 @@ public class CommandContext {
 	private NashornContext nashornContext;
 	private Map<SessionKey, Session> currentSessions = new LinkedHashMap<SessionKey, Session>();
 	private String runningDescription = "Initialising";
+	
 	
 	public CommandContext(GluetoolsEngine gluetoolsEngine, String description) {
 		super();
@@ -326,4 +327,6 @@ public class CommandContext {
 		this.runningDescription = runningDescription;
 	}
 
+	public abstract boolean hasAuthorisation(String authorisationName);
+	
 }

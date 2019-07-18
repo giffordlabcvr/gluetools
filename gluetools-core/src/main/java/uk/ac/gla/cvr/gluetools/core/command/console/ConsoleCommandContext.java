@@ -367,8 +367,9 @@ public class ConsoleCommandContext extends CommandContext {
 			saveBytes(filePath, byteArray);
 	}
 
-	
-
+	public boolean hasAuthorisation(String authorisationName) {
+		return true;
+	}
 	
 
 	
