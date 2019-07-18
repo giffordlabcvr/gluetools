@@ -26,12 +26,9 @@
 			<regex>^/project/hcv</regex>
 			<modePathRegexFilter>
 				<regex>.*/alignment/.*</regex>
-				<commandWordsFilter>
-					<commandWords>render-object</commandWords>
-					<commandXPathFilter>
-						<xPath>render-object/rendererModuleName/text() = 'hcvAlignmentRenderer'</xPath>
-					</commandXPathFilter>
-				</commandWordsFilter>
+				<simpleCommandFilter words="render-object">
+					<arg name="rendererModuleName">hcvAlignmentRenderer</arg>
+				</simpleCommandFilter>
 				<commandWordsFilter>
 					<commandWords>count member</commandWords>
 				</commandWordsFilter>
