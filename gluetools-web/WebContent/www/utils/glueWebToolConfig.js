@@ -7,7 +7,6 @@ glueWebToolConfig.factory('glueWebToolConfig', function () {
 	var analysisToolExampleSequenceMsWindowsURL;
 	var projectBrowserURL;
 	var glueWSURL;
-	var rendererDialogs;
 	var analysisModuleName;
 	return {
 		setAnalysisToolExampleSequenceURL: function(newExampleSequenceURL) {
@@ -45,26 +44,12 @@ glueWebToolConfig.factory('glueWebToolConfig', function () {
 		getGlueWSURL: function() {
 			return glueWSURL;
 		},
-		setRendererDialogs: function(newRendererDialogs) {
-			rendererDialogs = newRendererDialogs;
-			console.log("rendererDialogs set to: "+rendererDialogs);
-		},
-		getRendererDialogs: function() {
-			return rendererDialogs;
-		},
 		setAnalysisModuleName: function(newAnalysisModuleName) {
 			analysisModuleName = newAnalysisModuleName;
 			console.log("analysisModuleName set to: "+analysisModuleName);
 		},
 		getAnalysisModuleName: function() {
 			return analysisModuleName;
-		},
-		setInterpretationViews: function(newInterpretationViews) {
-			interpretationViews = newInterpretationViews;
-			console.log("interpretationViews set to: "+interpretationViews);
-		},
-		getInterpretationViews: function() {
-			return interpretationViews;
 		},
 	};
 });
