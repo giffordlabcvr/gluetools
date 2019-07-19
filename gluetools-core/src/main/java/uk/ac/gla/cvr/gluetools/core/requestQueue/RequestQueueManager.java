@@ -129,29 +129,31 @@ public class RequestQueueManager implements Plugin {
 		final RequestTicket requestTicket;
 		String requestID;
 		synchronized(uncollectedTickets) {
-			Map<String, RequestTicket> queuedTickets = requestQueue.getQueuedTickets();
-			int currentLengthOfQueue = queuedTickets.values().size();
-			if(currentLengthOfQueue >= requestQueue.getMaxRequests()) {
-				throw new RequestQueueManagerException(Code.QUEUE_FULL, "Request rejected from queue '"+requestQueue.getQueueName()+
-						"', this queue is at its maximum load of "+requestQueue.getMaxRequests()+". Please try again later.");
-			}
-			requestID = Integer.toString(nextRequestID);
-			nextRequestID++;
-			ExecutorService executorService = requestQueue.getExecutorService();
-			requestTicket = new RequestTicket(requestID, cmdContext);
-			Map<String, RequestTicket> runningTickets = requestQueue.getRunningTickets();
-			if(runningTickets.size() < requestQueue.getNumWorkers()) {
-				// request should be immediately run so don't return QUEUED unnecessarily
-				requestTicket.setCode(RequestTicket.Code.RUNNING); 
-				requestTicket.setPlaceInQueue(-1); 
-				runningTickets.put(requestID, requestTicket);
-			} else {
-				requestTicket.setCode(RequestTicket.Code.QUEUED);
-				requestTicket.setPlaceInQueue(currentLengthOfQueue); 
-				queuedTickets.put(requestID, requestTicket);
+			synchronized(requestQueue) {
+				Map<String, RequestTicket> queuedTickets = requestQueue.getQueuedTickets();
+				int currentLengthOfQueue = queuedTickets.values().size();
+				if(currentLengthOfQueue >= requestQueue.getMaxRequests()) {
+					throw new RequestQueueManagerException(Code.QUEUE_FULL, "Request rejected from queue '"+requestQueue.getQueueName()+
+							"', this queue is at its maximum load of "+requestQueue.getMaxRequests()+". Please try again later.");
+				}
+				requestID = Integer.toString(nextRequestID);
+				nextRequestID++;
+				requestTicket = new RequestTicket(requestID, cmdContext);
+				Map<String, RequestTicket> runningTickets = requestQueue.getRunningTickets();
+				if(runningTickets.size() < requestQueue.getNumWorkers()) {
+					// request should be immediately run so don't return QUEUED unnecessarily
+					requestTicket.setCode(RequestTicket.Code.RUNNING); 
+					requestTicket.setPlaceInQueue(-1); 
+					runningTickets.put(requestID, requestTicket);
+				} else {
+					requestTicket.setCode(RequestTicket.Code.QUEUED);
+					requestTicket.setPlaceInQueue(currentLengthOfQueue); 
+					queuedTickets.put(requestID, requestTicket);
+				}
 			}
 			uncollectedTickets.put(requestID, requestTicket);
 
+			ExecutorService executorService = requestQueue.getExecutorService();
 			Future<CommandResult> cmdResultFuture = executorService.submit(new Callable<CommandResult>() {
 				@Override
 				public CommandResult call() throws Exception {
@@ -161,22 +163,26 @@ public class RequestQueueManager implements Plugin {
 							@Override
 							public CommandResult get() {
 								GlueLogger.getGlueLogger().info("Executing request "+requestID+" on queue '"+queueName+"'");
-								Map<String, RequestTicket> queuedTickets = requestQueue.getQueuedTickets();
-								if(queuedTickets.remove(requestID) != null) {
-									// request may have gone straight into runningTickets map.
-									Map<String, RequestTicket> runningTickets = requestQueue.getRunningTickets();
-									runningTickets.put(requestID, requestTicket);
-									for(RequestTicket queuedTicket: queuedTickets.values()) {
-										queuedTicket.decrementPlaceInQueue();
+								synchronized(requestQueue) {
+									Map<String, RequestTicket> queuedTickets = requestQueue.getQueuedTickets();
+									if(queuedTickets.remove(requestID) != null) {
+										// request may have gone straight into runningTickets map.
+										Map<String, RequestTicket> runningTickets = requestQueue.getRunningTickets();
+										runningTickets.put(requestID, requestTicket);
+										for(RequestTicket queuedTicket: queuedTickets.values()) {
+											queuedTicket.decrementPlaceInQueue();
+										}
+										requestTicket.setCode(RequestTicket.Code.RUNNING);
+										requestTicket.setPlaceInQueue(-1);
 									}
-									requestTicket.setCode(RequestTicket.Code.RUNNING);
-									requestTicket.setPlaceInQueue(-1);
 								}
 								return request.getCommand().execute(cmdContext);
 							}
 						});
 					} finally {
-						requestQueue.getRunningTickets().remove(requestID);
+						synchronized(requestQueue) {
+							requestQueue.getRunningTickets().remove(requestID);
+						}
 						requestTicket.setCode(RequestTicket.Code.COMPLETE);
 						cmdContext.dispose();
 					}
