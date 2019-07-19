@@ -110,10 +110,12 @@ public class RequestQueueManager implements Plugin {
 		for(RequestQueue requestQueue: requestQueues.values()) {
 			requestQueue.dispose();
 		}
-		this.keepRunning = false;
-		try {
-			this.uncollectedTicketsThread.join();
-		} catch (InterruptedException e) {}
+		if(this.uncollectedTicketsThread != null) {
+			this.keepRunning = false;
+			try {
+				this.uncollectedTicketsThread.join();
+			} catch (InterruptedException e) {}
+		}
 	}
 	
 	public RequestStatus submitRequest(CommandContext cmdContext, Request request) {
