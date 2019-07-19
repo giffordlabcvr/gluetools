@@ -150,46 +150,46 @@ public class RequestQueueManager implements Plugin {
 					requestTicket.setPlaceInQueue(currentLengthOfQueue); 
 					queuedTickets.put(requestID, requestTicket);
 				}
-			}
-			uncollectedTickets.put(requestID, requestTicket);
+				uncollectedTickets.put(requestID, requestTicket);
 
-			ExecutorService executorService = requestQueue.getExecutorService();
-			Future<CommandResult> cmdResultFuture = executorService.submit(new Callable<CommandResult>() {
-				@Override
-				public CommandResult call() throws Exception {
-					CommandResult cmdResult;
-					try {
-						cmdResult = GluetoolsEngine.getInstance().runWithGlueClassloader(new Supplier<CommandResult>(){
-							@Override
-							public CommandResult get() {
-								GlueLogger.getGlueLogger().info("Executing request "+requestID+" on queue '"+queueName+"'");
-								synchronized(requestQueue) {
-									Map<String, RequestTicket> queuedTickets = requestQueue.getQueuedTickets();
-									if(queuedTickets.remove(requestID) != null) {
-										// request may have gone straight into runningTickets map.
-										Map<String, RequestTicket> runningTickets = requestQueue.getRunningTickets();
-										runningTickets.put(requestID, requestTicket);
-										for(RequestTicket queuedTicket: queuedTickets.values()) {
-											queuedTicket.decrementPlaceInQueue();
+				ExecutorService executorService = requestQueue.getExecutorService();
+				Future<CommandResult> cmdResultFuture = executorService.submit(new Callable<CommandResult>() {
+					@Override
+					public CommandResult call() throws Exception {
+						CommandResult cmdResult;
+						try {
+							cmdResult = GluetoolsEngine.getInstance().runWithGlueClassloader(new Supplier<CommandResult>(){
+								@Override
+								public CommandResult get() {
+									GlueLogger.getGlueLogger().info("Executing request "+requestID+" on queue '"+queueName+"'");
+									synchronized(requestQueue) {
+										Map<String, RequestTicket> queuedTickets = requestQueue.getQueuedTickets();
+										if(queuedTickets.remove(requestID) != null) {
+											// request may have gone straight into runningTickets map.
+											Map<String, RequestTicket> runningTickets = requestQueue.getRunningTickets();
+											runningTickets.put(requestID, requestTicket);
+											for(RequestTicket queuedTicket: queuedTickets.values()) {
+												queuedTicket.decrementPlaceInQueue();
+											}
+											requestTicket.setCode(RequestTicket.Code.RUNNING);
+											requestTicket.setPlaceInQueue(-1);
 										}
-										requestTicket.setCode(RequestTicket.Code.RUNNING);
-										requestTicket.setPlaceInQueue(-1);
 									}
+									return request.getCommand().execute(cmdContext);
 								}
-								return request.getCommand().execute(cmdContext);
+							});
+						} finally {
+							synchronized(requestQueue) {
+								requestQueue.getRunningTickets().remove(requestID);
 							}
-						});
-					} finally {
-						synchronized(requestQueue) {
-							requestQueue.getRunningTickets().remove(requestID);
+							requestTicket.setCode(RequestTicket.Code.COMPLETE);
+							cmdContext.dispose();
 						}
-						requestTicket.setCode(RequestTicket.Code.COMPLETE);
-						cmdContext.dispose();
+						return cmdResult;
 					}
-					return cmdResult;
-				}
-			});
-			requestTicket.setCmdResultFuture(cmdResultFuture);
+				});
+				requestTicket.setCmdResultFuture(cmdResultFuture);
+			}
 		}
 		return requestStatus(requestID);
 	}
