@@ -70,7 +70,7 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.BaseVariationScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 
 
-@GlueDataClass(defaultListedProperties = {FeatureLocation.FEATURE_NAME_PATH})
+@GlueDataClass(defaultListedProperties = {FeatureLocation.REF_SEQ_NAME_PATH, FeatureLocation.FEATURE_NAME_PATH})
 public class FeatureLocation extends _FeatureLocation {
 	
 	public static final String REF_SEQ_NAME_PATH = 
@@ -290,27 +290,34 @@ public class FeatureLocation extends _FeatureLocation {
 						getReferenceSequence().getName(), feature.getName(), nextAncestorFeature.getName());
 			}
 		}
-		if(feature.codesAminoAcids() && !feature.circularBridging()) {
-			// skip circular bridging features for now.
-			Integer codon1Start = getCodon1Start(cmdContext);
-			int codon1Int = codon1Start.intValue();
-			segments.forEach(seg -> {
-				checkCodonAligned(feature, codon1Int, seg);
-			});
+		if(feature.codesAminoAcids()) {
+			checkCodingFeatureLocation(cmdContext);
 		}
 		getVariations().forEach(variation -> variation.validate(cmdContext));
 		
 	}
 
-	private void checkCodonAligned(Feature feature, int codon1Start, IReferenceSegment seg) {
-		if(!TranslationUtils.isAtStartOfCodon(codon1Start, seg.getRefStart()) || 
-				!TranslationUtils.isAtEndOfCodon(codon1Start, seg.getRefEnd())) {
-			throw new FeatureLocationException(
-					FeatureLocationException.Code.FEATURE_LOCATION_SEGMENT_NOT_CODON_ALIGNED, 
-					getReferenceSequence().getName(), feature.getName(), Integer.toString(seg.getRefStart()), 
-					Integer.toString(seg.getRefEnd()), Integer.toString(codon1Start));
+	private void checkCodingFeatureLocation(CommandContext cmdContext) {
+		List<FeatureSegment> featureSegs = getSegments();
+		Feature feature = getFeature();
+
+		ReferenceSegment.sortByRefStart(featureSegs);
+		List<ReferenceSegment> uncodedRegions = new ArrayList<ReferenceSegment>();
+		for(FeatureSegment featureSeg: featureSegs) {
+			uncodedRegions.add(featureSeg.asReferenceSegment());
+		}
+		List<LabeledCodon> labeledCodons = getLabeledCodons(cmdContext);
+		for(LabeledCodon labeledCodon: labeledCodons) {
+			uncodedRegions = ReferenceSegment.subtract(uncodedRegions, labeledCodon.getLcRefSegments());
+		}
+		if(!uncodedRegions.isEmpty()) {
+			throw new FeatureLocationException(FeatureLocationException.Code.CODING_FEATURE_LOCATION_HAS_UNCODED_REGIONS, 
+					getReferenceSequence().getName(), feature.getName(), uncodedRegions.toString());
 		}
 	}
+
+
+
 	
 	/**
 	 * Returns the reference NT number which points to codon 1 in the codon numbering system applicable to this
