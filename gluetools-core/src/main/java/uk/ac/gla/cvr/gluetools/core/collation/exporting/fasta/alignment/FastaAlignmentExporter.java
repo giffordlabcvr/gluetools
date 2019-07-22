@@ -25,10 +25,12 @@
 */
 package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.biojava.nbio.core.sequence.DNASequence;
 
@@ -62,7 +64,7 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 			AbstractMemberSupplier memberSupplier, AbstractStringAlmtRowConsumer almtRowConsumer) {
 		
 		List<ReferenceSegment> featureRefSegs = initFeatureRefSegs(cmdContext, alignmentColumnsSelector);
-		ReferenceSegment minMaxSeg = initMinMaxSeg(cmdContext, memberSupplier, featureRefSegs);
+		List<ReferenceSegment> constrainingRefSegs = initConstrainingRefSegs(cmdContext, memberSupplier, featureRefSegs);
 		
 		int numMembers = memberSupplier.countMembers(cmdContext);
 		//GlueLogger.getGlueLogger().log(Level.FINEST, "processing "+numMembers+" alignment members");
@@ -72,7 +74,7 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 		while(offset < numMembers) {
 			Alignment alignment = memberSupplier.supplyAlignment(cmdContext);
 			List<AlignmentMember> almtMembers = memberSupplier.supplyMembers(cmdContext, offset, batchSize);
-			createAlignment(cmdContext, excludeEmptyRows, alignmentColumnsSelector, alignment, almtMembers, featureRefSegs, minMaxSeg, almtRowConsumer);
+			createAlignment(cmdContext, excludeEmptyRows, alignmentColumnsSelector, alignment, almtMembers, featureRefSegs, constrainingRefSegs, almtRowConsumer);
 			//processed += almtMembers.size();
 			//GlueLogger.getGlueLogger().log(Level.FINEST, "processed "+processed+" alignment members");
 			offset += batchSize;
@@ -87,40 +89,44 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 		}
 		return null;
 	}
-	
-	private static ReferenceSegment initMinMaxSeg(CommandContext cmdContext, AbstractMemberSupplier memberSupplier, List<ReferenceSegment> featureRefSegs) {
-		ReferenceSegment minMaxSeg = new ReferenceSegment(1, 1);
-		ReferenceSequence alignmentRef = memberSupplier.supplyAlignment(cmdContext).getRefSequence();
-		if(alignmentRef != null) {
-			minMaxSeg.setRefEnd(alignmentRef.getSequence().getSequenceObject().getNucleotides(cmdContext).length());
-		} else {
-			// unconstrained alignment
-			int numMembers = memberSupplier.countMembers(cmdContext);
-			int offset = 0;
-			int batchSize = 500;
-			while(offset < numMembers) {
-				List<AlignmentMember> almtMembers = memberSupplier.supplyMembers(cmdContext, offset, batchSize);
-				for(AlignmentMember almtMember: almtMembers) {
-					Integer maxRefEnd = ReferenceSegment.maxRefEnd(almtMember.getAlignedSegments());
-					if(maxRefEnd != null) { minMaxSeg.setRefEnd(Math.max(maxRefEnd, minMaxSeg.getRefEnd())); }
-				}
-				offset += batchSize;
-				cmdContext.newObjectContext();
-			}
-		}
+
+	// set of refsegs that define the nucleotide column of the output.
+	private static List<ReferenceSegment> initConstrainingRefSegs(CommandContext cmdContext, AbstractMemberSupplier memberSupplier, List<ReferenceSegment> featureRefSegs) {
+		List<ReferenceSegment> constrainingRefSegs;
 		if(featureRefSegs != null && !featureRefSegs.isEmpty()) {
-			minMaxSeg.setRefStart(ReferenceSegment.minRefStart(featureRefSegs));
-			minMaxSeg.setRefEnd(ReferenceSegment.maxRefEnd(featureRefSegs));
+			// just clone the feature refsegs
+			constrainingRefSegs = featureRefSegs.stream().map(frs -> frs.clone()).collect(Collectors.toList());
+		} else {
+			// no feature refsegs available, return list containing a single segment spanning the whole alignment width.
+			ReferenceSegment minMaxSeg = new ReferenceSegment(1, 1);
+			ReferenceSequence alignmentRef = memberSupplier.supplyAlignment(cmdContext).getRefSequence();
+			if(alignmentRef != null) {
+				// constrained alignment
+				minMaxSeg.setRefEnd(alignmentRef.getSequence().getSequenceObject().getNucleotides(cmdContext).length());
+			} else {
+				// unconstrained alignment
+				int numMembers = memberSupplier.countMembers(cmdContext);
+				int offset = 0;
+				int batchSize = 500;
+				while(offset < numMembers) {
+					List<AlignmentMember> almtMembers = memberSupplier.supplyMembers(cmdContext, offset, batchSize);
+					for(AlignmentMember almtMember: almtMembers) {
+						Integer maxRefEnd = ReferenceSegment.maxRefEnd(almtMember.getAlignedSegments());
+						if(maxRefEnd != null) { minMaxSeg.setRefEnd(Math.max(maxRefEnd, minMaxSeg.getRefEnd())); }
+					}
+					offset += batchSize;
+					cmdContext.newObjectContext();
+				}
+			}
+			constrainingRefSegs = Arrays.asList(minMaxSeg);
 		}
-		return minMaxSeg;
+		return constrainingRefSegs;
 	}
 	
 	private static void createAlignment(CommandContext cmdContext, Boolean excludeEmptyRows,
 			IAlignmentColumnsSelector alignmentColumnsSelector,
 			Alignment alignment, List<AlignmentMember> almtMembers, List<ReferenceSegment> featureRefSegs, 
-			ReferenceSegment minMaxSeg, AbstractStringAlmtRowConsumer almtRowConsumer) {
-		int minRefNt_final = minMaxSeg.getRefStart();
-		int maxRefNt_final = minMaxSeg.getRefEnd();
+			List<ReferenceSegment> constrainingRefSegs, AbstractStringAlmtRowConsumer almtRowConsumer) {
 
 		for(AlignmentMember almtMember: almtMembers) {
 			List<QueryAlignedSegment> memberQaSegs = almtMember.segmentsAsQueryAlignedSegments();
@@ -137,26 +143,33 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 					memberQaSegs = almtMember.getAlignment().translateToAncConstrainingRef(cmdContext, memberQaSegs, acRef2);
 				}
 			}
-			if(featureRefSegs != null) {
-				memberQaSegs = ReferenceSegment.intersection(memberQaSegs, featureRefSegs, ReferenceSegment.cloneLeftSegMerger());
-			}
-			List<QueryAlignedSegment> truncatedQaSegs = ReferenceSegment.intersection(memberQaSegs, Arrays.asList(minMaxSeg), ReferenceSegment.cloneLeftSegMerger());
+			List<QueryAlignedSegment> coveredRegionSegs = ReferenceSegment.intersection(memberQaSegs, constrainingRefSegs, ReferenceSegment.cloneLeftSegMerger());
+			List<ReferenceSegment> nonCoveredRegionSegs = ReferenceSegment.subtract(constrainingRefSegs, coveredRegionSegs);
+			
 			String memberNTs = almtMember.getSequence().getSequenceObject().getNucleotides(cmdContext);
-			StringBuffer alignmentRow = new StringBuffer(maxRefNt_final);
-			int ntIndex = minRefNt_final;
-			for(QueryAlignedSegment seg: truncatedQaSegs) {
-				while(ntIndex < seg.getRefStart()) {
-					alignmentRow.append("-");
-					ntIndex++;
+			int alWidth = 0;
+			for(ReferenceSegment constrainingRefSeg: constrainingRefSegs) {
+				alWidth += constrainingRefSeg.getCurrentLength();
+			}
+			StringBuffer alignmentRow = new StringBuffer(alWidth);
+			
+			List<ReferenceSegment> mixedRegionSegs = new ArrayList<ReferenceSegment>();
+			mixedRegionSegs.addAll(coveredRegionSegs);
+			mixedRegionSegs.addAll(nonCoveredRegionSegs);
+			ReferenceSegment.sortByRefStart(mixedRegionSegs);		
+			
+			
+			for(ReferenceSegment seg: mixedRegionSegs) {
+				if(seg instanceof QueryAlignedSegment) {
+					QueryAlignedSegment qaSeg = (QueryAlignedSegment) seg;
+					alignmentRow.append(SegmentUtils.base1SubString(memberNTs, qaSeg.getQueryStart(), qaSeg.getQueryEnd()));
+				} else {
+					for(int ntIndex = seg.getRefStart(); ntIndex <= seg.getRefEnd(); ntIndex++) {
+						alignmentRow.append("-");
+					}
 				}
-				alignmentRow.append(SegmentUtils.base1SubString(memberNTs, seg.getQueryStart(), seg.getQueryEnd()));
-				ntIndex = seg.getRefEnd()+1;
 			}
-			while(ntIndex <= maxRefNt_final) {
-				alignmentRow.append("-");
-				ntIndex++;
-			}
-			if( (!truncatedQaSegs.isEmpty()) || !excludeEmptyRows) {
+			if( (!coveredRegionSegs.isEmpty()) || !excludeEmptyRows) {
 				almtRowConsumer.consumeAlmtRow(cmdContext, almtMember, alignmentRow.toString());
 			} 
 	    }
