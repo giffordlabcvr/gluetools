@@ -101,6 +101,7 @@ public class ProjectModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(CreateFeatureCommand.class);
 		registerCommandClass(DeleteFeatureCommand.class);
 		registerCommandClass(ListFeatureCommand.class);
+		registerCommandClass(ListFeatureLocationCommand.class);
 
 		setCmdGroup(new CommandGroup("custom-table-row", "Commands for objects in custom tables", 9, false));
 		registerCommandClass(CreateCustomTableRowCommand.class);
