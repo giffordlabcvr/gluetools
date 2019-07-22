@@ -109,7 +109,7 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 
 
 		if(featureRefToRootRefFeatureSegs.isEmpty() || featureRefToRootRefFeatureSegs.get(0).getQueryStart() > ntStart) {
-			throw new Kuiken2006CodonLabelerException(Code.GAP_AT_START, rootReferenceName, ntStart);
+			throw new Kuiken2006CodonLabelerException(Code.GAP_AT_START, rootReferenceName, featureRefSeq.getName(), feature.getName(), ntStart);
 		}
 
 		int transcriptionIndex = 0;
