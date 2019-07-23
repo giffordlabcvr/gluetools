@@ -235,7 +235,7 @@ repositories {
     mavenCentral()
 	// this is for the vpp dependency of the cayenne tools. 
     maven {
-    	url 'http://repo.spring.io/libs-release-remote/'
+    	url 'https://repo.spring.io/plugins-release/'
     }
     // required for j-text-utils
     // maven {
