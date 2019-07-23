@@ -48,6 +48,10 @@ public class PreTranslationModifier extends ModulePlugin<PreTranslationModifier>
 		for(ModifierRule modifierRule: modifierRules) {
 			modifierRule.applyModifierRule(nts);
 		}
+		if(nts.size() % 3 != 0) {
+			throw new PreTranslationModifierException(Code.MODIFICATION_ERROR, 
+					"After pre-translation modification the segment length was "+nts.size()+" which is not a multiple of 3");
+		}
 	}
 	
 }

@@ -63,6 +63,7 @@ import uk.ac.gla.cvr.gluetools.core.phylogenyImporter.PhyloImporter;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodPlacer;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginGroupRegistry;
+import uk.ac.gla.cvr.gluetools.core.preTranslationModification.PreTranslationModifier;
 import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.figtree.annotationExporter.FigTreeAnnotationExporter;
@@ -152,6 +153,10 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(CommonAaAnalyser.class);
 		registerPluginClass(VariationFrequenciesGenerator.class);
 
+		setModulePluginGroup(new ModulePluginGroup("translation", "Module types for working with protein translation", 90));
+		registerPluginClass(PreTranslationModifier.class);
+
+		
 		setModulePluginGroup(new ModulePluginGroup("experimentalUnsupported", "Experimental / unsupported module types", 91));
 		registerPluginClass(ModelTester.class);
 		registerPluginClass(DigsImporter.class);
