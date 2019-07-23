@@ -464,6 +464,7 @@ public class FeatureLocation extends _FeatureLocation {
 			List<QueryAlignedSegment> queryToRefSegs,
 			NucleotideContentProvider queryNucleotideContent) {
 		if(this.getSimpleCodingFeature(cmdContext)) {
+			// use faster code path in the common case where there are no complications.
 			ReferenceSegment singleRefSeg = this.getSegments().get(0).asReferenceSegment();
 			List<QueryAlignedSegment> queryToRefFeatureSegs = ReferenceSegment.intersection(queryToRefSegs, Arrays.asList(singleRefSeg), ReferenceSegment.cloneLeftSegMerger());
 			List<LabeledQueryAminoAcid> labeledQueryAminoAcids = new ArrayList<LabeledQueryAminoAcid>();
