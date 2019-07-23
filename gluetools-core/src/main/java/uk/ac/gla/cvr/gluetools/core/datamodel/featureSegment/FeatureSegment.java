@@ -36,7 +36,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
-@GlueDataClass(defaultListedProperties = {_FeatureSegment.REF_START_PROPERTY, _FeatureSegment.REF_END_PROPERTY})
+@GlueDataClass(defaultListedProperties = {_FeatureSegment.REF_START_PROPERTY, _FeatureSegment.REF_END_PROPERTY, _FeatureSegment.PRE_TRANSLATION_MODIFIER_NAME_PROPERTY})
 public class FeatureSegment extends _FeatureSegment implements IReferenceSegment {
 	
 	public static final String REF_SEQ_NAME_PATH = 

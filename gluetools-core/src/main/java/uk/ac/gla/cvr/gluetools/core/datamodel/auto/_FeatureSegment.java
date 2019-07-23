@@ -36,6 +36,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
  */
 public abstract class _FeatureSegment extends GlueDataObject {
 
+    public static final String PRE_TRANSLATION_MODIFIER_NAME_PROPERTY = "preTranslationModifierName";
     public static final String REF_END_PROPERTY = "refEnd";
     public static final String REF_START_PROPERTY = "refStart";
     public static final String FEATURE_LOCATION_PROPERTY = "featureLocation";
@@ -44,6 +45,13 @@ public abstract class _FeatureSegment extends GlueDataObject {
     public static final String REF_END_PK_COLUMN = "ref_end";
     public static final String REF_SEQ_NAME_PK_COLUMN = "ref_seq_name";
     public static final String REF_START_PK_COLUMN = "ref_start";
+
+    public void setPreTranslationModifierName(String preTranslationModifierName) {
+        writeProperty(PRE_TRANSLATION_MODIFIER_NAME_PROPERTY, preTranslationModifierName);
+    }
+    public String getPreTranslationModifierName() {
+        return (String)readProperty(PRE_TRANSLATION_MODIFIER_NAME_PROPERTY);
+    }
 
     public void setRefEnd(Integer refEnd) {
         writeProperty(REF_END_PROPERTY, refEnd);
