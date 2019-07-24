@@ -63,6 +63,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SimpleNucleotideContentProvider;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamAminoAcidCommand.AminoAcidWithQuality;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSense;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocessor.SamReporterPreprocessorSession;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
@@ -345,24 +346,21 @@ public class SamCodonTripletsCommand extends ReferenceLinkedSamReporterCommand<S
 		int minQScore = getMinQScore(context.samReporter); 
 		// put the triplets resulting from translating the read into the map. 
 		for(LabeledQueryAminoAcid labeledReadAa: labeledReadAas) {
-			int worstQual;
-			char qualityChar1 = SegmentUtils.base1Char(qualityString, labeledReadAa.getQueryNtStart());
-			worstQual = SamUtils.qualityCharToQScore(qualityChar1);
-			if(SamUtils.qualityCharToQScore(qualityChar1) < minQScore) {
-				continue;
-			} 
-			char qualityChar2 = SegmentUtils.base1Char(qualityString, labeledReadAa.getQueryNtMiddle());
-			worstQual = Math.min(worstQual, SamUtils.qualityCharToQScore(qualityChar2));
-			if(SamUtils.qualityCharToQScore(qualityChar2) < minQScore) {
-				continue;
-			} 
-			char qualityChar3 = SegmentUtils.base1Char(qualityString, labeledReadAa.getQueryNtEnd());
-			worstQual = Math.min(worstQual, SamUtils.qualityCharToQScore(qualityChar3));
-			if(SamUtils.qualityCharToQScore(qualityChar3) < minQScore) {
-				continue;
-			} 
-			refNtToTripletWithQuality.put(labeledReadAa.getLabeledAminoAcid().getLabeledCodon().getNtStart(), 
-					new TripletWithQuality(labeledReadAa.getLabeledAminoAcid().getTranslationInfo().getTripletNtsString(), worstQual));
+			int worstQual = Integer.MAX_VALUE;
+			boolean minQualityBreached = false;
+			for(int queryNt = labeledReadAa.getQueryNtStart(); queryNt <= labeledReadAa.getQueryNtEnd(); queryNt++) {
+				char qualityChar = SegmentUtils.base1Char(qualityString, queryNt);
+				int qualScore = SamUtils.qualityCharToQScore(qualityChar);
+				worstQual = Math.min(worstQual, qualScore);
+				if(qualScore < minQScore) {
+					minQualityBreached = true;
+					break;
+				}
+			}
+			if(!minQualityBreached) {
+				refNtToTripletWithQuality.put(labeledReadAa.getLabeledAminoAcid().getLabeledCodon().getNtStart(), 
+						new TripletWithQuality(labeledReadAa.getLabeledAminoAcid().getTranslationInfo().getTripletNtsString(), worstQual));
+			}
 		}
 		return refNtToTripletWithQuality;
 	}

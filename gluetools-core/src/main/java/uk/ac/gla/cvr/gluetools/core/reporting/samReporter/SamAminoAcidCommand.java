@@ -342,24 +342,21 @@ public class SamAminoAcidCommand extends ReferenceLinkedSamReporterCommand<SamAm
 		int minQScore = getMinQScore(context.samReporter); 
 		// put the AAs resulting from translating the read into the map. 
 		for(LabeledQueryAminoAcid labeledReadAa: labeledReadAas) {
-			int worstQual;
-			char qualityChar1 = SegmentUtils.base1Char(qualityString, labeledReadAa.getQueryNtStart());
-			worstQual = SamUtils.qualityCharToQScore(qualityChar1);
-			if(SamUtils.qualityCharToQScore(qualityChar1) < minQScore) {
-				continue;
-			} 
-			char qualityChar2 = SegmentUtils.base1Char(qualityString, labeledReadAa.getQueryNtMiddle());
-			worstQual = Math.min(worstQual, SamUtils.qualityCharToQScore(qualityChar2));
-			if(SamUtils.qualityCharToQScore(qualityChar2) < minQScore) {
-				continue;
-			} 
-			char qualityChar3 = SegmentUtils.base1Char(qualityString, labeledReadAa.getQueryNtEnd());
-			worstQual = Math.min(worstQual, SamUtils.qualityCharToQScore(qualityChar3));
-			if(SamUtils.qualityCharToQScore(qualityChar3) < minQScore) {
-				continue;
-			} 
-			refNtToAminoAcidWithQuality.put(labeledReadAa.getLabeledAminoAcid().getLabeledCodon().getNtStart(), 
-					new AminoAcidWithQuality(labeledReadAa.getLabeledAminoAcid().getAminoAcid().charAt(0), worstQual));
+			int worstQual = Integer.MAX_VALUE;
+			boolean minQualityBreached = false;
+			for(int queryNt = labeledReadAa.getQueryNtStart(); queryNt <= labeledReadAa.getQueryNtEnd(); queryNt++) {
+				char qualityChar = SegmentUtils.base1Char(qualityString, queryNt);
+				int qualScore = SamUtils.qualityCharToQScore(qualityChar);
+				worstQual = Math.min(worstQual, qualScore);
+				if(qualScore < minQScore) {
+					minQualityBreached = true;
+					break;
+				}
+			}
+			if(!minQualityBreached) {
+				refNtToAminoAcidWithQuality.put(labeledReadAa.getLabeledAminoAcid().getLabeledCodon().getNtStart(), 
+						new AminoAcidWithQuality(labeledReadAa.getLabeledAminoAcid().getAminoAcid().charAt(0), worstQual));
+			}
 		}
 		return refNtToAminoAcidWithQuality;
 	}
