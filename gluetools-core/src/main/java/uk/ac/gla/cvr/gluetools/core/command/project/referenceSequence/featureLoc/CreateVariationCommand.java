@@ -155,11 +155,11 @@ public class CreateVariationCommand extends FeatureLocModeCommand<CreateResult> 
 							featureLoc.getLastLabeledCodon(cmdContext).getCodonLabel());
 				}
 				if(vtype == VariationType.aminoAcidInsertion || vtype == VariationType.nucleotideInsertion) {
-					ntStart = startLabeledCodon.getNtStart()+2;
+					ntStart = startLabeledCodon.getNtEnd();
 					ntEnd = endLabeledCodon.getNtStart();
 				} else {
 					ntStart = startLabeledCodon.getNtStart();
-					ntEnd = endLabeledCodon.getNtStart()+2;
+					ntEnd = endLabeledCodon.getNtEnd();
 				}
 			}
 			if(ntStart > ntEnd) {

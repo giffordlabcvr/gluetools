@@ -35,7 +35,8 @@ public class ReadAminoAcidDeletion extends BaseReadPolymorphism {
 		String mainReferenceName = samFileGenerator.getMainReference();
 		FeatureLocation featureLocation = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(mainReferenceName, featureName), false);
 		LabeledCodon labeledCodon = featureLocation.getLabelToLabeledCodon(cmdContext).get(deletedCodonLabel);
-		int deletedCodonRefNt = labeledCodon.getNtStart();
+		int deletedCodonRefNtStart = labeledCodon.getNtStart();
+		int deletedCodonRefNtEnd = labeledCodon.getNtEnd();
 		
 		char[] oldReadStringChars = samRecord.getReadString().toCharArray();
 		char[] oldReadQualityChars = samRecord.getBaseQualityString().toCharArray();
@@ -55,7 +56,7 @@ public class ReadAminoAcidDeletion extends BaseReadPolymorphism {
 			switch(operator) {
 			case M:
 				for(int i = 0; i < oldCigarElement.getLength(); i++) {
-					if(refNt >= deletedCodonRefNt && refNt <= deletedCodonRefNt+2) {
+					if(refNt >= deletedCodonRefNtStart && refNt <= deletedCodonRefNtEnd) {
 						newCigarElements.add(new CigarElement(1, CigarOperator.D));
 					} else {
 						newCigarElements.add(new CigarElement(1, CigarOperator.M));

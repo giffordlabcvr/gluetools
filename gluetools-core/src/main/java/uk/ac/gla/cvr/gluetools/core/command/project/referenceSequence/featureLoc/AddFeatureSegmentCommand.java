@@ -132,7 +132,7 @@ public class AddFeatureSegmentCommand extends FeatureLocModeCommand<CreateResult
 			if(endLabeledCodon == null) {
 				throw new CommandException(CommandException.Code.COMMAND_FAILED_ERROR, "No such labeled codon \""+lcStart+"\"");
 			}
-			refEnd = endLabeledCodon.getNtStart()+2;
+			refEnd = endLabeledCodon.getNtEnd();
 		}
 		TranslationModifier translationModifier = null;
 		if(this.translationModifier != null) {

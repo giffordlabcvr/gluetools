@@ -268,7 +268,7 @@ public class FastaAlignmentExportCommandDelegate {
 			FeatureLocation featureLocation = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relRefName, featureName));
 			Map<String, LabeledCodon> labelToLabeledCodon = featureLocation.getLabelToLabeledCodon(cmdContext);
 			int refStart = labelToLabeledCodon.get(lcStart).getNtStart();
-			int refEnd = labelToLabeledCodon.get(lcEnd).getNtStart()+2;
+			int refEnd = labelToLabeledCodon.get(lcEnd).getNtEnd();
 			return new SimpleNucleotideColumnsSelector(relRefName, featureName, refStart, refEnd);
 		} else if(relRefName != null && featureName != null) {
 			return new SimpleNucleotideColumnsSelector(relRefName, featureName, null, null);
