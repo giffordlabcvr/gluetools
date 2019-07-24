@@ -150,7 +150,6 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		
 		
 		setModulePluginGroup(new ModulePluginGroup("variations", "Module types for working with variations", 89));
-		registerPluginClass(CommonAaAnalyser.class);
 		registerPluginClass(VariationFrequenciesGenerator.class);
 
 		setModulePluginGroup(new ModulePluginGroup("translation", "Module types for working with protein translation", 90));

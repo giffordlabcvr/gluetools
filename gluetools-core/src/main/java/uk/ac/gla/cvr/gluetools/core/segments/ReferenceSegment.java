@@ -559,7 +559,7 @@ public class ReferenceSegment implements Plugin, IReferenceSegment, Cloneable {
 		};
 	}
 
-	public static List<QueryAlignedSegment> asQueryAlignedSegments(List<ReferenceSegment> refSegs) {
+	public static <SA extends IReferenceSegment> List<QueryAlignedSegment> asQueryAlignedSegments(List<SA> refSegs) {
 		return refSegs.stream().map(refSeg -> 
 			new QueryAlignedSegment(refSeg.getRefStart(), refSeg.getRefEnd(), 
 				refSeg.getRefStart(), refSeg.getRefEnd()))

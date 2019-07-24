@@ -32,8 +32,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 
 public interface CodonLabeler {
 
-	public List<LabeledCodon> labelCodons(CommandContext cmdContext, FeatureLocation constrainingFeatureLoc);
-	
-	public int compareCodonLabels(String codonLabel1, String codonLabel2);
+	public void relabelCodons(CommandContext cmdContext, FeatureLocation featureLocation, List<LabeledCodon> labeledCodons);
 	
 }

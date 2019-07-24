@@ -33,14 +33,15 @@ public class LabeledQueryAminoAcid {
 
 	private LabeledAminoAcid labeledAminoAcid;
 	private int queryNtStart;
-	private int queryNtMiddle;
 	private int queryNtEnd;
+	private List<Integer> dependentQueryPositions;
 	
-	public LabeledQueryAminoAcid(LabeledAminoAcid labeledAminoAcid, int queryNtStart, int queryNtMiddle, int queryNtEnd) {
+	public LabeledQueryAminoAcid(LabeledAminoAcid labeledAminoAcid, List<Integer> dependentQueryPositions) {
 		this.labeledAminoAcid = labeledAminoAcid;
-		this.queryNtStart = queryNtStart;
-		this.queryNtMiddle = queryNtMiddle;
-		this.queryNtEnd = queryNtEnd;
+		this.dependentQueryPositions = dependentQueryPositions;
+		this.dependentQueryPositions.sort(null);
+		this.queryNtStart = this.dependentQueryPositions.get(0);
+		this.queryNtEnd = this.dependentQueryPositions.get(this.dependentQueryPositions.size()-1);
 	}
 
 	public LabeledAminoAcid getLabeledAminoAcid() {
@@ -49,10 +50,6 @@ public class LabeledQueryAminoAcid {
 
 	public int getQueryNtStart() {
 		return queryNtStart;
-	}
-
-	public int getQueryNtMiddle() {
-		return queryNtMiddle;
 	}
 
 	public int getQueryNtEnd() {

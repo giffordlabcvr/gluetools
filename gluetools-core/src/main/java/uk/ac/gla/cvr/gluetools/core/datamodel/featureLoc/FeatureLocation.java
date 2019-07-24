@@ -47,6 +47,8 @@ import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodonQueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodonReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.ModifiedLabeledCodon;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.SimpleLabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -56,6 +58,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocationException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.AbstractSequenceObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.NucleotideContentProvider;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.Variation;
@@ -66,6 +69,9 @@ import uk.ac.gla.cvr.gluetools.core.translation.AmbigNtTripletInfo;
 import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
+import uk.ac.gla.cvr.gluetools.core.translationModification.OutputAminoAcid;
+import uk.ac.gla.cvr.gluetools.core.translationModification.TranslationModifier;
+import uk.ac.gla.cvr.gluetools.core.translationModification.TranslationModifierException;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.BaseVariationScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 
@@ -135,42 +141,55 @@ public class FeatureLocation extends _FeatureLocation {
 			if(codonNumberingAncestorLocation == null) {
 				throw new FeatureLocationException(Code.FEATURE_OR_ANCESTOR_MUST_HAVE_OWN_CODON_NUMBERING, getFeature().getName());
 			}
-			CodonLabeler codonLabeler = codonNumberingAncestorLocation.getFeature().getCodonLabelerModule(cmdContext);
-			if(codonLabeler == null) {
-				Integer codon1Start = getCodon1Start(cmdContext);
-				List<ReferenceSegment> segments = getRotatedReferenceSegments();
-				labeledCodons = new ArrayList<LabeledCodon>();
-				if(segments.isEmpty()) { return labeledCodons; }
-				int segIndex = 0;
-				ReferenceSegment currentSegment = segments.get(segIndex);
-				int refNt = currentSegment.getRefStart();
-				int refNtMinus1 = -1;
-				int refNtMinus2 = -1;
-				int startRefNt = refNt;
-				int normalisedCodon1Start = (codon1Start - startRefNt) + 1;
-				int featureNt = 1; // number of nucleotides through the feature.
-				int transcriptionIndex = 0;
-				while(segIndex < segments.size() && refNt <= currentSegment.getRefEnd()) {
-					if(TranslationUtils.isAtEndOfCodon(normalisedCodon1Start, featureNt)) {
-						String codonLabel = Integer.toString(TranslationUtils.getCodon(normalisedCodon1Start, featureNt-2));
-						labeledCodons.add(new LabeledCodon(codonNumberingAncestorLocation.getFeature().getName(), codonLabel, refNtMinus2, refNtMinus1, refNt, transcriptionIndex));
-						transcriptionIndex++;
-					}
-					refNtMinus2 = refNtMinus1;
-					refNtMinus1 = refNt;
-					refNt++;
-					featureNt++;
-					if(refNt > currentSegment.getRefEnd()) {
-						segIndex++;
-						if(segIndex < segments.size()) {
-							currentSegment = segments.get(segIndex);
-							refNt = currentSegment.getRefStart();
+			int codonLabelInteger = 1;
+			List<FeatureSegment> featureSegments = getRotatedReferenceSegments();
+			ArrayList<LabeledCodon> newLabeledCodons = new ArrayList<LabeledCodon>();
+			Integer currentCodonStart = null;
+			Integer currentCodonMiddle = null;
+			int transcriptionIndex = 0;
+			
+			for(FeatureSegment featureSegment: featureSegments) {
+				String translationModifierName = featureSegment.getTranslationModifierName();
+				if(translationModifierName == null) {
+					for(int refNt = featureSegment.getRefStart(); refNt <= featureSegment.getRefEnd(); refNt++) {
+						if(currentCodonStart == null) {
+							currentCodonStart = refNt;
+							continue;
+						} else if(currentCodonMiddle == null) {
+							currentCodonMiddle = refNt;
+							continue;
+						} else {
+							newLabeledCodons.add(new SimpleLabeledCodon(codonNumberingAncestorLocation.getFeature().getName(), 
+									Integer.toString(codonLabelInteger), currentCodonStart, currentCodonMiddle, refNt, transcriptionIndex));
+							transcriptionIndex++;
+							codonLabelInteger++;
+							currentCodonStart = null;
+							currentCodonMiddle = null;
 						}
 					}
+				} else {
+					if(currentCodonStart != null || currentCodonMiddle != null) {
+						throw new TranslationModifierException(TranslationModifierException.Code.MODIFICATION_ERROR, "Feature segment with translation modifier begins at a mid-codon location");
+					}
+					TranslationModifier translationModifier = Module.resolveModulePlugin(cmdContext, TranslationModifier.class, translationModifierName);
+					if(translationModifier.getSegmentNtLength() != featureSegment.getCurrentLength()) {
+						throw new TranslationModifierException(TranslationModifierException.Code.MODIFICATION_ERROR, "Feature segment length must match translation modifier length");
+					}
+					List<OutputAminoAcid> outputAminoAcids = translationModifier.getOutputAminoAcids();
+					final int refStart = featureSegment.getRefStart();
+					for(OutputAminoAcid outputAminoAcid: outputAminoAcids) {
+						List<Integer> dependentRefNts = outputAminoAcid.getDependentNtPositions().stream().map(dntp -> (dntp - 1) + refStart).collect(Collectors.toList());
+						newLabeledCodons.add(new ModifiedLabeledCodon(codonNumberingAncestorLocation.getFeature().getName(), Integer.toString(codonLabelInteger), dependentRefNts, transcriptionIndex));
+						transcriptionIndex++;
+						codonLabelInteger++;
+					}
 				}
-			} else {
-				labeledCodons = codonLabeler.labelCodons(cmdContext, this);
 			}
+			CodonLabeler codonLabeler = getFeature().getCodonLabelerModule(cmdContext);
+			if(codonLabeler != null) {
+				codonLabeler.relableCodons(cmdContext, this, newLabeledCodons);
+			}
+			this.labeledCodons = newLabeledCodons;
 		}
 		return labeledCodons;
 	}
@@ -362,14 +381,14 @@ public class FeatureLocation extends _FeatureLocation {
 		if(codonNumberingAncestorLocation == null) {
 			throw new FeatureLocationException(Code.FEATURE_OR_ANCESTOR_MUST_HAVE_OWN_CODON_NUMBERING, getFeature().getName());
 		}
-		List<ReferenceSegment> segments = codonNumberingAncestorLocation.getRotatedReferenceSegments();
+		List<FeatureSegment> segments = codonNumberingAncestorLocation.getRotatedReferenceSegments();
 		if(!segments.isEmpty()) {
 			// first segment establishes codon1start
 			return segments.get(0).getRefStart();
 		}
 		throw new FeatureLocationException(Code.FEATURE_LOCATION_MUST_HAVE_SEGMENTS_TO_ESTABLISH_READING_FRAME, codonNumberingAncestorLocation.getReferenceSequence().getName(), codonNumberingAncestorLocation.getFeature().getName());
 	}
-
+	
 	/**
 	 *  Returns the highest-numbered codon in the feature-location's own codon numbering. 
 	 *  This is null unless the following are true of the feature-location
@@ -447,13 +466,13 @@ public class FeatureLocation extends _FeatureLocation {
 		return null;
 	}
 	
-	private List<ReferenceSegment> getRotatedReferenceSegments() {
-		List<ReferenceSegment> featureLocRefSegs = this.segmentsAsReferenceSegments();
+	private List<FeatureSegment> getRotatedReferenceSegments() {
+		List<FeatureSegment> featureLocRefSegs = new ArrayList<FeatureSegment>(getSegments());
 		ReferenceSegment.sortByRefStart(featureLocRefSegs);
 		Feature feature = getFeature();
 		if(feature.circularBridging()) {
 			int flocStartTranscription = getStartTranscription();
-			List<ReferenceSegment> rotatedRefSegs = new ArrayList<ReferenceSegment>();
+			List<FeatureSegment> rotatedRefSegs = new ArrayList<FeatureSegment>();
 			Integer startSegIndex = null;
 			for(int i = 0; i < featureLocRefSegs.size(); i++) {
 				if(featureLocRefSegs.get(i).getRefStart().equals(flocStartTranscription)) {
@@ -476,7 +495,7 @@ public class FeatureLocation extends _FeatureLocation {
 	
 	public List<LabeledQueryAminoAcid> getReferenceAminoAcidContent(CommandContext cmdContext) {
 		// feature area coordinates.
-		List<ReferenceSegment> featureLocRefSegs = getRotatedReferenceSegments();
+		List<FeatureSegment> featureLocRefSegs = getRotatedReferenceSegments();
 		
 		// maps reference to itself in the feature area.
 		List<QueryAlignedSegment> featureLocQaSegs = ReferenceSegment.asQueryAlignedSegments(featureLocRefSegs);
@@ -501,7 +520,7 @@ public class FeatureLocation extends _FeatureLocation {
 			List<QueryAlignedSegment> queryToRefFeatureSegs = ReferenceSegment.intersection(queryToRefSegs, Arrays.asList(singleRefSeg), ReferenceSegment.cloneLeftSegMerger());
 			List<LabeledQueryAminoAcid> labeledQueryAminoAcids = new ArrayList<LabeledQueryAminoAcid>();
 			TIntObjectMap<LabeledCodon> refNtToLabeledCodon = getRefNtToLabeledCodon(cmdContext);
-			LabeledCodon labeledCodon = null;
+			SimpleLabeledCodon labeledCodon = null;
 			char[] nextAaNts = new char[3];
 			Integer queryNtStart = null;
 			Integer queryNtMiddle = null;
@@ -510,7 +529,7 @@ public class FeatureLocation extends _FeatureLocation {
 			for(QueryAlignedSegment queryToRefFeatureSeg: queryToRefFeatureSegs) {
 				for(int offset = 0; offset < queryToRefFeatureSeg.getCurrentLength(); offset++) {
 					int refNt = queryToRefFeatureSeg.getRefStart()+offset;
-					LabeledCodon foundLabeledCodon = refNtToLabeledCodon.get(refNt);
+					SimpleLabeledCodon foundLabeledCodon = (SimpleLabeledCodon) refNtToLabeledCodon.get(refNt);
 					if(foundLabeledCodon != null) {
 						labeledCodon = foundLabeledCodon;
 						queryNtStart = queryToRefFeatureSeg.getQueryStart()+offset;
@@ -528,7 +547,7 @@ public class FeatureLocation extends _FeatureLocation {
 								AmbigNtTripletInfo ambigNtTripletInfo = translator.translate(new String(nextAaNts)).get(0);
 								LabeledAminoAcid labeledAminoAcid = new LabeledAminoAcid(labeledCodon, ambigNtTripletInfo);
 								labeledQueryAminoAcids.add(new LabeledQueryAminoAcid(labeledAminoAcid, 
-										queryNtStart, queryNtMiddle, queryNtEnd));
+										Arrays.asList(queryNtStart, queryNtMiddle, queryNtEnd)));
 							}
 						} else {
 							labeledCodon = null;
@@ -612,7 +631,7 @@ public class FeatureLocation extends _FeatureLocation {
 					AmbigNtTripletInfo ambigNtTripletInfo = translator.translate(new String(nts)).get(0);
 					LabeledAminoAcid labeledAminoAcid = new LabeledAminoAcid(labeledCodon, ambigNtTripletInfo);
 					labeledQueryAminoAcids.add(new LabeledQueryAminoAcid(labeledAminoAcid, 
-							queryNtStart, queryNtMiddle, queryNtEnd));
+							Arrays.asList(queryNtStart, queryNtMiddle, queryNtEnd)));
 				};
 			});
 			return labeledQueryAminoAcids;

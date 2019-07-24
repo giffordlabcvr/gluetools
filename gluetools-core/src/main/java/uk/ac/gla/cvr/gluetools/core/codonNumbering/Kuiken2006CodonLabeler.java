@@ -68,8 +68,10 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 		linkingAlignmentName = PluginUtils.configureStringProperty(configElem, LINKING_ALIGNMENT_NAME, true);
 	}
 
+	
+	
 	@Override
-	public List<LabeledCodon> labelCodons(CommandContext cmdContext, FeatureLocation featureLoc) {
+	public void relabelCodons(CommandContext cmdContext, FeatureLocation featureLoc, List<LabeledCodon> labeledCodons) {
 		Integer ntStart = ReferenceSegment.minRefStart(featureLoc.getSegments());
 		Integer ntEnd = ReferenceSegment.maxRefEnd(featureLoc.getSegments());
 
@@ -151,7 +153,6 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 				numberedCodons.add(labeledCodon);
 			}
 		}
-		return numberedCodons;
 	}
 
 	private String getAlpha(int num) {
@@ -166,49 +167,6 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 		return result;
 	}
 
-	@Override
-	public int compareCodonLabels(String codonLabel1, String codonLabel2) {
-		Integer number1 = null;
-		String alpha1 = null;
-		Integer splitPoint1 = null;
-		for(int i = 0; i < codonLabel1.length(); i++) {
-			if(Character.isAlphabetic(codonLabel1.charAt(i))) {
-				splitPoint1 = i;
-			}
-		}
-		if(splitPoint1 != null) {
-			number1 = Integer.parseInt(codonLabel1.substring(0, splitPoint1));
-			alpha1 = codonLabel1.substring(splitPoint1);
-		} else {
-			number1 = Integer.parseInt(codonLabel1);
-		}
-		Integer number2 = null;
-		String alpha2 = null;
-		Integer splitPoint2 = null;
-		for(int i = 0; i < codonLabel2.length(); i++) {
-			if(Character.isAlphabetic(codonLabel2.charAt(i))) {
-				splitPoint2 = i;
-			}
-		}
-		if(splitPoint2 != null) {
-			number2 = Integer.parseInt(codonLabel2.substring(0, splitPoint2));
-			alpha2 = codonLabel2.substring(splitPoint2);
-		} else {
-			number2 = Integer.parseInt(codonLabel2);
-		}
-		int comp = Integer.compare(number1, number2);
-		if(comp != 0) { return comp; }
-		if(alpha1 == null && alpha2 == null) {
-			return 0;
-		}
-		if(alpha1 == null && alpha2 != null) {
-			return -1;
-		}
-		if(alpha1 != null && alpha2 == null) {
-			return 1;
-		}
-		return alpha1.compareTo(alpha2);
-	}
 
 	public String getRootReferenceName() {
 		return rootReferenceName;
