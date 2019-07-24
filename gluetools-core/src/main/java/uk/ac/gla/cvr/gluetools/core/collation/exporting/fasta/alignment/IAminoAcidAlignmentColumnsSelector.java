@@ -57,13 +57,13 @@ public interface IAminoAcidAlignmentColumnsSelector extends IAlignmentColumnsSel
 		selectedLabeledCodons.sort(new Comparator<LabeledCodon>() {
 			@Override
 			public int compare(LabeledCodon o1, LabeledCodon o2) {
-				return Integer.compare(o1.getNtStart(), o2.getNtStart());
+				return Integer.compare(o1.getTranscriptionIndex(), o2.getTranscriptionIndex());
 			}
 			
 		});
-		TIntIntMap lcRefNtToRowStringPos = new TIntIntHashMap(selectedLabeledCodons.size());
+		TIntIntMap transcriptionIndexToRowStringPos = new TIntIntHashMap(selectedLabeledCodons.size());
 		for(int i = 0; i < selectedLabeledCodons.size(); i++) {
-			lcRefNtToRowStringPos.put(selectedLabeledCodons.get(i).getNtStart(), i);
+			transcriptionIndexToRowStringPos.put(selectedLabeledCodons.get(i).getTranscriptionIndex(), i);
 		}
 		generateLqaaAlignmentRows(cmdContext, excludeEmptyRows, memberSupplier, new AbstractLqaaAlmtRowConsumer() {
 			@Override
@@ -75,8 +75,8 @@ public interface IAminoAcidAlignmentColumnsSelector extends IAlignmentColumnsSel
 				}
 				for(LabeledQueryAminoAcid lqaa: lqaas) {
 					LabeledAminoAcid labeledAminoAcid = lqaa.getLabeledAminoAcid();
-					int refNtStart = labeledAminoAcid.getLabeledCodon().getNtStart();
-					int rowStringPos = lcRefNtToRowStringPos.get(refNtStart);
+					int transcriptionIndex = labeledAminoAcid.getLabeledCodon().getTranscriptionIndex();
+					int rowStringPos = transcriptionIndexToRowStringPos.get(transcriptionIndex);
 					rowStringChars[rowStringPos] = labeledAminoAcid.getTranslationInfo().getSingleCharTranslation();
 				}
 				stringAlmtRowConsumer.consumeAlmtRow(cmdContext, almtMember, new String(rowStringChars));

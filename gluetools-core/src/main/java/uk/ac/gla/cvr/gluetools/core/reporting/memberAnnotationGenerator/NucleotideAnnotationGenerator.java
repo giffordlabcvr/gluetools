@@ -2,7 +2,9 @@ package uk.ac.gla.cvr.gluetools.core.reporting.memberAnnotationGenerator;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExportCommandDelegate;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExporter;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleNucleotideColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleStringAlmtRowConsumer;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.SingleMemberSupplier;
@@ -61,14 +63,15 @@ public class NucleotideAnnotationGenerator extends MemberAnnotationGenerator {
 		
 		Integer ntStart = this.ntStart;
 		Integer ntEnd = this.ntEnd;
-		if(ntStart == null && ntEnd == null) {
-			featureLoc.getFeature().checkCodesAminoAcids();
-			ntStart = featureLoc.getLabeledCodon(cmdContext, this.lcStartName).getNtStart();
-			ntEnd = featureLoc.getLabeledCodon(cmdContext, this.lcEndName).getNtEnd();
-		}
 		
-		SimpleNucleotideColumnsSelector alignmentColumnsSelector 
-			= new SimpleNucleotideColumnsSelector(relRefName, featureName, ntStart, ntEnd);
+		IAlignmentColumnsSelector alignmentColumnsSelector;
+		if(ntStart == null && ntEnd == null) {
+			alignmentColumnsSelector = 
+					FastaAlignmentExportCommandDelegate.getNucleotideSelectorForLabeledCodonRegion(cmdContext, featureLoc, lcStartName, lcEndName);
+		} else {
+			alignmentColumnsSelector 
+				= new SimpleNucleotideColumnsSelector(relRefName, featureName, ntStart, ntEnd);
+		}
 		
 		SimpleStringAlmtRowConsumer simpleStringAlmtRowConsumer = new SimpleStringAlmtRowConsumer();
 		

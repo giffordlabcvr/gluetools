@@ -25,6 +25,7 @@
 */
 package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence.featureLoc;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodonReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -127,12 +129,29 @@ public class AddFeatureSegmentCommand extends FeatureLocModeCommand<CreateResult
 			if(startLabeledCodon == null) {
 				throw new CommandException(CommandException.Code.COMMAND_FAILED_ERROR, "No such labeled codon \""+lcStart+"\"");
 			}
-			refStart = startLabeledCodon.getNtStart();
 			LabeledCodon endLabeledCodon = labelToLabeledCodon.get(lcEnd);
 			if(endLabeledCodon == null) {
 				throw new CommandException(CommandException.Code.COMMAND_FAILED_ERROR, "No such labeled codon \""+lcStart+"\"");
 			}
-			refEnd = endLabeledCodon.getNtEnd();
+			int minTranscriptionIndex = Math.min(startLabeledCodon.getTranscriptionIndex(), endLabeledCodon.getTranscriptionIndex());
+			int maxTranscriptionIndex = Math.max(startLabeledCodon.getTranscriptionIndex(), endLabeledCodon.getTranscriptionIndex());
+			List<ReferenceSegment> refSegs = new ArrayList<ReferenceSegment>();
+			LabeledCodon[] transcriptionIndexToLabeledCodon = parentFeatureLoc.getTranscriptionIndexToLabeledCodon(cmdContext);
+			for(int i = minTranscriptionIndex; i <= maxTranscriptionIndex; i++) {
+				LabeledCodon lc = transcriptionIndexToLabeledCodon[i];
+				List<LabeledCodonReferenceSegment> lcRefSegments = lc.getLcRefSegments();
+				ReferenceSegment.sortByRefStart(lcRefSegments);
+				List<LabeledCodonReferenceSegment> intersection = ReferenceSegment.intersection(refSegs, lcRefSegments, ReferenceSegment.cloneRightSegMerger());
+				lcRefSegments = ReferenceSegment.subtract(lcRefSegments, intersection);
+				refSegs.addAll(lcRefSegments);
+			}
+			refSegs = ReferenceSegment.mergeAbutting(refSegs, 
+					ReferenceSegment.mergeAbuttingFunctionReferenceSegment(), ReferenceSegment.abutsPredicateReferenceSegment());
+			if(refSegs.size() != 1) {
+				throw new CommandException(CommandException.Code.COMMAND_FAILED_ERROR, "Region spanning start and end labeled codons "+refSegs.toString()+" is not a single nucleotide segment");
+			}
+			refStart = refSegs.get(0).getRefStart();
+			refStart = refSegs.get(0).getRefEnd();
 		}
 		TranslationModifier translationModifier = null;
 		if(this.translationModifier != null) {

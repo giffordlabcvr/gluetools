@@ -88,9 +88,11 @@ public class FeatureLocation extends _FeatureLocation {
 
 	
 	private List<LabeledCodon> labeledCodons;
+	private LabeledCodon[] transcriptionIndexToLabeledCodon;
 	private TIntObjectMap<LabeledCodon> refNtToLabeledCodon;
 	private Map<String, LabeledCodon> labelToLabeledCodon;
 	private List<LabeledCodonReferenceSegment> labeledCodonReferenceSegments;
+	
 
 	// set to true iff:
 	// (a) is a coding feature
@@ -105,6 +107,26 @@ public class FeatureLocation extends _FeatureLocation {
 	}
 
 
+	public synchronized LabeledCodon[] getTranscriptionIndexToLabeledCodon(CommandContext cmdContext) {
+		if(transcriptionIndexToLabeledCodon == null) {
+			List<LabeledCodon> labeledCodons = getLabeledCodons(cmdContext);
+			transcriptionIndexToLabeledCodon = new LabeledCodon[labeledCodons.size()];
+			for(LabeledCodon labeledCodon: labeledCodons) {
+				int transcriptionIndex = labeledCodon.getTranscriptionIndex();
+				if(transcriptionIndex >= transcriptionIndexToLabeledCodon.length) {
+					// RuntimeException because this should never happen
+					throw new RuntimeException("Unexpected transcription index");
+				}
+				if(transcriptionIndexToLabeledCodon[transcriptionIndex] != null) {
+					// RuntimeException because this should never happen
+					throw new RuntimeException("Duplicate transcription index");
+				}
+				transcriptionIndexToLabeledCodon[transcriptionIndex] = labeledCodon;
+			}
+		}
+		return transcriptionIndexToLabeledCodon;
+	}
+	
 	public synchronized List<LabeledCodon> getLabeledCodons(CommandContext cmdContext) {
 		Feature feature = getFeature();
 		feature.checkCodesAminoAcids();

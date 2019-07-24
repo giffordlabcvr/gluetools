@@ -25,6 +25,7 @@
 */
 package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -34,6 +35,7 @@ import org.apache.cayenne.exp.Expression;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodonReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -49,6 +51,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AlignmentColumnsSelector;
+import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.NucleotideRegionSelector;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 public class FastaAlignmentExportCommandDelegate {
@@ -266,15 +270,42 @@ public class FastaAlignmentExportCommandDelegate {
 			return new SimpleNucleotideColumnsSelector(relRefName, featureName, ntStart, ntEnd);
 		} else if(relRefName != null && featureName != null && lcStart != null && lcEnd != null) {
 			FeatureLocation featureLocation = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relRefName, featureName));
-			Map<String, LabeledCodon> labelToLabeledCodon = featureLocation.getLabelToLabeledCodon(cmdContext);
-			int refStart = labelToLabeledCodon.get(lcStart).getNtStart();
-			int refEnd = labelToLabeledCodon.get(lcEnd).getNtEnd();
-			return new SimpleNucleotideColumnsSelector(relRefName, featureName, refStart, refEnd);
+			return getNucleotideSelectorForLabeledCodonRegion(cmdContext, featureLocation, lcStart, lcEnd);
 		} else if(relRefName != null && featureName != null) {
 			return new SimpleNucleotideColumnsSelector(relRefName, featureName, null, null);
 		} else {
 			return null;
 		}
+	}
+
+	public static IAlignmentColumnsSelector getNucleotideSelectorForLabeledCodonRegion(CommandContext cmdContext,
+			FeatureLocation featureLocation, String lcStart, String lcEnd) {
+		Map<String, LabeledCodon> labelToLabeledCodon = featureLocation.getLabelToLabeledCodon(cmdContext);
+		LabeledCodon startLc = labelToLabeledCodon.get(lcStart);
+		LabeledCodon endLc = labelToLabeledCodon.get(lcEnd);
+		int minTranscriptionIndex = Math.min(startLc.getTranscriptionIndex(), endLc.getTranscriptionIndex());
+		int maxTranscriptionIndex = Math.max(startLc.getTranscriptionIndex(), endLc.getTranscriptionIndex());
+		List<ReferenceSegment> refSegs = new ArrayList<ReferenceSegment>();
+		LabeledCodon[] transcriptionIndexToLabeledCodon = featureLocation.getTranscriptionIndexToLabeledCodon(cmdContext);
+		for(int i = minTranscriptionIndex; i <= maxTranscriptionIndex; i++) {
+			LabeledCodon lc = transcriptionIndexToLabeledCodon[i];
+			List<LabeledCodonReferenceSegment> lcRefSegments = lc.getLcRefSegments();
+			ReferenceSegment.sortByRefStart(lcRefSegments);
+			List<LabeledCodonReferenceSegment> intersection = ReferenceSegment.intersection(refSegs, lcRefSegments, ReferenceSegment.cloneRightSegMerger());
+			lcRefSegments = ReferenceSegment.subtract(lcRefSegments, intersection);
+			refSegs.addAll(lcRefSegments);
+		}
+		refSegs = ReferenceSegment.mergeAbutting(refSegs, 
+				ReferenceSegment.mergeAbuttingFunctionReferenceSegment(), ReferenceSegment.abutsPredicateReferenceSegment());
+		AlignmentColumnsSelector alignmentColumnsSelector = new AlignmentColumnsSelector();
+		alignmentColumnsSelector.setRelRefName(featureLocation.getReferenceSequence().getName());
+		for(ReferenceSegment refSeg: refSegs) {
+			NucleotideRegionSelector regionSelector = new NucleotideRegionSelector();
+			regionSelector.setStartNt(refSeg.getRefStart());
+			regionSelector.setEndNt(refSeg.getRefEnd());
+			alignmentColumnsSelector.addRegionSelector(regionSelector);
+		}
+		return alignmentColumnsSelector;
 	}
 
 	public IAminoAcidAlignmentColumnsSelector getAminoAcidAlignmentColumnsSelector(CommandContext cmdContext) {

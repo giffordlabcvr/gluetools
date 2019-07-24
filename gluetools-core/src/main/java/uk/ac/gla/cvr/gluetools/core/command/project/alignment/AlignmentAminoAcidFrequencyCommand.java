@@ -162,8 +162,8 @@ public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<Ali
 			IAminoAcidAlignmentColumnsSelector aaAlmtColumnsSelector) {
 
 		
-		TIntObjectMap<RefCodonInfo> refNtToRefCodonInfo = 
-				initCodonToRefInfoMap(cmdContext, aaAlmtColumnsSelector);
+		TIntObjectMap<RefCodonInfo> transcriptionIndexToRefCodonInfo = 
+				initTranscriptionIndexToRefInfoMap(cmdContext, aaAlmtColumnsSelector);
 		
 		QueryMemberSupplier queryMemberSupplier = new QueryMemberSupplier(almtName, recursive, whereClause);
 
@@ -173,17 +173,17 @@ public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<Ali
 					AlignmentMember almtMember,
 					List<LabeledQueryAminoAcid> lqaas) {
 				for(LabeledQueryAminoAcid lqaa: lqaas) {
-					int refNtStart = lqaa.getLabeledAminoAcid().getLabeledCodon().getNtStart();
+					int transcriptionIndex = lqaa.getLabeledAminoAcid().getLabeledCodon().getTranscriptionIndex();
 					char singleCharTranslation = lqaa.getLabeledAminoAcid().getTranslationInfo().getSingleCharTranslation();
 					if(singleCharTranslation != 'X') {
-						refNtToRefCodonInfo.get(refNtStart).addAaMamber(singleCharTranslation);
+						transcriptionIndexToRefCodonInfo.get(transcriptionIndex).addAaMamber(singleCharTranslation);
 					}
 				}
 			}
 		};
 		aaAlmtColumnsSelector.generateLqaaAlignmentRows(cmdContext, true, queryMemberSupplier, lqaaAlmtRowConsumer);
 		
-		return formLabeledAminoAcidFrequencies(refNtToRefCodonInfo);
+		return formLabeledAminoAcidFrequencies(transcriptionIndexToRefCodonInfo);
 	}
 
 	private static List<LabeledAminoAcidFrequency> formLabeledAminoAcidFrequencies(
@@ -209,7 +209,7 @@ public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<Ali
 		resultRowData.sort(new Comparator<LabeledAminoAcidFrequency>() {
 			@Override
 			public int compare(LabeledAminoAcidFrequency o1, LabeledAminoAcidFrequency o2) {
-				int comp = Integer.compare(o1.getLabeledCodon().getNtStart(), o2.getLabeledCodon().getNtStart());
+				int comp = Integer.compare(o1.getLabeledCodon().getTranscriptionIndex(), o2.getLabeledCodon().getTranscriptionIndex());
 				if(comp != 0) { return comp; }
 				comp = Double.compare(o1.getPctMembers(), o1.getPctMembers());
 				if(comp != 0) { return comp; }
@@ -221,15 +221,15 @@ public class AlignmentAminoAcidFrequencyCommand extends AlignmentModeCommand<Ali
 		return resultRowData;
 	}
 
-	private static TIntObjectMap<RefCodonInfo> initCodonToRefInfoMap(
+	private static TIntObjectMap<RefCodonInfo> initTranscriptionIndexToRefInfoMap(
 			CommandContext cmdContext, IAminoAcidAlignmentColumnsSelector aaAlmtColsSelector) {
-		TIntObjectMap<RefCodonInfo> codonToRefCodonInfo = new TIntObjectHashMap<RefCodonInfo>();
+		TIntObjectMap<RefCodonInfo> transcriptionIndexToRefCodonInfo = new TIntObjectHashMap<RefCodonInfo>();
 		List<LabeledCodon> labeledCodons = aaAlmtColsSelector.selectLabeledCodons(cmdContext);
 		for(LabeledCodon labeledCodon: labeledCodons) {
 			RefCodonInfo refCodonInfo = new RefCodonInfo(labeledCodon);
-			codonToRefCodonInfo.put(labeledCodon.getNtStart(), refCodonInfo);
+			transcriptionIndexToRefCodonInfo.put(labeledCodon.getTranscriptionIndex(), refCodonInfo);
 		}
-		return codonToRefCodonInfo;
+		return transcriptionIndexToRefCodonInfo;
 	}
 
 

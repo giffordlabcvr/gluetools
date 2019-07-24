@@ -42,6 +42,7 @@ import gnu.trove.map.hash.TIntIntHashMap;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.AminoAcidStringFrequency;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodonReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.AbstractLqaaAlmtRowConsumer;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAminoAcidAlignmentColumnsSelector;
@@ -183,17 +184,19 @@ public class AlignmentAminoAcidStringsCommand extends AlignmentModeCommand<Align
 		QueryMemberSupplier queryMemberSupplier = new QueryMemberSupplier(almtName, recursive, whereClause);
 
 		List<LabeledCodon> selectedLabeledCodons = almtColsSelector.selectLabeledCodons(cmdContext);
-		TIntIntMap lcRefNtToRowStringPos = new TIntIntHashMap(selectedLabeledCodons.size());
+		TIntIntMap transcriptionIndexToRowStringPos = new TIntIntHashMap(selectedLabeledCodons.size());
 		List<Integer> discontiguityPositions = new ArrayList<Integer>();
 		LabeledCodon lastLabeledCodon = null;
 		int stringPos = 0;
 		for(int i = 0; i < selectedLabeledCodons.size(); i++) {
 			LabeledCodon labeledCodon = selectedLabeledCodons.get(i);
-			if(lastLabeledCodon != null && slashDiscontiguities && labeledCodon.getNtStart() != lastLabeledCodon.getNtEnd()+1) {
-				discontiguityPositions.add(stringPos);
-				stringPos++;
+			if(lastLabeledCodon != null && slashDiscontiguities) {
+				if(Math.abs(lastLabeledCodon.getTranscriptionIndex() - labeledCodon.getTranscriptionIndex()) != 1) {
+					discontiguityPositions.add(stringPos);
+					stringPos++;
+				}
 			}
-			lcRefNtToRowStringPos.put(labeledCodon.getNtStart(), stringPos);
+			transcriptionIndexToRowStringPos.put(labeledCodon.getTranscriptionIndex(), stringPos);
 			stringPos++;
 			lastLabeledCodon = labeledCodon;
 		}
@@ -211,8 +214,8 @@ public class AlignmentAminoAcidStringsCommand extends AlignmentModeCommand<Align
 				}
 				for(LabeledQueryAminoAcid lqaa: lqaas) {
 					LabeledAminoAcid labeledAminoAcid = lqaa.getLabeledAminoAcid();
-					int refNtStart = labeledAminoAcid.getLabeledCodon().getNtStart();
-					int stringPos = lcRefNtToRowStringPos.get(refNtStart);
+					int transcriptionIndex = labeledAminoAcid.getLabeledCodon().getTranscriptionIndex();
+					int stringPos = transcriptionIndexToRowStringPos.get(transcriptionIndex);
 					stringChars[stringPos] = labeledAminoAcid.getTranslationInfo().getSingleCharTranslation();
 				}
 				String string = new String(stringChars);

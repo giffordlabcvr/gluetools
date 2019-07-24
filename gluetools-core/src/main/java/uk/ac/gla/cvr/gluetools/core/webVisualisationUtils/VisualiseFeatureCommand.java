@@ -137,7 +137,7 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 		int displayNtWidth = QueryAlignedSegment.maxQueryEnd(uToRefFeatureLocSegs)-displayNtOffset;
 
 		char[] refNtsInUSpace = new char[displayNtWidth];
-		TIntCharMap refNtToRefAa = new TIntCharHashMap();
+		TIntCharMap transcriptionIndexToRefAa = new TIntCharHashMap();
 		
 		VisualisationAnnotationRow<RefNtContentAnnotation> refNtContentRow = new VisualisationAnnotationRow<RefNtContentAnnotation>();
 		refNtContentRow.annotationType = "refNtContent";
@@ -266,7 +266,7 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 				refAaContentAnnotation.ntWidth = labeledCodon.getNtLength();
 				refAaContentAnnotation.displayNtPos = displayNtPos;
 				refAaRow.annotations.add(refAaContentAnnotation);
-				refNtToRefAa.put(labeledCodon.getNtStart(), refAaContentAnnotation.aa.charAt(0));
+				transcriptionIndexToRefAa.put(labeledCodon.getTranscriptionIndex(), refAaContentAnnotation.aa.charAt(0));
 			}
 			queryAaRow = new VisualisationAnnotationRow<QueryAaContentAnnotation>();
 			queryAaRow.annotationType = "queryAa";
@@ -295,7 +295,7 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 				}
 				queryAaRow.annotations.add(queryAaContentAnnotation);
 				
-				char refAa = refNtToRefAa.get(labeledCodon.getNtStart());
+				char refAa = transcriptionIndexToRefAa.get(labeledCodon.getTranscriptionIndex());
 				if(refAa != 0 && refAa != queryAaContentAnnotation.aa.charAt(0)) {
 					queryAaContentAnnotation.differentFromRef = true;
 				}

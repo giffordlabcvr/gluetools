@@ -57,7 +57,7 @@ public class AlignmentColumnsSelector extends ModulePlugin<AlignmentColumnsSelec
 
 	private String relRefName;
 	
-	private List<RegionSelector> regionSelectors;
+	private List<RegionSelector> regionSelectors = new ArrayList<RegionSelector>();
 	
 	public AlignmentColumnsSelector() {
 		super();
@@ -65,6 +65,10 @@ public class AlignmentColumnsSelector extends ModulePlugin<AlignmentColumnsSelec
 		registerModuleDocumentCmdClass(AddRegionSelectorCommand.class);
 	}
 	
+	public void setRelRefName(String relRefName) {
+		this.relRefName = relRefName;
+	}
+
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {
@@ -101,6 +105,10 @@ public class AlignmentColumnsSelector extends ModulePlugin<AlignmentColumnsSelec
 		return refSegs;
 	}
 
+	public void addRegionSelector(RegionSelector regionSelector) {
+		regionSelectors.add(regionSelector);
+	}
+	
 	@Override
 	public String getRelatedRefName() {
 		return relRefName;

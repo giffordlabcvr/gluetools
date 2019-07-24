@@ -25,6 +25,7 @@
 */
 package uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -33,6 +34,10 @@ import java.util.stream.Collectors;
 import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodonReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExportCommand;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExportCommandDelegate;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAminoAcidAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAminoAcidColumnsSelector;
@@ -54,6 +59,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AlignmentColumnsSelector;
+import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.NucleotideRegionSelector;
+import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 public abstract class FastaSequenceReporterCommand<R extends CommandResult> extends ModulePluginCommand<R, FastaSequenceReporter> {
 
@@ -172,9 +179,7 @@ public abstract class FastaSequenceReporterCommand<R extends CommandResult> exte
 			return new SimpleNucleotideColumnsSelector(relRefName, featureName, ntStart, ntEnd);
 		} else if(relRefName != null && featureName != null && lcStart != null && lcEnd != null) {
 			FeatureLocation featureLocation = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relRefName, featureName));
-			int refStart = featureLocation.getLabeledCodon(cmdContext, lcStart).getNtStart();
-			int refEnd = featureLocation.getLabeledCodon(cmdContext, lcEnd).getNtStart()+2;
-			return new SimpleNucleotideColumnsSelector(relRefName, featureName, refStart, refEnd);
+			return FastaAlignmentExportCommandDelegate.getNucleotideSelectorForLabeledCodonRegion(cmdContext, featureLocation, lcStart, lcEnd);
 		} else if(relRefName != null && featureName != null) {
 			return new SimpleNucleotideColumnsSelector(relRefName, featureName, null, null);
 		} else {
