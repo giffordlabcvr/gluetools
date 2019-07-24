@@ -165,8 +165,15 @@ public class FeatureLocation extends _FeatureLocation {
 	public synchronized Boolean getSimpleCodingFeature(CommandContext cmdContext) {
 		if(isSimpleCodingFeature == null) {
 			List<FeatureSegment> segments = getSegments();
+			for(FeatureSegment segment: segments) {
+				if(segment.getTranslationModifierName() != null) {
+					isSimpleCodingFeature = false;
+					return isSimpleCodingFeature;
+				}
+			}
 			if(segments.size() != 1) {
 				isSimpleCodingFeature = false;
+				return isSimpleCodingFeature;
 			} else {
 				ReferenceSegment singleFeatureSeg = segments.get(0).asReferenceSegment();
 				List<LabeledCodonReferenceSegment> labeledCodonReferenceSegments = getLabeledCodonReferenceSegments(cmdContext);
@@ -176,11 +183,11 @@ public class FeatureLocation extends _FeatureLocation {
 					LabeledCodonReferenceSegment labeledCodonRefSeg = labeledCodonReferenceSegments.get(labeledCodonIndex);
 					if(labeledCodonRefSeg.getRefStart() != nt) {
 						isSimpleCodingFeature = false;
-						break;
+						return isSimpleCodingFeature;
 					}
 					if(labeledCodonRefSeg.getCurrentLength() != 3) {
 						isSimpleCodingFeature = false;
-						break;
+						return isSimpleCodingFeature;
 					}
 					nt += 3;
 					labeledCodonIndex ++;
@@ -188,10 +195,13 @@ public class FeatureLocation extends _FeatureLocation {
 				if(isSimpleCodingFeature == null) {
 					if(nt <= singleFeatureSeg.getRefEnd() - 2) {
 						isSimpleCodingFeature = false;
+						return isSimpleCodingFeature;
 					} else if(labeledCodonIndex < labeledCodonReferenceSegments.size()) {
 						isSimpleCodingFeature = false;
+						return isSimpleCodingFeature;
 					} else {
 						isSimpleCodingFeature = true;
+						return isSimpleCodingFeature;
 					}
 				}
 			}
