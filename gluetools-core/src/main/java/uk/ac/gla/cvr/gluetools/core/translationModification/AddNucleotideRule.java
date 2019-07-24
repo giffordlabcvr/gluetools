@@ -1,10 +1,10 @@
-package uk.ac.gla.cvr.gluetools.core.preTranslationModification;
+package uk.ac.gla.cvr.gluetools.core.translationModification;
 
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.preTranslationModification.PreTranslationModifierException.Code;
+import uk.ac.gla.cvr.gluetools.core.translationModification.TranslationModifierException.Code;
 
 public abstract class AddNucleotideRule extends ModifierRule {
 
@@ -14,11 +14,11 @@ public abstract class AddNucleotideRule extends ModifierRule {
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		String addedNtString = PluginUtils.configureStringProperty(configElem, "addedNt", true);
 		if(addedNtString.length() != 1) {
-			throw new PreTranslationModifierException(Code.CONFIG_ERROR, "The <addedNt> property must specify a single character");
+			throw new TranslationModifierException(Code.CONFIG_ERROR, "The <addedNt> property must specify a single character");
 		}
 		this.addedNt = addedNtString.toUpperCase().charAt(0);
 		if("ACGT".indexOf(addedNt) < 0) {
-			throw new PreTranslationModifierException(Code.CONFIG_ERROR, "The <addedNt> property must specify A, C, G or T");
+			throw new TranslationModifierException(Code.CONFIG_ERROR, "The <addedNt> property must specify A, C, G or T");
 		}
 	}
 	

@@ -50,15 +50,15 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.core.preTranslationModification.PreTranslationModifier;
+import uk.ac.gla.cvr.gluetools.core.translationModification.TranslationModifier;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 @CommandClass( 
 	commandWords={"add","segment"}, 
-	docoptUsages={"( <refStart> <refEnd> | -l <lcStart> <lcEnd> ) [ -p <preTranslationModifier> ]"},
+	docoptUsages={"( <refStart> <refEnd> | -l <lcStart> <lcEnd> ) [ -t <translationModifier> ]"},
 	docoptOptions={
-		"-l, --labeledCodon                                     Set location based on labeled codons",
-		"-p, --preTranslationModifier <preTranslationModifier>  Pre-translation modifier module name"},
+		"-l, --labeledCodon                               Set location based on labeled codons",
+		"-t, --translationModifier <translationModifier>  Translation modifier module name"},
 	metaTags = {},
 	description="Add a new segment of the reference sequence", 
 	furtherHelp="The segment endpoints can be set in different ways. "+ 
@@ -78,7 +78,7 @@ public class AddFeatureSegmentCommand extends FeatureLocModeCommand<CreateResult
 	public static final String LC_BASED = "labeledCodon";
 	public static final String LC_START = "lcStart";
 	public static final String LC_END = "lcEnd";
-	public static final String PRE_TRANSLATION_MODIFIER = "preTranslationModifier";
+	public static final String TRANSLATION_MODIFIER = "translationModifier";
 
 	
 	private Integer refStart;
@@ -86,7 +86,7 @@ public class AddFeatureSegmentCommand extends FeatureLocModeCommand<CreateResult
 	private String lcStart;
 	private String lcEnd;
 	private Boolean labeledCodonBased;
-	private String preTranslationModifier;
+	private String translationModifier;
 	
 	
 	@Override
@@ -102,7 +102,7 @@ public class AddFeatureSegmentCommand extends FeatureLocModeCommand<CreateResult
 			(labeledCodonBased && refStart == null && refEnd == null && lcStart != null && lcEnd != null) ) ) {
 			throw new CommandException(CommandException.Code.COMMAND_USAGE_ERROR, "FeatureLocation segment must either be nucleotide or labeled-codon based.");
 		}
-		this.preTranslationModifier = PluginUtils.configureStringProperty(configElem, PRE_TRANSLATION_MODIFIER, false);
+		this.translationModifier = PluginUtils.configureStringProperty(configElem, TRANSLATION_MODIFIER, false);
 
 	}
 
@@ -134,23 +134,23 @@ public class AddFeatureSegmentCommand extends FeatureLocModeCommand<CreateResult
 			}
 			refEnd = endLabeledCodon.getNtStart()+2;
 		}
-		PreTranslationModifier preTranslationModifier = null;
-		if(this.preTranslationModifier != null) {
+		TranslationModifier translationModifier = null;
+		if(this.translationModifier != null) {
 			Feature feature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(getFeatureName()));
 			if(!feature.codesAminoAcids()) {
-				throw new CommandException(CommandException.Code.COMMAND_FAILED_ERROR, "Feature \""+feature.getName()+"\" does not code for amino acids, so <preTranslationModifier> cannot be used");
+				throw new CommandException(CommandException.Code.COMMAND_FAILED_ERROR, "Feature \""+feature.getName()+"\" does not code for amino acids, so <translationModifier> cannot be used");
 			}
-			Module module = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(this.preTranslationModifier));
+			Module module = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(this.translationModifier));
 			ModulePlugin<?> modulePlugin = module.getModulePlugin(cmdContext);
-			if(!(modulePlugin instanceof PreTranslationModifier)) {
-				throw new CommandException(CommandException.Code.COMMAND_FAILED_ERROR, "Feature \""+feature.getName()+"\" does not code for amino acids, so <preTranslationModifier> cannot be used");
+			if(!(modulePlugin instanceof TranslationModifier)) {
+				throw new CommandException(CommandException.Code.COMMAND_FAILED_ERROR, "Feature \""+feature.getName()+"\" does not code for amino acids, so <translationModifier> cannot be used");
 			}
-			preTranslationModifier = (PreTranslationModifier) modulePlugin;
+			translationModifier = (TranslationModifier) modulePlugin;
 			int length = (refEnd - refStart) + 1;
-			int segmentNtLength = preTranslationModifier.getSegmentNtLength();
+			int segmentNtLength = translationModifier.getSegmentNtLength();
 			if(length != segmentNtLength) {
 				throw new CommandException(CommandException.Code.COMMAND_FAILED_ERROR, "FeatureSegment length of "+length+" does not match segmentNtLength of "+segmentNtLength+
-						" on preTranslationModifier module '"+preTranslationModifier.getModuleName()+"'");
+						" on translationModifier module '"+translationModifier.getModuleName()+"'");
 			}
 		}
 
@@ -187,8 +187,8 @@ public class AddFeatureSegmentCommand extends FeatureLocModeCommand<CreateResult
 		}
 		
 		featureSegment.setFeatureLocation(featureLoc);
-		if(preTranslationModifier != null) {
-			featureSegment.setPreTranslationModifierName(this.preTranslationModifier);
+		if(translationModifier != null) {
+			featureSegment.setTranslationModifierName(this.translationModifier);
 		}
 		
 		cmdContext.commit();
@@ -199,7 +199,7 @@ public class AddFeatureSegmentCommand extends FeatureLocModeCommand<CreateResult
 	public static class Completer extends AdvancedCmdCompleter {
 		public Completer() {
 			super();
-			registerDataObjectNameLookup("preTranslationModifier", Module.class, Module.NAME_PROPERTY);
+			registerDataObjectNameLookup("translationModifier", Module.class, Module.NAME_PROPERTY);
 		}
 	}
 }

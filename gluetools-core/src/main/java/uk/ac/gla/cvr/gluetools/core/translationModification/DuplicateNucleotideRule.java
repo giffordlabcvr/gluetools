@@ -1,9 +1,9 @@
-package uk.ac.gla.cvr.gluetools.core.preTranslationModification;
+package uk.ac.gla.cvr.gluetools.core.translationModification;
 
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
-import uk.ac.gla.cvr.gluetools.core.preTranslationModification.PreTranslationModifierException.Code;
+import uk.ac.gla.cvr.gluetools.core.translationModification.TranslationModifierException.Code;
 
 @PluginClass(elemName="duplicateNucleotide")
 public class DuplicateNucleotideRule extends ModifierRule {
@@ -13,7 +13,7 @@ public class DuplicateNucleotideRule extends ModifierRule {
 		int segmentSize = modifiedCharacters.size();
 		int segmentNtIndex = getSegmentNtIndex();
 		if(segmentNtIndex > segmentSize) {
-			throw new PreTranslationModifierException(Code.MODIFICATION_ERROR, "Cannot duplicate nucleotide at position "+segmentNtIndex+" as segment size is only "+segmentSize);
+			throw new TranslationModifierException(Code.MODIFICATION_ERROR, "Cannot duplicate nucleotide at position "+segmentNtIndex+" as segment size is only "+segmentSize);
 		}
 		modifiedCharacters.add(segmentNtIndex-1, modifiedCharacters.get(segmentNtIndex-1));
 	}

@@ -1,8 +1,8 @@
-package uk.ac.gla.cvr.gluetools.core.preTranslationModification;
+package uk.ac.gla.cvr.gluetools.core.translationModification;
 
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 
-public class PreTranslationModifierException extends GlueException {
+public class TranslationModifierException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 		
@@ -19,11 +19,11 @@ public class PreTranslationModifierException extends GlueException {
 		}
 	}
 
-	public PreTranslationModifierException(Code code, Object... errorArgs) {
+	public TranslationModifierException(Code code, Object... errorArgs) {
 		super(code, errorArgs);
 	}
 
-	public PreTranslationModifierException(Throwable cause, Code code,
+	public TranslationModifierException(Throwable cause, Code code,
 			Object... errorArgs) {
 		super(cause, code, errorArgs);
 	}

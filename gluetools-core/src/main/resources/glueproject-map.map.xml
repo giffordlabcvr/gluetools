@@ -68,7 +68,7 @@
 	</db-entity>
 	<db-entity name="feature_segment">
 		<db-attribute name="feature_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
-		<db-attribute name="pre_translation_modifier_name" type="VARCHAR" length="100"/>
+		<db-attribute name="translation_modifier_name" type="VARCHAR" length="100"/>
 		<db-attribute name="ref_end" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
 		<db-attribute name="ref_seq_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="ref_start" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
@@ -164,7 +164,7 @@
 		<obj-attribute name="value" type="java.lang.String" db-attribute-path="value"/>
 	</obj-entity>
 	<obj-entity name="FeatureSegment" className="uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment" dbEntityName="feature_segment" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
-		<obj-attribute name="preTranslationModifierName" type="java.lang.String" db-attribute-path="pre_translation_modifier_name"/>
+		<obj-attribute name="translationModifierName" type="java.lang.String" db-attribute-path="translation_modifier_name"/>
 		<obj-attribute name="refEnd" type="java.lang.Integer" db-attribute-path="ref_end"/>
 		<obj-attribute name="refStart" type="java.lang.Integer" db-attribute-path="ref_start"/>
 	</obj-entity>

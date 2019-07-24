@@ -1,9 +1,9 @@
-package uk.ac.gla.cvr.gluetools.core.preTranslationModification;
+package uk.ac.gla.cvr.gluetools.core.translationModification;
 
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
-import uk.ac.gla.cvr.gluetools.core.preTranslationModification.PreTranslationModifierException.Code;
+import uk.ac.gla.cvr.gluetools.core.translationModification.TranslationModifierException.Code;
 
 @PluginClass(elemName="addNucleotideBefore")
 public class AddNucleotideBeforeRule extends AddNucleotideRule {
@@ -13,7 +13,7 @@ public class AddNucleotideBeforeRule extends AddNucleotideRule {
 		int segmentSize = modifiedCharacters.size();
 		int segmentNtIndex = getSegmentNtIndex();
 		if(segmentNtIndex > segmentSize) {
-			throw new PreTranslationModifierException(Code.MODIFICATION_ERROR, "Cannot add nucleotide before position "+segmentNtIndex+" as segment size is only "+segmentSize);
+			throw new TranslationModifierException(Code.MODIFICATION_ERROR, "Cannot add nucleotide before position "+segmentNtIndex+" as segment size is only "+segmentSize);
 		}
 		modifiedCharacters.add(segmentNtIndex-1, getAddedNt());
 	}
