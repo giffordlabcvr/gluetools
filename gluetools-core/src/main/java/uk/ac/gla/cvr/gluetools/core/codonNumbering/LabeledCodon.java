@@ -26,6 +26,7 @@
 package uk.ac.gla.cvr.gluetools.core.codonNumbering;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
@@ -81,15 +82,21 @@ public class LabeledCodon {
 	
 	public List<LabeledCodonReferenceSegment> getLcRefSegments() {
 		if(lcRefSegs == null) {
-			lcRefSegs = new ArrayList<LabeledCodonReferenceSegment>();
-			lcRefSegs.add(new LabeledCodonReferenceSegment(this, ntStart, ntStart));
-			lcRefSegs.add(new LabeledCodonReferenceSegment(this, ntMiddle, ntMiddle));
-			lcRefSegs.add(new LabeledCodonReferenceSegment(this, ntEnd, ntEnd));
-			
-			lcRefSegs = ReferenceSegment.mergeAbutting(lcRefSegs,
-				LabeledCodonReferenceSegment.mergeAbuttingFunctionLabeledCodonReferenceSegment(), 
-				ReferenceSegment.abutsPredicateReferenceSegment());
-			ReferenceSegment.sortByRefStart(lcRefSegs);
+			if(ntStart == ntMiddle -1 && ntEnd == ntMiddle+1) {
+				// simple case
+				lcRefSegs = Arrays.asList(new LabeledCodonReferenceSegment(this, ntStart, ntEnd));
+			} else {
+				// point of this is because ntStart/ntMiddle/ntEnd may not be consecutive,
+				// e.g. codons which span the introns region of a spliced gene.
+				lcRefSegs = new ArrayList<LabeledCodonReferenceSegment>();
+				lcRefSegs.add(new LabeledCodonReferenceSegment(this, ntStart, ntStart));
+				lcRefSegs.add(new LabeledCodonReferenceSegment(this, ntMiddle, ntMiddle));
+				lcRefSegs.add(new LabeledCodonReferenceSegment(this, ntEnd, ntEnd));
+				
+				lcRefSegs = ReferenceSegment.mergeAbutting(lcRefSegs,
+					LabeledCodonReferenceSegment.mergeAbuttingFunctionLabeledCodonReferenceSegment(), 
+					ReferenceSegment.abutsPredicateReferenceSegment());
+				ReferenceSegment.sortByRefStart(lcRefSegs);
 		}
 		return lcRefSegs;
 	}
