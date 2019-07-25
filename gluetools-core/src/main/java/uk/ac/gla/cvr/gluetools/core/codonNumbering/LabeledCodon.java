@@ -80,6 +80,10 @@ public abstract class LabeledCodon {
 		return (getNtEnd() - getNtStart())+1;
 	}
 	
+	public List<Integer> getDependentRefNts() {
+		return dependentRefNts;
+	}
+
 	public List<LabeledCodonReferenceSegment> getLcRefSegments() {
 		if(lcRefSegs == null) {
 			if(dependentRefNts.size() == 3 && ntStart == dependentRefNts.get(1)-1 && ntEnd == dependentRefNts.get(1)+1) {
@@ -102,4 +106,5 @@ public abstract class LabeledCodon {
 		}
 		return lcRefSegs;
 	}
+
 }

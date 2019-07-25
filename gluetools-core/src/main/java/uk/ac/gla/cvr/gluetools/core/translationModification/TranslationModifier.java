@@ -10,7 +10,6 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.translationModification.TranslationModifierException.Code;
@@ -57,7 +56,7 @@ public class TranslationModifier extends ModulePlugin<TranslationModifier> {
 		return segmentNtLength;
 	}
 	
-	public void applyModifier(List<Character> nts) {
+	public void applyModifierRules(List<Character> nts) {
 		int segmentSize = nts.size();
 		if(segmentSize != segmentNtLength) {
 			throw new TranslationModifierException(Code.MODIFICATION_ERROR, 

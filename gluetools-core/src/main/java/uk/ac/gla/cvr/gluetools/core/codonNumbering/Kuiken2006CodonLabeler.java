@@ -25,11 +25,11 @@
 */
 package uk.ac.gla.cvr.gluetools.core.codonNumbering;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.w3c.dom.Element;
 
+import gnu.trove.map.TIntObjectMap;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.Kuiken2006CodonLabelerException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -44,7 +44,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 
 @PluginClass(elemName="kuiken2006CodonLabeler",
 		description="Facilitates the labelling of codon positions according to a scheme suggested for HCV in Kuiken et, al. 2006")
@@ -71,88 +70,95 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 	
 	
 	@Override
-	public void relabelCodons(CommandContext cmdContext, FeatureLocation featureLoc, List<LabeledCodon> labeledCodons) {
-		Integer ntStart = ReferenceSegment.minRefStart(featureLoc.getSegments());
-		Integer ntEnd = ReferenceSegment.maxRefEnd(featureLoc.getSegments());
+	public void relabelCodons(CommandContext cmdContext, FeatureLocation featureRefFeatureLoc, List<LabeledCodon> featureRefLabeledCodons) {
+		ReferenceSequence featureRef = featureRefFeatureLoc.getReferenceSequence();
 
-		Feature feature = featureLoc.getFeature();
-		ReferenceSequence featureRefSeq = featureLoc.getReferenceSequence();
-
-		Integer featureRefCodon1Start = featureLoc.getCodon1Start(cmdContext);
-		Integer rootCodon1Start;
-
-		AlignmentMember linkingAlmtMember = featureRefSeq.getLinkingAlignmentMembership(linkingAlignmentName);
+		AlignmentMember linkingAlmtMember = featureRef.getLinkingAlignmentMembership(linkingAlignmentName);
 
 		Alignment linkingAlignment = linkingAlmtMember.getAlignment();
 		if(linkingAlignment.isConstrained()) {
 			throw new Kuiken2006CodonLabelerException(Code.LINKING_ALIGNMENT_MUST_BE_UNCONSTRAINED, linkingAlignmentName);
 		}
 
-		ReferenceSequence rootReference = linkingAlignment.getRelatedRef(cmdContext, rootReferenceName);
-		FeatureLocation rootFeatureLoc = 
-				GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(rootReference.getName(), feature.getName()));
+		ReferenceSequence rootRef = linkingAlignment.getRelatedRef(cmdContext, rootReferenceName);
+		Feature feature = featureRefFeatureLoc.getFeature();
+		FeatureLocation rootRefFeatureLoc = 
+				GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(rootRef.getName(), feature.getName()));
 
 		List<QueryAlignedSegment> featureRefToLinkingAlmtSegs = linkingAlmtMember.segmentsAsQueryAlignedSegments();
 
 		List<QueryAlignedSegment> featureRefToRootRefSegs =
-				linkingAlignment.translateToRelatedRef(cmdContext, featureRefToLinkingAlmtSegs, rootReference);
+				linkingAlignment.translateToRelatedRef(cmdContext, featureRefToLinkingAlmtSegs, rootRef);
 
-		List<QueryAlignedSegment> featureRefToRootRefFeatureSegs = 
-				ReferenceSegment.intersection(featureRefToRootRefSegs, rootFeatureLoc.getSegments(), ReferenceSegment.cloneLeftSegMerger());
-
-
-		rootCodon1Start = rootFeatureLoc.getCodon1Start(cmdContext);
-
-		List<LabeledCodon> numberedCodons = new ArrayList<LabeledCodon>();
-
-		Integer lastRootLocation = null;
-		Integer lastFeatureRefLocation = null;
-		QueryAlignedSegment currentSegment = null;
-
-
-		if(featureRefToRootRefFeatureSegs.isEmpty() || featureRefToRootRefFeatureSegs.get(0).getQueryStart() > ntStart) {
-			throw new Kuiken2006CodonLabelerException(Code.GAP_AT_START, rootReferenceName, featureRefSeq.getName(), feature.getName(), ntStart);
+		
+		
+		LabeledCodon[] featureRefTcrIdxToCodon = new LabeledCodon[featureRefLabeledCodons.size()];
+		for(LabeledCodon featureRefCodon: featureRefLabeledCodons) {
+			featureRefTcrIdxToCodon[featureRefCodon.getTranscriptionIndex()] = featureRefCodon;
 		}
+		TIntObjectMap<LabeledCodon> rootRefNtToLabeledCodon = rootRefFeatureLoc.getRefNtToLabeledCodon(cmdContext);
 
-		int transcriptionIndex = 0;
-		for(int i = ntStart; i <= ntEnd; i++) {
-			if(currentSegment != null) {
-				if(i > currentSegment.getQueryEnd()) {
-					currentSegment = null;
-				} 
-			}
-			if(currentSegment == null && !featureRefToRootRefFeatureSegs.isEmpty()) {
-				if(i >= featureRefToRootRefFeatureSegs.get(0).getQueryStart() &&
-						i <= featureRefToRootRefFeatureSegs.get(0).getQueryEnd()) {
-					currentSegment = featureRefToRootRefFeatureSegs.remove(0);
-				}
-			}
-			if(currentSegment != null) {
-				lastFeatureRefLocation = i;
-				lastRootLocation = i+currentSegment.getQueryToReferenceOffset();
-			}	
-			LabeledCodon labeledCodon = null;
-			if(currentSegment != null) {
-				if(TranslationUtils.isAtStartOfCodon(featureRefCodon1Start, i)) {
-					int rootCodon = TranslationUtils.getCodon(rootCodon1Start, 
-							i+currentSegment.getQueryToReferenceOffset());
-					labeledCodon = new LabeledCodon(featureLoc.getFeature().getName(), Integer.toString(rootCodon), i, i+1, i+2, transcriptionIndex);
-					transcriptionIndex++;
-				}
+		LabeledCodon initialFeatureRefCodon = featureRefTcrIdxToCodon[0];
+		LabeledCodon finalFeatureRefCodon = featureRefTcrIdxToCodon[featureRefTcrIdxToCodon.length-1];
+
+		// initial and final codons must have homologous counterparts on the root reference.
+		LabeledCodon initialRootRefCodon = findRootRefCodon(featureRef, rootRef, feature, featureRefToRootRefSegs, rootRefNtToLabeledCodon,
+				initialFeatureRefCodon, true, "Initial codon");
+		initialFeatureRefCodon.setCodonLabel(initialRootRefCodon.getCodonLabel());
+
+		LabeledCodon finalRootRefCodon = findRootRefCodon(featureRef, rootRef, feature, featureRefToRootRefSegs, rootRefNtToLabeledCodon,
+				initialFeatureRefCodon, true, "Final codon");
+		finalFeatureRefCodon.setCodonLabel(finalRootRefCodon.getCodonLabel());
+
+		LabeledCodon lastMatchedRootRefCodon = initialRootRefCodon;
+		int codonsSinceMatch = 1;
+		for(int featureRefTcrIdx = 1; featureRefTcrIdx < finalFeatureRefCodon.getTranscriptionIndex(); featureRefTcrIdx++) {
+			LabeledCodon featureRefCodon = featureRefTcrIdxToCodon[featureRefTcrIdx];
+			LabeledCodon matchedRootRefCodon = findRootRefCodon(featureRef, rootRef, feature, featureRefToRootRefSegs, rootRefNtToLabeledCodon,
+					featureRefCodon, false, "Codon");
+			if(matchedRootRefCodon == null) {
+				codonsSinceMatch++;
+				featureRefCodon.setCodonLabel(lastMatchedRootRefCodon.getCodonLabel()+getAlpha(codonsSinceMatch));
 			} else {
-				if(TranslationUtils.isAtStartOfCodon(featureRefCodon1Start, i)) {
-					int diff = i-lastFeatureRefLocation;
-					int lastRootCodon = TranslationUtils.getCodon(rootCodon1Start, lastRootLocation);
-					int constrainingCodon = TranslationUtils.getCodon(rootCodon1Start, lastRootLocation+diff);
-					String label = Integer.toString(lastRootCodon) + getAlpha(constrainingCodon - lastRootCodon);
-					labeledCodon = new LabeledCodon(featureLoc.getFeature().getName(), label, i, i+1, i+2, transcriptionIndex);
-					transcriptionIndex++;
-				}
-			}
-			if(labeledCodon != null) {
-				numberedCodons.add(labeledCodon);
+				featureRefCodon.setCodonLabel(matchedRootRefCodon.getCodonLabel());
+				lastMatchedRootRefCodon = matchedRootRefCodon;
+				codonsSinceMatch = 1;
 			}
 		}
+	}
+
+	private LabeledCodon findRootRefCodon(ReferenceSequence featureRef, ReferenceSequence rootRef, Feature feature,
+			List<QueryAlignedSegment> featureRefToRootRefSegs, TIntObjectMap<LabeledCodon> rootRefNtToLabeledCodon,
+			LabeledCodon featureRefCodon, boolean strict, String codonDesc) {
+		// qaSegs mapping the featureRef codon's segments to themselves.
+		List<LabeledCodonReferenceSegment> featureRefCodonLcSegments = featureRefCodon.getLcRefSegments();
+		List<QueryAlignedSegment> featureRefCodonQaSegs = ReferenceSegment.asQueryAlignedSegments(featureRefCodonLcSegments);
+
+		// qaSegs mapping the featureRef codon's segments to the root ref.
+		List<QueryAlignedSegment> featureRefCodonInRootRefSegs = 
+				QueryAlignedSegment.translateSegments(featureRefCodonQaSegs, featureRefToRootRefSegs);
+		
+		if(featureRefCodonInRootRefSegs.isEmpty()) {
+			if(strict) {
+				throw new Kuiken2006CodonLabelerException(Code.MAPPING_ERROR, rootRef.getName(), featureRef.getName(), feature.getName(), featureRefCodonLcSegments.toString(), 
+						codonDesc+" does not have any homology to the root reference");
+			} else {
+				return null;
+			}
+		}
+		
+		LabeledCodon matchingRootRefCodon = rootRefNtToLabeledCodon.get(featureRefCodonInRootRefSegs.get(0).getRefStart());
+		if(matchingRootRefCodon == null) {
+			throw new Kuiken2006CodonLabelerException(Code.MAPPING_ERROR, rootRef.getName(), featureRef.getName(), feature.getName(), featureRefCodonLcSegments.toString(), 
+					codonDesc+" has homology to the the root reference but is not homologous to any root reference codon");
+		}
+		
+		if(!ReferenceSegment.sameRegion(matchingRootRefCodon.getLcRefSegments(), featureRefCodonLcSegments)) {
+			throw new Kuiken2006CodonLabelerException(Code.MAPPING_ERROR, rootRef.getName(), featureRef.getName(), feature.getName(), featureRefCodonLcSegments.toString(), 
+					codonDesc+" matches the refStart coordinate of a codon on the root reference but not the correct region");
+		}
+		
+		return matchingRootRefCodon;
 	}
 
 	private String getAlpha(int num) {
