@@ -35,6 +35,8 @@ import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodonReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
@@ -56,6 +58,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
@@ -111,73 +114,96 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 
 	@Override
 	public InheritFeatureLocationResult execute(CommandContext cmdContext) {
-		ReferenceSequence thisRefSeq = lookupRefSeq(cmdContext);
+		ReferenceSequence targetRefSeq = lookupRefSeq(cmdContext);
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
-		Sequence thisRefSeqSeq = thisRefSeq.getSequence();
+		Sequence targetRefSeqSeq = targetRefSeq.getSequence();
 		// find this reference sequence's membership of the named alignment.
 		AlignmentMember almtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, 
-				AlignmentMember.pkMap(alignment.getName(), thisRefSeqSeq.getSource().getName(), thisRefSeqSeq.getSequenceID()), true);
+				AlignmentMember.pkMap(alignment.getName(), targetRefSeqSeq.getSource().getName(), targetRefSeqSeq.getSequenceID()), true);
 		if(almtMember == null) {
-			throw new InheritFeatureLocationException(Code.NOT_MEMBER_OF_ALIGNMENT, thisRefSeq.getName(), alignmentName);
+			throw new InheritFeatureLocationException(Code.NOT_MEMBER_OF_ALIGNMENT, targetRefSeq.getName(), alignmentName);
 		}
-		Feature feature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
+		Feature mainFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
 		ReferenceSequence relatedRef;
-		// query aligned segments with this ref as query and rel ref as reference
-		List<QueryAlignedSegment> relRefAlignedSegments = 
+		// query aligned segments with target ref as query and rel ref as reference
+		List<QueryAlignedSegment> targetRefToRelRefSegs = 
 				almtMember.getAlignedSegments().stream()
 				.map(aSeg -> aSeg.asQueryAlignedSegment()).collect(Collectors.toList());
 		if(relRefName != null) {
 			relatedRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(relRefName), false);
-			relRefAlignedSegments = alignment.translateToRelatedRef(cmdContext, relRefAlignedSegments, relatedRef);
+			targetRefToRelRefSegs = alignment.translateToRelatedRef(cmdContext, targetRefToRelRefSegs, relatedRef);
 		} else {
 			relatedRef = alignment.getRefSequence();
 		}
 		if(relatedRef == null) {
 			throw new InheritFeatureLocationException(Code.PARENT_ALIGNMENT_IS_UNCONSTRAINED, alignmentName);
 		}
-		ReferenceFeatureTreeResult relatedRefFeatureTree = relatedRef.getFeatureTree(cmdContext, feature, recursive, false);
+		ReferenceSegment.sortByRefStart(targetRefToRelRefSegs);
 		
-		
-		List<Map<String, Object>> resultRowData = new ArrayList<Map<String, Object>>();
-		for(ReferenceFeatureTreeResult featureTreeResult : relatedRefFeatureTree.getChildTrees()) {
-			addFeatureLocs(cmdContext, thisRefSeq, relatedRef, relRefAlignedSegments, featureTreeResult, resultRowData);
+		List<Feature> features = new ArrayList<Feature>();
+		features.add(mainFeature);
+		if(recursive) {
+			features.addAll(mainFeature.getDescendents());
+		};
+		Map<String, Integer> featureNameToAddedSegments = new LinkedHashMap<String, Integer>();
+		for(Feature feature: features) {
+			if(!feature.isInformational()) {
+				addFeatureLocs(cmdContext, targetRefSeq, relatedRef, targetRefToRelRefSegs, feature, featureNameToAddedSegments);
+			}
 		}
+		List<Map<String, Object>> resultRowData = new ArrayList<Map<String, Object>>();
+		featureNameToAddedSegments.forEach((rowFeatureName, numAddedSegments) -> {
+			Map<String, Object> resultRow = new LinkedHashMap<String, Object>();
+			resultRow.put(ADDED_FEATURE_NAME, rowFeatureName);
+			resultRow.put(NUM_ADDED_SEGMENTS, numAddedSegments);
+			resultRowData.add(resultRow);
+		});
 		return new InheritFeatureLocationResult(resultRowData);
 	}
 	
 	
 	private void addFeatureLocs(CommandContext cmdContext, 
-			ReferenceSequence thisRefSeq, 
+			ReferenceSequence targetRefSeq, 
 			ReferenceSequence relatedRefSeq, 
-			List<QueryAlignedSegment> relRefAlignedSegments,
-			ReferenceFeatureTreeResult featureTreeResult, List<Map<String, Object>> resultRowData) {
-		String featureName = featureTreeResult.getFeatureName();
+			List<QueryAlignedSegment> targetRefToRelRefSegs,
+			Feature feature, Map<String, Integer> featureNameToAddedSegments) {
+		String featureName = feature.getName();
+		Map<String, String> featureLocPkMap = FeatureLocation.pkMap(targetRefSeq.getName(), featureName);
+		FeatureLocation targetRefFeatureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(targetRefSeq.getName(), featureName), true);
+		FeatureLocation relRefFeatureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relatedRefSeq.getName(), featureName));
+
+		List<FeatureSegment> relRefFeatureLocSegs = relRefFeatureLoc.getSegments();
 		
-		Feature currentFeature = GlueDataObject.lookup(cmdContext, Feature.class, Feature.pkMap(featureName));
-		Map<String, String> featureLocPkMap = FeatureLocation.pkMap(thisRefSeq.getName(), featureName);
-		FeatureLocation currentFeatureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, featureLocPkMap, true);
-		if(currentFeatureLoc == null && !currentFeature.isInformational()) {
-			// intersect the aligned segments of this ref seq in the parent alignment with the
+		if(targetRefFeatureLoc == null && !feature.isInformational()) {
+			// intersect the aligned segments of this ref seq in the alignment with the
 			// feature location segments of the parent ref seq for this feature.
-			List<ReferenceSegment> relRefFeatureLocSegs = featureTreeResult.getReferenceSegments();
+			// this generates qa segments just for this feature.
+			List<QueryAlignedSegment> newFeatureQaSegs =
+					ReferenceSegment.intersection(relRefFeatureLocSegs, targetRefToRelRefSegs, ReferenceSegment.cloneRightSegMerger());
 			
-			ReferenceSegment.sortByRefStart(relRefAlignedSegments);
-			
-			// this generates aligned segments just for this feature.
-			List<QueryAlignedSegment> intersection = 
-					ReferenceSegment.intersection(relRefFeatureLocSegs, relRefAlignedSegments, ReferenceSegment.cloneRightSegMerger());
-			
-			List<QueryAlignedSegment> newFeatureQaSegs;
+			if(truncateCdn && feature.codesAminoAcids()) {
+				// delete anything that falls outside of a codon?
+				List<LabeledCodon> labeledCodons = relRefFeatureLoc.getLabeledCodons(cmdContext);
+				for(LabeledCodon labeledCodon: labeledCodons) {
+					List<LabeledCodonReferenceSegment> lcRefSegments = labeledCodon.getLcRefSegments();
+					List<QueryAlignedSegment> lcRefIntersection = ReferenceSegment.intersection(newFeatureQaSegs, lcRefSegments, ReferenceSegment.cloneLeftSegMerger());
+					if(!lcRefIntersection.isEmpty()) { // some overlap with codon
+						if(!ReferenceSegment.covers(lcRefIntersection, lcRefSegments)) { // but doesn't cover it all
+ 							newFeatureQaSegs = ReferenceSegment.subtract(newFeatureQaSegs, lcRefIntersection);
+						}
+					}
+				}
+			}
 			
 			Integer newStartTranscription = null;
-			if(featureTreeResult.isCircularBridging()) {
-				int refStartTranscription = featureTreeResult.getStartTranscription();
+			if(feature.circularBridging()) {
+				int refStartTranscription = relRefFeatureLoc.getStartTranscription();
 				// partition the intersection into potentially two parts (1) which is post the transcription start point
 				// on the genome and (2) which is pre the transcription start point
 				List<QueryAlignedSegment> intersection1 = new ArrayList<QueryAlignedSegment>(); 
 				List<QueryAlignedSegment> intersection2 = new ArrayList<QueryAlignedSegment>(); 
 				
-				for(QueryAlignedSegment qaSeg: intersection) {
+				for(QueryAlignedSegment qaSeg: newFeatureQaSegs) {
 					if(qaSeg.getRefStart() >= refStartTranscription) {
 						intersection1.add(qaSeg);
 					} else {
@@ -195,46 +221,67 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 				}
 				
 			} else {
-				intersection = applySpanning(intersection);
-				newFeatureQaSegs = intersection;
+				newFeatureQaSegs = applySpanning(newFeatureQaSegs);
 			}
 
 			if(newFeatureQaSegs.size() == 0) {
 				return; // no segments // nothing added.
 			}
 
-			if(truncateCdn && currentFeature.codesAminoAcids()) {
-				// assumes parent feature loc is codon aligned
-				Integer parentCodon1Start = ReferenceSegment.minRefStart(relRefFeatureLocSegs);
-				Integer thisCodon1Start = newFeatureQaSegs.get(0).getReferenceToQueryOffset() + parentCodon1Start;
-				newFeatureQaSegs = TranslationUtils.truncateToCodonAligned(thisCodon1Start, newFeatureQaSegs);
+			// result, but as reference segments.
+			List<ReferenceSegment> newFeatureRefSegs = newFeatureQaSegs
+					.stream()
+					.map(qaseg -> new ReferenceSegment(qaseg.getQueryStart(), qaseg.getQueryEnd()))
+					.collect(Collectors.toList());
+			
+			// create necessary ancestor feature locations and segments.
+			List<Feature> ancestorFeatures = feature.getAncestors();
+			for(Feature ancestorFeature: ancestorFeatures) {
+				String ancestorFeatureName = ancestorFeature.getName();
+				if(!ancestorFeatureName.equals(featureName)) {
+					if(!ancestorFeature.isInformational()) {
+						Map<String, String> ancestorFLocPkMap = FeatureLocation.pkMap(targetRefSeq.getName(), ancestorFeatureName);
+						FeatureLocation ancestorFeatureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, ancestorFLocPkMap, true);
+						if(ancestorFeatureLoc == null) {
+							ancestorFeatureLoc = GlueDataObject.create(cmdContext, FeatureLocation.class, ancestorFLocPkMap, false);
+							ancestorFeatureLoc.setFeature(ancestorFeature);
+							ancestorFeatureLoc.setReferenceSequence(targetRefSeq);
+							cmdContext.commit();
+						}
+						// find those areas not already covered
+						List<ReferenceSegment> segmentsToAdd = ReferenceSegment.subtract(newFeatureRefSegs, ancestorFeatureLoc.getSegments());
+						int numAddedSegments = commitFeatureLocSegments(cmdContext,
+								targetRefSeq, ancestorFeatureName, ancestorFeatureLoc,
+								segmentsToAdd);
+						Integer currentAddedSegs = featureNameToAddedSegments.get(ancestorFeatureName);
+						if(currentAddedSegs == null) {
+							currentAddedSegs = 0;
+						}
+						currentAddedSegs += numAddedSegments;
+						featureNameToAddedSegments.put(ancestorFeatureName, currentAddedSegs);
+					}
+				}
 			}
 
 			
-			currentFeatureLoc = GlueDataObject.create(cmdContext, FeatureLocation.class, featureLocPkMap, false);
-			currentFeatureLoc.setFeature(currentFeature);
-			currentFeatureLoc.setReferenceSequence(thisRefSeq);
+			targetRefFeatureLoc = GlueDataObject.create(cmdContext, FeatureLocation.class, featureLocPkMap, false);
+			targetRefFeatureLoc.setFeature(feature);
+			targetRefFeatureLoc.setReferenceSequence(targetRefSeq);
 			if(newStartTranscription != null) {
-				currentFeatureLoc.writeProperty(currentFeature.flocStartTranscriptionField(), newStartTranscription);
+				targetRefFeatureLoc.writeProperty(feature.flocStartTranscriptionField(), newStartTranscription);
 			}
 			cmdContext.commit();
 
-			
 			int numAddedSegments = commitFeatureLocSegments(cmdContext,
-					thisRefSeq, featureName, currentFeatureLoc,
-					newFeatureQaSegs);
-
-
-
-			
-			Map<String, Object> resultRow = new LinkedHashMap<String, Object>();
-			resultRow.put(ADDED_FEATURE_NAME, featureName);
-			resultRow.put(NUM_ADDED_SEGMENTS, new Integer(numAddedSegments));
-			resultRowData.add(resultRow);
+					targetRefSeq, featureName, targetRefFeatureLoc,
+					newFeatureRefSegs);
+			Integer currentAddedSegs = featureNameToAddedSegments.get(featureName);
+			if(currentAddedSegs == null) {
+				currentAddedSegs = 0;
+			}
+			currentAddedSegs += numAddedSegments;
+			featureNameToAddedSegments.put(featureName, currentAddedSegs);
 		}
-		for(ReferenceFeatureTreeResult childTreeResult : featureTreeResult.getChildTrees()) {
-			addFeatureLocs(cmdContext, thisRefSeq, relatedRefSeq, relRefAlignedSegments, childTreeResult, resultRowData);
-		}		
 		
 	}
 
@@ -256,13 +303,13 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 	private int commitFeatureLocSegments(CommandContext cmdContext,
 			ReferenceSequence thisRefSeq, String featureName,
 			FeatureLocation currentFeatureLoc,
-			List<QueryAlignedSegment> newFeatureQaSegs) {
+			List<ReferenceSegment> newFeatureRefSegs) {
 		int numAddedSegments = 0;
 		// add segments to the new feature location based on the query start/end points of the intersection result.
-		for(QueryAlignedSegment newFeatureQaSeg: newFeatureQaSegs) {
+		for(ReferenceSegment newFeatureRefSeg: newFeatureRefSegs) {
 			FeatureSegment featureSegment = GlueDataObject.create(cmdContext, FeatureSegment.class, 
 					FeatureSegment.pkMap(thisRefSeq.getName(), featureName, 
-							newFeatureQaSeg.getQueryStart(), newFeatureQaSeg.getQueryEnd()), false);
+							newFeatureRefSeg.getRefStart(), newFeatureRefSeg.getRefEnd()), false);
 			featureSegment.setFeatureLocation(currentFeatureLoc);
 			cmdContext.commit();
 			numAddedSegments++;
