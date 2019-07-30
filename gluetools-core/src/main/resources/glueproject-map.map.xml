@@ -71,7 +71,7 @@
 		<db-attribute name="ref_end" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
 		<db-attribute name="ref_seq_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="ref_start" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
-		<db-attribute name="splice_index" type="INTEGER"/>
+		<db-attribute name="splice_index" type="INTEGER" isMandatory="true"/>
 		<db-attribute name="translation_modifier_name" type="VARCHAR" length="100"/>
 	</db-entity>
 	<db-entity name="member_floc_note">

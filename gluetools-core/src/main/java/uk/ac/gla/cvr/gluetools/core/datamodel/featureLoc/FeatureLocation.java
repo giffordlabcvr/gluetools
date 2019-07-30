@@ -344,6 +344,22 @@ public class FeatureLocation extends _FeatureLocation {
 						getReferenceSequence().getName(), feature.getName(), nextAncestorFeature.getName());
 			}
 		}
+		int lastSpliceIndex = Integer.MIN_VALUE;
+		String lastModifierName = "NULL";
+		for(FeatureSegment segment: segments) {
+			if(segment.getSpliceIndex() < lastSpliceIndex) {
+				throw new FeatureLocationException(FeatureLocationException.Code.SPLICE_INDEX_ERROR, 
+						getReferenceSequence().getName(), feature.getName(), "Splice index must increase monotonically along the genome");
+				
+			}
+			String segModifierName = segment.getTranslationModifierName();
+			if(segModifierName == null) {segModifierName = "NULL";} 
+			if(!segModifierName.equals(lastModifierName) && segment.getSpliceIndex() == lastSpliceIndex) {
+				throw new FeatureLocationException(FeatureLocationException.Code.SPLICE_INDEX_ERROR, 
+						getReferenceSequence().getName(), feature.getName(), "Segments with translation modifiers must have a unique splice index");
+			}
+			lastSpliceIndex = segment.getSpliceIndex();
+		}
 		if(feature.codesAminoAcids()) {
 			checkCodingFeatureLocation(cmdContext);
 		}

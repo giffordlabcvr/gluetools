@@ -38,6 +38,7 @@ public class FeatureLocationException extends GlueException {
 		FEATURE_OR_ANCESTOR_MUST_HAVE_OWN_CODON_NUMBERING("featureName"),
 		FEATURE_LOCATION_MUST_HAVE_SEGMENTS_TO_ESTABLISH_READING_FRAME("referenceName", "featureName"),
 		CIRCULAR_GENOME_ERROR("referenceName", "featureName", "errorTxt"),
+		SPLICE_INDEX_ERROR("referenceName", "featureName", "errorTxt"),
 		CODING_FEATURE_LOCATION_HAS_UNCODED_REGIONS("referenceName", "featureName", "uncodedRegions");
 		
 		

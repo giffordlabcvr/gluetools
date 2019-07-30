@@ -82,6 +82,8 @@ public class FeatureSegment extends _FeatureSegment implements IReferenceSegment
 		FeatureSegment copy = new FeatureSegment();
 		copy.setRefStart(getRefStart());
 		copy.setRefEnd(getRefEnd());
+		copy.setSpliceIndex(getSpliceIndex());
+		copy.setTranslationModifierName(getTranslationModifierName());
 		return copy;
 	}
 

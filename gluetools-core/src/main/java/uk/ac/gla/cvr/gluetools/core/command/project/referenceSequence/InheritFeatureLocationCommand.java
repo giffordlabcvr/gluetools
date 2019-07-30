@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
@@ -158,26 +159,47 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 		return new InheritFeatureLocationResult(resultRowData);
 	}
 	
-	private class RefSegWithModifierName {
-		ReferenceSegment refSeg;
-		String modifierName;
-		public RefSegWithModifierName(ReferenceSegment refSeg, String modifierName) {
-			super();
-			this.refSeg = refSeg;
-			this.modifierName = modifierName;
+	private class QaSegWithFeatureSegAttributes extends QueryAlignedSegment {
+		
+		public QaSegWithFeatureSegAttributes(int refStart, int refEnd, int queryStart, int queryEnd) {
+			super(refStart, refEnd, queryStart, queryEnd);
 		}
+		private String modifierName;
+		private Integer spliceIndex;
+		
+		@Override
+		public QaSegWithFeatureSegAttributes clone() {
+			QaSegWithFeatureSegAttributes clone = new QaSegWithFeatureSegAttributes(getRefStart(), getRefEnd(), getQueryStart(), getQueryEnd());
+			clone.modifierName = this.modifierName;
+			clone.spliceIndex = this.spliceIndex;
+			return clone;
+		}
+
+		public Integer getSpliceIndex() {
+			return spliceIndex;
+		}
+
+		
 	}
 
-	private class RefSegWithSpliceIndex {
-		ReferenceSegment refSeg;
-		Integer spliceIndex;
-		public RefSegWithSpliceIndex(ReferenceSegment refSeg, Integer spliceIndex) {
-			super();
-			this.refSeg = refSeg;
+	private class RefSegWithFeatureSegAttributes extends ReferenceSegment {
+
+		private String modifierName;
+		private Integer spliceIndex;
+
+		public RefSegWithFeatureSegAttributes(int refStart, int refEnd, String modifierName, Integer spliceIndex) {
+			super(refStart, refEnd);
+			this.modifierName = modifierName;
 			this.spliceIndex = spliceIndex;
 		}
+		
+		@Override
+		public RefSegWithFeatureSegAttributes clone() {
+			return new RefSegWithFeatureSegAttributes(getRefStart(), getRefEnd(), this.modifierName, this.spliceIndex);
+		}
 	}
 
+	
 	
 	private void addFeatureLocs(CommandContext cmdContext, 
 			ReferenceSequence targetRefSeq, 
@@ -195,53 +217,47 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 		if(targetRefFeatureLoc == null && !feature.isInformational()) {
 			
 			
-			// special treatment of feature segments with translation modification.
-			List<RefSegWithModifierName> newRefSegsWithModifierNames = new ArrayList<RefSegWithModifierName>();
-			List<FeatureSegment> relRefFeatureSegsWithMod = new ArrayList<FeatureSegment>();
-			List<FeatureSegment> relRefFeatureSegsWithoutMod = new ArrayList<FeatureSegment>();
-			for(FeatureSegment relRefFeatureSeg: relRefFeatureLocSegs) {
-				if(relRefFeatureSeg.getTranslationModifierName() == null) {
-					relRefFeatureSegsWithoutMod.add(relRefFeatureSeg);
-				} else {
-					relRefFeatureSegsWithMod.add(relRefFeatureSeg);
-				}
-			}
-			for(FeatureSegment relRefFeatureSegWithMod: relRefFeatureSegsWithMod) {
-				List<QueryAlignedSegment> qaSegsWithMod =
-						ReferenceSegment.intersection(Arrays.asList(relRefFeatureSegWithMod), targetRefToRelRefSegs, ReferenceSegment.cloneRightSegMerger());
-				if(qaSegsWithMod.size() == 0) {
-					continue;
-				}
-				String modifierName = relRefFeatureSegWithMod.getTranslationModifierName();
-				if(qaSegsWithMod.size() != 1) {
-					throw new InheritFeatureLocationException(Code.TRANSLATION_MODIFICATION_ERROR, 
-							"Unable to inherit feature segment "+relRefFeatureSegWithMod+
-							" with translation modifier "+modifierName+
-							" due to complex homology in that region: "+qaSegsWithMod);
-				}
-				QueryAlignedSegment qaSegWithMod = qaSegsWithMod.get(0);
-				if(qaSegWithMod.getCurrentLength() != relRefFeatureSegWithMod.getCurrentLength()) {
-					throw new InheritFeatureLocationException(Code.TRANSLATION_MODIFICATION_ERROR, 
-							"Unable to inherit feature segment "+relRefFeatureSegWithMod+
-							" with translation modifier "+modifierName+
-							" due to mismatched lengths: "+qaSegsWithMod);
-				}
-				newRefSegsWithModifierNames.add(new RefSegWithModifierName(new ReferenceSegment(qaSegWithMod.getQueryStart(), qaSegWithMod.getQueryEnd()), 
-						modifierName));
-			}
-			
 			// intersect the aligned segments of this ref seq in the alignment with the
 			// feature location segments of the parent ref seq for this feature.
-			// this generates qa segments just for this feature.
-			List<QueryAlignedSegment> newFeatureQaSegs =
-					ReferenceSegment.intersection(relRefFeatureSegsWithoutMod, targetRefToRelRefSegs, ReferenceSegment.cloneRightSegMerger());
+			// this generates qa segments with featureSeg attributes (e.g. modifier name, splice index).
+			List<QaSegWithFeatureSegAttributes> newFeatureQaSegs =
+					ReferenceSegment.intersection(relRefFeatureLocSegs, targetRefToRelRefSegs, 
+							new BiFunction<FeatureSegment, QueryAlignedSegment, QaSegWithFeatureSegAttributes>(){
+								@Override
+								public QaSegWithFeatureSegAttributes apply(FeatureSegment featureSegment, QueryAlignedSegment qaSeg) {
+									
+									QaSegWithFeatureSegAttributes overlap = 
+											new QaSegWithFeatureSegAttributes(qaSeg.getRefStart(), qaSeg.getRefEnd(), 
+													qaSeg.getQueryStart(), qaSeg.getQueryEnd());
+									int leftTruncate = Math.max(featureSegment.getRefStart(), qaSeg.getRefStart()) - qaSeg.getRefStart();
+									if(leftTruncate > 0) {
+										overlap.truncateLeft(leftTruncate);
+									}
+									int rightTruncate = qaSeg.getRefEnd() - Math.min(featureSegment.getRefEnd(), qaSeg.getRefEnd());
+									if(rightTruncate > 0) {
+										overlap.truncateRight(rightTruncate);
+									}
+									String modifierName = featureSegment.getTranslationModifierName();
+									if(modifierName != null) {
+										if(overlap.getCurrentLength() != featureSegment.getCurrentLength()) {
+											throw new InheritFeatureLocationException(Code.TRANSLATION_MODIFICATION_ERROR, 
+													"Unable to inherit feature segment "+featureSegment+
+													" with translation modifier "+modifierName+
+													" due to mismatched lengths: "+overlap);
+										}
+										overlap.modifierName = modifierName;
+									}
+									overlap.spliceIndex = featureSegment.getSpliceIndex();
+									return overlap;
+								}
+					});
 
 			if(truncateCdn && feature.codesAminoAcids()) {
 				// delete anything that falls outside of a codon
 				List<LabeledCodon> labeledCodons = relRefFeatureLoc.getLabeledCodons(cmdContext);
 				for(LabeledCodon labeledCodon: labeledCodons) {
 					List<LabeledCodonReferenceSegment> lcRefSegments = labeledCodon.getLcRefSegments();
-					List<QueryAlignedSegment> lcRefIntersection = ReferenceSegment.intersection(newFeatureQaSegs, lcRefSegments, ReferenceSegment.cloneLeftSegMerger());
+					List<QaSegWithFeatureSegAttributes> lcRefIntersection = ReferenceSegment.intersection(newFeatureQaSegs, lcRefSegments, ReferenceSegment.cloneLeftSegMerger());
 					if(!lcRefIntersection.isEmpty()) { // some overlap with codon
 						if(!ReferenceSegment.covers(lcRefIntersection, lcRefSegments)) { // but doesn't cover it all
  							newFeatureQaSegs = ReferenceSegment.subtract(newFeatureQaSegs, lcRefIntersection);
@@ -255,19 +271,19 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 				int refStartTranscription = relRefFeatureLoc.getStartTranscription();
 				// partition the intersection into potentially two parts (1) which is post the transcription start point
 				// on the genome and (2) which is pre the transcription start point
-				List<QueryAlignedSegment> intersection1 = new ArrayList<QueryAlignedSegment>(); 
-				List<QueryAlignedSegment> intersection2 = new ArrayList<QueryAlignedSegment>(); 
+				List<QaSegWithFeatureSegAttributes> intersection1 = new ArrayList<QaSegWithFeatureSegAttributes>(); 
+				List<QaSegWithFeatureSegAttributes> intersection2 = new ArrayList<QaSegWithFeatureSegAttributes>(); 
 				
-				for(QueryAlignedSegment qaSeg: newFeatureQaSegs) {
+				for(QaSegWithFeatureSegAttributes qaSeg: newFeatureQaSegs) {
 					if(qaSeg.getRefStart() >= refStartTranscription) {
 						intersection1.add(qaSeg);
 					} else {
 						intersection2.add(qaSeg);
 					}
 				}
-				intersection1 = applySpanning(intersection1, relRefFeatureSegsWithoutMod);
-				intersection2 = applySpanning(intersection2, relRefFeatureSegsWithoutMod);
-				newFeatureQaSegs = new ArrayList<QueryAlignedSegment>(); 
+				intersection1 = applySpanning(intersection1);
+				intersection2 = applySpanning(intersection2);
+				newFeatureQaSegs = new ArrayList<QaSegWithFeatureSegAttributes>(); 
 				newFeatureQaSegs.addAll(intersection2);
 				newFeatureQaSegs.addAll(intersection1);
 				newStartTranscription = QueryAlignedSegment.minQueryStart(intersection1);
@@ -276,7 +292,7 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 				}
 				
 			} else {
-				newFeatureQaSegs = applySpanning(newFeatureQaSegs, relRefFeatureSegsWithoutMod);
+				newFeatureQaSegs = applySpanning(newFeatureQaSegs);
 			}
 
 			if(newFeatureQaSegs.size() == 0) {
@@ -284,15 +300,11 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 			}
 
 			// result, but as reference segments.
-			List<ReferenceSegment> newFeatureRefSegs = newFeatureQaSegs
+			List<RefSegWithFeatureSegAttributes> newFeatureRefSegs = newFeatureQaSegs
 					.stream()
-					.map(qaseg -> new ReferenceSegment(qaseg.getQueryStart(), qaseg.getQueryEnd()))
+					.map(qaseg -> new RefSegWithFeatureSegAttributes(qaseg.getQueryStart(), qaseg.getQueryEnd(), qaseg.modifierName, qaseg.spliceIndex))
 					.collect(Collectors.toList());
 			
-			// add any new ref segs with modifiers into the set.
-			for(RefSegWithModifierName newRefSegWithModifierName: newRefSegsWithModifierNames) {
-				newFeatureRefSegs.add(newRefSegWithModifierName.refSeg);
-			}
 			ReferenceSegment.sortByRefStart(newFeatureRefSegs);
 			
 			// create necessary ancestor feature locations and segments.
@@ -310,10 +322,11 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 							cmdContext.commit();
 						}
 						// find those areas not already covered
-						List<ReferenceSegment> segmentsToAdd = ReferenceSegment.subtract(newFeatureRefSegs, ancestorFeatureLoc.getSegments());
+						List<RefSegWithFeatureSegAttributes> segmentsToAdd = ReferenceSegment.subtract(newFeatureRefSegs, ancestorFeatureLoc.getSegments());
+						segmentsToAdd.forEach(sta -> sta.spliceIndex = 1);
 						int numAddedSegments = commitFeatureLocSegments(cmdContext,
 								targetRefSeq, ancestorFeatureName, ancestorFeatureLoc,
-								segmentsToAdd, newRefSegsWithModifierNames);
+								segmentsToAdd);
 						Integer currentAddedSegs = featureNameToAddedSegments.get(ancestorFeatureName);
 						if(currentAddedSegs == null) {
 							currentAddedSegs = 0;
@@ -335,7 +348,7 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 
 			int numAddedSegments = commitFeatureLocSegments(cmdContext,
 					targetRefSeq, featureName, targetRefFeatureLoc,
-					newFeatureRefSegs, newRefSegsWithModifierNames);
+					newFeatureRefSegs);
 			Integer currentAddedSegs = featureNameToAddedSegments.get(featureName);
 			if(currentAddedSegs == null) {
 				currentAddedSegs = 0;
@@ -347,27 +360,26 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 	}
 
 
-	private List<QueryAlignedSegment> applySpanning(List<QueryAlignedSegment> newFeatureQaSegs, List<FeatureSegment> relRefFeatureSegs) {
+	private List<QaSegWithFeatureSegAttributes> applySpanning(List<QaSegWithFeatureSegAttributes> newFeatureQaSegs) {
 		if(!spanGaps) {
 			return newFeatureQaSegs;
 		}
 		// only span across qaSegs that relate to feature segs with the same splice index.
-		List<QueryAlignedSegment> qaSegsPostSpanning = new ArrayList<QueryAlignedSegment>();
-		Map<Integer, List<FeatureSegment>> spliceIndexToFeatureSegs = relRefFeatureSegs.stream().collect(Collectors.groupingBy(FeatureSegment::getSpliceIndex));
-		for(List<FeatureSegment> featureSegsForSpliceIndex : spliceIndexToFeatureSegs.values()) {
-			List<QueryAlignedSegment> qaSegsForSpliceIndex = 
-					ReferenceSegment.intersection(newFeatureQaSegs, featureSegsForSpliceIndex, ReferenceSegment.cloneLeftSegMerger());
-
+		List<QaSegWithFeatureSegAttributes> qaSegsPostSpanning = new ArrayList<QaSegWithFeatureSegAttributes>();
+		Map<Integer, List<QaSegWithFeatureSegAttributes>> spliceIndexToFeatureSegs = newFeatureQaSegs.stream().collect(Collectors.groupingBy(QaSegWithFeatureSegAttributes::getSpliceIndex));
+		spliceIndexToFeatureSegs.forEach( (spliceIndex, qaSegsForSpliceIndex) -> {
+			ReferenceSegment.sortByRefStart(qaSegsForSpliceIndex);
 			if(qaSegsForSpliceIndex.size() > 0) {
-				QueryAlignedSegment firstSeg = qaSegsForSpliceIndex.get(0);
-				QueryAlignedSegment lastSeg = qaSegsForSpliceIndex.get(qaSegsForSpliceIndex.size() - 1);
-				
+				QaSegWithFeatureSegAttributes firstSeg = qaSegsForSpliceIndex.get(0);
+				QaSegWithFeatureSegAttributes lastSeg = qaSegsForSpliceIndex.get(qaSegsForSpliceIndex.size() - 1);
 				// ref points are pretty irrelevant here, as only the query points are used.
-				QueryAlignedSegment spanningSegment = new QueryAlignedSegment(firstSeg.getRefStart(), lastSeg.getRefEnd(), 
+				QaSegWithFeatureSegAttributes spanningSegment = new QaSegWithFeatureSegAttributes(firstSeg.getRefStart(), lastSeg.getRefEnd(), 
 						firstSeg.getQueryStart(), lastSeg.getQueryEnd());
+				spanningSegment.spliceIndex = spliceIndex;
+				spanningSegment.modifierName = firstSeg.modifierName;
 				qaSegsPostSpanning.add(spanningSegment);
 			}
-		}
+		});
 		return qaSegsPostSpanning;
 	}
 
@@ -375,22 +387,19 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 	private int commitFeatureLocSegments(CommandContext cmdContext,
 			ReferenceSequence thisRefSeq, String featureName,
 			FeatureLocation currentFeatureLoc,
-			List<ReferenceSegment> newFeatureRefSegs, List<RefSegWithModifierName> newRefSegsWithModifierNames) {
+			List<RefSegWithFeatureSegAttributes> newFeatureRefSegs) {
 		int numAddedSegments = 0;
 		// add segments to the new feature location based on the query start/end points of the intersection result.
-		for(ReferenceSegment newFeatureRefSeg: newFeatureRefSegs) {
+		for(RefSegWithFeatureSegAttributes newFeatureRefSeg: newFeatureRefSegs) {
 			Integer refStart = newFeatureRefSeg.getRefStart();
 			Integer refEnd = newFeatureRefSeg.getRefEnd();
 			FeatureSegment featureSegment = GlueDataObject.create(cmdContext, FeatureSegment.class, 
 					FeatureSegment.pkMap(thisRefSeq.getName(), featureName, 
 							refStart, refEnd), false);
 			featureSegment.setFeatureLocation(currentFeatureLoc);
+			featureSegment.setSpliceIndex(newFeatureRefSeg.spliceIndex);
 			if(currentFeatureLoc.getFeature().codesAminoAcids()) {
-				for(RefSegWithModifierName refSegWithModifierName: newRefSegsWithModifierNames) {
-					if(refSegWithModifierName.refSeg.getRefStart().equals(refStart) && refSegWithModifierName.refSeg.getRefEnd().equals(refEnd)) {
-						featureSegment.setTranslationModifierName(refSegWithModifierName.modifierName);
-					}
-				}
+				featureSegment.setTranslationModifierName(newFeatureRefSeg.modifierName);
 			}
 			cmdContext.commit();
 			numAddedSegments++;
