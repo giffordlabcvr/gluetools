@@ -158,7 +158,8 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 		
 		if(!ReferenceSegment.sameRegion(matchingRootRefCodon.getLcRefSegments(), featureRefCodonInRootRefSegs)) {
 			throw new Kuiken2006CodonLabelerException(Code.MAPPING_ERROR, rootRef.getName(), featureRef.getName(), feature.getName(), featureRefCodonLcSegments.toString(), 
-					codonDesc+" matches the refStart coordinate of a codon on the root reference ("+featureRefCodonInRootRefSegs.get(0).getRefStart()+") but not the correct region");
+					codonDesc+" matches the refStart coordinate of a codon on the root reference ("+featureRefCodonInRootRefSegs.get(0).getRefStart()+") but not the correct region -- "+
+							featureRefCodonInRootRefSegs+" rather than "+matchingRootRefCodon.getLcRefSegments());
 		}
 		
 		return matchingRootRefCodon;
