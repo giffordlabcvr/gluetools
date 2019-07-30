@@ -57,10 +57,11 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 @CommandClass( 
 	commandWords={"add","segment"}, 
-	docoptUsages={"( <refStart> <refEnd> | -l <lcStart> <lcEnd> ) [ -t <translationModifier> ]"},
+	docoptUsages={"( <refStart> <refEnd> | -l <lcStart> <lcEnd> ) [ -t <translationModifier> ] [ -s <spliceIndex> ]"},
 	docoptOptions={
 		"-l, --labeledCodon                               Set location based on labeled codons",
-		"-t, --translationModifier <translationModifier>  Translation modifier module name"},
+		"-t, --translationModifier <translationModifier>  Translation modifier module name",
+		"-s, --spliceIndex <spliceIndex>  Splice index"},
 	metaTags = {},
 	description="Add a new segment of the reference sequence", 
 	furtherHelp="The segment endpoints can be set in different ways. "+ 
@@ -81,6 +82,7 @@ public class AddFeatureSegmentCommand extends FeatureLocModeCommand<CreateResult
 	public static final String LC_START = "lcStart";
 	public static final String LC_END = "lcEnd";
 	public static final String TRANSLATION_MODIFIER = "translationModifier";
+	public static final String SPLICE_INDEX = "spliceIndex";
 
 	
 	private Integer refStart;
@@ -89,6 +91,7 @@ public class AddFeatureSegmentCommand extends FeatureLocModeCommand<CreateResult
 	private String lcEnd;
 	private Boolean labeledCodonBased;
 	private String translationModifier;
+	private Integer spliceIndex;
 	
 	
 	@Override
@@ -105,6 +108,7 @@ public class AddFeatureSegmentCommand extends FeatureLocModeCommand<CreateResult
 			throw new CommandException(CommandException.Code.COMMAND_USAGE_ERROR, "FeatureLocation segment must either be nucleotide or labeled-codon based.");
 		}
 		this.translationModifier = PluginUtils.configureStringProperty(configElem, TRANSLATION_MODIFIER, false);
+		this.spliceIndex = PluginUtils.configureIntProperty(configElem, SPLICE_INDEX, 1);
 
 	}
 
@@ -209,6 +213,7 @@ public class AddFeatureSegmentCommand extends FeatureLocModeCommand<CreateResult
 		if(translationModifier != null) {
 			featureSegment.setTranslationModifierName(this.translationModifier);
 		}
+		featureSegment.setSpliceIndex(this.spliceIndex);
 		
 		cmdContext.commit();
 		return new CreateResult(FeatureSegment.class, 1);

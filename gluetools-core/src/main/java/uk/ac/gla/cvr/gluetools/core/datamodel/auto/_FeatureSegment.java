@@ -1,28 +1,3 @@
-/**
- *    GLUE: A flexible system for virus sequence data
- *    Copyright (C) 2018 The University of Glasgow
- *
- *    This program is free software: you can redistribute it and/or modify
- *    it under the terms of the GNU Affero General Public License as published
- *    by the Free Software Foundation, either version 3 of the License, or
- *    (at your option) any later version.
- *
- *    This program is distributed in the hope that it will be useful,
- *    but WITHOUT ANY WARRANTY; without even the implied warranty of
- *    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *    GNU Affero General Public License for more details.
-
- *    You should have received a copy of the GNU Affero General Public License
- *    along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *
- *    Contact details:
- *    MRC-University of Glasgow Centre for Virus Research
- *    Sir Michael Stoker Building, Garscube Campus, 464 Bearsden Road, 
- *    Glasgow G61 1QH, United Kingdom
- *    
- *    Josh Singer: josh.singer@glasgow.ac.uk
- *    Rob Gifford: robert.gifford@glasgow.ac.uk
-*/
 package uk.ac.gla.cvr.gluetools.core.datamodel.auto;
 
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -36,22 +11,16 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
  */
 public abstract class _FeatureSegment extends GlueDataObject {
 
-    public static final String PRE_TRANSLATION_MODIFIER_NAME_PROPERTY = "translationModifierName";
     public static final String REF_END_PROPERTY = "refEnd";
     public static final String REF_START_PROPERTY = "refStart";
+    public static final String SPLICE_INDEX_PROPERTY = "spliceIndex";
+    public static final String TRANSLATION_MODIFIER_NAME_PROPERTY = "translationModifierName";
     public static final String FEATURE_LOCATION_PROPERTY = "featureLocation";
 
     public static final String FEATURE_NAME_PK_COLUMN = "feature_name";
     public static final String REF_END_PK_COLUMN = "ref_end";
     public static final String REF_SEQ_NAME_PK_COLUMN = "ref_seq_name";
     public static final String REF_START_PK_COLUMN = "ref_start";
-
-    public void setTranslationModifierName(String translationModifierName) {
-        writeProperty(PRE_TRANSLATION_MODIFIER_NAME_PROPERTY, translationModifierName);
-    }
-    public String getTranslationModifierName() {
-        return (String)readProperty(PRE_TRANSLATION_MODIFIER_NAME_PROPERTY);
-    }
 
     public void setRefEnd(Integer refEnd) {
         writeProperty(REF_END_PROPERTY, refEnd);
@@ -65,6 +34,20 @@ public abstract class _FeatureSegment extends GlueDataObject {
     }
     public Integer getRefStart() {
         return (Integer)readProperty(REF_START_PROPERTY);
+    }
+
+    public void setSpliceIndex(Integer spliceIndex) {
+        writeProperty(SPLICE_INDEX_PROPERTY, spliceIndex);
+    }
+    public Integer getSpliceIndex() {
+        return (Integer)readProperty(SPLICE_INDEX_PROPERTY);
+    }
+
+    public void setTranslationModifierName(String translationModifierName) {
+        writeProperty(TRANSLATION_MODIFIER_NAME_PROPERTY, translationModifierName);
+    }
+    public String getTranslationModifierName() {
+        return (String)readProperty(TRANSLATION_MODIFIER_NAME_PROPERTY);
     }
 
     public void setFeatureLocation(FeatureLocation featureLocation) {

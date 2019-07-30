@@ -166,8 +166,18 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 			this.refSeg = refSeg;
 			this.modifierName = modifierName;
 		}
-		
 	}
+
+	private class RefSegWithSpliceIndex {
+		ReferenceSegment refSeg;
+		Integer spliceIndex;
+		public RefSegWithSpliceIndex(ReferenceSegment refSeg, Integer spliceIndex) {
+			super();
+			this.refSeg = refSeg;
+			this.spliceIndex = spliceIndex;
+		}
+	}
+
 	
 	private void addFeatureLocs(CommandContext cmdContext, 
 			ReferenceSequence targetRefSeq, 
@@ -180,6 +190,7 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 		FeatureLocation relRefFeatureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relatedRefSeq.getName(), featureName));
 
 		List<FeatureSegment> relRefFeatureLocSegs = relRefFeatureLoc.getSegments();
+		ReferenceSegment.sortByRefStart(relRefFeatureLocSegs);	
 		
 		if(targetRefFeatureLoc == null && !feature.isInformational()) {
 			
@@ -254,8 +265,8 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 						intersection2.add(qaSeg);
 					}
 				}
-				intersection1 = applySpanning(intersection1);
-				intersection2 = applySpanning(intersection2);
+				intersection1 = applySpanning(intersection1, relRefFeatureSegsWithoutMod);
+				intersection2 = applySpanning(intersection2, relRefFeatureSegsWithoutMod);
 				newFeatureQaSegs = new ArrayList<QueryAlignedSegment>(); 
 				newFeatureQaSegs.addAll(intersection2);
 				newFeatureQaSegs.addAll(intersection1);
@@ -265,7 +276,7 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 				}
 				
 			} else {
-				newFeatureQaSegs = applySpanning(newFeatureQaSegs);
+				newFeatureQaSegs = applySpanning(newFeatureQaSegs, relRefFeatureSegsWithoutMod);
 			}
 
 			if(newFeatureQaSegs.size() == 0) {
@@ -336,17 +347,28 @@ public class InheritFeatureLocationCommand extends ReferenceSequenceModeCommand<
 	}
 
 
-	private List<QueryAlignedSegment> applySpanning(List<QueryAlignedSegment> intersection) {
-		if(spanGaps && intersection.size() > 1) {
-			QueryAlignedSegment firstSeg = intersection.get(0);
-			QueryAlignedSegment lastSeg = intersection.get(intersection.size() - 1);
-			
-			// ref points are pretty irrelevant here, as only the query points are used.
-			QueryAlignedSegment spanningSegment = new QueryAlignedSegment(firstSeg.getRefStart(), lastSeg.getRefEnd(), 
-					firstSeg.getQueryStart(), lastSeg.getQueryEnd());
-			intersection = Collections.singletonList(spanningSegment);
+	private List<QueryAlignedSegment> applySpanning(List<QueryAlignedSegment> newFeatureQaSegs, List<FeatureSegment> relRefFeatureSegs) {
+		if(!spanGaps) {
+			return newFeatureQaSegs;
 		}
-		return intersection;
+		// only span across qaSegs that relate to feature segs with the same splice index.
+		List<QueryAlignedSegment> qaSegsPostSpanning = new ArrayList<QueryAlignedSegment>();
+		Map<Integer, List<FeatureSegment>> spliceIndexToFeatureSegs = relRefFeatureSegs.stream().collect(Collectors.groupingBy(FeatureSegment::getSpliceIndex));
+		for(List<FeatureSegment> featureSegsForSpliceIndex : spliceIndexToFeatureSegs.values()) {
+			List<QueryAlignedSegment> qaSegsForSpliceIndex = 
+					ReferenceSegment.intersection(newFeatureQaSegs, featureSegsForSpliceIndex, ReferenceSegment.cloneLeftSegMerger());
+
+			if(qaSegsForSpliceIndex.size() > 0) {
+				QueryAlignedSegment firstSeg = qaSegsForSpliceIndex.get(0);
+				QueryAlignedSegment lastSeg = qaSegsForSpliceIndex.get(qaSegsForSpliceIndex.size() - 1);
+				
+				// ref points are pretty irrelevant here, as only the query points are used.
+				QueryAlignedSegment spanningSegment = new QueryAlignedSegment(firstSeg.getRefStart(), lastSeg.getRefEnd(), 
+						firstSeg.getQueryStart(), lastSeg.getQueryEnd());
+				qaSegsPostSpanning.add(spanningSegment);
+			}
+		}
+		return qaSegsPostSpanning;
 	}
 
 

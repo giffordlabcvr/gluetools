@@ -68,10 +68,11 @@
 	</db-entity>
 	<db-entity name="feature_segment">
 		<db-attribute name="feature_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
-		<db-attribute name="translation_modifier_name" type="VARCHAR" length="100"/>
 		<db-attribute name="ref_end" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
 		<db-attribute name="ref_seq_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
 		<db-attribute name="ref_start" type="INTEGER" isPrimaryKey="true" isMandatory="true"/>
+		<db-attribute name="splice_index" type="INTEGER"/>
+		<db-attribute name="translation_modifier_name" type="VARCHAR" length="100"/>
 	</db-entity>
 	<db-entity name="member_floc_note">
 		<db-attribute name="alignment_name" type="VARCHAR" isPrimaryKey="true" isMandatory="true" length="50"/>
@@ -164,9 +165,10 @@
 		<obj-attribute name="value" type="java.lang.String" db-attribute-path="value"/>
 	</obj-entity>
 	<obj-entity name="FeatureSegment" className="uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment" dbEntityName="feature_segment" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
-		<obj-attribute name="translationModifierName" type="java.lang.String" db-attribute-path="translation_modifier_name"/>
 		<obj-attribute name="refEnd" type="java.lang.Integer" db-attribute-path="ref_end"/>
 		<obj-attribute name="refStart" type="java.lang.Integer" db-attribute-path="ref_start"/>
+		<obj-attribute name="spliceIndex" type="java.lang.Integer" db-attribute-path="splice_index"/>
+		<obj-attribute name="translationModifierName" type="java.lang.String" db-attribute-path="translation_modifier_name"/>
 	</obj-entity>
 	<obj-entity name="MemberFLocNote" className="uk.ac.gla.cvr.gluetools.core.datamodel.memberFLocNote.MemberFLocNote" dbEntityName="member_floc_note" superClassName="uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject">
 	</obj-entity>
