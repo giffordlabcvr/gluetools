@@ -150,11 +150,6 @@ public class Feature extends _Feature implements HasDisplayName {
 		return getMetatag(FeatureMetatag.FeatureMetatagType.CIRCULAR_BRIDGING).map(mt -> mt.getValue().equals("true")).orElse(false);
 	}
 
-	public String flocStartTranscriptionField() {
-		return getMetatag(FeatureMetatag.FeatureMetatagType.FLOC_START_TRANSCRIPTION_FIELD).map(mt -> mt.getValue()).orElse(null);
-	}
-
-	
 	public Integer getDisplayOrder() {
 		Optional<FeatureMetatag> displayOrderMetatag = getMetatag(FeatureMetatag.FeatureMetatagType.DISPLAY_ORDER);
 		if(displayOrderMetatag.isPresent()) {

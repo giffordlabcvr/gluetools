@@ -73,15 +73,6 @@ public class FeatureMetatag extends _FeatureMetatag {
 		 * if true, this feature bridges the cut-off point in a circular genome.
 		 */
 		CIRCULAR_BRIDGING,
-		/**
-		 * string
-		 * name of a custom field on the feature_location table.
-		 * the field contains the starting reference nucleotide for the feature location.
-		 * For features where CIRCULAR_BRIDGING == true, the ReferenceSegment starting at this
-		 * location is taken to be the first transcribed segment, the following segments may then 
-		 * wrap around the cut off point.
-		 */
-		FLOC_START_TRANSCRIPTION_FIELD,
 		
 	}
 

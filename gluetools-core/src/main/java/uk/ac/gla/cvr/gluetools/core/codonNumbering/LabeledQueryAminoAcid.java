@@ -39,7 +39,6 @@ public class LabeledQueryAminoAcid {
 	public LabeledQueryAminoAcid(LabeledAminoAcid labeledAminoAcid, List<Integer> dependentQueryPositions) {
 		this.labeledAminoAcid = labeledAminoAcid;
 		this.dependentQueryPositions = dependentQueryPositions;
-		this.dependentQueryPositions.sort(null);
 		this.queryNtStart = this.dependentQueryPositions.get(0);
 		this.queryNtEnd = this.dependentQueryPositions.get(this.dependentQueryPositions.size()-1);
 	}

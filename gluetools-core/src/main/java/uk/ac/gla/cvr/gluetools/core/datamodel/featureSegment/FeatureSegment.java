@@ -37,7 +37,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 @GlueDataClass(defaultListedProperties = {_FeatureSegment.REF_START_PROPERTY, _FeatureSegment.REF_END_PROPERTY, 
-		_FeatureSegment.TRANSLATION_MODIFIER_NAME_PROPERTY, _FeatureSegment.SPLICE_INDEX_PROPERTY})
+		_FeatureSegment.TRANSLATION_MODIFIER_NAME_PROPERTY, _FeatureSegment.SPLICE_INDEX_PROPERTY, _FeatureSegment.TRANSCRIPTION_INDEX_PROPERTY})
 public class FeatureSegment extends _FeatureSegment implements IReferenceSegment {
 	
 	public static final String REF_SEQ_NAME_PATH = 
@@ -83,6 +83,7 @@ public class FeatureSegment extends _FeatureSegment implements IReferenceSegment
 		copy.setRefStart(getRefStart());
 		copy.setRefEnd(getRefEnd());
 		copy.setSpliceIndex(getSpliceIndex());
+		copy.setTranscriptionIndex(getTranscriptionIndex());
 		copy.setTranslationModifierName(getTranslationModifierName());
 		return copy;
 	}

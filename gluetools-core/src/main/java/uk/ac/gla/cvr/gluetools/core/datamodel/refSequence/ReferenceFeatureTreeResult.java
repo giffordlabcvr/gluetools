@@ -145,9 +145,6 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 		Feature feature = featureLocation.getFeature();
 		ReferenceFeatureTreeResult featureTreeResult = addFeature(feature);
 		CommandObject commandObject = featureTreeResult.getCommandObject();
-		if(feature.circularBridging()) {
-			commandObject.setInt("startTranscription", featureLocation.getStartTranscription());
-		}
 		if(feature.codesAminoAcids() && includeLabeledCodons) {
 			LabeledCodon firstLabeledCodon = featureLocation.getFirstLabeledCodon(cmdContext);
 			LabeledCodon lastLabeledCodon = featureLocation.getLastLabeledCodon(cmdContext);

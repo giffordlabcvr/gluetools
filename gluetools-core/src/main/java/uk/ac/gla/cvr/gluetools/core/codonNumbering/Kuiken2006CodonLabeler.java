@@ -30,6 +30,7 @@ import java.util.List;
 import org.w3c.dom.Element;
 
 import gnu.trove.map.TIntObjectMap;
+import gnu.trove.map.hash.TIntObjectHashMap;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.Kuiken2006CodonLabelerException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -99,7 +100,15 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 		for(LabeledCodon featureRefCodon: featureRefLabeledCodons) {
 			featureRefTcrIdxToCodon[featureRefCodon.getTranscriptionIndex()] = featureRefCodon;
 		}
-		TIntObjectMap<LabeledCodon> rootRefNtToLabeledCodon = rootRefFeatureLoc.getStartRefNtToLabeledCodon(cmdContext);
+		TIntObjectMap<LabeledCodon> rootRefNtToLabeledCodon = new TIntObjectHashMap<LabeledCodon>();
+		for(LabeledCodon labeledCodon: rootRefFeatureLoc.getLabeledCodons(cmdContext)) {
+			for(ReferenceSegment refSeg: labeledCodon.getLcRefSegments()) {
+				for(int refNt = refSeg.getRefStart(); refNt <= refSeg.getRefEnd(); refNt++) {
+					rootRefNtToLabeledCodon.put(refNt, labeledCodon);
+				}
+			}
+		}
+				
 
 		LabeledCodon initialFeatureRefCodon = featureRefTcrIdxToCodon[0];
 		LabeledCodon finalFeatureRefCodon = featureRefTcrIdxToCodon[featureRefTcrIdxToCodon.length-1];
@@ -158,7 +167,7 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 		
 		if(!ReferenceSegment.sameRegion(matchingRootRefCodon.getLcRefSegments(), featureRefCodonInRootRefSegs)) {
 			throw new Kuiken2006CodonLabelerException(Code.MAPPING_ERROR, rootRef.getName(), featureRef.getName(), feature.getName(), featureRefCodonLcSegments.toString(), 
-					codonDesc+" matches the refStart coordinate of a codon on the root reference ("+featureRefCodonInRootRefSegs.get(0).getRefStart()+") but not the correct region -- "+
+					codonDesc+" matches some coordinate of codon "+matchingRootRefCodon.getCodonLabel()+" on the root reference ("+featureRefCodonInRootRefSegs.get(0).getRefStart()+") but not the correct region -- "+
 							featureRefCodonInRootRefSegs+" rather than "+matchingRootRefCodon.getLcRefSegments());
 		}
 		

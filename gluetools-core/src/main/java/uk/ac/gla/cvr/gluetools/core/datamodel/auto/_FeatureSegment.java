@@ -14,6 +14,7 @@ public abstract class _FeatureSegment extends GlueDataObject {
     public static final String REF_END_PROPERTY = "refEnd";
     public static final String REF_START_PROPERTY = "refStart";
     public static final String SPLICE_INDEX_PROPERTY = "spliceIndex";
+    public static final String TRANSCRIPTION_INDEX_PROPERTY = "transcriptionIndex";
     public static final String TRANSLATION_MODIFIER_NAME_PROPERTY = "translationModifierName";
     public static final String FEATURE_LOCATION_PROPERTY = "featureLocation";
 
@@ -41,6 +42,13 @@ public abstract class _FeatureSegment extends GlueDataObject {
     }
     public Integer getSpliceIndex() {
         return (Integer)readProperty(SPLICE_INDEX_PROPERTY);
+    }
+
+    public void setTranscriptionIndex(Integer transcriptionIndex) {
+        writeProperty(TRANSCRIPTION_INDEX_PROPERTY, transcriptionIndex);
+    }
+    public Integer getTranscriptionIndex() {
+        return (Integer)readProperty(TRANSCRIPTION_INDEX_PROPERTY);
     }
 
     public void setTranslationModifierName(String translationModifierName) {

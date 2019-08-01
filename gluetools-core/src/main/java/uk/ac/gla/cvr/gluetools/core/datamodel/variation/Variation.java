@@ -51,7 +51,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.varAlmtNote.VarAlmtNote;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
-import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidDeletionMatchResult;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidDeletionScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidInsertionMatchResult;

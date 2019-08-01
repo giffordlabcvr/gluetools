@@ -47,7 +47,6 @@ public abstract class LabeledCodon {
 		this.codonLabel = codonLabel;
 		this.dependentRefNts = dependentRefNts;
 		this.transcriptionIndex = transcriptionIndex;
-		this.dependentRefNts.sort(null);
 		this.ntStart = this.dependentRefNts.get(0);
 		this.ntEnd = this.dependentRefNts.get(this.dependentRefNts.size()-1);
 	}
@@ -77,7 +76,7 @@ public abstract class LabeledCodon {
 	}
 
 	public final int getNtLength() {
-		return (getNtEnd() - getNtStart())+1;
+		return getDependentRefNts().size();
 	}
 	
 	public List<Integer> getDependentRefNts() {
@@ -97,11 +96,11 @@ public abstract class LabeledCodon {
 				for(Integer dependentRefNt: dependentRefNts) {
 					lcRefSegs.add(new LabeledCodonReferenceSegment(this, dependentRefNt, dependentRefNt));
 				}
+				ReferenceSegment.sortByRefStart(lcRefSegs);
 				
 				lcRefSegs = ReferenceSegment.mergeAbutting(lcRefSegs,
 						LabeledCodonReferenceSegment.mergeAbuttingFunctionLabeledCodonReferenceSegment(), 
 						ReferenceSegment.abutsPredicateReferenceSegment());
-				ReferenceSegment.sortByRefStart(lcRefSegs);
 			}
 		}
 		return lcRefSegs;

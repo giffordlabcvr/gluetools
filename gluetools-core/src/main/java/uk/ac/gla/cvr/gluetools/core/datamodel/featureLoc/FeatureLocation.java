@@ -33,6 +33,7 @@ import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 
@@ -223,6 +224,14 @@ public class FeatureLocation extends _FeatureLocation {
 					isSimpleCodingFeature = false;
 					return isSimpleCodingFeature;
 				}
+				if(segment.getSpliceIndex() != 1) {
+					isSimpleCodingFeature = false;
+					return isSimpleCodingFeature;
+				}
+				if(segment.getTranscriptionIndex() != 1) {
+					isSimpleCodingFeature = false;
+					return isSimpleCodingFeature;
+				}
 			}
 			if(segments.size() != 1) {
 				isSimpleCodingFeature = false;
@@ -385,6 +394,15 @@ public class FeatureLocation extends _FeatureLocation {
 			}
 			lastSpliceIndex = segment.getSpliceIndex();
 		}
+		Map<Integer, List<FeatureSegment>> spliceIndexToFSegs = segments.stream().collect(Collectors.groupingBy(FeatureSegment::getSpliceIndex));
+		for(List<FeatureSegment> fSegs: spliceIndexToFSegs.values()) {
+			Set<Integer> transcriptionIndices = fSegs.stream().map(FeatureSegment::getTranscriptionIndex).collect(Collectors.toSet());
+			if(transcriptionIndices.size() != 1) {
+				throw new FeatureLocationException(FeatureLocationException.Code.SPLICE_INDEX_ERROR, 
+						getReferenceSequence().getName(), feature.getName(), "Segments with the same splice index must have the same transcription index");
+			}
+		}
+		
 		if(feature.codesAminoAcids()) {
 			checkCodingFeatureLocation(cmdContext);
 		}
@@ -494,51 +512,18 @@ public class FeatureLocation extends _FeatureLocation {
 		return GlueDataObject.query(cmdContext, Variation.class, query);
 	}
 
-	public Integer getStartTranscription() {
-		Feature feature = getFeature();
-		if(feature.circularBridging()) {
-			String flocStartTranscriptionField = feature.flocStartTranscriptionField();
-			if(flocStartTranscriptionField == null) {
-				throw new FeatureLocationException(Code.CIRCULAR_GENOME_ERROR, getReferenceSequence().getName(), feature.getName(), 
-						"Feature is defined as circular-bridging but no FLOC_START_TRANSCRIPTION_FIELD metatag is defined");
-			}
-			Object flocStartTranscriptionObj = readProperty(flocStartTranscriptionField);
-			if(flocStartTranscriptionObj == null) {
-				throw new FeatureLocationException(Code.CIRCULAR_GENOME_ERROR, getReferenceSequence().getName(), feature.getName(), 
-						"Feature is defined as circular-bridging but feature location has no value set for field '"+flocStartTranscriptionField+"'");
-			}
-			if(!(flocStartTranscriptionObj instanceof Integer)) {
-				throw new FeatureLocationException(Code.CIRCULAR_GENOME_ERROR, getReferenceSequence().getName(), feature.getName(), 
-						"Feature location value for field '"+flocStartTranscriptionField+"' is not an integer");
-			}
-			return (Integer) flocStartTranscriptionObj;
-		} 
-		return null;
-	}
-	
 	private List<FeatureSegment> getRotatedReferenceSegments() {
 		List<FeatureSegment> featureLocRefSegs = new ArrayList<FeatureSegment>(getSegments());
-		ReferenceSegment.sortByRefStart(featureLocRefSegs);
-		Feature feature = getFeature();
-		if(feature.circularBridging()) {
-			int flocStartTranscription = getStartTranscription();
-			List<FeatureSegment> rotatedRefSegs = new ArrayList<FeatureSegment>();
-			Integer startSegIndex = null;
-			for(int i = 0; i < featureLocRefSegs.size(); i++) {
-				if(featureLocRefSegs.get(i).getRefStart().equals(flocStartTranscription)) {
-					startSegIndex = i;
-					break;
+		featureLocRefSegs.sort(new Comparator<FeatureSegment>() {
+			@Override
+			public int compare(FeatureSegment o1, FeatureSegment o2) {
+				int comp = Integer.compare(o1.getTranscriptionIndex(), o2.getTranscriptionIndex());
+				if(comp != 0) {
+					return comp;
 				}
+				return Integer.compare(o1.getRefStart(), o2.getRefStart());
 			}
-			if(startSegIndex == null) {
-				throw new FeatureLocationException(Code.CIRCULAR_GENOME_ERROR, getReferenceSequence().getName(), feature.getName(), 
-						"No reference segment in feature location has refStart at specified "+feature.flocStartTranscriptionField()+":"+flocStartTranscription+"");
-				
-			}
-			rotatedRefSegs.addAll(featureLocRefSegs.subList(startSegIndex, featureLocRefSegs.size()));
-			rotatedRefSegs.addAll(featureLocRefSegs.subList(0, startSegIndex));
-			featureLocRefSegs = rotatedRefSegs;
-		}
+		});
 		return featureLocRefSegs;
 	}
 	
@@ -618,58 +603,15 @@ public class FeatureLocation extends _FeatureLocation {
 			ReferenceSegment.sortByRefStart(queryToRefSegs);
 			
 			List<LabeledQueryAminoAcid> labeledQueryAminoAcids = new ArrayList<LabeledQueryAminoAcid>();
-			for(FeatureSegment featureSegment: getRotatedReferenceSegments()) {
+			
+			List<FeatureSegment> rotatedSegsNoModifier = new ArrayList<FeatureSegment>();
+			
+			for(FeatureSegment featureSegment: getSegments()) {
 				String translationModifierName = featureSegment.getTranslationModifierName();
 				if(translationModifierName == null) {
-					List<QueryAlignedSegment> featureSegQueryToRefSegs = 
-							ReferenceSegment.intersection(queryToRefSegs, Arrays.asList(featureSegment), ReferenceSegment.cloneLeftSegMerger());
-					// use the intersection function to (a) intersect queryToRefSegs with labeledCodonReferenceSegments
-					// (b) produce LabeledCodonQueryAlignedSegment, i.e. qaSegs annotated with labeled codons.
-					List<LabeledCodonQueryAlignedSegment> lcQaSegs = 
-							ReferenceSegment.intersection(featureSegQueryToRefSegs, labeledCodonReferenceSegments,
-									new BiFunction<QueryAlignedSegment, LabeledCodonReferenceSegment, LabeledCodonQueryAlignedSegment>() {
-								@Override
-								public LabeledCodonQueryAlignedSegment apply(
-										QueryAlignedSegment qaSeg,
-										LabeledCodonReferenceSegment lcRefSeg) {
-									LabeledCodonQueryAlignedSegment lcQaSeg = new LabeledCodonQueryAlignedSegment(lcRefSeg.getLabeledCodon(), 
-											qaSeg.getRefStart(), qaSeg.getRefEnd(), 
-											qaSeg.getQueryStart(), qaSeg.getQueryEnd());
-									// these lines ensure that the merged segment covers only the reference intersection.
-									int leftOverhang = lcRefSeg.getRefStart() - qaSeg.getRefStart();
-									if(leftOverhang > 0) {
-										lcQaSeg.truncateLeft(leftOverhang);
-									}
-									int rightOverhang = qaSeg.getRefEnd() - lcRefSeg.getRefEnd() ;
-									if(rightOverhang > 0) {
-										lcQaSeg.truncateRight(rightOverhang);
-									}
-
-									return lcQaSeg;
-								}
-							});
-
-
-					Map<LabeledCodon, List<LabeledCodonQueryAlignedSegment>> labeledCodonToLcQaSegs = 
-							lcQaSegs.stream().collect(Collectors.groupingBy(LabeledCodonQueryAlignedSegment::getLabeledCodon));
-
-
-					ArrayList<LabeledCodon> labeledCodons = new ArrayList<LabeledCodon>(labeledCodonToLcQaSegs.keySet());
-					labeledCodons.sort(new Comparator<LabeledCodon>() {
-						@Override
-						public int compare(LabeledCodon o1, LabeledCodon o2) {
-							return Integer.compare(o1.getTranscriptionIndex(), o2.getTranscriptionIndex());
-						}
-					});
-
-					labeledCodons.forEach(labeledCodon -> {
-						List<LabeledCodonQueryAlignedSegment> codonLcQaSegs = labeledCodonToLcQaSegs.get(labeledCodon);
-						if(ReferenceSegment.covers(codonLcQaSegs, labeledCodon.getLcRefSegments())) {
-							LabeledQueryAminoAcid lqaa = ((SimpleLabeledCodon) labeledCodon).translate(cmdContext, translator, codonLcQaSegs, queryNucleotideContent);
-							labeledQueryAminoAcids.add(lqaa);
-						};
-					});
+					rotatedSegsNoModifier.add(featureSegment);
 				} else {
+					// handle segment with modifier
 					TranslationModifier translationModifier = Module.resolveModulePlugin(cmdContext, TranslationModifier.class, translationModifierName);
 					if(translationModifier.getSegmentNtLength() != featureSegment.getCurrentLength()) {
 						throw new TranslationModifierException(TranslationModifierException.Code.MODIFICATION_ERROR, "Feature segment length must match translation modifier length");
@@ -723,6 +665,55 @@ public class FeatureLocation extends _FeatureLocation {
 					
 				}
 			}
+			
+			List<QueryAlignedSegment> featureSegQueryToRefSegs = 
+					ReferenceSegment.intersection(queryToRefSegs, rotatedSegsNoModifier, ReferenceSegment.cloneLeftSegMerger());
+			// use the intersection function to (a) intersect queryToRefSegs with labeledCodonReferenceSegments
+			// (b) produce LabeledCodonQueryAlignedSegment, i.e. qaSegs annotated with labeled codons.
+			List<LabeledCodonQueryAlignedSegment> lcQaSegs = 
+					ReferenceSegment.intersection(featureSegQueryToRefSegs, labeledCodonReferenceSegments,
+							new BiFunction<QueryAlignedSegment, LabeledCodonReferenceSegment, LabeledCodonQueryAlignedSegment>() {
+						@Override
+						public LabeledCodonQueryAlignedSegment apply(
+								QueryAlignedSegment qaSeg,
+								LabeledCodonReferenceSegment lcRefSeg) {
+							LabeledCodonQueryAlignedSegment lcQaSeg = new LabeledCodonQueryAlignedSegment(lcRefSeg.getLabeledCodon(), 
+									qaSeg.getRefStart(), qaSeg.getRefEnd(), 
+									qaSeg.getQueryStart(), qaSeg.getQueryEnd());
+							// these lines ensure that the merged segment covers only the reference intersection.
+							int leftOverhang = lcRefSeg.getRefStart() - qaSeg.getRefStart();
+							if(leftOverhang > 0) {
+								lcQaSeg.truncateLeft(leftOverhang);
+							}
+							int rightOverhang = qaSeg.getRefEnd() - lcRefSeg.getRefEnd() ;
+							if(rightOverhang > 0) {
+								lcQaSeg.truncateRight(rightOverhang);
+							}
+
+							return lcQaSeg;
+						}
+					});
+
+
+			Map<LabeledCodon, List<LabeledCodonQueryAlignedSegment>> labeledCodonToLcQaSegs = 
+					lcQaSegs.stream().collect(Collectors.groupingBy(LabeledCodonQueryAlignedSegment::getLabeledCodon));
+
+
+			labeledCodonToLcQaSegs.keySet().forEach(labeledCodon -> {
+				List<LabeledCodonQueryAlignedSegment> codonLcQaSegs = labeledCodonToLcQaSegs.get(labeledCodon);
+				if(ReferenceSegment.covers(codonLcQaSegs, labeledCodon.getLcRefSegments())) {
+					LabeledQueryAminoAcid lqaa = ((SimpleLabeledCodon) labeledCodon).translate(cmdContext, translator, codonLcQaSegs, queryNucleotideContent);
+					labeledQueryAminoAcids.add(lqaa);
+				};
+			});
+
+			labeledQueryAminoAcids.sort(new Comparator<LabeledQueryAminoAcid>() {
+				@Override
+				public int compare(LabeledQueryAminoAcid o1, LabeledQueryAminoAcid o2) {
+					return Integer.compare(o1.getLabeledAminoAcid().getLabeledCodon().getTranscriptionIndex(), 
+							o2.getLabeledAminoAcid().getLabeledCodon().getTranscriptionIndex());
+				}
+			});
 			
 
 			return labeledQueryAminoAcids;
