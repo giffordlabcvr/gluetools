@@ -33,6 +33,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import gnu.trove.map.TIntObjectMap;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.HasDisplayName;
@@ -169,17 +171,18 @@ public class Variation extends _Variation implements HasDisplayName {
 			}
 		}
 		if(variationType.name().startsWith("aminoAcid")) {
-			Integer codon1Start = featureLoc.getCodon1Start(cmdContext);
+			TIntObjectMap<LabeledCodon> startRefNtToLabeledCodon = featureLoc.getStartRefNtToLabeledCodon(cmdContext);
+			TIntObjectMap<LabeledCodon> endRefNtToLabeledCodon = featureLoc.getEndRefNtToLabeledCodon(cmdContext);
 			if(variationType == VariationType.aminoAcidInsertion) {
-				if(! ( 
-						TranslationUtils.isAtStartOfCodon(codon1Start, refEnd) && 
-						TranslationUtils.isAtEndOfCodon(codon1Start, refStart))) {
+				if(startRefNtToLabeledCodon.get(refEnd) == null || 
+						endRefNtToLabeledCodon.get(refStart) == null) {
+					// AA insertions should start at the end of a codon and finish at the start of one.
 					throw new VariationException(Code.AMINO_ACID_VARIATION_NOT_CODON_ALIGNED, 
 							refSeq.getName(), feature.getName(), getName(), Integer.toString(refStart), Integer.toString(refEnd));
 				}				
-			} else if(! ( 
-					TranslationUtils.isAtEndOfCodon(codon1Start, refEnd) && 
-					TranslationUtils.isAtStartOfCodon(codon1Start, refStart))) {
+			} else if(startRefNtToLabeledCodon.get(refStart) == null || 
+					endRefNtToLabeledCodon.get(refEnd) == null) {
+				// All other AA variations should start at the start of a codon and finish at the end of one.
 				throw new VariationException(Code.AMINO_ACID_VARIATION_NOT_CODON_ALIGNED, 
 						refSeq.getName(), feature.getName(), getName(), Integer.toString(refStart), Integer.toString(refEnd));
 			}

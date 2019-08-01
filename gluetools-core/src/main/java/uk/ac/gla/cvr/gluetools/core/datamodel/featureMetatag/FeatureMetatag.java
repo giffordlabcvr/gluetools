@@ -45,6 +45,7 @@ public class FeatureMetatag extends _FeatureMetatag {
 		/** 
 		 * boolean
 		 * this feature uses its own codon numbering coordinates, rather than inheriting them from an ancestor.
+		 * In fact all codon definitions are defined by the ancestor.
 		 */
 		OWN_CODON_NUMBERING, 
 		/** 

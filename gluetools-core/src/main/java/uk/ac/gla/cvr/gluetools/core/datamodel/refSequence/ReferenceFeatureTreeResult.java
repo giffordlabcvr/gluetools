@@ -149,8 +149,6 @@ public class ReferenceFeatureTreeResult extends CommandResult {
 			commandObject.setInt("startTranscription", featureLocation.getStartTranscription());
 		}
 		if(feature.codesAminoAcids() && includeLabeledCodons) {
-			Integer codon1Start = featureLocation.getCodon1Start(cmdContext);
-			commandObject.setInt("codon1Start", codon1Start);
 			LabeledCodon firstLabeledCodon = featureLocation.getFirstLabeledCodon(cmdContext);
 			LabeledCodon lastLabeledCodon = featureLocation.getLastLabeledCodon(cmdContext);
 			commandObject.setString("firstCodon", firstLabeledCodon.getCodonLabel());

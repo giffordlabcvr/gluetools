@@ -99,7 +99,7 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 		for(LabeledCodon featureRefCodon: featureRefLabeledCodons) {
 			featureRefTcrIdxToCodon[featureRefCodon.getTranscriptionIndex()] = featureRefCodon;
 		}
-		TIntObjectMap<LabeledCodon> rootRefNtToLabeledCodon = rootRefFeatureLoc.getRefNtToLabeledCodon(cmdContext);
+		TIntObjectMap<LabeledCodon> rootRefNtToLabeledCodon = rootRefFeatureLoc.getStartRefNtToLabeledCodon(cmdContext);
 
 		LabeledCodon initialFeatureRefCodon = featureRefTcrIdxToCodon[0];
 		LabeledCodon finalFeatureRefCodon = featureRefTcrIdxToCodon[featureRefTcrIdxToCodon.length-1];

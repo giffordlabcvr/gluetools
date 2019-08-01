@@ -10,6 +10,7 @@ import java.util.logging.Level;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
@@ -178,11 +179,13 @@ public abstract class AlignmentFeatureProvider extends FeatureProvider {
 						GbFeatureInterval firstInterval = gbFeatureIntervals.get(0);
 						
 						if(firstInterval.isIncompleteStart()) {
-							// location on reference where reading frame starts.
-							Integer codon1Start = featureLocation.getCodon1Start(cmdContext);
 							Integer refStartNt = firstInterval.getRefStartNt();
-							if(!TranslationUtils.isAtStartOfCodon(codon1Start, refStartNt)) {
-								if(TranslationUtils.isAtEndOfCodon(codon1Start, refStartNt)) {
+							LabeledCodon labeledCodonAtStart = featureLocation.getStartRefNtToLabeledCodon(cmdContext).get(refStartNt);
+							
+							// location where reading frame starts.
+							if(labeledCodonAtStart == null) {
+								LabeledCodon labeledCodonAtEnd = featureLocation.getEndRefNtToLabeledCodon(cmdContext).get(refStartNt);
+								if(labeledCodonAtEnd != null) {
 									qualifierKeyValues.put("codon_start", "2");
 								} else {
 									qualifierKeyValues.put("codon_start", "3");

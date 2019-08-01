@@ -40,6 +40,8 @@ import org.apache.cayenne.query.SelectQuery;
 import org.biojava.nbio.core.sequence.ProteinSequence;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodonReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
@@ -168,24 +170,18 @@ public class ExportMemberCommand extends ModulePluginCommand<CommandResult, Fast
 			Alignment alignment, List<AlignmentMember> almtMembers,
 			FastaProteinExporter fastaProteinExporter) {
 		
-		List<ReferenceSegment> featureRefSegs = featureLoc.segmentsAsReferenceSegments();
-		int codon1Start = featureLoc.getCodon1Start(cmdContext);
 		Translator translator = new CommandContextTranslator(cmdContext);
-
 		Map<String, ProteinSequence> idToProtSeq = new LinkedHashMap<String, ProteinSequence>();
+		List<LabeledCodonReferenceSegment> lcRefSegs = featureLoc.getLabeledCodonReferenceSegments(cmdContext);
 		almtMembers.forEach(almtMember -> {
 			List<QueryAlignedSegment> memberQaSegs = almtMember.segmentsAsQueryAlignedSegments();
 			Alignment tipAlmt = almtMember.getAlignment();
 			memberQaSegs = tipAlmt.translateToRelatedRef(cmdContext, memberQaSegs, relRefSeq);
-			memberQaSegs = ReferenceSegment.intersection(memberQaSegs, featureRefSegs, ReferenceSegment.cloneLeftSegMerger());
-			memberQaSegs = TranslationUtils.truncateToCodonAligned(codon1Start, memberQaSegs);
-			AbstractSequenceObject seqObj = almtMember.getSequence().getSequenceObject();
-			String memberNTs = seqObj.getNucleotides(cmdContext);
-			String featureNTs = SegmentUtils.base1SubString(memberNTs, 
-					QueryAlignedSegment.minQueryStart(memberQaSegs), 
-					QueryAlignedSegment.maxQueryEnd(memberQaSegs)); 
-			String featureAAs = translator.translateToAaString(featureNTs);
-			ProteinSequence proteinSeq = FastaUtils.proteinStringToSequence(featureAAs);
+			memberQaSegs = ReferenceSegment.intersection(memberQaSegs, lcRefSegs, ReferenceSegment.cloneLeftSegMerger());
+			List<LabeledQueryAminoAcid> lqaas = featureLoc.translateQueryNucleotides(cmdContext, translator, memberQaSegs, almtMember.getSequence().getSequenceObject());
+			StringBuffer proteinStringBuf = new StringBuffer();
+			lqaas.forEach(lqaa -> proteinStringBuf.append(lqaa.getLabeledAminoAcid().getAminoAcid()));
+			ProteinSequence proteinSeq = FastaUtils.proteinStringToSequence(proteinStringBuf.toString());
 			String fastaId = fastaProteinExporter.generateMemberFastaId(almtMember);
 			idToProtSeq.put(fastaId, proteinSeq);
 		});

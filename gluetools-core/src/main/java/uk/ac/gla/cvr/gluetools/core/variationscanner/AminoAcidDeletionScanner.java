@@ -52,8 +52,8 @@ public class AminoAcidDeletionScanner extends BaseAminoAcidVariationScanner<Amin
 	private Integer minDeletionLengthAas;
 	private Integer maxDeletionLengthAas;
 	private String referenceNucleotides;
-	private int codon1Start;
-	private TIntObjectMap<LabeledCodon> refNtToLabeledCodon;
+	private TIntObjectMap<LabeledCodon> startRefNtToLabeledCodon;
+	private TIntObjectMap<LabeledCodon> endRefNtToLabeledCodon;
 	
 	
 	public AminoAcidDeletionScanner() {
@@ -66,8 +66,8 @@ public class AminoAcidDeletionScanner extends BaseAminoAcidVariationScanner<Amin
 		FeatureLocation featureLoc = getVariation().getFeatureLoc();
 		this.referenceNucleotides = featureLoc.getReferenceSequence()
 				.getSequence().getSequenceObject().getNucleotides(cmdContext);
-		this.codon1Start = featureLoc.getCodon1Start(cmdContext);
-		this.refNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
+		this.startRefNtToLabeledCodon = featureLoc.getStartRefNtToLabeledCodon(cmdContext);
+		this.endRefNtToLabeledCodon = featureLoc.getEndRefNtToLabeledCodon(cmdContext);
 		Integer configuredFlankingAas = getIntMetatagValue(VariationMetatagType.FLANKING_AAS);
 		if(configuredFlankingAas != null) {
 			this.flankingAas = configuredFlankingAas;
@@ -146,11 +146,11 @@ public class AminoAcidDeletionScanner extends BaseAminoAcidVariationScanner<Amin
 									String refFirstCodonDeleted = null;
 									String refLastCodonDeleted = null;
 									String deletedRefAas = null;
-									if(TranslationUtils.isAtStartOfCodon(codon1Start, refFirstNtDeleted) &&
-											TranslationUtils.isAtEndOfCodon(codon1Start, refLastNtDeleted)) {
+									if(startRefNtToLabeledCodon.get(refFirstNtDeleted) != null &&
+											endRefNtToLabeledCodon.get(refLastNtDeleted) != null) {
 										deletionIsCodonAligned = true;
-										refFirstCodonDeleted = refNtToLabeledCodon.get(refFirstNtDeleted).getCodonLabel();
-										refLastCodonDeleted = refNtToLabeledCodon.get(refLastNtDeleted-2).getCodonLabel();
+										refFirstCodonDeleted = startRefNtToLabeledCodon.get(refFirstNtDeleted).getCodonLabel();
+										refLastCodonDeleted = startRefNtToLabeledCodon.get(refLastNtDeleted-2).getCodonLabel();
 										deletedRefAas = TranslationUtils.translateToAaString(deletedRefNts);
 									} 
 									matchResults.add(new AminoAcidDeletionMatchResult(refFirstCodonDeleted, refLastCodonDeleted, 

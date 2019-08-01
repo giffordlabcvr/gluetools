@@ -32,7 +32,8 @@ public class FeatureException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 		PARENT_RELATIONSHIP_LOOP("loopNames"), 
-		FEATURE_DOES_NOT_CODE_AMINO_ACIDS("featureName");
+		FEATURE_DOES_NOT_CODE_AMINO_ACIDS("featureName"),
+		CODING_FEATURE_EXCEPTION("errorText");
 
 		private String[] argNames;
 		private Code(String... argNames) {

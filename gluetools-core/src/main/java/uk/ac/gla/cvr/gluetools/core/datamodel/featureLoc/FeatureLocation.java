@@ -97,7 +97,8 @@ public class FeatureLocation extends _FeatureLocation {
 	
 	private List<LabeledCodon> labeledCodons;
 	private LabeledCodon[] transcriptionIndexToLabeledCodon;
-	private TIntObjectMap<LabeledCodon> refNtToLabeledCodon;
+	private TIntObjectMap<LabeledCodon> startRefNtToLabeledCodon;
+	private TIntObjectMap<LabeledCodon> endRefNtToLabeledCodon;
 	private Map<String, LabeledCodon> labelToLabeledCodon;
 	private List<LabeledCodonReferenceSegment> labeledCodonReferenceSegments;
 	
@@ -134,65 +135,73 @@ public class FeatureLocation extends _FeatureLocation {
 		}
 		return transcriptionIndexToLabeledCodon;
 	}
-	
+
 	public synchronized List<LabeledCodon> getLabeledCodons(CommandContext cmdContext) {
 		Feature feature = getFeature();
 		feature.checkCodesAminoAcids();
 		if(labeledCodons == null) {
-			FeatureLocation codonNumberingAncestorLocation = getCodonNumberingAncestorLocation(cmdContext);
-			if(codonNumberingAncestorLocation == null) {
-				throw new FeatureLocationException(Code.FEATURE_OR_ANCESTOR_MUST_HAVE_OWN_CODON_NUMBERING, getFeature().getName());
-			}
-			int codonLabelInteger = 1;
-			List<FeatureSegment> featureSegments = getRotatedReferenceSegments();
-			ArrayList<LabeledCodon> newLabeledCodons = new ArrayList<LabeledCodon>();
-			Integer currentCodonStart = null;
-			Integer currentCodonMiddle = null;
-			int transcriptionIndex = 0;
-			
-			for(FeatureSegment featureSegment: featureSegments) {
-				String translationModifierName = featureSegment.getTranslationModifierName();
-				if(translationModifierName == null) {
-					for(int refNt = featureSegment.getRefStart(); refNt <= featureSegment.getRefEnd(); refNt++) {
-						if(currentCodonStart == null) {
-							currentCodonStart = refNt;
-							continue;
-						} else if(currentCodonMiddle == null) {
-							currentCodonMiddle = refNt;
-							continue;
-						} else {
-							newLabeledCodons.add(new SimpleLabeledCodon(codonNumberingAncestorLocation.getFeature().getName(), 
-									Integer.toString(codonLabelInteger), currentCodonStart, currentCodonMiddle, refNt, transcriptionIndex));
+			if(!feature.hasOwnCodonNumbering()) {
+				FeatureLocation codonNumberingAncestorLocation = getCodonNumberingAncestorLocation(cmdContext);
+				if(codonNumberingAncestorLocation == null) {
+					throw new FeatureLocationException(Code.FEATURE_OR_ANCESTOR_MUST_HAVE_OWN_CODON_NUMBERING, getFeature().getName());
+				}
+				List<FeatureSegment> featureSegments = getRotatedReferenceSegments();
+				List<LabeledCodonReferenceSegment> overlappingLcRefSegs = 
+						ReferenceSegment.intersection(featureSegments, 
+								codonNumberingAncestorLocation.getLabeledCodonReferenceSegments(cmdContext), ReferenceSegment.cloneRightSegMerger());
+				this.labeledCodons = overlappingLcRefSegs.stream().map(lcRefSeg -> lcRefSeg.getLabeledCodon()).collect(Collectors.toList());
+			} else {
+				int codonLabelInteger = 1;
+				List<FeatureSegment> featureSegments = getRotatedReferenceSegments();
+				ArrayList<LabeledCodon> newLabeledCodons = new ArrayList<LabeledCodon>();
+				Integer currentCodonStart = null;
+				Integer currentCodonMiddle = null;
+				int transcriptionIndex = 0;
+
+				for(FeatureSegment featureSegment: featureSegments) {
+					String translationModifierName = featureSegment.getTranslationModifierName();
+					if(translationModifierName == null) {
+						for(int refNt = featureSegment.getRefStart(); refNt <= featureSegment.getRefEnd(); refNt++) {
+							if(currentCodonStart == null) {
+								currentCodonStart = refNt;
+								continue;
+							} else if(currentCodonMiddle == null) {
+								currentCodonMiddle = refNt;
+								continue;
+							} else {
+								newLabeledCodons.add(new SimpleLabeledCodon(getFeature().getName(), 
+										Integer.toString(codonLabelInteger), currentCodonStart, currentCodonMiddle, refNt, transcriptionIndex));
+								transcriptionIndex++;
+								codonLabelInteger++;
+								currentCodonStart = null;
+								currentCodonMiddle = null;
+							}
+						}
+					} else {
+						if(currentCodonStart != null || currentCodonMiddle != null) {
+							throw new TranslationModifierException(TranslationModifierException.Code.MODIFICATION_ERROR, "Feature segment with translation modifier begins at a mid-codon location");
+						}
+						TranslationModifier translationModifier = Module.resolveModulePlugin(cmdContext, TranslationModifier.class, translationModifierName);
+						if(translationModifier.getSegmentNtLength() != featureSegment.getCurrentLength()) {
+							throw new TranslationModifierException(TranslationModifierException.Code.MODIFICATION_ERROR, "Feature segment length must match translation modifier length");
+						}
+						List<OutputAminoAcid> outputAminoAcids = translationModifier.getOutputAminoAcids();
+						final int refStart = featureSegment.getRefStart();
+						for(OutputAminoAcid outputAminoAcid: outputAminoAcids) {
+							List<Integer> dependentRefNts = outputAminoAcid.getDependentNtPositions().stream().map(dntp -> (dntp - 1) + refStart).collect(Collectors.toList());
+							ModifiedLabeledCodon modifiedLabeledCodon = new ModifiedLabeledCodon(getFeature().getName(), Integer.toString(codonLabelInteger), translationModifierName, dependentRefNts, transcriptionIndex);
+							newLabeledCodons.add(modifiedLabeledCodon);
 							transcriptionIndex++;
 							codonLabelInteger++;
-							currentCodonStart = null;
-							currentCodonMiddle = null;
 						}
 					}
-				} else {
-					if(currentCodonStart != null || currentCodonMiddle != null) {
-						throw new TranslationModifierException(TranslationModifierException.Code.MODIFICATION_ERROR, "Feature segment with translation modifier begins at a mid-codon location");
-					}
-					TranslationModifier translationModifier = Module.resolveModulePlugin(cmdContext, TranslationModifier.class, translationModifierName);
-					if(translationModifier.getSegmentNtLength() != featureSegment.getCurrentLength()) {
-						throw new TranslationModifierException(TranslationModifierException.Code.MODIFICATION_ERROR, "Feature segment length must match translation modifier length");
-					}
-					List<OutputAminoAcid> outputAminoAcids = translationModifier.getOutputAminoAcids();
-					final int refStart = featureSegment.getRefStart();
-					for(OutputAminoAcid outputAminoAcid: outputAminoAcids) {
-						List<Integer> dependentRefNts = outputAminoAcid.getDependentNtPositions().stream().map(dntp -> (dntp - 1) + refStart).collect(Collectors.toList());
-						ModifiedLabeledCodon modifiedLabeledCodon = new ModifiedLabeledCodon(codonNumberingAncestorLocation.getFeature().getName(), Integer.toString(codonLabelInteger), translationModifierName, dependentRefNts, transcriptionIndex);
-						newLabeledCodons.add(modifiedLabeledCodon);
-						transcriptionIndex++;
-						codonLabelInteger++;
-					}
 				}
+				CodonLabeler codonLabeler = getFeature().getCodonLabelerModule(cmdContext);
+				if(codonLabeler != null) {
+					codonLabeler.relabelCodons(cmdContext, this, newLabeledCodons);
+				}
+				this.labeledCodons = newLabeledCodons;
 			}
-			CodonLabeler codonLabeler = getFeature().getCodonLabelerModule(cmdContext);
-			if(codonLabeler != null) {
-				codonLabeler.relabelCodons(cmdContext, this, newLabeledCodons);
-			}
-			this.labeledCodons = newLabeledCodons;
 		}
 		return labeledCodons;
 	}
@@ -253,16 +262,28 @@ public class FeatureLocation extends _FeatureLocation {
 		return isSimpleCodingFeature;
 	}
 	
-	public synchronized TIntObjectMap<LabeledCodon> getRefNtToLabeledCodon(CommandContext cmdContext) {
-		if(refNtToLabeledCodon == null) {
-			refNtToLabeledCodon = new TIntObjectHashMap<LabeledCodon>();
+	public synchronized TIntObjectMap<LabeledCodon> getStartRefNtToLabeledCodon(CommandContext cmdContext) {
+		if(startRefNtToLabeledCodon == null) {
+			startRefNtToLabeledCodon = new TIntObjectHashMap<LabeledCodon>();
 			List<LabeledCodon> labeledCodons = getLabeledCodons(cmdContext);
 			for(LabeledCodon labeledCodon: labeledCodons) {
-				refNtToLabeledCodon.put(labeledCodon.getNtStart(), labeledCodon);
+				startRefNtToLabeledCodon.put(labeledCodon.getNtStart(), labeledCodon);
 			}
 		}
-		return refNtToLabeledCodon;
+		return startRefNtToLabeledCodon;
 	}
+
+	public synchronized TIntObjectMap<LabeledCodon> getEndRefNtToLabeledCodon(CommandContext cmdContext) {
+		if(endRefNtToLabeledCodon == null) {
+			endRefNtToLabeledCodon = new TIntObjectHashMap<LabeledCodon>();
+			List<LabeledCodon> labeledCodons = getLabeledCodons(cmdContext);
+			for(LabeledCodon labeledCodon: labeledCodons) {
+				endRefNtToLabeledCodon.put(labeledCodon.getNtEnd(), labeledCodon);
+			}
+		}
+		return endRefNtToLabeledCodon;
+	}
+
 	
 	public synchronized Map<String, LabeledCodon> getLabelToLabeledCodon(CommandContext cmdContext) {
 		if(labelToLabeledCodon == null) {
@@ -326,16 +347,20 @@ public class FeatureLocation extends _FeatureLocation {
 		List<FeatureSegment> segments = getSegments();
 		ReferenceSegment.sortByRefStart(segments);
 		Feature feature = getFeature();
+		// feature location must have segments.
 		if(segments.isEmpty()) {
 			throw new FeatureLocationException(FeatureLocationException.Code.FEATURE_LOCATION_HAS_NO_SEGMENTS, 
 					getReferenceSequence().getName(), feature.getName());
 		}
+		// if the feature has a next ancestor (first non-informational ancestor) then there must be a feature location for
+		// that next ancestor.
 		Feature nextAncestorFeature = feature.getNextAncestor();
 		FeatureLocation nextAncestorFeatureLocation = getNextAncestorLocation(cmdContext);
 		if(nextAncestorFeature != null && nextAncestorFeatureLocation == null) {
 			throw new FeatureLocationException(FeatureLocationException.Code.NEXT_ANCESTOR_FEATURE_LOCATION_UNDEFINED, 
 					getReferenceSequence().getName(), feature.getName(), nextAncestorFeature.getName());
 		}
+		// if the feature location has a next ancestor, this feature location must be contained within it.
 		if(nextAncestorFeatureLocation != null) {
 			List<FeatureSegment> ancestorSegments = nextAncestorFeatureLocation.getSegments();
 			ReferenceSegment.sortByRefStart(ancestorSegments);
@@ -366,12 +391,47 @@ public class FeatureLocation extends _FeatureLocation {
 		getVariations().forEach(variation -> variation.validate(cmdContext));
 		
 	}
+	
+	/*
+	 * Coding features are where CODES_AMINO_ACIDS is true.
+	 * 
+	 * There are two kinds of coding features, different rules apply.
+	 * 
+	 * (a) Coding features that define their own translation details (OWN_CODON_NUMBERING = true).
+	 * 
+	 * -- they may have CODON_LABELER_MODULE non-null
+	 * 
+	 * (b) Coding features that inherit their translation details from an ancestor (OWN_CODON_NUMBERING = false)
+	 *     
+	 * -- these may not have a non-null CODON_LABELER_MODULE
+	 * -- segments may not have any side properties, such as translationModifier, splice index etc.
+	 * -- must have a coding next ancestor
+	 * -- feature-location's segments must pick out a non-empty set of labeled codons from that ancestor, 
+	 * these become the feature-location's labeled codons. The region defined by the segments of the feature location 
+	 * and defined by the labeled codons must be the same region.
+	 *     
+	 */
 
 	private void checkCodingFeatureLocation(CommandContext cmdContext) {
 		List<FeatureSegment> featureSegs = getSegments();
+		ReferenceSegment.sortByRefStart(featureSegs);
+		
 		Feature feature = getFeature();
 
-		ReferenceSegment.sortByRefStart(featureSegs);
+		if(!feature.hasOwnCodonNumbering()) {
+			for(FeatureSegment featureSeg: featureSegs) {
+				if(featureSeg.getSpliceIndex() != null) {
+					throw new FeatureLocationException(FeatureLocationException.Code.CODING_FEATURE_LOCATION_ERROR, 
+							getReferenceSequence().getName(), feature.getName(), "Coding feature without own codon numbering may not use splice index on segments");
+					
+				}
+				if(featureSeg.getTranslationModifierName() != null) {
+					throw new FeatureLocationException(FeatureLocationException.Code.CODING_FEATURE_LOCATION_ERROR, 
+							getReferenceSequence().getName(), feature.getName(), "Coding feature without own codon numbering may not use translation modifier on segments");
+				}
+			}
+		}
+		
 		List<ReferenceSegment> uncodedRegions = new ArrayList<ReferenceSegment>();
 		for(FeatureSegment featureSeg: featureSegs) {
 			uncodedRegions.add(featureSeg.asReferenceSegment());
@@ -380,55 +440,26 @@ public class FeatureLocation extends _FeatureLocation {
 		for(LabeledCodon labeledCodon: labeledCodons) {
 			uncodedRegions = ReferenceSegment.subtract(uncodedRegions, labeledCodon.getLcRefSegments());
 		}
+		// all regions of the coding feature location must be part of a labeled codon.
 		if(!uncodedRegions.isEmpty()) {
 			throw new FeatureLocationException(FeatureLocationException.Code.CODING_FEATURE_LOCATION_HAS_UNCODED_REGIONS, 
 					getReferenceSequence().getName(), feature.getName(), uncodedRegions.toString());
 		}
-	}
+		// every labeled codon which overlaps the feature location must overlap entirely.
+		List<ReferenceSegment> featureRefSegs = new ArrayList<ReferenceSegment>();
+		for(FeatureSegment featureSeg: featureSegs) {
+			featureRefSegs.add(featureSeg.asReferenceSegment());
+		}
+		
+		for(LabeledCodon labeledCodon: labeledCodons) {
+			if(!ReferenceSegment.covers(featureRefSegs, labeledCodon.getLcRefSegments())) {
+				throw new FeatureLocationException(FeatureLocationException.Code.CODING_FEATURE_LOCATION_DOES_NOT_COVER_CODON, 
+						getReferenceSequence().getName(), feature.getName(), labeledCodon.getCodonLabel());
+			}
+		}
 
-
-
-	
-	/**
-	 * Returns the reference NT number which points to codon 1 in the codon numbering system applicable to this
-	 * feature location.
-	 * @param cmdContext
-	 * @return
-	 */
-	public Integer getCodon1Start(CommandContext cmdContext) {
-		FeatureLocation codonNumberingAncestorLocation = getCodonNumberingAncestorLocation(cmdContext);
-		if(codonNumberingAncestorLocation == null) {
-			throw new FeatureLocationException(Code.FEATURE_OR_ANCESTOR_MUST_HAVE_OWN_CODON_NUMBERING, getFeature().getName());
-		}
-		List<FeatureSegment> segments = codonNumberingAncestorLocation.getRotatedReferenceSegments();
-		if(!segments.isEmpty()) {
-			// first segment establishes codon1start
-			return segments.get(0).getRefStart();
-		}
-		throw new FeatureLocationException(Code.FEATURE_LOCATION_MUST_HAVE_SEGMENTS_TO_ESTABLISH_READING_FRAME, codonNumberingAncestorLocation.getReferenceSequence().getName(), codonNumberingAncestorLocation.getFeature().getName());
+		
 	}
-	
-	/**
-	 *  Returns the highest-numbered codon in the feature-location's own codon numbering. 
-	 *  This is null unless the following are true of the feature-location
-	 * -- its feature has the OWN_CODON_NUMBERING metatag 
-	 * -- it has a non-empty list of segments 
-	 **/
-	public Integer getOwnCodonNumberingMax(CommandContext cmdContext) {
-		if(!getFeature().hasOwnCodonNumbering()) {
-			return null;
-		}
-		List<FeatureSegment> segments = getSegments();
-		if(segments.isEmpty()) {
-			return null;
-		}
-		int codons = 0;
-		for(FeatureSegment segment: segments) {
-			codons += segment.getCurrentLength() / 3;
-		}
-		return codons;
-	}
-	
 	
 	public List<ReferenceSegment> segmentsAsReferenceSegments() {
 		return getSegments().stream().map(seg -> seg.asReferenceSegment()).collect(Collectors.toList());
@@ -538,7 +569,7 @@ public class FeatureLocation extends _FeatureLocation {
 			ReferenceSegment singleRefSeg = this.getSegments().get(0).asReferenceSegment();
 			List<QueryAlignedSegment> queryToRefFeatureSegs = ReferenceSegment.intersection(queryToRefSegs, Arrays.asList(singleRefSeg), ReferenceSegment.cloneLeftSegMerger());
 			List<LabeledQueryAminoAcid> labeledQueryAminoAcids = new ArrayList<LabeledQueryAminoAcid>();
-			TIntObjectMap<LabeledCodon> refNtToLabeledCodon = getRefNtToLabeledCodon(cmdContext);
+			TIntObjectMap<LabeledCodon> refNtToLabeledCodon = getStartRefNtToLabeledCodon(cmdContext);
 			SimpleLabeledCodon labeledCodon = null;
 			char[] nextAaNts = new char[3];
 			Integer queryNtStart = null;

@@ -31,6 +31,7 @@ import java.util.List;
 
 import gnu.trove.map.TIntObjectMap;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodonReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
@@ -51,8 +52,9 @@ public class AminoAcidInsertionScanner extends BaseAminoAcidVariationScanner<Ami
 	private Integer minInsertionLengthAas;
 	private Integer maxInsertionLengthAas;
 	private String referenceNucleotides;
-	private int codon1Start;
-	private TIntObjectMap<LabeledCodon> refNtToLabeledCodon;
+	private TIntObjectMap<LabeledCodon> startNtToLabeledCodon;
+	private TIntObjectMap<LabeledCodon> endNtToLabeledCodon;
+	private List<LabeledCodonReferenceSegment> lcRefSegs;
 	
 	
 	public AminoAcidInsertionScanner() {
@@ -65,8 +67,9 @@ public class AminoAcidInsertionScanner extends BaseAminoAcidVariationScanner<Ami
 		FeatureLocation featureLoc = getVariation().getFeatureLoc();
 		this.referenceNucleotides = featureLoc.getReferenceSequence()
 				.getSequence().getSequenceObject().getNucleotides(cmdContext);
-		this.codon1Start = featureLoc.getCodon1Start(cmdContext);
-		this.refNtToLabeledCodon = featureLoc.getRefNtToLabeledCodon(cmdContext);
+		this.startNtToLabeledCodon = featureLoc.getStartRefNtToLabeledCodon(cmdContext);
+		this.endNtToLabeledCodon = featureLoc.getStartRefNtToLabeledCodon(cmdContext);
+		this.lcRefSegs = featureLoc.getLabeledCodonReferenceSegments(cmdContext);
 		Integer configuredFlankingAas = getIntMetatagValue(VariationMetatagType.FLANKING_AAS);
 		if(configuredFlankingAas != null) {
 			this.flankingAas = configuredFlankingAas;
@@ -150,12 +153,12 @@ public class AminoAcidInsertionScanner extends BaseAminoAcidVariationScanner<Ami
 									String refLastCodonBeforeIns = null;
 									String refFirstCodonAfterIns = null;
 									String insertedQryAas = null;
-									if(TranslationUtils.isAtEndOfCodon(codon1Start, refLastNtBeforeIns) &&
-											TranslationUtils.isAtStartOfCodon(codon1Start, refFirstNtAfterIns) &&
+									if(endNtToLabeledCodon.get(refLastNtBeforeIns) != null &&
+											startNtToLabeledCodon.get(refFirstNtAfterIns) != null && 
 											insertedRegionLength % 3 == 0) {
 										insertionIsCodonAligned = true;
-										refLastCodonBeforeIns = refNtToLabeledCodon.get(refLastNtBeforeIns-2).getCodonLabel();
-										refFirstCodonAfterIns = refNtToLabeledCodon.get(refFirstNtAfterIns).getCodonLabel();
+										refLastCodonBeforeIns = endNtToLabeledCodon.get(refLastNtBeforeIns).getCodonLabel();
+										refFirstCodonAfterIns = startNtToLabeledCodon.get(refFirstNtAfterIns).getCodonLabel();
 										insertedQryAas = TranslationUtils.translateToAaString(insertedQryNts);
 									} 
 									matchResults.add(new AminoAcidInsertionMatchResult(
@@ -181,12 +184,23 @@ public class AminoAcidInsertionScanner extends BaseAminoAcidVariationScanner<Ami
 		int ntStart = getVariation().getRefStart();
 		int ntEnd = getVariation().getRefEnd();
 		
-		// ntStart must be in a codon before ntEnd.
-		int codonStart = TranslationUtils.getCodon(codon1Start, ntStart);
-		int codonEnd = TranslationUtils.getCodon(codon1Start, ntEnd);
+		List<LabeledCodonReferenceSegment> startCodonSegs = 
+				ReferenceSegment.intersection(Arrays.asList(new ReferenceSegment(ntStart, ntStart)), lcRefSegs, ReferenceSegment.cloneRightSegMerger());
+		if(startCodonSegs.size() != 1) {
+			throwScannerException("For amino acid insertions start point must be within exactly one labeled codon");
+		}
+
+		List<LabeledCodonReferenceSegment> endCodonSegs = 
+				ReferenceSegment.intersection(Arrays.asList(new ReferenceSegment(ntEnd, ntEnd)), lcRefSegs, ReferenceSegment.cloneRightSegMerger());
+		if(endCodonSegs.size() != 1) {
+			throwScannerException("For amino acid insertions end point must be within exactly one labeled codon");
+		}
+
+		int startCodonStart = startCodonSegs.get(0).getRefStart();
+		int endCodonStart = endCodonSegs.get(0).getRefStart();
 		
-		if(codonEnd <= codonStart) {
-			throwScannerException("For amino acid insertions start codon must be before end codon");
+		if(endCodonStart <= startCodonStart) {
+			throwScannerException("For amino acid insertions start codon must be strictly before end codon");
 		}
 	}
 
