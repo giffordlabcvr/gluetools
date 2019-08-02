@@ -12,6 +12,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.translationModification.ModifierRule.DependentPosition;
 import uk.ac.gla.cvr.gluetools.core.translationModification.TranslationModifierException.Code;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
@@ -36,19 +37,45 @@ public class TranslationModifier extends ModulePlugin<TranslationModifier> {
 			List<Element> modifierRuleElems = PluginUtils.findConfigElements(preTranslationNtModificationsElem, alternateElemsXPath);
 			modifierRules = modifierRuleFactory.createFromElements(pluginConfigContext, modifierRuleElems);
 		}
-		List<Element> outputAaElems = PluginUtils.findConfigElements(configElem, "outputAminoAcid", 1, null);
-		for(Element outputAaElem: outputAaElems) {
-			OutputAminoAcid outputAminoAcid = new OutputAminoAcid();
-			PluginFactory.configurePlugin(pluginConfigContext, outputAaElem, outputAminoAcid);
-			outputAminoAcids.add(outputAminoAcid);
-		}
-		Set<Integer> outputAaStartPoints = new LinkedHashSet<Integer>();
-		for(OutputAminoAcid outputAminoAcid: outputAminoAcids) {
-			int startRefNt = outputAminoAcid.getDependentNtPositions().get(0);
-			if(outputAaStartPoints.contains(startRefNt)) {
-				throw new TranslationModifierException(Code.CONFIG_ERROR, "Multiple output amino acids have same first dependent position "+startRefNt);
+		List<Element> outputAaElems = PluginUtils.findConfigElements(configElem, "outputAminoAcid", 0, null);
+		if(outputAaElems.isEmpty()) {
+			// infer output amino acids from modifier rules.
+			List<ModifierRule.DependentPosition> dependentPositions = new ArrayList<ModifierRule.DependentPosition>();
+			for(int i = 1; i <= segmentNtLength; i++) {
+				dependentPositions.add(new ModifierRule.DependentPosition(i));
 			}
-			outputAaStartPoints.add(startRefNt);
+			for(ModifierRule modifierRule: modifierRules) {
+				modifierRule.applyModifierRuleToDependentPositions(dependentPositions);
+			}
+			int numDependentPositions = dependentPositions.size();
+			if(numDependentPositions % 3 != 0) {
+				throw new TranslationModifierException(Code.CONFIG_ERROR, "Application of modifier rules to segment of length "+
+						segmentNtLength+" produces segment of length "+numDependentPositions+" which is not a multiple of 3");
+			}
+			for(int i = 0; i < numDependentPositions / 3; i++) {
+				OutputAminoAcid outputAminoAcid = new OutputAminoAcid();
+				for(int j = 0; j < 3; j++) {
+					DependentPosition dependentPosition = dependentPositions.remove(0);
+					if(dependentPosition.dependentRefNt != null) {
+						outputAminoAcid.getDependentNtPositions().add(dependentPosition.dependentRefNt);
+					}
+				}
+				this.outputAminoAcids.add(outputAminoAcid);
+			}
+		} else {
+			for(Element outputAaElem: outputAaElems) {
+				OutputAminoAcid outputAminoAcid = new OutputAminoAcid();
+				PluginFactory.configurePlugin(pluginConfigContext, outputAaElem, outputAminoAcid);
+				outputAminoAcids.add(outputAminoAcid);
+			}
+			Set<Integer> outputAaStartPoints = new LinkedHashSet<Integer>();
+			for(OutputAminoAcid outputAminoAcid: outputAminoAcids) {
+				int startRefNt = outputAminoAcid.getDependentNtPositions().get(0);
+				if(outputAaStartPoints.contains(startRefNt)) {
+					throw new TranslationModifierException(Code.CONFIG_ERROR, "Multiple output amino acids have same first dependent position "+startRefNt);
+				}
+				outputAaStartPoints.add(startRefNt);
+			}
 		}
 	}
 
@@ -63,7 +90,7 @@ public class TranslationModifier extends ModulePlugin<TranslationModifier> {
 					"Cannot apply pre-translation nucleotide modifier as segment size "+segmentSize+" does not match expected size "+segmentNtLength);
 		}
 		for(ModifierRule modifierRule: modifierRules) {
-			modifierRule.applyModifierRule(nts);
+			modifierRule.applyModifierRuleToNucleotides(nts);
 		}
 		int expectedLength = outputAminoAcids.size() * 3;
 		if(nts.size() != expectedLength) {

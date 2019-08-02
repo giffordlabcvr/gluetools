@@ -579,10 +579,11 @@ public class FeatureLocation extends _FeatureLocation {
 								nextAaNts[0] = queryNucleotideContent.nt(cmdContext, queryNtStart);
 								nextAaNts[1] = queryNucleotideContent.nt(cmdContext, queryNtMiddle);
 								nextAaNts[2] = queryNucleotideContent.nt(cmdContext, queryNtEnd);
-								AmbigNtTripletInfo ambigNtTripletInfo = translator.translate(new String(nextAaNts)).get(0);
+								String queryNts = new String(nextAaNts);
+								AmbigNtTripletInfo ambigNtTripletInfo = translator.translate(queryNts).get(0);
 								LabeledAminoAcid labeledAminoAcid = new LabeledAminoAcid(labeledCodon, ambigNtTripletInfo);
 								labeledQueryAminoAcids.add(new LabeledQueryAminoAcid(labeledAminoAcid, 
-										Arrays.asList(queryNtStart, queryNtMiddle, queryNtEnd)));
+										Arrays.asList(queryNtStart, queryNtMiddle, queryNtEnd), queryNts));
 							}
 						} else {
 							labeledCodon = null;
@@ -651,13 +652,14 @@ public class FeatureLocation extends _FeatureLocation {
 							for(int i = 0; i < 3; i++) {
 								nts[i] = inputNTs.get(startNtIndex+i);
 							}
-							AmbigNtTripletInfo translationInfo = translator.translate(new String(nts)).get(0);
+							String queryNts = new String(nts);
+							AmbigNtTripletInfo translationInfo = translator.translate(queryNts).get(0);
 							LabeledAminoAcid labeledAminoAcid = new LabeledAminoAcid(modifiedLc, translationInfo);
 							List<Integer> dependentQueryPositions = new ArrayList<Integer>();
 							for(Integer dependentRefNtPosition: modifiedLc.getDependentRefNts()) {
 								dependentQueryPositions.add(refNtToQueryNt.get(dependentRefNtPosition));
 							}
-							labeledQueryAminoAcids.add(new LabeledQueryAminoAcid(labeledAminoAcid, dependentQueryPositions));
+							labeledQueryAminoAcids.add(new LabeledQueryAminoAcid(labeledAminoAcid, dependentQueryPositions, queryNts));
 							startNtIndex+=3;
 						}
 					}

@@ -35,12 +35,14 @@ public class LabeledQueryAminoAcid {
 	private int queryNtStart;
 	private int queryNtEnd;
 	private List<Integer> dependentQueryPositions;
+	private String dependentNts;
 	
-	public LabeledQueryAminoAcid(LabeledAminoAcid labeledAminoAcid, List<Integer> dependentQueryPositions) {
+	public LabeledQueryAminoAcid(LabeledAminoAcid labeledAminoAcid, List<Integer> dependentQueryPositions, String dependentQueryNts) {
 		this.labeledAminoAcid = labeledAminoAcid;
 		this.dependentQueryPositions = dependentQueryPositions;
 		this.queryNtStart = this.dependentQueryPositions.get(0);
 		this.queryNtEnd = this.dependentQueryPositions.get(this.dependentQueryPositions.size()-1);
+		this.dependentNts = dependentQueryNts;
 	}
 
 	public LabeledAminoAcid getLabeledAminoAcid() {
@@ -77,6 +79,10 @@ public class LabeledQueryAminoAcid {
 			lastLqaa = lqaa;
 		}
 		return contiguousLqaaSections;
+	}
+
+	public String getDependentNts() {
+		return dependentNts;
 	}
 
 }

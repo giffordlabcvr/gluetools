@@ -21,7 +21,16 @@ public abstract class ModifierRule implements Plugin {
 		return this.segmentNtIndex;
 	}
 
-	protected abstract void applyModifierRule(List<Character> modifiedCharacters);
+	protected static class DependentPosition {
+		Integer dependentRefNt;
 
-	
+		public DependentPosition(Integer dependentRefNt) {
+			super();
+			this.dependentRefNt = dependentRefNt;
+		}
+	}
+		
+	protected abstract void applyModifierRuleToNucleotides(List<Character> modifiedCharacters);
+
+	protected abstract void applyModifierRuleToDependentPositions(List<DependentPosition> dependentPositions);
 }

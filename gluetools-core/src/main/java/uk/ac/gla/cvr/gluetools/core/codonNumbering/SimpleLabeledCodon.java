@@ -45,6 +45,6 @@ public class SimpleLabeledCodon extends LabeledCodon {
 		String ntsToTranslate = new String(nts);
 		AmbigNtTripletInfo ambigNtTripletInfo = translator.translate(ntsToTranslate).get(0);
 		LabeledAminoAcid labeledAminoAcid = new LabeledAminoAcid(this, ambigNtTripletInfo);
-		return new LabeledQueryAminoAcid(labeledAminoAcid, Arrays.asList(queryNtStart, queryNtMiddle, queryNtEnd));
+		return new LabeledQueryAminoAcid(labeledAminoAcid, Arrays.asList(queryNtStart, queryNtMiddle, queryNtEnd), ntsToTranslate);
 	}
 }
