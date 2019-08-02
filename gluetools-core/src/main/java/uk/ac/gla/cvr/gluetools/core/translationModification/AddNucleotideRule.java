@@ -12,6 +12,7 @@ public abstract class AddNucleotideRule extends ModifierRule {
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
+		super.configure(pluginConfigContext, configElem);
 		String addedNtString = PluginUtils.configureStringProperty(configElem, "addedNt", true);
 		if(addedNtString.length() != 1) {
 			throw new TranslationModifierException(Code.CONFIG_ERROR, "The <addedNt> property must specify a single character");
@@ -23,7 +24,7 @@ public abstract class AddNucleotideRule extends ModifierRule {
 	}
 	
 	protected char getAddedNt() {
-		return this.getAddedNt();
+		return addedNt;
 	}
 
 }
