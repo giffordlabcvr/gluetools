@@ -1,4 +1,5 @@
 /**
+
  *    GLUE: A flexible system for virus sequence data
  *    Copyright (C) 2018 The University of Glasgow
  *
@@ -46,6 +47,7 @@ import gnu.trove.map.TIntIntMap;
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntIntHashMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
+import uk.ac.gla.cvr.gluetools.core.GlueException;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.CodonLabeler;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
@@ -452,13 +454,31 @@ public class FeatureLocation extends _FeatureLocation {
 		
 		List<ReferenceSegment> uncodedRegions = new ArrayList<ReferenceSegment>();
 		for(FeatureSegment featureSeg: featureSegs) {
-			uncodedRegions.add(featureSeg.asReferenceSegment());
+			String translationModifierName = featureSeg.getTranslationModifierName();
+			if(translationModifierName == null) {
+				uncodedRegions.add(featureSeg.asReferenceSegment());
+			} else {
+				TranslationModifier translationModifier;
+				try {
+					translationModifier = Module.resolveModulePlugin(cmdContext, TranslationModifier.class, translationModifierName);
+				} catch(GlueException ge) {
+					throw new FeatureLocationException(ge, FeatureLocationException.Code.CODING_FEATURE_LOCATION_ERROR, 
+							getReferenceSequence().getName(), feature.getName(), "Error resolving translation modifier: "+ge.getLocalizedMessage());
+				
+				}
+				if(featureSeg.getCurrentLength() != translationModifier.getSegmentNtLength()) {
+					throw new FeatureLocationException(FeatureLocationException.Code.CODING_FEATURE_LOCATION_ERROR, 
+							getReferenceSequence().getName(), feature.getName(), "Segment of incorrect length ("+featureSeg.getCurrentLength()+
+							") for translation modifier -- should be "+translationModifier.getSegmentNtLength());
+				}
+				
+			}
 		}
 		List<LabeledCodon> labeledCodons = getLabeledCodons(cmdContext);
 		for(LabeledCodon labeledCodon: labeledCodons) {
 			uncodedRegions = ReferenceSegment.subtract(uncodedRegions, labeledCodon.getLcRefSegments());
 		}
-		// all regions of the coding feature location must be part of a labeled codon.
+		// all regions of the coding feature location (without translation modifiers) must be part of a labeled codon.
 		if(!uncodedRegions.isEmpty()) {
 			throw new FeatureLocationException(FeatureLocationException.Code.CODING_FEATURE_LOCATION_HAS_UNCODED_REGIONS, 
 					getReferenceSequence().getName(), feature.getName(), uncodedRegions.toString());
