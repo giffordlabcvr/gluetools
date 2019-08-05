@@ -60,9 +60,15 @@ public class FeatureMetatag extends _FeatureMetatag {
 		DISPLAY_ORDER, 
 		/**
 		 * boolean 
-		 * true this feature codes for amino acids
+		 * true iff this feature codes for amino acids
 		 */
 		CODES_AMINO_ACIDS,
+		/**
+		 * boolean 
+		 * true iff the protein translation results from the reverse complement of the feature location
+		 * Useful for ambisense genomes
+		 */
+		REVERSE_COMPLEMENT_TRANSLATION,
 		/**
 		 * string 
 		 * name of a module which labels codons within the feature to a preferred labeling scheme

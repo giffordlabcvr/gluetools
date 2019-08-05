@@ -35,18 +35,18 @@ public abstract class LabeledCodon {
 
 	private String featureName;
 	private String codonLabel;
-	private int transcriptionIndex;
+	private int translationIndex;
 	private List<LabeledCodonReferenceSegment> lcRefSegs;
 	private List<Integer> dependentRefNts;
 	private int ntStart, ntEnd;
 	
 	
-	protected LabeledCodon(String featureName, String codonLabel, List<Integer> dependentRefNts, int transcriptionIndex) {
+	protected LabeledCodon(String featureName, String codonLabel, List<Integer> dependentRefNts, int translationIndex) {
 		super();
 		this.featureName = featureName;
 		this.codonLabel = codonLabel;
 		this.dependentRefNts = dependentRefNts;
-		this.transcriptionIndex = transcriptionIndex;
+		this.translationIndex = translationIndex;
 		this.ntStart = this.dependentRefNts.get(0);
 		this.ntEnd = this.dependentRefNts.get(this.dependentRefNts.size()-1);
 	}
@@ -63,8 +63,8 @@ public abstract class LabeledCodon {
 		this.codonLabel = codonLabel;
 	}
 
-	public int getTranscriptionIndex() {
-		return transcriptionIndex;
+	public int getTranslationIndex() {
+		return translationIndex;
 	}
 
 	public final int getNtStart() {

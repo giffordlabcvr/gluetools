@@ -283,12 +283,12 @@ public class FastaAlignmentExportCommandDelegate {
 		Map<String, LabeledCodon> labelToLabeledCodon = featureLocation.getLabelToLabeledCodon(cmdContext);
 		LabeledCodon startLc = labelToLabeledCodon.get(lcStart);
 		LabeledCodon endLc = labelToLabeledCodon.get(lcEnd);
-		int minTranscriptionIndex = Math.min(startLc.getTranscriptionIndex(), endLc.getTranscriptionIndex());
-		int maxTranscriptionIndex = Math.max(startLc.getTranscriptionIndex(), endLc.getTranscriptionIndex());
+		int minTranslationIndex = Math.min(startLc.getTranslationIndex(), endLc.getTranslationIndex());
+		int maxTranslationIndex = Math.max(startLc.getTranslationIndex(), endLc.getTranslationIndex());
 		List<ReferenceSegment> refSegs = new ArrayList<ReferenceSegment>();
-		LabeledCodon[] transcriptionIndexToLabeledCodon = featureLocation.getTranscriptionIndexToLabeledCodon(cmdContext);
-		for(int i = minTranscriptionIndex; i <= maxTranscriptionIndex; i++) {
-			LabeledCodon lc = transcriptionIndexToLabeledCodon[i];
+		LabeledCodon[] translationIndexToLabeledCodon = featureLocation.getTranslationIndexToLabeledCodon(cmdContext);
+		for(int i = minTranslationIndex; i <= maxTranslationIndex; i++) {
+			LabeledCodon lc = translationIndexToLabeledCodon[i];
 			List<LabeledCodonReferenceSegment> lcRefSegments = lc.getLcRefSegments();
 			ReferenceSegment.sortByRefStart(lcRefSegments);
 			List<LabeledCodonReferenceSegment> intersection = ReferenceSegment.intersection(refSegs, lcRefSegments, ReferenceSegment.cloneRightSegMerger());

@@ -99,7 +99,7 @@ public class FeatureLocation extends _FeatureLocation {
 
 	
 	private List<LabeledCodon> labeledCodons;
-	private LabeledCodon[] transcriptionIndexToLabeledCodon;
+	private LabeledCodon[] translationIndexToLabeledCodon;
 	private TIntObjectMap<LabeledCodon> startRefNtToLabeledCodon;
 	private TIntObjectMap<LabeledCodon> endRefNtToLabeledCodon;
 	private Map<String, LabeledCodon> labelToLabeledCodon;
@@ -119,24 +119,24 @@ public class FeatureLocation extends _FeatureLocation {
 	}
 
 
-	public synchronized LabeledCodon[] getTranscriptionIndexToLabeledCodon(CommandContext cmdContext) {
-		if(transcriptionIndexToLabeledCodon == null) {
+	public synchronized LabeledCodon[] getTranslationIndexToLabeledCodon(CommandContext cmdContext) {
+		if(translationIndexToLabeledCodon == null) {
 			List<LabeledCodon> labeledCodons = getLabeledCodons(cmdContext);
-			transcriptionIndexToLabeledCodon = new LabeledCodon[labeledCodons.size()];
+			translationIndexToLabeledCodon = new LabeledCodon[labeledCodons.size()];
 			for(LabeledCodon labeledCodon: labeledCodons) {
-				int transcriptionIndex = labeledCodon.getTranscriptionIndex();
-				if(transcriptionIndex >= transcriptionIndexToLabeledCodon.length) {
+				int translationIndex = labeledCodon.getTranslationIndex();
+				if(translationIndex >= translationIndexToLabeledCodon.length) {
 					// RuntimeException because this should never happen
 					throw new RuntimeException("Unexpected transcription index");
 				}
-				if(transcriptionIndexToLabeledCodon[transcriptionIndex] != null) {
+				if(translationIndexToLabeledCodon[translationIndex] != null) {
 					// RuntimeException because this should never happen
 					throw new RuntimeException("Duplicate transcription index");
 				}
-				transcriptionIndexToLabeledCodon[transcriptionIndex] = labeledCodon;
+				translationIndexToLabeledCodon[translationIndex] = labeledCodon;
 			}
 		}
-		return transcriptionIndexToLabeledCodon;
+		return translationIndexToLabeledCodon;
 	}
 
 	public synchronized List<LabeledCodon> getLabeledCodons(CommandContext cmdContext) {
@@ -159,7 +159,7 @@ public class FeatureLocation extends _FeatureLocation {
 				ArrayList<LabeledCodon> newLabeledCodons = new ArrayList<LabeledCodon>();
 				Integer currentCodonStart = null;
 				Integer currentCodonMiddle = null;
-				int transcriptionIndex = 0;
+				int translationIndex = 0;
 
 				for(FeatureSegment featureSegment: featureSegments) {
 					String translationModifierName = featureSegment.getTranslationModifierName();
@@ -173,8 +173,8 @@ public class FeatureLocation extends _FeatureLocation {
 								continue;
 							} else {
 								newLabeledCodons.add(new SimpleLabeledCodon(getFeature().getName(), 
-										Integer.toString(codonLabelInteger), currentCodonStart, currentCodonMiddle, refNt, transcriptionIndex));
-								transcriptionIndex++;
+										Integer.toString(codonLabelInteger), currentCodonStart, currentCodonMiddle, refNt, translationIndex));
+								translationIndex++;
 								codonLabelInteger++;
 								currentCodonStart = null;
 								currentCodonMiddle = null;
@@ -192,9 +192,9 @@ public class FeatureLocation extends _FeatureLocation {
 						final int refStart = featureSegment.getRefStart();
 						for(OutputAminoAcid outputAminoAcid: outputAminoAcids) {
 							List<Integer> dependentRefNts = outputAminoAcid.getDependentNtPositions().stream().map(dntp -> (dntp - 1) + refStart).collect(Collectors.toList());
-							ModifiedLabeledCodon modifiedLabeledCodon = new ModifiedLabeledCodon(getFeature().getName(), Integer.toString(codonLabelInteger), translationModifierName, dependentRefNts, transcriptionIndex);
+							ModifiedLabeledCodon modifiedLabeledCodon = new ModifiedLabeledCodon(getFeature().getName(), Integer.toString(codonLabelInteger), translationModifierName, dependentRefNts, translationIndex);
 							newLabeledCodons.add(modifiedLabeledCodon);
-							transcriptionIndex++;
+							translationIndex++;
 							codonLabelInteger++;
 						}
 					}
@@ -732,8 +732,8 @@ public class FeatureLocation extends _FeatureLocation {
 			labeledQueryAminoAcids.sort(new Comparator<LabeledQueryAminoAcid>() {
 				@Override
 				public int compare(LabeledQueryAminoAcid o1, LabeledQueryAminoAcid o2) {
-					return Integer.compare(o1.getLabeledAminoAcid().getLabeledCodon().getTranscriptionIndex(), 
-							o2.getLabeledAminoAcid().getLabeledCodon().getTranscriptionIndex());
+					return Integer.compare(o1.getLabeledAminoAcid().getLabeledCodon().getTranslationIndex(), 
+							o2.getLabeledAminoAcid().getLabeledCodon().getTranslationIndex());
 				}
 			});
 			

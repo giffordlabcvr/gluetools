@@ -141,11 +141,11 @@ public class AddFeatureSegmentCommand extends FeatureLocModeCommand<CreateResult
 			if(endLabeledCodon == null) {
 				throw new CommandException(CommandException.Code.COMMAND_FAILED_ERROR, "No such labeled codon \""+lcStart+"\"");
 			}
-			int minTranscriptionIndex = Math.min(startLabeledCodon.getTranscriptionIndex(), endLabeledCodon.getTranscriptionIndex());
-			int maxTranscriptionIndex = Math.max(startLabeledCodon.getTranscriptionIndex(), endLabeledCodon.getTranscriptionIndex());
+			int minTranslationIndex = Math.min(startLabeledCodon.getTranslationIndex(), endLabeledCodon.getTranslationIndex());
+			int maxTranslationIndex = Math.max(startLabeledCodon.getTranslationIndex(), endLabeledCodon.getTranslationIndex());
 			List<ReferenceSegment> refSegs = new ArrayList<ReferenceSegment>();
-			LabeledCodon[] transcriptionIndexToLabeledCodon = parentFeatureLoc.getTranscriptionIndexToLabeledCodon(cmdContext);
-			for(int i = minTranscriptionIndex; i <= maxTranscriptionIndex; i++) {
+			LabeledCodon[] transcriptionIndexToLabeledCodon = parentFeatureLoc.getTranslationIndexToLabeledCodon(cmdContext);
+			for(int i = minTranslationIndex; i <= maxTranslationIndex; i++) {
 				LabeledCodon lc = transcriptionIndexToLabeledCodon[i];
 				List<LabeledCodonReferenceSegment> lcRefSegments = lc.getLcRefSegments();
 				ReferenceSegment.sortByRefStart(lcRefSegments);

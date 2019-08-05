@@ -109,9 +109,9 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 
 		
 		
-		LabeledCodon[] featureRefTcrIdxToCodon = new LabeledCodon[featureRefLabeledCodons.size()];
+		LabeledCodon[] featureRefTrlnIdxToCodon = new LabeledCodon[featureRefLabeledCodons.size()];
 		for(LabeledCodon featureRefCodon: featureRefLabeledCodons) {
-			featureRefTcrIdxToCodon[featureRefCodon.getTranscriptionIndex()] = featureRefCodon;
+			featureRefTrlnIdxToCodon[featureRefCodon.getTranslationIndex()] = featureRefCodon;
 		}
 		TIntObjectMap<LabeledCodon> rootRefNtToLabeledCodon = new TIntObjectHashMap<LabeledCodon>();
 		for(LabeledCodon labeledCodon: rootRefFeatureLoc.getLabeledCodons(cmdContext)) {
@@ -124,12 +124,12 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 				
 
 		// first feature ref codon with counterpart on the root reference
-		LabeledCodon initialFeatureRefCodon = featureRefTcrIdxToCodon[0];
+		LabeledCodon initialFeatureRefCodon = featureRefTrlnIdxToCodon[0];
 		int initialFeatureRefCodonIdx = 0;
 
 		// last feature ref codon with counterpart on the root reference
-		LabeledCodon finalFeatureRefCodon = featureRefTcrIdxToCodon[featureRefTcrIdxToCodon.length-1];
-		int finalFeatureRefCodonIdx = featureRefTcrIdxToCodon.length-1;
+		LabeledCodon finalFeatureRefCodon = featureRefTrlnIdxToCodon[featureRefTrlnIdxToCodon.length-1];
+		int finalFeatureRefCodonIdx = featureRefTrlnIdxToCodon.length-1;
 		
 		// counterpart on the root reference of initialFeatureRefCodon
 		LabeledCodon initialRootRefCodon = null;
@@ -139,8 +139,8 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 
 		if(allowUpstreamLabelling) {
 			List<LabeledCodon> upstreamFeatureRefCodons = new LinkedList<LabeledCodon>();
-			for(initialFeatureRefCodonIdx = 0; initialFeatureRefCodonIdx < featureRefTcrIdxToCodon.length; initialFeatureRefCodonIdx++) {
-				initialFeatureRefCodon = featureRefTcrIdxToCodon[initialFeatureRefCodonIdx];
+			for(initialFeatureRefCodonIdx = 0; initialFeatureRefCodonIdx < featureRefTrlnIdxToCodon.length; initialFeatureRefCodonIdx++) {
+				initialFeatureRefCodon = featureRefTrlnIdxToCodon[initialFeatureRefCodonIdx];
 				initialRootRefCodon = findRootRefCodon(featureRef, rootRef, feature, featureRefToRootRefSegs, rootRefNtToLabeledCodon,
 						initialFeatureRefCodon, false, false, false, "Initial codon");
 				if(initialRootRefCodon != null) {
@@ -169,8 +169,8 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 
 		if(allowDownstreamLabelling) {
 			List<LabeledCodon> downstreamFeatureRefCodons = new LinkedList<LabeledCodon>();
-			for(finalFeatureRefCodonIdx = featureRefTcrIdxToCodon.length-1; finalFeatureRefCodonIdx > initialFeatureRefCodonIdx; finalFeatureRefCodonIdx--) {
-				finalFeatureRefCodon = featureRefTcrIdxToCodon[finalFeatureRefCodonIdx];
+			for(finalFeatureRefCodonIdx = featureRefTrlnIdxToCodon.length-1; finalFeatureRefCodonIdx > initialFeatureRefCodonIdx; finalFeatureRefCodonIdx--) {
+				finalFeatureRefCodon = featureRefTrlnIdxToCodon[finalFeatureRefCodonIdx];
 				finalRootRefCodon = findRootRefCodon(featureRef, rootRef, feature, featureRefToRootRefSegs, rootRefNtToLabeledCodon,
 						finalFeatureRefCodon, false, false, false, "Final codon");
 				if(finalRootRefCodon != null) {
@@ -196,7 +196,7 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 		LabeledCodon lastMatchedRootRefCodon = initialRootRefCodon;
 		int codonsSinceMatch = 0;
 		for(int featureRefTcrIdx = initialFeatureRefCodonIdx+1; featureRefTcrIdx < finalFeatureRefCodonIdx; featureRefTcrIdx++) {
-			LabeledCodon featureRefCodon = featureRefTcrIdxToCodon[featureRefTcrIdx];
+			LabeledCodon featureRefCodon = featureRefTrlnIdxToCodon[featureRefTcrIdx];
 			LabeledCodon matchedRootRefCodon = findRootRefCodon(featureRef, rootRef, feature, featureRefToRootRefSegs, rootRefNtToLabeledCodon,
 					featureRefCodon, false, true, !allowUnmappedLabelling, "Codon");
 			if(matchedRootRefCodon == null) {
