@@ -150,6 +150,10 @@ public class Feature extends _Feature implements HasDisplayName {
 		return getMetatag(FeatureMetatag.FeatureMetatagType.CIRCULAR_BRIDGING).map(mt -> mt.getValue().equals("true")).orElse(false);
 	}
 
+	public boolean reverseComplementTranslation() {
+		return getMetatag(FeatureMetatag.FeatureMetatagType.REVERSE_COMPLEMENT_TRANSLATION).map(mt -> mt.getValue().equals("true")).orElse(false);
+	}
+
 	public Integer getDisplayOrder() {
 		Optional<FeatureMetatag> displayOrderMetatag = getMetatag(FeatureMetatag.FeatureMetatagType.DISPLAY_ORDER);
 		if(displayOrderMetatag.isPresent()) {

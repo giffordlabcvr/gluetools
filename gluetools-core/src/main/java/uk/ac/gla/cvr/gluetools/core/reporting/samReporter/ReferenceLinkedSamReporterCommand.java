@@ -272,7 +272,7 @@ public abstract class ReferenceLinkedSamReporterCommand<R extends CommandResult>
 		} else if(relRefName != null && featureName != null && lcStart != null && lcEnd != null) {
 			FeatureLocation featureLocation = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relRefName, featureName));
 			int refStart = featureLocation.getLabeledCodon(cmdContext, lcStart).getNtStart();
-			int refEnd = featureLocation.getLabeledCodon(cmdContext, lcEnd).getNtStart()+2;
+			int refEnd = featureLocation.getLabeledCodon(cmdContext, lcEnd).getNtEnd();
 			return new SimpleNucleotideColumnsSelector(relRefName, featureName, refStart, refEnd);
 		} else if(relRefName != null && featureName != null) {
 			return new SimpleNucleotideColumnsSelector(relRefName, featureName, null, null);

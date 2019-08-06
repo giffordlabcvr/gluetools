@@ -28,6 +28,7 @@ package uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -73,12 +74,14 @@ import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.translation.AmbigNtTripletInfo;
 import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
+import uk.ac.gla.cvr.gluetools.core.translation.ResidueUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 import uk.ac.gla.cvr.gluetools.core.translationModification.OutputAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.translationModification.TranslationModifier;
 import uk.ac.gla.cvr.gluetools.core.translationModification.TranslationModifierException;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.BaseVariationScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 
 @GlueDataClass(defaultListedProperties = {FeatureLocation.REF_SEQ_NAME_PATH, FeatureLocation.FEATURE_NAME_PATH})
@@ -156,6 +159,12 @@ public class FeatureLocation extends _FeatureLocation {
 			} else {
 				int codonLabelInteger = 1;
 				List<FeatureSegment> featureSegments = getRotatedReferenceSegments();
+				
+				boolean revComp = feature.reverseComplementTranslation();
+				if(revComp) {
+					Collections.reverse(featureSegments);
+				}
+				
 				ArrayList<LabeledCodon> newLabeledCodons = new ArrayList<LabeledCodon>();
 				Integer currentCodonStart = null;
 				Integer currentCodonMiddle = null;
@@ -164,7 +173,11 @@ public class FeatureLocation extends _FeatureLocation {
 				for(FeatureSegment featureSegment: featureSegments) {
 					String translationModifierName = featureSegment.getTranslationModifierName();
 					if(translationModifierName == null) {
-						for(int refNt = featureSegment.getRefStart(); refNt <= featureSegment.getRefEnd(); refNt++) {
+						int firstRefNt = revComp ? featureSegment.getRefEnd() : featureSegment.getRefStart();
+						int afterLastRefNt = revComp ? featureSegment.getRefStart()-1 : featureSegment.getRefEnd()+1;
+						int refIncrement = revComp ? -1 : 1;
+						
+						for(int refNt = firstRefNt; refNt != afterLastRefNt; refNt += refIncrement) {
 							if(currentCodonStart == null) {
 								currentCodonStart = refNt;
 								continue;
@@ -172,8 +185,14 @@ public class FeatureLocation extends _FeatureLocation {
 								currentCodonMiddle = refNt;
 								continue;
 							} else {
-								newLabeledCodons.add(new SimpleLabeledCodon(getFeature().getName(), 
-										Integer.toString(codonLabelInteger), currentCodonStart, currentCodonMiddle, refNt, translationIndex));
+								if(revComp) {
+									// actually put the dependent ref NT order back in forwards direction, reversing it will come later.
+									newLabeledCodons.add(new SimpleLabeledCodon(getFeature().getName(), 
+											Integer.toString(codonLabelInteger), refNt, currentCodonMiddle, currentCodonStart, translationIndex));
+								} else {
+									newLabeledCodons.add(new SimpleLabeledCodon(getFeature().getName(), 
+											Integer.toString(codonLabelInteger), currentCodonStart, currentCodonMiddle, refNt, translationIndex));
+								}
 								translationIndex++;
 								codonLabelInteger++;
 								currentCodonStart = null;
@@ -190,6 +209,9 @@ public class FeatureLocation extends _FeatureLocation {
 						}
 						List<OutputAminoAcid> outputAminoAcids = translationModifier.getOutputAminoAcids();
 						final int refStart = featureSegment.getRefStart();
+						if(revComp) {
+							Collections.reverse(outputAminoAcids);
+						}
 						for(OutputAminoAcid outputAminoAcid: outputAminoAcids) {
 							List<Integer> dependentRefNts = outputAminoAcid.getDependentNtPositions().stream().map(dntp -> (dntp - 1) + refStart).collect(Collectors.toList());
 							ModifiedLabeledCodon modifiedLabeledCodon = new ModifiedLabeledCodon(getFeature().getName(), Integer.toString(codonLabelInteger), translationModifierName, dependentRefNts, translationIndex);
@@ -569,6 +591,7 @@ public class FeatureLocation extends _FeatureLocation {
 			Translator translator,
 			List<QueryAlignedSegment> queryToRefSegs,
 			NucleotideContentProvider queryNucleotideContent) {
+		boolean revComp = getFeature().reverseComplementTranslation();
 		if(this.getSimpleCodingFeature(cmdContext)) {
 			// use faster code path in the common case where there are no complications.
 			ReferenceSegment singleRefSeg = this.getSegments().get(0).asReferenceSegment();
@@ -600,7 +623,11 @@ public class FeatureLocation extends _FeatureLocation {
 								nextAaNts[1] = queryNucleotideContent.nt(cmdContext, queryNtMiddle);
 								nextAaNts[2] = queryNucleotideContent.nt(cmdContext, queryNtEnd);
 								String queryNts = new String(nextAaNts);
-								AmbigNtTripletInfo ambigNtTripletInfo = translator.translate(queryNts).get(0);
+								String ntsToTranslate = queryNts;
+								if(revComp) {
+									ntsToTranslate = FastaUtils.reverseComplement(ntsToTranslate);
+								}
+								AmbigNtTripletInfo ambigNtTripletInfo = translator.translate(ntsToTranslate).get(0);
 								LabeledAminoAcid labeledAminoAcid = new LabeledAminoAcid(labeledCodon, ambigNtTripletInfo);
 								labeledQueryAminoAcids.add(new LabeledQueryAminoAcid(labeledAminoAcid, 
 										Arrays.asList(queryNtStart, queryNtMiddle, queryNtEnd), queryNts));
@@ -673,7 +700,11 @@ public class FeatureLocation extends _FeatureLocation {
 								nts[i] = inputNTs.get(startNtIndex+i);
 							}
 							String queryNts = new String(nts);
-							AmbigNtTripletInfo translationInfo = translator.translate(queryNts).get(0);
+							String ntsToTranslate = queryNts;
+							if(revComp) {
+								ntsToTranslate = FastaUtils.reverseComplement(ntsToTranslate);
+							}
+							AmbigNtTripletInfo translationInfo = translator.translate(ntsToTranslate).get(0);
 							LabeledAminoAcid labeledAminoAcid = new LabeledAminoAcid(modifiedLc, translationInfo);
 							List<Integer> dependentQueryPositions = new ArrayList<Integer>();
 							for(Integer dependentRefNtPosition: modifiedLc.getDependentRefNts()) {
@@ -724,7 +755,33 @@ public class FeatureLocation extends _FeatureLocation {
 			labeledCodonToLcQaSegs.keySet().forEach(labeledCodon -> {
 				List<LabeledCodonQueryAlignedSegment> codonLcQaSegs = labeledCodonToLcQaSegs.get(labeledCodon);
 				if(ReferenceSegment.covers(codonLcQaSegs, labeledCodon.getLcRefSegments())) {
-					LabeledQueryAminoAcid lqaa = ((SimpleLabeledCodon) labeledCodon).translate(cmdContext, translator, codonLcQaSegs, queryNucleotideContent);
+					SimpleLabeledCodon simpleLc = ((SimpleLabeledCodon) labeledCodon);
+					char[] nts = new char[3];
+					Integer queryNtStart = null;
+					Integer queryNtMiddle = null;
+					Integer queryNtEnd = null;
+					for(LabeledCodonQueryAlignedSegment lcQaSeg : codonLcQaSegs) {
+						for(int i = 0; i < lcQaSeg.getCurrentLength(); i++) {
+							if(lcQaSeg.getRefStart()+i == simpleLc.getNtStart()) {
+								queryNtStart = lcQaSeg.getQueryStart()+i;
+								nts[0] = queryNucleotideContent.nt(cmdContext, queryNtStart);
+							} else if(lcQaSeg.getRefStart()+i == simpleLc.getNtMiddle()) {
+								queryNtMiddle = lcQaSeg.getQueryStart()+i;
+								nts[1] = queryNucleotideContent.nt(cmdContext, queryNtMiddle);
+							} else if(lcQaSeg.getRefStart()+i == simpleLc.getNtEnd()) {
+								queryNtEnd = lcQaSeg.getQueryStart()+i;
+								nts[2] = queryNucleotideContent.nt(cmdContext, queryNtEnd);
+							} 
+						}
+					}
+					String queryNts = new String(nts);
+					String ntsToTranslate = queryNts;
+					if(revComp) {
+						ntsToTranslate = FastaUtils.reverseComplement(ntsToTranslate);
+					}
+					AmbigNtTripletInfo ambigNtTripletInfo = translator.translate(ntsToTranslate).get(0);
+					LabeledAminoAcid labeledAminoAcid = new LabeledAminoAcid(simpleLc, ambigNtTripletInfo);
+					LabeledQueryAminoAcid lqaa = new LabeledQueryAminoAcid(labeledAminoAcid, Arrays.asList(queryNtStart, queryNtMiddle, queryNtEnd), queryNts);
 					labeledQueryAminoAcids.add(lqaa);
 				};
 			});
