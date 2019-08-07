@@ -82,8 +82,24 @@ public class BlastUtils {
 					})
 					.collect(Collectors.toList());
 	
+			// even within the segments generated from a single HSP, it is possible that there are overlaps on the query, 
+			// e.g. because of reference feature segments with translation modifiers.
+			// we will clean these up by merging in each segment one by one.
+			List<BlastSegmentList> cleanedUpPerHspSegs = new ArrayList<BlastSegmentList>();
+			for(BlastSegmentList blastSegmentList: perHspAlignedSegments) {
+				BlastSegmentList cleanedUpList;
+				if(blastSegmentList.isEmpty()) {
+					cleanedUpList = blastSegmentList;
+				} else {
+					cleanedUpList = new BlastSegmentList(blastSegmentList.remove(0));
+					while(!blastSegmentList.isEmpty()) {
+						cleanedUpList.mergeInSegmentList(new BlastSegmentList(blastSegmentList.remove(0)), respectQueryOrder);
+					}
+				}
+				cleanedUpPerHspSegs.add(cleanedUpList);
+			}
 			// merge/rationalise the segments;
-			BlastSegmentList mergedSegments = mergeSegments(perHspAlignedSegments, respectQueryOrder);
+			BlastSegmentList mergedSegments = mergeSegments(cleanedUpPerHspSegs, respectQueryOrder);
 			// store merged segments against the query fasta ID.
 			fastaIdToAlignedSegments.put(queryFastaId, new ArrayList<QueryAlignedSegment>(mergedSegments));
 		}

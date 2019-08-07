@@ -36,6 +36,9 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 public class BlastResultBuilder {
 
 	public static BlastResult blastResultFromDocument(Document blastDoc) {
+		
+		// GlueLogger.getGlueLogger().info(new String(GlueXmlUtils.prettyPrint(blastDoc)));
+		
 		BlastResult blastResult = new BlastResult();
 		Element searchElem = getPathElement(blastDoc, "BlastOutput2", "report", "Report", "results", "Results", "search", "Search");
 		blastResult.setQueryFastaId(getPathElemText(searchElem, "query-title"));
@@ -56,6 +59,10 @@ public class BlastResultBuilder {
 				blastHsp.setQueryTo(getPathElemInt(hspElem, "query-to"));
 				blastHsp.setHitFrom(getPathElemInt(hspElem, "hit-from"));
 				blastHsp.setHitTo(getPathElemInt(hspElem, "hit-to"));
+				List<Element> hitFrameElems = GlueXmlUtils.findChildElements(hspElem, "hit-frame");
+				if(hitFrameElems.size() == 1) {
+					blastHsp.setHitFrame(Integer.parseInt(hitFrameElems.get(0).getTextContent()));
+				}
 				blastHsp.setAlignLen(getPathElemInt(hspElem, "align-len"));
 				blastHsp.setGaps(getPathElemInt(hspElem, "gaps"));
 				blastHsp.setQseq(getPathElemText(hspElem, "qseq"));

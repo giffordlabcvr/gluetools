@@ -42,6 +42,7 @@ public class BlastHsp {
 	private int queryTo;
 	private int hitFrom;
 	private int hitTo;
+	private Integer hitFrame;
 	private int alignLen;
 	private int gaps;
 	private String qseq;
@@ -131,8 +132,12 @@ public class BlastHsp {
 	public BlastHit getBlastHit() {
 		return blastHit;
 	}
-	
-	
+	public Integer getHitFrame() {
+		return hitFrame;
+	}
+	public void setHitFrame(int hitFrame) {
+		this.hitFrame = hitFrame;
+	}
 	public BlastSegmentList computeBlastAlignedSegments(int refIncrement, Function<Integer, Integer> queryCoordMapper) {
 		BlastSegmentList segments = new BlastSegmentList();
 		
@@ -143,10 +148,12 @@ public class BlastHsp {
 		int hqlength = hseq.length();
 		
 		// hqseqIndex: which position we are looking at on the hseq and qseq
+		// (for tBlastN, the position in the amino acid)
 		int hqseqIndex = 1;
 		
 		// range on the hit (reference) original sequence which the hsp covers
 		int hitFrom = getHitFrom();
+		int hitTo = getHitTo();
 		// range on the query original sequence which the hsp covers
 		int queryFrom = getQueryFrom();
 
@@ -154,10 +161,17 @@ public class BlastHsp {
 		int refStart, refEnd;
 		int queryStart, queryEnd;
 
-		refStart = hitFrom;
-		queryStart = queryFrom;
+		boolean forwardTranslation = ( getHitFrame() == null ) || ( getHitFrame() >= 0 ) ;
 		
-		refEnd = refStart;
+		if(forwardTranslation) {
+	 		refStart = hitFrom;
+			refEnd = refStart;
+		} else {
+			refEnd = hitTo+1;
+	 		refStart = refEnd;
+		}
+
+		queryStart = queryFrom;
 		queryEnd = queryStart;
 
 		char hChar;
@@ -167,11 +181,23 @@ public class BlastHsp {
 		qChar = SegmentUtils.base1Char(qseq, hqseqIndex);
 		while(hqseqIndex <= hqlength) {
 			Integer queryEndMapped = queryCoordMapper.apply(queryEnd);
-			Integer lastQueryEndMapped = queryEndMapped-refIncrement;
+			Integer lastQueryEndMapped;
+			if(forwardTranslation) {
+				lastQueryEndMapped = queryEndMapped-refIncrement;
+			} else {
+				lastQueryEndMapped = queryEndMapped+refIncrement;
+			}
 			// read a block where neither hseq nor qseq has gaps
-			while(hChar != '-' && qChar != '-' && hqseqIndex <= hqlength && queryEndMapped == lastQueryEndMapped+refIncrement) {
+			while(hChar != '-' && qChar != '-' && hqseqIndex <= hqlength && 
+					( forwardTranslation ? 
+					( queryEndMapped == lastQueryEndMapped+refIncrement ) : 
+						(queryEndMapped == lastQueryEndMapped-refIncrement) ) ) {
 				hqseqIndex++;
-				refEnd = refEnd + refIncrement;
+				if(forwardTranslation) {
+					refEnd = refEnd + refIncrement;
+				} else {
+					refStart = refStart - refIncrement;
+				}
 				queryEnd++;
 				lastQueryEndMapped = queryEndMapped;
 				queryEndMapped = queryCoordMapper.apply(queryEnd);
@@ -180,19 +206,36 @@ public class BlastHsp {
 					qChar = SegmentUtils.base1Char(qseq, hqseqIndex);
 				}
 			} 
+			int segQStart, segQEnd;
+			if(forwardTranslation) {
+				segQStart = queryCoordMapper.apply(queryStart);
+				segQEnd = (lastQueryEndMapped+refIncrement)-1;
+			} else {
+				segQStart = lastQueryEndMapped;
+				segQEnd = (queryCoordMapper.apply(queryStart)+refIncrement)-1;
+			}
+			
 			// at the end of this block add a new segment.
 			BlastAlignedSegment blastAlignedSegment = 
-					new BlastAlignedSegment(refStart, refEnd-1, queryCoordMapper.apply(queryStart), (lastQueryEndMapped+refIncrement)-1, this);
+					new BlastAlignedSegment(refStart, refEnd-1, segQStart, segQEnd, this);
 			segments.add(blastAlignedSegment);
 			// set coordinates for the next block
-			refStart = refEnd;
+			if(forwardTranslation) {
+				refStart = refEnd;
+			} else {
+				refEnd = refStart;
+			}
 			queryStart = queryEnd;
 			// move over the hseq/qseq section as long as either side has gaps, 
 			// incrementing refStart/queryStart appropriately
 			while(  (hChar == '-' || qChar == '-') && 
 					hqseqIndex <= hqlength ) {
 				if(hChar != '-') {
-					refStart = refStart + refIncrement;
+					if(forwardTranslation) {
+						refStart = refStart + refIncrement;
+					} else {
+						refEnd = refEnd - refIncrement;
+					}
 				}
 				if(qChar != '-') {
 					queryStart++;
@@ -203,7 +246,11 @@ public class BlastHsp {
 					qChar = SegmentUtils.base1Char(qseq, hqseqIndex);
 				}
 			} 
-			refEnd = refStart;
+			if(forwardTranslation) {
+				refEnd = refStart;
+			} else {
+				refStart = refEnd;
+			}
 			queryEnd = queryStart;
 		}
 		return segments;
@@ -211,7 +258,7 @@ public class BlastHsp {
 	@Override
 	public String toString() {
 		return "BlastHsp [hitFrom=" + hitFrom + ", hitTo=" + hitTo + ", queryFrom=" + queryFrom + ", queryTo=" + queryTo
-				+ ", bitScore=" + bitScore + ", identity=" + identity + ", evalue=" + evalue + ", score=" + score + "]";
+				+ ", hitFrame=" + hitFrame + ", bitScore=" + bitScore + ", identity=" + identity + ", evalue=" + evalue + ", score=" + score + "]";
 	}
 	
 	
