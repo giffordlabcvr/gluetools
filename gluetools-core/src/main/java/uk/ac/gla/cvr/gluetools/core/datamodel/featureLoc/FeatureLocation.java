@@ -462,9 +462,9 @@ public class FeatureLocation extends _FeatureLocation {
 
 		if(!feature.hasOwnCodonNumbering()) {
 			for(FeatureSegment featureSeg: featureSegs) {
-				if(featureSeg.getSpliceIndex() != null) {
+				if(!featureSeg.getSpliceIndex().equals(1)) {
 					throw new FeatureLocationException(FeatureLocationException.Code.CODING_FEATURE_LOCATION_ERROR, 
-							getReferenceSequence().getName(), feature.getName(), "Coding feature without own codon numbering may not use splice index on segments");
+							getReferenceSequence().getName(), feature.getName(), "Coding feature without own codon numbering may not use non-default splice index on segments");
 					
 				}
 				if(featureSeg.getTranslationModifierName() != null) {
