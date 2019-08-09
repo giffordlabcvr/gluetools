@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <!-- 
     GLUE: A flexible system for virus sequence data
     Copyright (C) 2018 The University of Glasgow
@@ -22,8 +23,12 @@
     
     Josh Singer: josh.singer@glasgow.ac.uk
     Rob Gifford: robert.gifford@glasgow.ac.uk
- -->
-<kuiken2006CodonLabeler>
-	<rootReferenceName>REF_MASTER_M73218</rootReferenceName>
-	<linkingAlignmentName>AL_UNCONSTRAINED</linkingAlignmentName>
+ --><kuiken2006CodonLabeler>
+    <rootReferenceName>REF_MASTER_M73218</rootReferenceName>
+    <linkingAlignmentName>AL_UNCONSTRAINED</linkingAlignmentName>
+    <!-- These settings were introduced to allow ORF3 to validate across all references -->
+    <!-- We could possibly be stricter on the other features? -->
+    <allowDownstreamLabelling>true</allowDownstreamLabelling>
+    <allowUnmappedLabelling>true</allowUnmappedLabelling>
+    <allowUpstreamLabelling>true</allowUpstreamLabelling>
 </kuiken2006CodonLabeler>
