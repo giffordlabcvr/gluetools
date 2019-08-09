@@ -69,6 +69,7 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 		addSimplePropertyName(LINKING_ALIGNMENT_NAME);
 		addSimplePropertyName(ALLOW_UPSTREAM_LABELLING);
 		addSimplePropertyName(ALLOW_DOWNSTREAM_LABELLING);
+		addSimplePropertyName(ALLOW_UNMAPPED_LABELLING);
 	}
 
 	@Override
