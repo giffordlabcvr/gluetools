@@ -237,9 +237,14 @@ public class Console implements InteractiveCommandResultRenderingContext
 		// combine enter-mode command with inner commands.
 		if(enterModeCmd && innerCmdWords != null && !innerCmdWords.isEmpty()) {
 			commandContext.setRequireModeWrappable(true);
-			command.execute(commandContext);
+			try {
+				command.execute(commandContext);
+			} finally {
+				commandContext.setRequireModeWrappable(false); // be sure to reset this if we get a failure.
+			}
 			Class<? extends Command> innerCmdClass = null;
 			try {
+				commandContext.setRequireModeWrappable(true);
 				innerCmdClass = executeTokenStrings(innerCmdWords, true, outputResultToConsole);
 				return innerCmdClass;
 			} finally {
