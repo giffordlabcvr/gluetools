@@ -1,0 +1,40 @@
+
+project ebolavirus
+  ## translate NP gene on reference sequence
+  reference REF_MASTER_NC_002549
+    feature-location NP amino-acid
+    
+  
+  ## translate NP gene on sequence stored in alignment
+  alignment AL_EBOV_UNCONSTRAINED
+    member ncbi-curated-ebov KM233049
+      amino-acid -r REF_MASTER_NC_002549 -f NP
+      
+## demonstrate inherit feature location with / without "--spanGaps"
+project hcv
+
+  reference REF_3a_NC_009824
+    remove feature-location NS5A
+    
+    inherit feature-location --spanGaps AL_UNCONSTRAINED --relRefName REF_MASTER_NC_004102 NS5A
+    
+
+## spliced coding feature
+project hiv  
+  reference REF_MASTER_NC_001802
+    feature-location tat amino-acid
+    
+## circular-bridging coding feature
+project hbv
+  reference REF_MASTER_NC_003977
+    feature-location PRE_S1 amino-acid
+
+## reverse complement feature
+project lassa
+  reference REF_L_MASTER_NC_004297
+    feature-location L amino-acid
+    
+## Translation modification / RNA editing 
+project ebolavirus
+  reference REF_MASTER_NC_002549
+    feature-location GP amino-acid
