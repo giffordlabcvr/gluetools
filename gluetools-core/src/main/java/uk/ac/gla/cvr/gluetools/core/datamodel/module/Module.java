@@ -29,6 +29,7 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -37,6 +38,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
+import uk.ac.gla.cvr.gluetools.core.GlueException;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandGroupRegistry;
@@ -44,6 +46,7 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Module;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
@@ -115,11 +118,27 @@ public class Module extends _Module {
 	
 	@SuppressWarnings("rawtypes")
 	public List<Class<? extends Command>> getProvidedCommandClasses(CommandContext cmdContext) {
-		return getModulePlugin(cmdContext, false).getProvidedCommandClasses();
+		ModulePlugin<?> builtPlugin;
+		try {
+			builtPlugin = getModulePlugin(cmdContext, false);
+		} catch(GlueException ge) {
+			//GlueLogger.getGlueLogger().warning("Failed to build module '"+getName()+"', so only default commands available.");
+			//GlueLogger.getGlueLogger().severe("Build error for module '"+getName()+"':"+ge.getLocalizedMessage());
+			return Collections.emptyList();
+		}
+		return builtPlugin.getProvidedCommandClasses();
 	}
 	
 	public CommandGroupRegistry getCommandGroupRegistry(CommandContext cmdContext) {
-		return getModulePlugin(cmdContext, false).getCommandGroupRegistry();
+		ModulePlugin<?> builtPlugin;
+		try {
+			builtPlugin = getModulePlugin(cmdContext, false);
+		} catch(GlueException ge) {
+			//GlueLogger.getGlueLogger().warning("Failed to build module '"+getName()+"', so only default commands available.");
+			//GlueLogger.getGlueLogger().severe("Build error for module '"+getName()+"':"+ge.getLocalizedMessage());
+			return new CommandGroupRegistry();
+		}
+		return builtPlugin.getCommandGroupRegistry();
 	}
 
 	public String getType() {

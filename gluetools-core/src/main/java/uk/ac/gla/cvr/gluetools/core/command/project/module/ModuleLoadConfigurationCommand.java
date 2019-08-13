@@ -55,6 +55,11 @@ public class ModuleLoadConfigurationCommand extends ModuleDocumentCommand<Update
 	private String fileName;
 	private boolean loadResources;
 	
+	public ModuleLoadConfigurationCommand() {
+		super();
+		setRequireValidCurrentDocument(false);
+	}
+
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
 			Element configElem) {

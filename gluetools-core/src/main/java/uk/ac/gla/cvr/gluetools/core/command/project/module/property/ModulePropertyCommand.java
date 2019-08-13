@@ -26,6 +26,7 @@
 package uk.ac.gla.cvr.gluetools.core.command.project.module.property;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -33,6 +34,7 @@ import java.util.stream.Collectors;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.GlueException;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.Command;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -64,13 +66,21 @@ public abstract class ModulePropertyCommand<R extends CommandResult> extends Mod
 	}
 
 	protected void checkPropertyPath(CommandContext cmdContext, Module module) {
-		ModulePlugin<?> modulePlugin = module.getModulePlugin(cmdContext, false);
-		modulePlugin.checkProperty(getPropertyPath());
+		try {
+			ModulePlugin<?> modulePlugin = module.getModulePlugin(cmdContext, false);
+			modulePlugin.checkProperty(getPropertyPath());
+		} catch (GlueException ge) {
+			//module plugin build may fail.
+		}
 	}
 
 	protected void checkPropertyGroup(CommandContext cmdContext, Module module) {
-		ModulePlugin<?> modulePlugin = module.getModulePlugin(cmdContext, false);
-		modulePlugin.checkPropertyGroup(getPropertyPath());
+		try {
+			ModulePlugin<?> modulePlugin = module.getModulePlugin(cmdContext, false);
+			modulePlugin.checkPropertyGroup(getPropertyPath());
+		} catch (GlueException ge) {
+			//module plugin build may fail.
+		}
 	}
 
 	protected String getPropertyPath() {
@@ -108,7 +118,14 @@ public abstract class ModulePropertyCommand<R extends CommandResult> extends Mod
 						Map<String, Object> bindings, String prefix) {
 					String moduleName = ((ModuleMode) cmdContext.peekCommandMode()).getModuleName();
 					Module module = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(moduleName));
-					return module.getModulePlugin(cmdContext, false).allPropertyPaths()
+					ModulePlugin<?> builtPlugin;
+					try {
+						builtPlugin = module.getModulePlugin(cmdContext, false);
+					} catch (Exception e) {
+						// plugin build may fail
+						return Collections.emptyList();
+					}
+					return builtPlugin.allPropertyPaths()
 							.stream()
 							.map(pn -> new CompletionSuggestion(pn, true))
 							.collect(Collectors.toList());
@@ -133,8 +150,14 @@ public abstract class ModulePropertyCommand<R extends CommandResult> extends Mod
 					String propertyPath = (String) propertyPathBinding;
 					String moduleName = ((ModuleMode) cmdContext.peekCommandMode()).getModuleName();
 					Module module = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(moduleName));
-					ModulePlugin<?> modulePlugin = module.getModulePlugin(cmdContext, false);
-					VariableInstantiator variableInstantiator = modulePlugin.getVariableInstantiator(propertyPath);
+					ModulePlugin<?> builtPlugin;
+					try {
+						builtPlugin = module.getModulePlugin(cmdContext, false);
+					} catch (Exception e) {
+						// plugin build may fail
+						return Collections.emptyList();
+					}
+					VariableInstantiator variableInstantiator = builtPlugin.getVariableInstantiator(propertyPath);
 					if(variableInstantiator == null) {
 						return null;
 					}
@@ -155,7 +178,14 @@ public abstract class ModulePropertyCommand<R extends CommandResult> extends Mod
 						Map<String, Object> bindings, String prefix) {
 					String moduleName = ((ModuleMode) cmdContext.peekCommandMode()).getModuleName();
 					Module module = GlueDataObject.lookup(cmdContext, Module.class, Module.pkMap(moduleName));
-					return module.getModulePlugin(cmdContext, false).allPropertyGroupPaths()
+					ModulePlugin<?> builtPlugin;
+					try {
+						builtPlugin = module.getModulePlugin(cmdContext, false);
+					} catch (Exception e) {
+						// plugin build may fail
+						return Collections.emptyList();
+					}
+					return builtPlugin.allPropertyGroupPaths()
 							.stream()
 							.map(pn -> new CompletionSuggestion(pn, true))
 							.collect(Collectors.toList());
