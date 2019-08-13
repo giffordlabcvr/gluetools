@@ -65,7 +65,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Text;
+import org.xml.sax.ErrorHandler;
 import org.xml.sax.SAXException;
+import org.xml.sax.SAXParseException;
 
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtilsException.Code;
 
@@ -88,6 +90,21 @@ public class GlueXmlUtils {
 			dbFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-dtd-grammar", false);
 			dbFactory.setFeature("http://apache.org/xml/features/nonvalidating/load-external-dtd", false);
 			dBuilder = dbFactory.newDocumentBuilder();
+			// default error handler writes to stderr which is not what we want.
+			dBuilder.setErrorHandler(new ErrorHandler() {
+			    @Override
+			    public void warning(SAXParseException e) throws SAXException {}
+
+			    @Override
+			    public void fatalError(SAXParseException e) throws SAXException {
+			        throw e;
+			    }
+
+			    @Override
+			    public void error(SAXParseException e) throws SAXException {
+			        throw e;
+			    }
+			});
 		} catch (ParserConfigurationException e) {
 			throw new RuntimeException(e);
 		}
