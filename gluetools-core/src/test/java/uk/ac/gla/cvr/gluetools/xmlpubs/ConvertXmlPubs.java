@@ -24,11 +24,21 @@ public class ConvertXmlPubs {
 				System.out.print(pmid);
 				String title = GlueXmlUtils.getXPathString(doc, "/Publications/PubmedArticle/MedlineCitation[PMID/text() = '"+pmid+"']/Article/ArticleTitle/text()");
 				System.out.print("\t"+title.trim());
-				String firstAuthorSurname = GlueXmlUtils.getXPathString(doc, "/Publications/PubmedArticle/MedlineCitation[PMID/text() = '"+pmid+"']/Article/AuthorList/Author[1]/LastName/text()");
-				System.out.print("\t"+firstAuthorSurname+" et al.");
-				StringBuffer authorsFull = new StringBuffer();
 				List<Node> authorNodeList = GlueXmlUtils.getXPathNodes(doc, "/Publications/PubmedArticle/MedlineCitation[PMID/text() = '"+pmid+"']/Article/AuthorList/Author");
+				String firstAuthorSurname = GlueXmlUtils.getXPathString(doc, "/Publications/PubmedArticle/MedlineCitation[PMID/text() = '"+pmid+"']/Article/AuthorList/Author[1]/LastName/text()");
+				if(authorNodeList.size() == 1) {
+					System.out.print("\t"+firstAuthorSurname);
+				} else if(authorNodeList.size() == 2) {
+					String secondAuthorSurname = GlueXmlUtils.getXPathString(doc, "/Publications/PubmedArticle/MedlineCitation[PMID/text() = '"+pmid+"']/Article/AuthorList/Author[2]/LastName/text()");
+					System.out.print("\t"+firstAuthorSurname+" and "+secondAuthorSurname);
+				} else {
+					System.out.print("\t"+firstAuthorSurname+" et al.");
+				}
+				StringBuffer authorsFull = new StringBuffer();
+				
 				int i = 0;
+				
+				
 				for(Node authorNode: authorNodeList) {
 					if(i > 0) {
 						if(i < authorNodeList.size()-1) {
