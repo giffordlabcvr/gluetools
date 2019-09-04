@@ -69,5 +69,29 @@
 			<name>cayenne.querycache.size</name>
 			<value>30000</value>
 		</property>
+		
 	</properties>
+
+	<requestQueueManager>
+		<requestQueue>
+			<queueName>default</queueName>
+			<numWorkers>2</numWorkers>		
+			<maxRequests>20</maxRequests>
+		</requestQueue>
+	</requestQueueManager>
+
+	<requestGatekeeper> 
+		<modePathRegexFilter>
+			<regex>^/</regex>
+			<simpleCommandFilter words="webdocs list-command-modes"/>
+			<simpleCommandFilter words="webdocs document-command-mode"/>
+			<simpleCommandFilter words="webdocs document-mode-command"/>
+			<simpleCommandFilter words="webdocs document-non-mode-commands"/>
+			<simpleCommandFilter words="webdocs document-non-mode-command"/>
+			<simpleCommandFilter words="webdocs list-module-types"/>
+			<simpleCommandFilter words="webdocs document-module-type"/>
+			<simpleCommandFilter words="webdocs document-module-command"/>
+		</modePathRegexFilter>
+	</requestGatekeeper> 
+
 </gluetools>
