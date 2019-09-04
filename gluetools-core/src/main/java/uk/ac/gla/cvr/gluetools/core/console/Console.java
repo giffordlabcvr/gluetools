@@ -69,6 +69,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.InteractiveCommandResultRenderingContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.ResultOutputFormat;
 import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
+import uk.ac.gla.cvr.gluetools.core.command.scripting.NashornScriptingException;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
 import uk.ac.gla.cvr.gluetools.core.console.Lexer.Token;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ModelBuilderException;
@@ -713,6 +714,12 @@ public class Console implements InteractiveCommandResultRenderingContext
 	}
 
 	private void outputStackTrace(Throwable exception) {
+		if(exception instanceof NashornScriptingException) {
+			if(((NashornScriptingException) exception).getCode() == NashornScriptingException.Code.SCRIPT_EXCEPTION) {
+				// arg 4 is jsStackTrace
+				output(((NashornScriptingException) exception).getErrorArgs()[4].toString());
+			}
+		}
 		output(exception.getClass().getCanonicalName());
 		for(StackTraceElement ste: exception.getStackTrace()) {
 			output(ste.toString());
