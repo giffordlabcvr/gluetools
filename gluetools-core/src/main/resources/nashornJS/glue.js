@@ -100,6 +100,18 @@ var glue = {
 				throw recastException(x);
 			}
 		},
+		parallelCommands: function(cmdInputList) {
+			var cmdResultList = glueAux.runParallelCommands(cmdInputList);
+			var finalResultList = [];
+			for(var i = 0; i < cmdResultList.length ; i++) {
+				if(cmdResultList[i] instanceof Java.type("java.lang.Throwable")) {
+					throw recastException(cmdResultList[i]);
+				} else {
+					finalResultList.push(valueToNative(cmdResultList[i]));
+				}
+			}
+			return finalResultList;
+		},
 		command: function(cmdInput, options) {
 			if(options === undefined) {
 				options = {};

@@ -53,6 +53,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUsage;
 import uk.ac.gla.cvr.gluetools.core.command.ConsoleOption;
+import uk.ac.gla.cvr.gluetools.core.command.ParallelWorkerException;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OutputStreamCommandResultRenderingContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.ResultOutputFormat;
@@ -300,6 +301,9 @@ public class ConsoleCommandContext extends CommandContext {
 	}
 
 	public void runBatchCommands(String batchFilePath, String batchContent, boolean noCmdEcho, boolean noCommentEcho, boolean noOutput) {
+		if(this.isParallelWorker()) {
+			throw new ParallelWorkerException(ParallelWorkerException.Code.PARALLEL_WORKER_ERROR, "Parallel worker may not us 'run file' command");
+		}
 		String[] lines = batchContent.split("\n");
 		// in batch files, allow backslash to signify line continuation
 		List<Object> linesList = Arrays.stream(lines).collect(Collectors.toList());
@@ -351,6 +355,9 @@ public class ConsoleCommandContext extends CommandContext {
 	}
 
 	public void runScript(String filePath, String scriptContent) {
+		if(this.isParallelWorker()) {
+			throw new ParallelWorkerException(ParallelWorkerException.Code.PARALLEL_WORKER_ERROR, "Parallel worker may not us 'run script' command");
+		}
 		console.runScript(filePath, scriptContent);
 	}
 
@@ -369,6 +376,15 @@ public class ConsoleCommandContext extends CommandContext {
 
 	public boolean hasAuthorisation(String authorisationName) {
 		return true;
+	}
+
+	@Override
+	protected CommandContext createParallelWorkerInternal() {
+		ConsoleCommandContext parallelWorker = new ConsoleCommandContext(getGluetoolsEngine(), null);
+		this.optionToValue.forEach((option, value) -> {
+			parallelWorker.optionToValue.put(option, value);
+		}); 
+		return parallelWorker;
 	}
 	
 

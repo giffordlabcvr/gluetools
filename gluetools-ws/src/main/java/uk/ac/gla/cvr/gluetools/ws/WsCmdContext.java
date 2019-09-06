@@ -320,5 +320,11 @@ public class WsCmdContext extends CommandContext {
 	public synchronized boolean hasAuthorisation(String authorisationName) {
 		return false;
 	}
+
+	@Override
+	protected CommandContext createParallelWorkerInternal() {
+		WsCmdContext parallelWorker = new WsCmdContext(getGluetoolsEngine());
+		return parallelWorker;
+	}
 	
 }

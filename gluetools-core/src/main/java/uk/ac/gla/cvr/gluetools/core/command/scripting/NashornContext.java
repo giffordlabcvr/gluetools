@@ -33,6 +33,11 @@ import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.LogRecord;
 import java.util.stream.Collectors;
@@ -190,9 +195,14 @@ public class NashornContext {
 			cmdContext.closeSession(sessionKey);
 		}
 
-		
+
 		@SuppressWarnings("rawtypes")
 		public Map runCommandFromObject(ScriptObjectMirror scrObjMirror) {
+			return runCommandFromObject(scrObjMirror, cmdContext);
+		}
+		
+		@SuppressWarnings("rawtypes")
+		public Map runCommandFromObject(ScriptObjectMirror scrObjMirror, CommandContext cmdContext) {
 			CommandDocument commandDocument;
 			try {
 				commandDocument = ScriptObjectMirrorUtils.scriptObjectMirrorToCommandDocument(scrObjMirror);
@@ -211,19 +221,29 @@ public class NashornContext {
 			}
 			cmdContext.checkCommmandIsExecutable(cmdClass);
 			Command command = cmdContext.commandFromElement(cmdDocElem);
-			return runCommand(command);
+			return runCommand(command, cmdContext);
 		}
 
 		@SuppressWarnings("rawtypes")
 		public Map runCommandFromString(String string) {
+			return runCommandFromString(string, cmdContext);
+		}
+		
+		@SuppressWarnings("rawtypes")
+		public Map runCommandFromString(String string, CommandContext cmdContext) {
 			List<Token> tokens = Lexer.lex(string);
 			List<Token> meaningfulTokens = Lexer.meaningfulTokens(tokens);
 			List<String> tokenStrings = meaningfulTokens.stream().map(t -> t.render()).collect(Collectors.toList());
-			return runCommandFromList(tokenStrings);
+			return runCommandFromList(tokenStrings, cmdContext);
 		}
 
 		@SuppressWarnings("rawtypes")
 		private Map runCommandFromList(List<String> tokenStrings) {
+			return runCommandFromList(tokenStrings, cmdContext);
+		}
+		
+		@SuppressWarnings("rawtypes")
+		private Map runCommandFromList(List<String> tokenStrings, CommandContext cmdContext) {
 			CommandFactory commandFactory = cmdContext.peekCommandMode().getCommandFactory();
 			Class<? extends Command> commandClass = commandFactory.identifyCommandClass(cmdContext, tokenStrings);
 			if(commandClass == null) {
@@ -250,6 +270,11 @@ public class NashornContext {
 
 		@SuppressWarnings("rawtypes")
 		public Map runCommandFromArray(ScriptObjectMirror scrObjMirror) {
+			return runCommandFromArray(scrObjMirror, cmdContext);
+		}
+		
+		@SuppressWarnings("rawtypes")
+		public Map runCommandFromArray(ScriptObjectMirror scrObjMirror, CommandContext cmdContext) {
 			List<String> tokenStrings = new ArrayList<String>();
 			for(Object obj: scrObjMirror.values()) {
 				String string;
@@ -274,11 +299,75 @@ public class NashornContext {
 				}
 				tokenStrings.add(string);
 			}
-			return runCommandFromList(tokenStrings);
+			return runCommandFromList(tokenStrings, cmdContext);
 		}
-
+		
+		
+		public List<Object> runParallelCommands(ScriptObjectMirror scrObjMirror) {
+			if(scrObjMirror == null) {
+				throw new NashornScriptingException(Code.COMMAND_INPUT_ERROR, "Null list may not be passed to parallelCommands");
+			}
+			if(!scrObjMirror.isArray()) {
+				throw new NashornScriptingException(Code.COMMAND_INPUT_ERROR, "List must be passed to parallelCommands");
+			}
+			List<Future<Object>> futureList = new ArrayList<Future<Object>>();
+			ExecutorService threadPool = Executors.newFixedThreadPool(4);
+			for(Object obj: scrObjMirror.values()) {
+				futureList.add(threadPool.submit(new Callable<Object>() {
+					@Override
+					public Object call() throws Exception {
+						CommandContext parallelCmdContext;
+						synchronized(cmdContext) {
+							parallelCmdContext = cmdContext.createParallelWorker();
+						}
+						Object result;
+						try {
+							if(obj instanceof ScriptObjectMirror) {
+								ScriptObjectMirror scrObjMir = (ScriptObjectMirror) obj;
+								if(scrObjMir.isArray()) {
+									result = runCommandFromArray(scrObjMir, parallelCmdContext);
+								} else {
+									result = runCommandFromObject(scrObjMir, parallelCmdContext);
+								}
+							} else if(obj instanceof String) {
+								result = runCommandFromString((String) obj, parallelCmdContext);
+							} else if(obj == null) {
+								throw new NashornScriptingException(Code.COMMAND_INPUT_ERROR, "Null input may not be passed in list to parallelCommands");
+							} else {
+								throw new NashornScriptingException(Code.COMMAND_INPUT_ERROR, "Incorrect type "+obj.getClass().getSimpleName()+" passed in list to parallelCommands");
+							}
+						} catch(Throwable th) {
+							result = th;
+						} finally {
+							parallelCmdContext.dispose();
+						}
+						return result;
+					}
+					
+				}));
+			}
+			List<Object> resultList = new ArrayList<Object>();
+			for(Future<Object> future: futureList) {
+				Object e;
+				try {
+					e = future.get();
+				} catch (InterruptedException e1) {
+					e = e1;
+				} catch (ExecutionException e1) {
+					e = e1.getCause();
+				}
+				resultList.add(e);
+			}
+			return resultList;
+		}
+		
 		@SuppressWarnings("rawtypes")
 		private Map runCommand(Command command) {
+			return runCommand(command, cmdContext);
+		}
+		
+		@SuppressWarnings("rawtypes")
+		private Map runCommand(Command command, CommandContext cmdContext) {
 			CommandResult cmdResult;
 			try {
 				cmdResult = command.execute(cmdContext);

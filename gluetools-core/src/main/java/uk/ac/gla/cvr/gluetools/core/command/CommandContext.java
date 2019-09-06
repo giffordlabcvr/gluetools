@@ -65,6 +65,7 @@ public abstract class CommandContext {
 	private NashornContext nashornContext;
 	private Map<SessionKey, Session> currentSessions = new LinkedHashMap<SessionKey, Session>();
 	private String runningDescription = "Initialising";
+	private boolean parallelWorker = false;
 	
 	
 	public CommandContext(GluetoolsEngine gluetoolsEngine, String description) {
@@ -75,6 +76,33 @@ public abstract class CommandContext {
 	}
 
 	
+	public boolean isParallelWorker() {
+		return parallelWorker;
+	}
+
+	public final CommandContext createParallelWorker() {
+		if(this.isParallelWorker()) {
+			throw new ParallelWorkerException(ParallelWorkerException.Code.PARALLEL_WORKER_ERROR, "Parallel workers may not be nested");
+		}
+		CommandContext parallelWorker = createParallelWorkerInternal();
+		ServerRuntime rootServerRuntime = gluetoolsEngine.getRootServerRuntime();
+		RootCommandMode rootCommandMode = new RootCommandMode(rootServerRuntime);
+		parallelWorker.pushCommandMode(rootCommandMode);
+		String modePath = this.getModePath();
+		parallelWorker.pushCommandMode(modePath.split("/"));
+		parallelWorker.setParallelWorker(true);
+		return parallelWorker;
+	}
+
+	protected abstract CommandContext createParallelWorkerInternal();
+
+	protected void setParallelWorker(boolean parallelWorker) {
+		this.parallelWorker = parallelWorker;
+	}
+
+
+
+
 	public void pushCommandMode(CommandMode<?> commandMode) {
 		commandMode.setParentCommandMode(peekCommandMode());
 		commandModeStack.add(0, commandMode);
@@ -87,6 +115,8 @@ public abstract class CommandContext {
 	public String getDescription() {
 		return description;
 	}
+	
+	
 
 	public ModeCloser pushCommandMode(String... words) {
 		pushCommandModeReturnNumWordsUsed(words);
@@ -285,7 +315,7 @@ public abstract class CommandContext {
 	}
 	
 	public void dispose() {
-		while(!(peekCommandMode() instanceof RootCommandMode)) {
+		while(peekCommandMode() != null && !(peekCommandMode() instanceof RootCommandMode)) {
 			popCommandMode();
 		}
 	}
