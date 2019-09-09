@@ -34,7 +34,8 @@ public class NashornScriptingException extends GlueException {
 		SCRIPT_EXCEPTION("fileName", "lineNumber", "columnNumber", "errorTxt", "jsStackTrace"),
 		UNKNOWN_COMMAND("jsonString", "modePath"),
 		COMMAND_INPUT_ERROR("errorTxt"),
-		MALFORMED_MODE_PATH("modePath"); 
+		MALFORMED_MODE_PATH("modePath"),
+		CALLBACK_EXCEPTION("errorTxt"); 
 
 		private String[] argNames;
 		private Code(String... argNames) {

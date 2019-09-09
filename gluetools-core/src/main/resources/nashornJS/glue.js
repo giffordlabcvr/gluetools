@@ -100,8 +100,11 @@ var glue = {
 				throw recastException(x);
 			}
 		},
-		parallelCommands: function(cmdInputList) {
-			var cmdResultList = glueAux.runParallelCommands(cmdInputList);
+		parallelCommands: function(cmdInputList, options) {
+			if(options === undefined) {
+				options = {};
+			}
+			var cmdResultList = glueAux.runParallelCommands(cmdInputList, options);
 			var finalResultList = [];
 			for(var i = 0; i < cmdResultList.length ; i++) {
 				if(cmdResultList[i] instanceof Java.type("java.lang.Throwable")) {

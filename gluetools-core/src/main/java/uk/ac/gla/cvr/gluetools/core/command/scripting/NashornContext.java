@@ -303,13 +303,29 @@ public class NashornContext {
 		}
 		
 		
-		public List<Object> runParallelCommands(ScriptObjectMirror scrObjMirror) {
+		public List<Object> runParallelCommands(ScriptObjectMirror scrObjMirror, ScriptObjectMirror optionsScrObjMir) {
 			if(scrObjMirror == null) {
 				throw new NashornScriptingException(Code.COMMAND_INPUT_ERROR, "Null list may not be passed to parallelCommands");
 			}
 			if(!scrObjMirror.isArray()) {
 				throw new NashornScriptingException(Code.COMMAND_INPUT_ERROR, "List must be passed to parallelCommands");
 			}
+			if(optionsScrObjMir == null) {
+				throw new NashornScriptingException(Code.COMMAND_INPUT_ERROR, "Null options may not be passed to parallelCommands");
+			}
+			if(optionsScrObjMir.isArray()) {
+				throw new NashornScriptingException(Code.COMMAND_INPUT_ERROR, "Options map must be passed to parallelCommands");
+			}
+			Object callbackObj = optionsScrObjMir.get("completedCmdCallback");
+			JSObject completedCmdCallback = null;
+			if(callbackObj == null) {
+				completedCmdCallback = null;
+			} else if(callbackObj instanceof JSObject) {
+				completedCmdCallback = (JSObject) callbackObj;
+			} else {
+				throw new NashornScriptingException(Code.COMMAND_INPUT_ERROR, "Incorrect type for completedCmdCallback option");
+			}
+			
 			List<Future<Object>> futureList = new ArrayList<Future<Object>>();
 			ExecutorService threadPool = Executors.newFixedThreadPool(4);
 			for(Object obj: scrObjMirror.values()) {
@@ -346,19 +362,38 @@ public class NashornContext {
 					
 				}));
 			}
-			List<Object> resultList = new ArrayList<Object>();
-			for(Future<Object> future: futureList) {
-				Object e;
-				try {
-					e = future.get();
-				} catch (InterruptedException e1) {
-					e = e1;
-				} catch (ExecutionException e1) {
-					e = e1.getCause();
+			Object[] resultArray = new Object[futureList.size()];
+			int numDone = 0;
+			while(numDone < resultArray.length) {
+				for(int i = 0; i < resultArray.length; i++) {
+					if(resultArray[i] == null) {
+						Future<Object> future = futureList.get(i);
+						if(future.isDone()) {
+							Object resultObj;
+							try {
+								resultObj = future.get();
+							} catch (InterruptedException e1) {
+								resultObj = e1;
+							} catch (ExecutionException e1) {
+								resultObj = e1.getCause();
+							}
+							resultArray[i] = resultObj;
+							numDone++;
+							if(completedCmdCallback != null) {
+								try {
+									invokeFunction(completedCmdCallback, new Integer(i));
+								} catch(Throwable th) {
+									throw new NashornScriptingException(th, Code.CALLBACK_EXCEPTION, th.getLocalizedMessage());
+								}
+							}
+						} 
+					}
 				}
-				resultList.add(e);
+				try {
+					Thread.sleep(50);
+				} catch(InterruptedException e) {};
 			}
-			return resultList;
+			return Arrays.asList(resultArray);
 		}
 		
 		@SuppressWarnings("rawtypes")
