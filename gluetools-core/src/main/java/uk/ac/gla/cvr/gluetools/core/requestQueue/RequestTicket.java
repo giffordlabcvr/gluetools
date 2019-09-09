@@ -12,6 +12,7 @@ public class RequestTicket {
 
 	private String id;
 	private Future<CommandResult> cmdResultFuture;
+	private Long startTime;
 	private Long completionTime;
 	
 	public enum Code {
@@ -38,12 +39,20 @@ public class RequestTicket {
 		return cmdResultFuture;
 	}
 	
-	public Long getCompletionTime() {
+	public synchronized Long getCompletionTime() {
 		return completionTime;
 	}
 
-	public void setCompletionTime(Long completionTime) {
+	public synchronized void setCompletionTime(Long completionTime) {
 		this.completionTime = completionTime;
+	}
+
+	public synchronized Long getStartTime() {
+		return startTime;
+	}
+
+	public synchronized void setStartTime(Long startTime) {
+		this.startTime = startTime;
 	}
 
 	public CommandResult getCommandResult() {

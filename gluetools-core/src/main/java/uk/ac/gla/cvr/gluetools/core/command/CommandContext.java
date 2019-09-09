@@ -88,8 +88,10 @@ public abstract class CommandContext {
 		ServerRuntime rootServerRuntime = gluetoolsEngine.getRootServerRuntime();
 		RootCommandMode rootCommandMode = new RootCommandMode(rootServerRuntime);
 		parallelWorker.pushCommandMode(rootCommandMode);
-		String modePath = this.getModePath();
-		parallelWorker.pushCommandMode(modePath.split("/"));
+		String modePath = this.getModePath().replaceFirst("/", "");
+		if(modePath.length() > 0) {
+			parallelWorker.pushCommandMode(modePath.split("/"));
+		}
 		parallelWorker.setParallelWorker(true);
 		return parallelWorker;
 	}

@@ -80,6 +80,8 @@ import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 
 public class NashornContext {
 
+	public static final String PARALLEL_SCRIPTING_NUMBER_CPUS = "gluetools.core.scripting.parallel.cpus";
+
 	private CommandContext cmdContext;
 	private NashornScriptEngineFactory engineFactory;
 	private ScriptEngine engine;
@@ -142,6 +144,7 @@ public class NashornContext {
 	}
 
 	public class GlueBinding {
+
 		public void log(String level, String message) {
 			LogRecord logRecord = new LogRecord(Level.parse(level), message);
 			logRecord.setSourceClassName("NashornJsScript");
@@ -237,7 +240,7 @@ public class NashornContext {
 			return runCommandFromList(tokenStrings, cmdContext);
 		}
 
-		@SuppressWarnings("rawtypes")
+		@SuppressWarnings({ "rawtypes", "unused" })
 		private Map runCommandFromList(List<String> tokenStrings) {
 			return runCommandFromList(tokenStrings, cmdContext);
 		}
@@ -265,7 +268,7 @@ public class NashornContext {
 			String docoptUsageSingleWord = CommandUsage.docoptStringForCmdClass(commandClass, true);
 			docoptMap = Console.runDocopt(commandClass, docoptUsageSingleWord, argStrings);
 			Command command = Console.buildCommand(cmdContext, commandClass, docoptMap);
-			return runCommand(command);
+			return runCommand(command, cmdContext);
 		}
 
 		@SuppressWarnings("rawtypes")
@@ -327,7 +330,10 @@ public class NashornContext {
 			}
 			
 			List<Future<Object>> futureList = new ArrayList<Future<Object>>();
-			ExecutorService threadPool = Executors.newFixedThreadPool(4);
+			
+			int parallelScriptingCpus = Integer.parseInt(cmdContext.getGluetoolsEngine()
+					.getPropertiesConfiguration().getPropertyValue(PARALLEL_SCRIPTING_NUMBER_CPUS, "1"));
+			ExecutorService threadPool = Executors.newFixedThreadPool(parallelScriptingCpus);
 			for(Object obj: scrObjMirror.values()) {
 				futureList.add(threadPool.submit(new Callable<Object>() {
 					@Override
@@ -338,19 +344,37 @@ public class NashornContext {
 						}
 						Object result;
 						try {
-							if(obj instanceof ScriptObjectMirror) {
-								ScriptObjectMirror scrObjMir = (ScriptObjectMirror) obj;
-								if(scrObjMir.isArray()) {
-									result = runCommandFromArray(scrObjMir, parallelCmdContext);
-								} else {
-									result = runCommandFromObject(scrObjMir, parallelCmdContext);
+							if(obj == null) {
+								throw new NashornScriptingException(Code.COMMAND_INPUT_ERROR, "Null may not be passed in list to parallelCommands");
+							}
+							if(!(obj instanceof ScriptObjectMirror)) {
+								throw new NashornScriptingException(Code.COMMAND_INPUT_ERROR, "Object must be passed in list to parallelCommands");
+							}
+							ScriptObjectMirror objScrObjMir = (ScriptObjectMirror) obj;
+							if(objScrObjMir.isArray()) {
+								throw new NashornScriptingException(Code.COMMAND_INPUT_ERROR, "Array may not be passed in list to parallelCommands");
+							}
+							Object modePathObj = objScrObjMir.get("modePath");
+							if(modePathObj != null) {
+								if(!(modePathObj instanceof String)) {
+									throw new NashornScriptingException(Code.COMMAND_INPUT_ERROR, "The modePath passed to parallelCommands must be a String");
 								}
-							} else if(obj instanceof String) {
-								result = runCommandFromString((String) obj, parallelCmdContext);
-							} else if(obj == null) {
-								throw new NashornScriptingException(Code.COMMAND_INPUT_ERROR, "Null input may not be passed in list to parallelCommands");
+								parallelCmdContext.pushCommandMode(((String) modePathObj).split("/"));
+							}
+							Object cmdObj = objScrObjMir.get("command");
+							if(cmdObj instanceof ScriptObjectMirror) {
+								ScriptObjectMirror cmdScrObjMir = (ScriptObjectMirror) cmdObj;
+								if(cmdScrObjMir.isArray()) {
+									result = runCommandFromArray(cmdScrObjMir, parallelCmdContext);
+								} else {
+									result = runCommandFromObject(cmdScrObjMir, parallelCmdContext);
+								}
+							} else if(cmdObj instanceof String) {
+								result = runCommandFromString((String) cmdObj, parallelCmdContext);
+							} else if(cmdObj == null) {
+								throw new NashornScriptingException(Code.COMMAND_INPUT_ERROR, "Null may not be passed as command to parallelCommands");
 							} else {
-								throw new NashornScriptingException(Code.COMMAND_INPUT_ERROR, "Incorrect type "+obj.getClass().getSimpleName()+" passed in list to parallelCommands");
+								throw new NashornScriptingException(Code.COMMAND_INPUT_ERROR, "Incorrect type "+cmdObj.getClass().getSimpleName()+" passed as command to parallelCommands");
 							}
 						} catch(Throwable th) {
 							result = th;

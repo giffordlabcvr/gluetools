@@ -209,6 +209,11 @@
 		
 	</requestGatekeeper> 
 	<properties>
+		<!-- Scripting -->
+		<property>
+			<name>gluetools.core.scripting.parallel.cpus</name>
+			<value>1</value>
+		</property>
 		<!-- Web files -->
 	    <property>
 			<name>gluetools.core.webfiles.enabled</name>

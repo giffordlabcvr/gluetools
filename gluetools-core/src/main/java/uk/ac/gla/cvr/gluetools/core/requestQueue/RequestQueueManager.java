@@ -161,7 +161,6 @@ public class RequestQueueManager implements Plugin {
 							cmdResult = GluetoolsEngine.getInstance().runWithGlueClassloader(new Supplier<CommandResult>(){
 								@Override
 								public CommandResult get() {
-									GlueLogger.getGlueLogger().info("Executing request "+requestID+" on queue '"+queueName+"'");
 									synchronized(requestQueue) {
 										Map<String, RequestTicket> queuedTickets = requestQueue.getQueuedTickets();
 										if(queuedTickets.remove(requestID) != null) {
@@ -175,14 +174,20 @@ public class RequestQueueManager implements Plugin {
 											requestTicket.setPlaceInQueue(-1);
 										}
 									}
-									return request.getCommand().execute(cmdContext);
+									GlueLogger.getGlueLogger().info("Executing request "+requestID+" on queue '"+queueName+"'");
+									requestTicket.setStartTime(System.currentTimeMillis());
+									CommandResult result = request.getCommand().execute(cmdContext);
+									return result;
 								}
 							});
 						} finally {
+							requestTicket.setCompletionTime(System.currentTimeMillis());
 							synchronized(requestQueue) {
 								requestQueue.getRunningTickets().remove(requestID);
 							}
 							requestTicket.setCode(RequestTicket.Code.COMPLETE);
+							double seconds = ((double) (requestTicket.getCompletionTime() - requestTicket.getStartTime())) / 1000.0;
+							GlueLogger.getGlueLogger().info("Request "+requestID+" on queue '"+queueName+"' completed in "+String.format("%.2f", seconds));
 							cmdContext.dispose();
 						}
 						return cmdResult;
