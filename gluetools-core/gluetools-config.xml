@@ -212,7 +212,7 @@
 		<!-- Scripting -->
 		<property>
 			<name>gluetools.core.scripting.parallel.cpus</name>
-			<value>1</value>
+			<value>4</value>
 		</property>
 		<!-- Web files -->
 	    <property>
