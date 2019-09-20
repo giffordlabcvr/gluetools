@@ -420,7 +420,7 @@ public class NashornContext {
 			return Arrays.asList(resultArray);
 		}
 		
-		@SuppressWarnings("rawtypes")
+		@SuppressWarnings({ "rawtypes", "unused" })
 		private Map runCommand(Command command) {
 			return runCommand(command, cmdContext);
 		}

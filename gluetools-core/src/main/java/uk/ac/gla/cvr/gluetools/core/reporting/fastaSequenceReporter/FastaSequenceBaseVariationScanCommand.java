@@ -30,8 +30,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.cayenne.exp.Expression;
-import org.biojava.nbio.core.sequence.DNASequence;
-import org.w3c.dom.Element;
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.VariationScanCommandResult;

@@ -27,8 +27,7 @@ package uk.ac.gla.cvr.gluetools.programs.mafft.add;
 
 import java.util.Map;
 
-import org.biojava.nbio.core.sequence.DNASequence;
-
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 public class MafftResult {
 
 	private Map<String, DNASequence> resultAlignment;

@@ -27,8 +27,7 @@ package uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter;
 
 import java.util.Map.Entry;
 
-import org.biojava.nbio.core.sequence.DNASequence;
-import org.w3c.dom.Element;
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;

@@ -36,8 +36,7 @@ import java.util.concurrent.Future;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
-import org.biojava.nbio.core.sequence.DNASequence;
-
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 import htsjdk.samtools.SAMFormatException;
 import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.SAMSequenceRecord;

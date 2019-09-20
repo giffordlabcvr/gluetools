@@ -33,8 +33,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 
-import org.biojava.nbio.core.sequence.DNASequence;
-import org.w3c.dom.Element;
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.blastRotator.BlastSequenceRotatorException.Code;
 import uk.ac.gla.cvr.gluetools.core.blastRotator.RotationResultRow.Status;

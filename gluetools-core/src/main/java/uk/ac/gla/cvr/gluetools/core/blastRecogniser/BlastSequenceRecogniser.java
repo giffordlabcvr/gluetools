@@ -34,8 +34,7 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-import org.biojava.nbio.core.sequence.DNASequence;
-import org.w3c.dom.Element;
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.blastRecogniser.BlastSequenceRecogniserException.Code;
 import uk.ac.gla.cvr.gluetools.core.blastRecogniser.RecognitionCategoryResult.Direction;

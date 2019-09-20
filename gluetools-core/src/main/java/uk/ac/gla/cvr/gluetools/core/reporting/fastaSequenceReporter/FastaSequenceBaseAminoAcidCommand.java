@@ -27,8 +27,7 @@ package uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter;
 
 import java.util.List;
 
-import org.biojava.nbio.core.sequence.DNASequence;
-
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAminoAcidAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;

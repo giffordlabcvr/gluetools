@@ -2,8 +2,7 @@ package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 
 import java.util.Map;
 
-import org.biojava.nbio.core.sequence.DNASequence;
-
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 public class SamExportNucleotideAlignmentInterimResult extends SamBaseNucleotideCommandInterimResult {
 	private Map<String, DNASequence> fastaMap;
 

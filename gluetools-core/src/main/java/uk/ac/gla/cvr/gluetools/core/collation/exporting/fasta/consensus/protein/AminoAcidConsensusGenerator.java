@@ -33,7 +33,6 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import org.apache.cayenne.exp.Expression;
-import org.biojava.nbio.core.sequence.ProteinSequence;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.AbstractStringAlmtRowConsumer;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAminoAcidColumnsSelector;
@@ -50,6 +49,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.translation.TranslationUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
+import uk.ac.gla.cvr.gluetools.utils.fasta.ProteinSequence;
 
 @PluginClass(elemName="aminoAcidConsensusGenerator", 
 		description="Produces a consensus amino acid sequence based on a configurable AlignmentMember set")

@@ -35,9 +35,6 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.apache.commons.io.IOUtils;
-import org.biojava.nbio.core.sequence.DNASequence;
-import org.biojava.nbio.core.sequence.ProteinSequence;
-import org.biojava.nbio.core.sequence.template.AbstractSequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -53,6 +50,9 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
+import uk.ac.gla.cvr.gluetools.utils.fasta.AbstractSequence;
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
+import uk.ac.gla.cvr.gluetools.utils.fasta.ProteinSequence;
 
 public class RaxmlPhylogenyRunner extends RaxmlRunner {
 

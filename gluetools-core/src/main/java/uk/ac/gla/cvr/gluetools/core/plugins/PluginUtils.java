@@ -38,9 +38,6 @@ import java.util.stream.Collectors;
 
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.exp.ExpressionException;
-import org.biojava.nbio.core.exceptions.CompoundNotFoundException;
-import org.biojava.nbio.core.sequence.DNASequence;
-import org.biojava.nbio.core.sequence.compound.AmbiguityDNACompoundSet;
 import org.w3c.dom.Attr;
 import org.w3c.dom.Element;
 import org.w3c.dom.NamedNodeMap;
@@ -54,8 +51,11 @@ import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
 import uk.ac.gla.cvr.gluetools.utils.CayenneUtils;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtilsException;
 import uk.ac.gla.cvr.gluetools.utils.GlueTypeUtils.GlueType;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.fasta.AmbiguityDNACompoundSet;
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 
 // TODO stop using XPaths when it's just a simple property lookup.
 public class PluginUtils {
@@ -125,9 +125,9 @@ public class PluginUtils {
 		if(ntsString != null) {
 			try {
 				dnaSequence = new DNASequence(ntsString.toUpperCase(), AmbiguityDNACompoundSet.getDNACompoundSet());
-			} catch (CompoundNotFoundException cnfe) {
-				throw new PluginConfigException(Code.PROPERTY_FORMAT_ERROR, 
-						propertyName, cnfe.getLocalizedMessage(), ntsString);
+			} catch (FastaUtilsException fue) {
+				throw new PluginConfigException(fue, Code.PROPERTY_FORMAT_ERROR, 
+						propertyName, fue.getLocalizedMessage(), ntsString);
 			}
 		}
 		return dnaSequence;

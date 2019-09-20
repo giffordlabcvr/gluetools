@@ -29,8 +29,7 @@ import java.io.File;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.biojava.nbio.core.sequence.ProteinSequence;
-import org.w3c.dom.Element;
+import uk.ac.gla.cvr.gluetools.utils.fasta.ProteinSequence;import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;

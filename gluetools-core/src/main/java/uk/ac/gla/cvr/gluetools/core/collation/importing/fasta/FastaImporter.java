@@ -29,13 +29,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.biojava.nbio.core.sequence.AccessionID;
-import org.biojava.nbio.core.sequence.DNASequence;
-import org.biojava.nbio.core.sequence.compound.NucleotideCompound;
-import org.biojava.nbio.core.sequence.io.template.SequenceHeaderParserInterface;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.importing.SequenceImporter;
@@ -55,6 +52,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 
 @PluginClass(elemName="fastaImporter",
 	description="Imports nucleotide data from a FASTA file, creating a set of Sequence objects")
@@ -113,8 +111,9 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Va
 	public CreateResult doImport(ConsoleCommandContext cmdContext, String fileName) {
 		byte[] fastaBytes = cmdContext.loadBytes(fileName);
 		FastaUtils.normalizeFastaBytes(cmdContext, fastaBytes);
-		HeaderParser headerParser = new HeaderParser();
-		Map<String, DNASequence> idToSequence = FastaUtils.parseFasta(fastaBytes, headerParser);
+		Map<String, ImporterDNASequence> idToSequence = FastaUtils.parseFasta(fastaBytes, 
+				s -> new ImporterDNASequence(s, null), 
+				new HeaderParser());
 		ensureSourceExists(cmdContext, sourceName);
 		
 		List<String> updatableProperties = fieldParsers.stream().map(fp -> fp.getProperty()).collect(Collectors.toList());
@@ -155,16 +154,29 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Va
 		return new CreateResult(Sequence.class, idToSequence.keySet().size());
 	}
 
+	private class ImporterDNASequence extends DNASequence {
+		private Collection<Object> fieldParserResults;
+		
+		public ImporterDNASequence(String ntString, Object obj) {
+			super(ntString, obj);
+		}
+
+		public void setUserCollection(Collection<Object> fieldParserResults) {
+			this.fieldParserResults = fieldParserResults;
+		}
+		public Collection<Object> getUserCollection() {
+			return fieldParserResults;
+		}
+	}
 	
-	private class HeaderParser implements SequenceHeaderParserInterface<DNASequence, NucleotideCompound> {
+	private class HeaderParser implements BiFunction<ImporterDNASequence, String, String> {
 
 		@Override
-		public void parseHeader(String header, DNASequence sequence) {
+		public String apply(ImporterDNASequence sequence, String header) {
 			String finalID = ValueExtractor.extractValue(FastaImporter.this, header);
 			if(finalID == null) {
 				throw new FastaImporterException(FastaImporterException.Code.NULL_IDENTIFIER, header);
 			}
-			sequence.setAccession(new AccessionID(finalID));
 			Collection<Object> fieldParserResults = 
 					fieldParsers.stream()
 					.map(fParser -> fParser.parseField(header))
@@ -172,6 +184,7 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Va
 				    .map(Optional::get)
 				    .collect(Collectors.toList());
 			sequence.setUserCollection(fieldParserResults);
+			return finalID;
 		}
 	}
 	

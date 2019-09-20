@@ -27,13 +27,12 @@ package uk.ac.gla.cvr.gluetools.core.command.result;
 
 import java.util.Map;
 
-import org.biojava.nbio.core.sequence.template.AbstractSequence;
-
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
+import uk.ac.gla.cvr.gluetools.utils.fasta.AbstractSequence;
 
 public abstract class BaseFastaCommandResult extends CommandResult {
 

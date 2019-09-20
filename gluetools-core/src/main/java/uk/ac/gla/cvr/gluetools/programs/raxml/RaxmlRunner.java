@@ -32,7 +32,6 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.apache.commons.io.IOUtils;
-import org.biojava.nbio.core.sequence.template.AbstractSequence;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -41,6 +40,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.Plugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.programs.raxml.RaxmlException.Code;
+import uk.ac.gla.cvr.gluetools.utils.fasta.AbstractSequence;
 
 public abstract class RaxmlRunner implements Plugin {
 

@@ -27,8 +27,7 @@ package uk.ac.gla.cvr.gluetools.core.curation.phylogeny;
 
 import java.util.Map;
 
-import org.biojava.nbio.core.sequence.ProteinSequence;
-import org.w3c.dom.Element;
+import uk.ac.gla.cvr.gluetools.utils.fasta.ProteinSequence;import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAminoAcidAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAminoAcidColumnsSelector;

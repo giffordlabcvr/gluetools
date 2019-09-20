@@ -3,7 +3,6 @@ package uk.ac.gla.cvr.gluetools.core.translationModification;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
-import uk.ac.gla.cvr.gluetools.core.translationModification.ModifierRule.DependentPosition;
 import uk.ac.gla.cvr.gluetools.core.translationModification.TranslationModifierException.Code;
 
 @PluginClass(elemName="addNucleotideBefore")

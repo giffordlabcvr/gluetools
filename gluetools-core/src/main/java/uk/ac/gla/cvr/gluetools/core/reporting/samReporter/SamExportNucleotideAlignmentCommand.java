@@ -30,8 +30,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.function.Supplier;
 
-import org.biojava.nbio.core.sequence.DNASequence;
-import org.w3c.dom.Element;
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;import org.w3c.dom.Element;
 
 import htsjdk.samtools.SamReader;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;

@@ -27,9 +27,8 @@ package uk.ac.gla.cvr.gluetools.core.command.result;
 
 import java.util.Map;
 
-import org.biojava.nbio.core.sequence.ProteinSequence;
-
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.fasta.ProteinSequence;
 
 public class AminoAcidFastaCommandResult extends BaseFastaCommandResult {
 

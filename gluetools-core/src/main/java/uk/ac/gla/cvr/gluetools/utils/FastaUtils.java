@@ -25,28 +25,12 @@
 */
 package uk.ac.gla.cvr.gluetools.utils;
 
-import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.logging.Level;
-
-import org.biojava.nbio.core.exceptions.CompoundNotFoundException;
-import org.biojava.nbio.core.sequence.AccessionID;
-import org.biojava.nbio.core.sequence.DNASequence;
-import org.biojava.nbio.core.sequence.ProteinSequence;
-import org.biojava.nbio.core.sequence.compound.AmbiguityDNACompoundSet;
-import org.biojava.nbio.core.sequence.compound.AminoAcidCompound;
-import org.biojava.nbio.core.sequence.compound.AminoAcidCompoundSet;
-import org.biojava.nbio.core.sequence.compound.NucleotideCompound;
-import org.biojava.nbio.core.sequence.io.DNASequenceCreator;
-import org.biojava.nbio.core.sequence.io.FastaReader;
-import org.biojava.nbio.core.sequence.io.ProteinSequenceCreator;
-import org.biojava.nbio.core.sequence.io.template.SequenceHeaderParserInterface;
-import org.biojava.nbio.core.sequence.template.AbstractSequence;
-import org.biojava.nbio.core.sequence.template.Compound;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
@@ -57,6 +41,11 @@ import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.translation.ResidueUtils;
+import uk.ac.gla.cvr.gluetools.utils.fasta.AbstractSequence;
+import uk.ac.gla.cvr.gluetools.utils.fasta.AmbiguityDNACompoundSet;
+import uk.ac.gla.cvr.gluetools.utils.fasta.AminoAcidCompoundSet;
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
+import uk.ac.gla.cvr.gluetools.utils.fasta.ProteinSequence;
 
 public class FastaUtils {
 	
@@ -73,19 +62,42 @@ public class FastaUtils {
 		}
 	}
 	
-	public static Map<String, DNASequence> parseFasta(byte[] fastaBytes,
-			SequenceHeaderParserInterface<DNASequence, NucleotideCompound> headerParser) {
-		
-		ByteArrayInputStream bais = new ByteArrayInputStream(fastaBytes);
-		FastaReader<DNASequence, NucleotideCompound> fastaReader = 
-				new FastaReader<DNASequence, NucleotideCompound>(bais, headerParser, 
-						new DNASequenceCreator(AmbiguityDNACompoundSet.getDNACompoundSet()));
-		
-		Map<String, DNASequence> idToSequence;
+	public static <T extends AbstractSequence<?>> Map<String, T> parseFasta(byte[] fastaBytes,
+			Function<String, T> sequenceCreator, BiFunction<T, String, String> headerParser) {
+		Map<String, T> idToSequence = new LinkedHashMap<String, T>();
+		String fastaString = new String(fastaBytes);
 		try {
-			idToSequence = fastaReader.process();
-		} catch (IOException e) {
-			throw new SequenceException(e, Code.SEQUENCE_FORMAT_ERROR, "FASTA format error");
+			String[] lines = fastaString.split("\\r|\\r\\n|\\n");
+			StringBuffer nextSequenceBuf = null;
+			String nextHeaderLine = null;
+			for(String line: lines) {
+				if(line.trim().length() == 0) {
+					continue;
+				}
+				if(line.startsWith(">")) {
+					if(nextHeaderLine != null && nextSequenceBuf != null) {
+						T sequence = sequenceCreator.apply(nextSequenceBuf.toString());
+						String id = headerParser.apply(sequence, nextHeaderLine);
+						idToSequence.put(id, sequence);
+						nextSequenceBuf = new StringBuffer();
+						nextHeaderLine = line.substring(1);
+					}
+				} else {
+					if(nextSequenceBuf != null) {
+						nextSequenceBuf.append(line.trim());
+					} else {
+						throw new SequenceException(Code.SEQUENCE_FORMAT_ERROR, "FASTA format error: First non-whitespace line did not start with '>'");
+					}
+				}
+			}
+			// add the final sequence.
+			if(nextHeaderLine != null && nextSequenceBuf != null) {
+				T sequence = sequenceCreator.apply(nextSequenceBuf.toString());
+				String id = headerParser.apply(sequence, nextHeaderLine);
+				idToSequence.put(id, sequence);
+			}
+		} catch (Exception e) {
+			throw new SequenceException(e, Code.SEQUENCE_FORMAT_ERROR, "FASTA format error: "+e.getLocalizedMessage());
 		}
 		return idToSequence;
 	}
@@ -93,50 +105,26 @@ public class FastaUtils {
 	public static DNASequence ntStringToSequence(String ntString) {
 		try {
 			return new DNASequence(ntString.toUpperCase(), AmbiguityDNACompoundSet.getDNACompoundSet());
-		} catch (CompoundNotFoundException cnfe) {
-			throw new SequenceException(cnfe, Code.SEQUENCE_FORMAT_ERROR, "FASTA format error");
+		} catch (FastaUtilsException fue) {
+			throw new SequenceException(fue, Code.SEQUENCE_FORMAT_ERROR, "FASTA format error: "+fue.getLocalizedMessage());
 		}
 	}
 
 	public static ProteinSequence proteinStringToSequence(String proteinString) {
 		try {
 			return new ProteinSequence(proteinString.toUpperCase(), AminoAcidCompoundSet.getAminoAcidCompoundSet());
-		} catch (CompoundNotFoundException cnfe) {
-			throw new SequenceException(cnfe, Code.SEQUENCE_FORMAT_ERROR, "FASTA format error");
+		} catch (FastaUtilsException fue) {
+			throw new SequenceException(fue, Code.SEQUENCE_FORMAT_ERROR, "FASTA format error: "+fue.getLocalizedMessage());
 		}
 	}
 
 	
-	public static Map<String, ProteinSequence> parseFastaProtein(byte[] fastaBytes,
-			SequenceHeaderParserInterface<ProteinSequence, AminoAcidCompound> headerParser) {
-		
-		ByteArrayInputStream bais = new ByteArrayInputStream(fastaBytes);
-		FastaReader<ProteinSequence, AminoAcidCompound> fastaReader = 
-				new FastaReader<ProteinSequence, AminoAcidCompound>(bais, headerParser, 
-						new ProteinSequenceCreator(AminoAcidCompoundSet.getAminoAcidCompoundSet()));
-		
-		Map<String, ProteinSequence> idToSequence;
-		try {
-			idToSequence = fastaReader.process();
-		} catch (IOException e) {
-			throw new SequenceException(e, Code.SEQUENCE_FORMAT_ERROR, "FASTA format error");
-		}
-		return idToSequence;
+	public static Map<String, ProteinSequence> parseFastaProtein(byte[] fastaBytes) {
+		return parseFasta(fastaBytes, aaString -> new ProteinSequence(aaString, null), (ps, line) -> line);
 	}
 
 	public static Map<String, DNASequence> parseFasta(byte[] fastaBytes) {
-		return parseFasta(fastaBytes, new TrivialHeaderParser<DNASequence, NucleotideCompound>());
-	}
-
-	public static Map<String, ProteinSequence> parseFastaProtein(byte[] fastaBytes) {
-		return parseFastaProtein(fastaBytes, new TrivialHeaderParser<ProteinSequence, AminoAcidCompound>());
-	}
-
-	private static class TrivialHeaderParser<S extends AbstractSequence<C>, C extends Compound> implements SequenceHeaderParserInterface<S, C> {
-		@Override
-		public void parseHeader(String header, S sequence) {
-			sequence.setAccession(new AccessionID(header));
-		}
+		return parseFasta(fastaBytes, ntString -> new DNASequence(ntString, null), (ps, line) -> line);
 	}
 
 	public static byte[] mapToFasta(Map<String, ? extends AbstractSequence<?>> fastaIdToSequence, LineFeedStyle lineFeedStyle) {
@@ -165,7 +153,6 @@ public class FastaUtils {
 		return buf.toString();
 		
 	}
-
 
 	public static char nt(String nucleotides, int position) {
 		return nucleotides.charAt(position-1);

@@ -17,7 +17,6 @@ import javax.json.JsonObject;
 import javax.json.JsonObjectBuilder;
 
 import org.apache.commons.io.IOUtils;
-import org.biojava.nbio.core.sequence.DNASequence;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 

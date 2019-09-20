@@ -28,8 +28,7 @@ package uk.ac.gla.cvr.gluetools.core.datamodel.sequence;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.biojava.nbio.core.sequence.DNASequence;
-
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
