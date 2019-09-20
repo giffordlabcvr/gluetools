@@ -64,38 +64,44 @@ public class FastaUtils {
 			Function<String, T> sequenceCreator, BiFunction<T, String, String> headerParser) {
 		Map<String, T> idToSequence = new LinkedHashMap<String, T>();
 		String fastaString = new String(fastaBytes);
-		try {
-			String[] lines = fastaString.split("\\r|\\r\\n|\\n");
-			StringBuffer nextSequenceBuf = null;
-			String nextHeaderLine = null;
-			for(String line: lines) {
-				if(line.trim().length() == 0) {
-					continue;
-				}
-				if(line.startsWith(">")) {
-					if(nextHeaderLine != null && nextSequenceBuf != null) {
-						T sequence = sequenceCreator.apply(nextSequenceBuf.toString());
-						String id = headerParser.apply(sequence, nextHeaderLine);
-						idToSequence.put(id, sequence);
+		String[] lines = fastaString.split("\\r|\\r\\n|\\n");
+		StringBuffer nextSequenceBuf = null;
+		String nextHeaderLine = null;
+		for(String line: lines) {
+			if(line.trim().length() == 0) {
+				continue;
+			}
+			if(line.startsWith(">")) {
+				if(nextHeaderLine != null && nextSequenceBuf != null) {
+					T sequence;
+					try {
+						sequence = sequenceCreator.apply(nextSequenceBuf.toString());
+					} catch(FastaUtilsException fue) {
+						throw new SequenceException(fue, Code.SEQUENCE_FORMAT_ERROR, "FASTA format error in sequence with header '"+nextHeaderLine+"':"+ fue.getLocalizedMessage());
 					}
-					nextSequenceBuf = new StringBuffer();
-					nextHeaderLine = line.substring(1);
+					String id = headerParser.apply(sequence, nextHeaderLine);
+					idToSequence.put(id, sequence);
+				}
+				nextSequenceBuf = new StringBuffer();
+				nextHeaderLine = line.substring(1);
+			} else {
+				if(nextSequenceBuf != null) {
+					nextSequenceBuf.append(line.trim());
 				} else {
-					if(nextSequenceBuf != null) {
-						nextSequenceBuf.append(line.trim());
-					} else {
-						throw new SequenceException(Code.SEQUENCE_FORMAT_ERROR, "FASTA format error: First non-whitespace line did not start with '>'");
-					}
+					throw new SequenceException(Code.SEQUENCE_FORMAT_ERROR, "FASTA format error: First non-whitespace line did not start with '>'");
 				}
 			}
-			// add the final sequence.
-			if(nextHeaderLine != null && nextSequenceBuf != null) {
-				T sequence = sequenceCreator.apply(nextSequenceBuf.toString());
-				String id = headerParser.apply(sequence, nextHeaderLine);
-				idToSequence.put(id, sequence);
+		}
+		// add the final sequence.
+		if(nextHeaderLine != null && nextSequenceBuf != null) {
+			T sequence;
+			try {
+				sequence = sequenceCreator.apply(nextSequenceBuf.toString());
+			} catch(FastaUtilsException fue) {
+				throw new SequenceException(fue, Code.SEQUENCE_FORMAT_ERROR, "FASTA format error in sequence with header '"+nextHeaderLine+"':"+ fue.getLocalizedMessage());
 			}
-		} catch (Exception e) {
-			throw new SequenceException(e, Code.SEQUENCE_FORMAT_ERROR, "FASTA format error: "+e.getLocalizedMessage());
+			String id = headerParser.apply(sequence, nextHeaderLine);
+			idToSequence.put(id, sequence);
 		}
 		return idToSequence;
 	}
