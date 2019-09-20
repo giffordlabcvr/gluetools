@@ -128,8 +128,6 @@
       <Host name="hcv.glue.cvr.ac.uk"  appBase="webapps_hcv"
             unpackWARs="true" autoDeploy="true">
 
-        <Context docBase="hcvGlue" path="" reloadable="true"/>
-
         <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
                prefix="hcv_glue_access_log." suffix=".txt"
                pattern="%h %l %u %t &quot;%r&quot; %s %b" />
@@ -141,7 +139,7 @@
         <Context docBase="btvGlue" path="" reloadable="true"/>
 
         <Valve className="org.apache.catalina.valves.AccessLogValve" directory="logs"
-               prefix="hcv_glue_access_log." suffix=".txt"
+               prefix="btv_glue_access_log." suffix=".txt"
                pattern="%h %l %u %t &quot;%r&quot; %s %b" />
 
       </Host>
