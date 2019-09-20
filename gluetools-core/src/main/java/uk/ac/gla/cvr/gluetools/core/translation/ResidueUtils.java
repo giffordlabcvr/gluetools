@@ -54,7 +54,7 @@ public class ResidueUtils {
 	 *	N					A C G T U							Nucleic acid
 	 */
 	
-	private static String ALL_AMBIG_NTS = "ACGTURYKMSWBDHVN";
+	public static String ALL_AMBIG_NTS = "ACGTURYKMSWBDHVN";
 
 	public static final int
 		AMBIG_NT_A = 0,
@@ -86,7 +86,7 @@ public class ResidueUtils {
 
 	public static final int CONCRETE_NT_NUM_VALUES = 4;
 
-	private static String ALL_AAS = "ACDEFGHIKLMNPQRSTVWY*";
+	public static String ALL_AAS = "ACDEFGHIKLMNPQRSTVWY*";
 
 	public static final int
 		AA_A = 0,	//	Ala	Alanine

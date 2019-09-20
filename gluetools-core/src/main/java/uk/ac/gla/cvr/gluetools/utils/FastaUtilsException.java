@@ -32,7 +32,9 @@ public class FastaUtilsException extends GlueException {
 	
 	public enum Code implements GlueErrorCode {
 
-		FASTA_DOCUMENT_PARSE_ERROR("errorTxt");
+		FASTA_DOCUMENT_PARSE_ERROR("errorTxt"),
+		INVALID_NUCLEOTIDE_CHARACTER("invalidChar", "position"),
+		INVALID_AMINO_ACID_CHARACTER("invalidChar", "position");
 
 		private String[] argNames;
 		private Code(String... argNames) {
