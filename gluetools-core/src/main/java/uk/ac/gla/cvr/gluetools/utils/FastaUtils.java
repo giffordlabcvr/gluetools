@@ -77,9 +77,9 @@ public class FastaUtils {
 						T sequence = sequenceCreator.apply(nextSequenceBuf.toString());
 						String id = headerParser.apply(sequence, nextHeaderLine);
 						idToSequence.put(id, sequence);
-						nextSequenceBuf = new StringBuffer();
-						nextHeaderLine = line.substring(1);
 					}
+					nextSequenceBuf = new StringBuffer();
+					nextHeaderLine = line.substring(1);
 				} else {
 					if(nextSequenceBuf != null) {
 						nextSequenceBuf.append(line.trim());
@@ -102,7 +102,7 @@ public class FastaUtils {
 	
 	public static DNASequence ntStringToSequence(String ntString) {
 		try {
-			return new DNASequence(ntString.toUpperCase());
+			return new DNASequence(ntString);
 		} catch (FastaUtilsException fue) {
 			throw new SequenceException(fue, Code.SEQUENCE_FORMAT_ERROR, "FASTA format error: "+fue.getLocalizedMessage());
 		}
@@ -110,7 +110,7 @@ public class FastaUtils {
 
 	public static ProteinSequence proteinStringToSequence(String proteinString) {
 		try {
-			return new ProteinSequence(proteinString.toUpperCase());
+			return new ProteinSequence(proteinString);
 		} catch (FastaUtilsException fue) {
 			throw new SequenceException(fue, Code.SEQUENCE_FORMAT_ERROR, "FASTA format error: "+fue.getLocalizedMessage());
 		}

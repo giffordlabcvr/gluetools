@@ -123,7 +123,7 @@ public class PluginUtils {
 		DNASequence dnaSequence = null;
 		if(ntsString != null) {
 			try {
-				dnaSequence = new DNASequence(ntsString.toUpperCase());
+				dnaSequence = new DNASequence(ntsString);
 			} catch (FastaUtilsException fue) {
 				throw new PluginConfigException(fue, Code.PROPERTY_FORMAT_ERROR, 
 						propertyName, fue.getLocalizedMessage(), ntsString);
