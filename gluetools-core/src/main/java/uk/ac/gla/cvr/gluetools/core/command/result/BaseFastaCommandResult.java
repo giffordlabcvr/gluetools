@@ -43,7 +43,7 @@ public abstract class BaseFastaCommandResult extends CommandResult {
 	@Override
 	protected void renderToConsoleAsText(InteractiveCommandResultRenderingContext renderCtx) {
 		CommandDocument commandDocument = getCommandDocument();
-		Map<String, ? extends AbstractSequence<?>> fastaMap;
+		Map<String, ? extends AbstractSequence> fastaMap;
 		String rootName = commandDocument.getRootName();
 		if(rootName.equals(FastaUtils.NUCLEOTIDE_FASTA_DOC_ROOT)) {
 			fastaMap = FastaUtils.commandDocumentToNucleotideFastaMap(commandDocument);

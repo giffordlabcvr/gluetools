@@ -4,7 +4,7 @@ import uk.ac.gla.cvr.gluetools.core.translation.ResidueUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtilsException;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtilsException.Code;
 
-public class DNASequence extends AbstractSequence<AmbiguityDNACompoundSet> {
+public class DNASequence extends AbstractSequence {
 
 	private static final int MAX_CHAR = 256;
 
@@ -19,7 +19,7 @@ public class DNASequence extends AbstractSequence<AmbiguityDNACompoundSet> {
 		charValid['-'] = true;
 	}
 	
-	public DNASequence(String ntString, Object dummyCompoundSet) {
+	public DNASequence(String ntString) {
 		for(int i = 0; i < ntString.length(); i++) {
 			char stringChar = ntString.charAt(i);
 			if(stringChar < 0 || stringChar >= MAX_CHAR || !charValid[stringChar]) {

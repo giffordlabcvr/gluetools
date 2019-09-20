@@ -54,7 +54,6 @@ import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtilsException;
 import uk.ac.gla.cvr.gluetools.utils.GlueTypeUtils.GlueType;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
-import uk.ac.gla.cvr.gluetools.utils.fasta.AmbiguityDNACompoundSet;
 import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 
 // TODO stop using XPaths when it's just a simple property lookup.
@@ -124,7 +123,7 @@ public class PluginUtils {
 		DNASequence dnaSequence = null;
 		if(ntsString != null) {
 			try {
-				dnaSequence = new DNASequence(ntsString.toUpperCase(), AmbiguityDNACompoundSet.getDNACompoundSet());
+				dnaSequence = new DNASequence(ntsString.toUpperCase());
 			} catch (FastaUtilsException fue) {
 				throw new PluginConfigException(fue, Code.PROPERTY_FORMAT_ERROR, 
 						propertyName, fue.getLocalizedMessage(), ntsString);

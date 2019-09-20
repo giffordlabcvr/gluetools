@@ -42,8 +42,6 @@ import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.translation.ResidueUtils;
 import uk.ac.gla.cvr.gluetools.utils.fasta.AbstractSequence;
-import uk.ac.gla.cvr.gluetools.utils.fasta.AmbiguityDNACompoundSet;
-import uk.ac.gla.cvr.gluetools.utils.fasta.AminoAcidCompoundSet;
 import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 import uk.ac.gla.cvr.gluetools.utils.fasta.ProteinSequence;
 
@@ -62,7 +60,7 @@ public class FastaUtils {
 		}
 	}
 	
-	public static <T extends AbstractSequence<?>> Map<String, T> parseFasta(byte[] fastaBytes,
+	public static <T extends AbstractSequence> Map<String, T> parseFasta(byte[] fastaBytes,
 			Function<String, T> sequenceCreator, BiFunction<T, String, String> headerParser) {
 		Map<String, T> idToSequence = new LinkedHashMap<String, T>();
 		String fastaString = new String(fastaBytes);
@@ -104,7 +102,7 @@ public class FastaUtils {
 	
 	public static DNASequence ntStringToSequence(String ntString) {
 		try {
-			return new DNASequence(ntString.toUpperCase(), AmbiguityDNACompoundSet.getDNACompoundSet());
+			return new DNASequence(ntString.toUpperCase());
 		} catch (FastaUtilsException fue) {
 			throw new SequenceException(fue, Code.SEQUENCE_FORMAT_ERROR, "FASTA format error: "+fue.getLocalizedMessage());
 		}
@@ -112,7 +110,7 @@ public class FastaUtils {
 
 	public static ProteinSequence proteinStringToSequence(String proteinString) {
 		try {
-			return new ProteinSequence(proteinString.toUpperCase(), AminoAcidCompoundSet.getAminoAcidCompoundSet());
+			return new ProteinSequence(proteinString.toUpperCase());
 		} catch (FastaUtilsException fue) {
 			throw new SequenceException(fue, Code.SEQUENCE_FORMAT_ERROR, "FASTA format error: "+fue.getLocalizedMessage());
 		}
@@ -120,14 +118,14 @@ public class FastaUtils {
 
 	
 	public static Map<String, ProteinSequence> parseFastaProtein(byte[] fastaBytes) {
-		return parseFasta(fastaBytes, aaString -> new ProteinSequence(aaString, null), (ps, line) -> line);
+		return parseFasta(fastaBytes, aaString -> new ProteinSequence(aaString), (ps, line) -> line);
 	}
 
 	public static Map<String, DNASequence> parseFasta(byte[] fastaBytes) {
-		return parseFasta(fastaBytes, ntString -> new DNASequence(ntString, null), (ps, line) -> line);
+		return parseFasta(fastaBytes, ntString -> new DNASequence(ntString), (ps, line) -> line);
 	}
 
-	public static byte[] mapToFasta(Map<String, ? extends AbstractSequence<?>> fastaIdToSequence, LineFeedStyle lineFeedStyle) {
+	public static byte[] mapToFasta(Map<String, ? extends AbstractSequence> fastaIdToSequence, LineFeedStyle lineFeedStyle) {
 		final StringBuffer buf = new StringBuffer();
 		fastaIdToSequence.forEach((seqId, abstractSequence) -> 
 			buf.append(seqIdCompoundsPairToFasta(seqId, abstractSequence.toString(), lineFeedStyle)));
@@ -173,7 +171,7 @@ public class FastaUtils {
 	 * @return a multi-FASTA using simple string keys based on the prefix plus an integer, 
 	 * populating two maps to map the keys between each other.
 	 */
-	public static <D, X extends AbstractSequence<?>> Map<String, X> remapFasta(
+	public static <D, X extends AbstractSequence> Map<String, X> remapFasta(
 			Map<D, X> inputKeyToFasta,
 			Map<String, D> simpleKeyToInputKey, Map<D, String> inputKeyToSimpleKey, String prefix) {
 		int simpleKeyIndex = 0;
@@ -238,7 +236,7 @@ public class FastaUtils {
 		return fastaMapToCommandDocument(fastaMap, AMINO_ACID_FASTA_DOC_ROOT);
 	}
 
-	private static CommandDocument fastaMapToCommandDocument(Map<String, ? extends AbstractSequence<?>> fastaIdToSequence, String rootName) {
+	private static CommandDocument fastaMapToCommandDocument(Map<String, ? extends AbstractSequence> fastaIdToSequence, String rootName) {
 		CommandDocument commandDocument = new CommandDocument(rootName);
 		CommandArray sequenceArray = commandDocument.setArray("sequences");
 		fastaIdToSequence.forEach((seqId, abstractSequence) -> {
@@ -267,7 +265,7 @@ public class FastaUtils {
 		}, AMINO_ACID_FASTA_DOC_ROOT);
 	}
 
-	private static <S extends AbstractSequence<?>> Map<String, S> commandDocumentToFastaMap(
+	private static <S extends AbstractSequence> Map<String, S> commandDocumentToFastaMap(
 			CommandDocument commandDocument, Function<String, S> seqParser, String expectedRootName) {
 		if(!commandDocument.getRootName().equals(expectedRootName)) {
 			throw new FastaUtilsException(FastaUtilsException.Code.FASTA_DOCUMENT_PARSE_ERROR, "Document root name should be '"+expectedRootName+"'");

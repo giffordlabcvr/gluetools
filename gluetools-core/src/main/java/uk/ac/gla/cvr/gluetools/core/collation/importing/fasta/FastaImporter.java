@@ -112,7 +112,7 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Va
 		byte[] fastaBytes = cmdContext.loadBytes(fileName);
 		FastaUtils.normalizeFastaBytes(cmdContext, fastaBytes);
 		Map<String, ImporterDNASequence> idToSequence = FastaUtils.parseFasta(fastaBytes, 
-				s -> new ImporterDNASequence(s, null), 
+				s -> new ImporterDNASequence(s), 
 				new HeaderParser());
 		ensureSourceExists(cmdContext, sourceName);
 		
@@ -157,8 +157,8 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Va
 	private class ImporterDNASequence extends DNASequence {
 		private Collection<Object> fieldParserResults;
 		
-		public ImporterDNASequence(String ntString, Object obj) {
-			super(ntString, obj);
+		public ImporterDNASequence(String ntString) {
+			super(ntString);
 		}
 
 		public void setUserCollection(Collection<Object> fieldParserResults) {

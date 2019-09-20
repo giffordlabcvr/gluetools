@@ -4,7 +4,7 @@ import uk.ac.gla.cvr.gluetools.core.translation.ResidueUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtilsException;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtilsException.Code;
 
-public class ProteinSequence extends AbstractSequence<AminoAcidCompoundSet> {
+public class ProteinSequence extends AbstractSequence {
 
 	private static final int MAX_CHAR = 256;
 
@@ -19,7 +19,7 @@ public class ProteinSequence extends AbstractSequence<AminoAcidCompoundSet> {
 		charValid['-'] = true;
 	}
 	
-	public ProteinSequence(String aaString, Object dummyCompoundSet) {
+	public ProteinSequence(String aaString) {
 		for(int i = 0; i < aaString.length(); i++) {
 			char stringChar = aaString.charAt(i);
 			if(stringChar < 0 || stringChar >= MAX_CHAR || !charValid[stringChar]) {

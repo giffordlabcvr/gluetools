@@ -122,7 +122,7 @@ public abstract class RaxmlRunner implements Plugin {
 		return raxmlTempDir;
 	}
 
-	protected void checkAlignment(Map<String, ? extends AbstractSequence<?>> alignment) {
+	protected void checkAlignment(Map<String, ? extends AbstractSequence> alignment) {
 		for(String string: alignment.keySet()) {
 			if(!RaxmlUtils.validRaxmlName(string)) {
 				throw new RaxmlException(Code.RAXML_DATA_EXCEPTION, "Alignment contains row name \""+string+"\" which is invalid in RAxML");

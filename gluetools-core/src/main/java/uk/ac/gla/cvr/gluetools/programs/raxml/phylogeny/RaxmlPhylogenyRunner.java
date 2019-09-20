@@ -101,7 +101,7 @@ public class RaxmlPhylogenyRunner extends RaxmlRunner {
 	
 	
 	private RaxmlPhylogenyResult runRaxml(CommandContext cmdContext,
-			File dataDirFile, Map<String, ? extends AbstractSequence<?>> alignment) {
+			File dataDirFile, Map<String, ? extends AbstractSequence> alignment) {
 		checkAlignment(alignment);
 		byte[] alignmentFastaBytes = FastaUtils.mapToFasta(alignment, LineFeedStyle.LF);
 		String raxmlTempDir = getRaxmlTempDir(cmdContext);
