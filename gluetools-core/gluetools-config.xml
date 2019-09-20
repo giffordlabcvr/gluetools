@@ -195,6 +195,30 @@
 		<modePathRegexFilter>
 			<regex>^/project/rabv</regex>
 		</modePathRegexFilter>
+
+
+
+		<modePathRegexFilter>
+			<regex>^/project/hbv</regex>
+			<!-- analysis page -->
+			<modePathRegexFilter>
+				<regex>.*/module/hdrReportingController$</regex>
+				<simpleCommandFilter words="invoke-consumes-binary-function">
+					<arg name="functionName">reportFastaWeb</arg>
+					<queueAssignmentFilter>
+						<queueName>analysis</queueName>						
+					</queueAssignmentFilter>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/module/hdrRasReportTransformer$</regex>
+				<simpleCommandFilter words="transform-to-web-file"/>
+			</modePathRegexFilter>
+		</modePathRegexFilter>
+
+
+
+
 		<modePathRegexFilter>
 			<regex>^/</regex>
 			<simpleCommandFilter words="webdocs list-command-modes"/>
