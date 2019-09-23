@@ -32,6 +32,7 @@ public class Kuiken2006CodonLabelerException extends GlueException {
 	public enum Code implements GlueErrorCode {
 
 		MAPPING_ERROR("rootRefName", "featureRefName", "featureName", "ntLocations", "errorTxt"),
+		MAPPING_ERROR_NO_LOCATIONS("rootRefName", "featureRefName", "featureName", "errorTxt"),
 		LINKING_ALIGNMENT_MUST_BE_UNCONSTRAINED("almtName");
 
 		private String[] argNames;

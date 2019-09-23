@@ -157,7 +157,7 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 				}
 			}
 			if(initialRootRefCodon == null) {
-				throw new Kuiken2006CodonLabelerException(Code.MAPPING_ERROR, rootRef.getName(), featureRef.getName(), feature.getName(), "", 
+				throw new Kuiken2006CodonLabelerException(Code.MAPPING_ERROR_NO_LOCATIONS, rootRef.getName(), featureRef.getName(), feature.getName(), 
 						"No labeled codons have counterparts on the root reference");
 			}
 		} else {
