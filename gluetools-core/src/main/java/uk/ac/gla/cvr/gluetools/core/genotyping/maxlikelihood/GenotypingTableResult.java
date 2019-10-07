@@ -32,22 +32,23 @@ import java.util.Optional;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableColumn;
+import uk.ac.gla.cvr.gluetools.core.genotyping.BaseCladeCategory;
 import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.AbstractGenotypeCommand.DetailLevel;
 
 public class GenotypingTableResult extends BaseTableResult<QueryGenotypingResult> {
 
 	private static final int PERCENT_SCORE_PRECISION = 2;
 	
-	public GenotypingTableResult(List<CladeCategory> cladeCategories, DetailLevel detailLevel, List<QueryGenotypingResult> genotypeResults) {
+	public GenotypingTableResult(List<? extends BaseCladeCategory> cladeCategories, DetailLevel detailLevel, List<QueryGenotypingResult> genotypeResults) {
 		super("genotypeCommandResult", genotypeResults, getColumns(cladeCategories, detailLevel));
 	}
 
 	@SuppressWarnings("unchecked")
-	public static TableColumn<QueryGenotypingResult>[] getColumns(List<CladeCategory> cladeCategories, DetailLevel detailLevel) {
+	public static TableColumn<QueryGenotypingResult>[] getColumns(List<? extends BaseCladeCategory> cladeCategories, DetailLevel detailLevel) {
 		List<TableColumn<QueryGenotypingResult>>
 			columnsList = new ArrayList<TableColumn<QueryGenotypingResult>>();
 		columnsList.add(column("queryName", gResult -> gResult.queryName));
-		for(CladeCategory cladeCategory: cladeCategories) {
+		for(BaseCladeCategory cladeCategory: cladeCategories) {
 			String categoryName = cladeCategory.getName();
 			columnsList.add(column(categoryName+"FinalClade", gResult -> gResult.getCladeCategoryResult(cladeCategory.getName()).finalClade));
 			if(EnumSet.of(DetailLevel.MEDIUM, DetailLevel.HIGH).contains(detailLevel)) {

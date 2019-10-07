@@ -35,10 +35,11 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.genotyping.BaseGenotyper;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
-public abstract class AbstractGenotypeCommand extends ModulePluginCommand<CommandResult, MaxLikelihoodGenotyper> {
+public abstract class AbstractGenotypeCommand<P extends BaseGenotyper<P>> extends ModulePluginCommand<CommandResult, P> {
 
 	public static final String DETAIL_LEVEL = "detailLevel";
 	public static final String DOCUMENT_RESULT = "documentResult";
@@ -62,9 +63,9 @@ public abstract class AbstractGenotypeCommand extends ModulePluginCommand<Comman
 		}
 	}
 
-	protected CommandResult formResult(MaxLikelihoodGenotyper maxLikelihoodGenotyper, Map<String, QueryGenotypingResult> genotypeResults) {
+	protected CommandResult formResult(BaseGenotyper<?> maxLikelihoodGenotyper, Map<String, QueryGenotypingResult> genotypeResults) {
 		if(documentResult) {
-			return new GenotypingDocumentResult(maxLikelihoodGenotyper.getCladeCategories(), new ArrayList<QueryGenotypingResult>(genotypeResults.values()));
+			return new GenotypingDocumentResult(new ArrayList<QueryGenotypingResult>(genotypeResults.values()));
 		} else {
 			return new GenotypingTableResult(maxLikelihoodGenotyper.getCladeCategories(), detailLevel, new ArrayList<QueryGenotypingResult>(genotypeResults.values()));
 		}

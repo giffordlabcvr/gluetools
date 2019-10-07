@@ -28,7 +28,7 @@ package uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood;
 import java.io.File;
 import java.util.Map;
 
-import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;import org.w3c.dom.Element;
+import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
@@ -36,9 +36,11 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
+import uk.ac.gla.cvr.gluetools.core.genotyping.BaseGenotyper;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 
 @CommandClass(
 		commandWords={"genotype", "fasta-document"}, 
@@ -47,7 +49,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 		furtherHelp = "If supplied, <dataDir> must either not exist or be an empty directory",
 		metaTags = {CmdMeta.inputIsComplex}	
 )
-public class GenotypeFastaDocumentCommand extends AbstractGenotypeCommand {
+public class GenotypeFastaDocumentCommand<P extends BaseGenotyper<P>> extends AbstractGenotypeCommand<P> {
 
 	public final static String FASTA_COMMAND_DOCUMENT = "fastaCommandDocument";
 	public final static String DATA_DIR = "dataDir";
@@ -63,7 +65,7 @@ public class GenotypeFastaDocumentCommand extends AbstractGenotypeCommand {
 	}
 	
 	@Override
-	protected CommandResult execute(CommandContext cmdContext, MaxLikelihoodGenotyper maxLikelihoodGenotyper) {
+	protected CommandResult execute(CommandContext cmdContext, P maxLikelihoodGenotyper) {
 		Map<String, DNASequence> querySequenceMap = FastaUtils.commandDocumentToNucleotideFastaMap(cmdDocument);
 		File dataDirFile = CommandUtils.ensureDataDir(cmdContext, dataDir);
 		Map<String, QueryGenotypingResult> genotypeResults = maxLikelihoodGenotyper.genotype(cmdContext, querySequenceMap, dataDirFile);

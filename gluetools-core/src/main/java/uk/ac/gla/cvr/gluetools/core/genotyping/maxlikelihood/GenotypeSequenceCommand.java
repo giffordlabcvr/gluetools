@@ -32,7 +32,7 @@ import java.util.Map;
 
 import org.apache.cayenne.exp.Expression;
 import org.apache.cayenne.query.SelectQuery;
-import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;import org.w3c.dom.Element;
+import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
@@ -44,9 +44,11 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
+import uk.ac.gla.cvr.gluetools.core.genotyping.BaseGenotyper;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 
 @CommandClass(
 		commandWords={"genotype", "sequence"}, 
@@ -62,7 +64,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 		furtherHelp = "If supplied, <dataDir> must either not exist or be an empty directory",
 		metaTags = {}	
 )
-public class GenotypeSequenceCommand extends AbstractGenotypeCommand {
+public class GenotypeSequenceCommand<P extends BaseGenotyper<P>> extends AbstractGenotypeCommand<P> {
 
 	public final static String WHERE_CLAUSE = "whereClause";
 	public final static String ALL_SEQUENCES = "allSequences";
@@ -84,7 +86,7 @@ public class GenotypeSequenceCommand extends AbstractGenotypeCommand {
 	}
 	
 	@Override
-	protected CommandResult execute(CommandContext cmdContext, MaxLikelihoodGenotyper maxLikelihoodGenotyper) {
+	protected CommandResult execute(CommandContext cmdContext, P maxLikelihoodGenotyper) {
 		SelectQuery selectQuery;
 		if(this.allSequences) {
 			selectQuery = new SelectQuery(Sequence.class);

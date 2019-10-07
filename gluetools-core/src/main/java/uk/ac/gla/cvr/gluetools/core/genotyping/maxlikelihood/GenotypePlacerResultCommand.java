@@ -38,6 +38,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
+import uk.ac.gla.cvr.gluetools.core.genotyping.BaseGenotyper;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
@@ -55,7 +56,7 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 		furtherHelp = "",
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class GenotypePlacerResultCommand extends BaseGenotypePlacerResultCommand {
+public class GenotypePlacerResultCommand<P extends BaseGenotyper<P>> extends BaseGenotypePlacerResultCommand<P> {
 
 	public final static String FILE_NAME = "fileName";
 	
@@ -68,7 +69,7 @@ public class GenotypePlacerResultCommand extends BaseGenotypePlacerResultCommand
 	}
 	
 	@Override
-	protected CommandResult execute(CommandContext cmdContext, MaxLikelihoodGenotyper maxLikelihoodGenotyper) {
+	protected CommandResult execute(CommandContext cmdContext, P maxLikelihoodGenotyper) {
 		ConsoleCommandContext consoleCommandContext = (ConsoleCommandContext) cmdContext;
 		maxLikelihoodGenotyper.log(Level.FINEST, "Reading placer result file "+fileName);
 		byte[] placerResultBytes = consoleCommandContext.loadBytes(fileName);
