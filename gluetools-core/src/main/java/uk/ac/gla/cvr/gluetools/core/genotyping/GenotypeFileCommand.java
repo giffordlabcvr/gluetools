@@ -23,82 +23,48 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood;
+package uk.ac.gla.cvr.gluetools.core.genotyping;
 
 import java.io.File;
-import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.apache.cayenne.exp.Expression;
-import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandException;
-import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
-import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
-import uk.ac.gla.cvr.gluetools.core.genotyping.BaseGenotyper;
+import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.QueryGenotypingResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 
-@CommandClass(
-		commandWords={"genotype", "sequence"}, 
-		description = "Genotype one or more stored sequences", 
-		docoptUsages = { "(-w <whereClause> | -a) [-l <detailLevel> | -c] [-d <dataDir>]" },
-		docoptOptions = { 
-				"-w <whereClause>, --whereClause <whereClause>  Qualify the sequences to be genotyped",
-				"-a, --allSequences                             Genotype all sequences in the project",
-				"-l <detailLevel>, --detailLevel <detailLevel>  Table result detail level",
-				"-c, --documentResult                           Output document rather than table result",
-				"-d <dataDir>, --dataDir <dataDir>              Save algorithmic data in this directory",
-		},
-		furtherHelp = "If supplied, <dataDir> must either not exist or be an empty directory",
-		metaTags = {}	
-)
-public class GenotypeSequenceCommand<P extends BaseGenotyper<P>> extends AbstractGenotypeCommand<P> {
+public abstract class GenotypeFileCommand<P extends BaseGenotyper<P>> extends AbstractGenotypeCommand<P> {
 
-	public final static String WHERE_CLAUSE = "whereClause";
-	public final static String ALL_SEQUENCES = "allSequences";
+	public final static String FILE_NAME = "fileName";
 	public final static String DATA_DIR = "dataDir";
 	
-	private Expression whereClause;
-	private Boolean allSequences;
+	private String fileName;
 	private String dataDir;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		this.whereClause = PluginUtils.configureCayenneExpressionProperty(configElem, WHERE_CLAUSE, false);
-		this.allSequences = PluginUtils.configureBooleanProperty(configElem, ALL_SEQUENCES, false);
-		if(this.whereClause == null && this.allSequences == null) {
-			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <whereClause> or --allSequences must be specified");
-		}
+		this.fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, true);
 		this.dataDir = PluginUtils.configureStringProperty(configElem, DATA_DIR, false);
 	}
 	
 	@Override
 	protected CommandResult execute(CommandContext cmdContext, P maxLikelihoodGenotyper) {
-		SelectQuery selectQuery;
-		if(this.allSequences) {
-			selectQuery = new SelectQuery(Sequence.class);
-		} else {
-			selectQuery = new SelectQuery(Sequence.class, this.whereClause);
-		}
-		List<Sequence> sequences = GlueDataObject.query(cmdContext, Sequence.class, selectQuery);
-		Map<String, DNASequence> querySequenceMap = new LinkedHashMap<String, DNASequence>();
-		sequences.forEach(seq -> {
-			querySequenceMap.put(seq.getSource().getName()+"/"+seq.getSequenceID(), 
-					FastaUtils.ntStringToSequence(seq.getSequenceObject().getNucleotides(cmdContext)));
-		});
+		ConsoleCommandContext consoleCommandContext = (ConsoleCommandContext) cmdContext;
+		byte[] fastaBytes = consoleCommandContext.loadBytes(fileName);
+		FastaUtils.normalizeFastaBytes(cmdContext, fastaBytes);
+		Map<String, DNASequence> querySequenceMap = FastaUtils.parseFasta(fastaBytes);
 		File dataDirFile = CommandUtils.ensureDataDir(cmdContext, dataDir);
 		Map<String, QueryGenotypingResult> genotypeResults = maxLikelihoodGenotyper.genotype(cmdContext, querySequenceMap, dataDirFile);
 		return formResult(maxLikelihoodGenotyper, genotypeResults);
@@ -108,9 +74,11 @@ public class GenotypeSequenceCommand<P extends BaseGenotyper<P>> extends Abstrac
 	public static class Completer extends AdvancedCmdCompleter {
 		public Completer() {
 			super();
+			registerPathLookup("fileName", false);
 			registerPathLookup("dataDir", true);
 			registerEnumLookup("detailLevel", DetailLevel.class);
 		}
 	}
+
 	
 }

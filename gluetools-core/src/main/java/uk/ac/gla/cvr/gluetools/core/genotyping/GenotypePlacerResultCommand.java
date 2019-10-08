@@ -23,7 +23,7 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood;
+package uk.ac.gla.cvr.gluetools.core.genotyping;
 
 import java.util.logging.Level;
 
@@ -38,25 +38,12 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
-import uk.ac.gla.cvr.gluetools.core.genotyping.BaseGenotyper;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
-@CommandClass(
-		commandWords={"genotype", "placer-result"}, 
-		description = "Generate genotyping results from a placer result file", 
-		docoptUsages = { "-f <fileName> [-l <detailLevel> | -c]" },
-		docoptOptions = { 
-				"-f <fileName>, --fileName <fileName>           Placer result file path",
-				"-l <detailLevel>, --detailLevel <detailLevel>  Table result detail level",
-				"-c, --documentResult                           Output document rather than table result",
-		},
-		furtherHelp = "",
-		metaTags = {CmdMeta.consoleOnly}	
-)
-public class GenotypePlacerResultCommand<P extends BaseGenotyper<P>> extends BaseGenotypePlacerResultCommand<P> {
+public abstract class GenotypePlacerResultCommand<P extends BaseGenotyper<P>> extends BaseGenotypePlacerResultCommand<P> {
 
 	public final static String FILE_NAME = "fileName";
 	

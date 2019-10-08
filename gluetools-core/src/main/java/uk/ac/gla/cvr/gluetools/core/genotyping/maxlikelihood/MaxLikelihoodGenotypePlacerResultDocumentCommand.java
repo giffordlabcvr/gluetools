@@ -25,16 +25,9 @@
 */
 package uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood;
 
-import org.w3c.dom.Element;
-
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
-import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
-import uk.ac.gla.cvr.gluetools.core.genotyping.BaseGenotyper;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.genotyping.GenotypePlacerResultDocumentCommand;
 
 @CommandClass(
 		commandWords={"genotype", "placer-result-document"}, 
@@ -42,24 +35,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		docoptUsages = { },
 		metaTags = {CmdMeta.inputIsComplex}	
 )
-public class GenotypePlacerResultDocumentCommand<P extends BaseGenotyper<P>> extends BaseGenotypePlacerResultCommand<P> {
-
-	public final static String PLACER_RESULT_DOCUMENT = "placerResultDocument";
-	
-	private CommandDocument placerResultCmdDoc;
-	
-	@Override
-	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
-		super.configure(pluginConfigContext, configElem);
-		this.placerResultCmdDoc = PluginUtils.configureCommandDocumentProperty(configElem, PLACER_RESULT_DOCUMENT, true);
-	}
-
-	
-	@Override
-	protected CommandResult execute(CommandContext cmdContext, P maxLikelihoodGenotyper) {
-		return super.executeOnPlacerResultDocument(cmdContext, maxLikelihoodGenotyper, placerResultCmdDoc);
-	}
-
-
+public class MaxLikelihoodGenotypePlacerResultDocumentCommand extends GenotypePlacerResultDocumentCommand<MaxLikelihoodGenotyper> {
 	
 }

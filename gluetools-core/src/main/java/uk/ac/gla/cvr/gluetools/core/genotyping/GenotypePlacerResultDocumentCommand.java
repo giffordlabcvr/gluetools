@@ -23,52 +23,36 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood;
-
-import java.io.File;
-import java.util.Map;
+package uk.ac.gla.cvr.gluetools.core.genotyping;
 
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.command.CommandUtils;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
-import uk.ac.gla.cvr.gluetools.core.genotyping.BaseGenotyper;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
-import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
-import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 
-@CommandClass(
-		commandWords={"genotype", "fasta-document"}, 
-		description = "Genotype sequences in a FASTA command document object", 
-		docoptUsages = { },
-		furtherHelp = "If supplied, <dataDir> must either not exist or be an empty directory",
-		metaTags = {CmdMeta.inputIsComplex}	
-)
-public class GenotypeFastaDocumentCommand<P extends BaseGenotyper<P>> extends AbstractGenotypeCommand<P> {
+public abstract class GenotypePlacerResultDocumentCommand<P extends BaseGenotyper<P>> extends BaseGenotypePlacerResultCommand<P> {
 
-	public final static String FASTA_COMMAND_DOCUMENT = "fastaCommandDocument";
-	public final static String DATA_DIR = "dataDir";
+	public final static String PLACER_RESULT_DOCUMENT = "placerResultDocument";
 	
-	private CommandDocument cmdDocument;
-	private String dataDir;
+	private CommandDocument placerResultCmdDoc;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		this.cmdDocument = PluginUtils.configureCommandDocumentProperty(configElem, FASTA_COMMAND_DOCUMENT, true);
-		this.dataDir = PluginUtils.configureStringProperty(configElem, DATA_DIR, false);
+		this.placerResultCmdDoc = PluginUtils.configureCommandDocumentProperty(configElem, PLACER_RESULT_DOCUMENT, true);
 	}
+
 	
 	@Override
 	protected CommandResult execute(CommandContext cmdContext, P maxLikelihoodGenotyper) {
-		Map<String, DNASequence> querySequenceMap = FastaUtils.commandDocumentToNucleotideFastaMap(cmdDocument);
-		File dataDirFile = CommandUtils.ensureDataDir(cmdContext, dataDir);
-		Map<String, QueryGenotypingResult> genotypeResults = maxLikelihoodGenotyper.genotype(cmdContext, querySequenceMap, dataDirFile);
-		return formResult(maxLikelihoodGenotyper, genotypeResults);
+		return super.executeOnPlacerResultDocument(cmdContext, maxLikelihoodGenotyper, placerResultCmdDoc);
 	}
+
+
+	
 }

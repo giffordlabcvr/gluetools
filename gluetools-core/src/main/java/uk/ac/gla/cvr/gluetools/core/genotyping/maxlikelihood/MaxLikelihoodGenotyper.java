@@ -69,11 +69,11 @@ public class MaxLikelihoodGenotyper extends BaseGenotyper<MaxLikelihoodGenotyper
 	
 	public MaxLikelihoodGenotyper() {
 		super();
-		registerModulePluginCmdClass(GenotypeFileCommand.class);
-		registerModulePluginCmdClass(GenotypeSequenceCommand.class);
-		registerModulePluginCmdClass(GenotypeFastaDocumentCommand.class);
-		registerModulePluginCmdClass(GenotypePlacerResultCommand.class);
-		registerModulePluginCmdClass(GenotypePlacerResultDocumentCommand.class);
+		registerModulePluginCmdClass(MaxLikelihoodGenotypeFileCommand.class);
+		registerModulePluginCmdClass(MaxLikelihoodGenotypeSequenceCommand.class);
+		registerModulePluginCmdClass(MaxLikelihoodGenotypeFastaDocumentCommand.class);
+		registerModulePluginCmdClass(MaxLikelihoodGenotypePlacerResultCommand.class);
+		registerModulePluginCmdClass(MaxLikelihoodGenotypePlacerResultDocumentCommand.class);
 	}
 
 	@Override

@@ -32,8 +32,8 @@ import java.util.Optional;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableColumn;
+import uk.ac.gla.cvr.gluetools.core.genotyping.AbstractGenotypeCommand.DetailLevel;
 import uk.ac.gla.cvr.gluetools.core.genotyping.BaseCladeCategory;
-import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.AbstractGenotypeCommand.DetailLevel;
 
 public class GenotypingTableResult extends BaseTableResult<QueryGenotypingResult> {
 
