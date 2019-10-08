@@ -1,4 +1,4 @@
-package uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood;
+package uk.ac.gla.cvr.gluetools.core.genotyping;
 
 import java.util.List;
 

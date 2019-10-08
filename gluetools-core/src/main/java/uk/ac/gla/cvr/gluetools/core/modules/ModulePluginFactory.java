@@ -56,6 +56,7 @@ import uk.ac.gla.cvr.gluetools.core.fastaUtility.FastaUtility;
 import uk.ac.gla.cvr.gluetools.core.featurePresenceRecorder.FeaturePresenceRecorder;
 import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.GbSubmisisonGenerator;
 import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.MaxLikelihoodGenotyper;
+import uk.ac.gla.cvr.gluetools.core.genotyping.simpledistance.SimpleDistanceGenotyper;
 import uk.ac.gla.cvr.gluetools.core.modeltest.ModelTester;
 import uk.ac.gla.cvr.gluetools.core.phyloUtility.PhyloUtility;
 import uk.ac.gla.cvr.gluetools.core.phylogenyImporter.PhyloImporter;
@@ -132,6 +133,7 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(NexusExporter.class);
 		registerPluginClass(TreeTransformer.class);
 		registerPluginClass(MaxLikelihoodPlacer.class);
+		registerPluginClass(SimpleDistanceGenotyper.class);
 		registerPluginClass(MaxLikelihoodGenotyper.class);
 		registerPluginClass(FigTreeAnnotationExporter.class);
 		registerPluginClass(ClusterPickerRunner.class);

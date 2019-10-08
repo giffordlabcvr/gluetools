@@ -23,14 +23,15 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood;
+package uk.ac.gla.cvr.gluetools.core.genotyping.simpledistance;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -48,10 +49,11 @@ import uk.ac.gla.cvr.gluetools.core.genotyping.BaseGenotyper;
 import uk.ac.gla.cvr.gluetools.core.genotyping.QueryCladeCategoryResult;
 import uk.ac.gla.cvr.gluetools.core.genotyping.QueryCladeResult;
 import uk.ac.gla.cvr.gluetools.core.genotyping.QueryGenotypingResult;
+import uk.ac.gla.cvr.gluetools.core.phylogenyImporter.PhyloImporter;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
-import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeVisitor;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodPlacer;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodSinglePlacement;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodSingleQueryResult;
@@ -63,29 +65,30 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 
-@PluginClass(elemName="maxLikelihoodGenotyper",
+@PluginClass(elemName="simpleDistanceGenotyper",
 		description="Runs the neighbour-weighting phase of the maximum-likelihood clade assignment method")
-public class MaxLikelihoodGenotyper extends BaseGenotyper<MaxLikelihoodGenotyper> {
+public class SimpleDistanceGenotyper extends BaseGenotyper<SimpleDistanceGenotyper> {
 
 	
-	private List<MaxLikelihoodCladeCategory> cladeCategories;
+	private List<SimpleDistanceCladeCategory> cladeCategories;
 	
-	public MaxLikelihoodGenotyper() {
+	public SimpleDistanceGenotyper() {
 		super();
-		registerModulePluginCmdClass(MaxLikelihoodGenotypeFileCommand.class);
-		registerModulePluginCmdClass(MaxLikelihoodGenotypeSequenceCommand.class);
-		registerModulePluginCmdClass(MaxLikelihoodGenotypeFastaDocumentCommand.class);
-		registerModulePluginCmdClass(MaxLikelihoodGenotypePlacerResultCommand.class);
-		registerModulePluginCmdClass(MaxLikelihoodGenotypePlacerResultDocumentCommand.class);
+		registerModulePluginCmdClass(SimpleDistanceGenotypeFileCommand.class);
+		registerModulePluginCmdClass(SimpleDistanceGenotypeSequenceCommand.class);
+		registerModulePluginCmdClass(SimpleDistanceGenotypeFastaDocumentCommand.class);
+		registerModulePluginCmdClass(SimpleDistanceGenotypePlacerResultCommand.class);
+		registerModulePluginCmdClass(SimpleDistanceGenotypePlacerResultDocumentCommand.class);
 	}
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		List<Element> categoryElems = PluginUtils.findConfigElements(configElem, "cladeCategory");
-		this.cladeCategories = PluginFactory.createPlugins(pluginConfigContext, MaxLikelihoodCladeCategory.class, categoryElems);
+		this.cladeCategories = PluginFactory.createPlugins(pluginConfigContext, SimpleDistanceCladeCategory.class, categoryElems);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public Map<String, QueryGenotypingResult> genotype(CommandContext cmdContext,
 			PhyloTree glueProjectPhyloTree,
@@ -102,21 +105,22 @@ public class MaxLikelihoodGenotyper extends BaseGenotyper<MaxLikelihoodGenotyper
 			QueryGenotypingResult queryGenotypingResult = new QueryGenotypingResult();
 			queryGenotypingResults.put(queryResult.queryName, queryGenotypingResult);
 			queryGenotypingResult.queryName = queryResult.queryName;
-			for(MaxLikelihoodCladeCategory cladeCategory: cladeCategories) {
+			for(SimpleDistanceCladeCategory cladeCategory: cladeCategories) {
 				QueryCladeCategoryResult queryCladeCategoryResult = new QueryCladeCategoryResult();
 				queryGenotypingResult.queryCladeCategoryResult.add(queryCladeCategoryResult);
 				queryCladeCategoryResult.categoryName = cladeCategory.getName();
 				queryCladeCategoryResult.categoryDisplayName = cladeCategory.getDisplayName();
 				
-				Double distanceCutoff = cladeCategory.getDistanceCutoff();
-				Double distanceScalingExponent = cladeCategory.getDistanceScalingExponent();
+				Double maxExternalDistance = cladeCategory.getMaxDistance();
+				Double maxInternalDistance = cladeCategory.getMaxInternalDistance();
+				Double minPlacementPercentage = cladeCategory.getMinPlacementPercentage();
 
 				SelectQuery cladeCategoryAlmtSelectQuery = new SelectQuery(Alignment.class, cladeCategory.getWhereClause());
 				Map<String, Alignment> cladeCategoryAlmtNameToAlmt = 
 						GlueDataObject.query(cmdContext, Alignment.class, cladeCategoryAlmtSelectQuery).stream()
 						.collect(Collectors.toMap(x -> x.getName(), x -> x));
-				Map<String, Double> almtNameToScaledDistanceTotal = new LinkedHashMap<String, Double>();
-				Double allNeighboursScaledDistanceTotal = 0.0;
+				
+				Map<String, Double> almtNameToPlacementPercentageTotal = new LinkedHashMap<String, Double>();
 				
 				Map<String, PlacementNeighbour> cladeToClosestNeighbour = new LinkedHashMap<String, PlacementNeighbour>();
 				PlacementNeighbour closestTarget = null;
@@ -124,11 +128,11 @@ public class MaxLikelihoodGenotyper extends BaseGenotyper<MaxLikelihoodGenotyper
 				for(MaxLikelihoodSinglePlacement placement: queryResult.singlePlacement) {
 					PhyloLeaf placementLeaf = MaxLikelihoodPlacer
 							.addPlacementToPhylogeny(glueProjectPhyloTree, edgeIndexToPhyloBranch, queryResult, placement);
-					List<PlacementNeighbour> neighbours = PlacementNeighbourFinder.findNeighbours(placementLeaf, new BigDecimal(distanceCutoff), null);
+					Set<String> cladesForWhichInternal = getCladesForWhichInternal(placementLeaf);
+					
+					List<PlacementNeighbour> neighbours = PlacementNeighbourFinder.findNeighbours(placementLeaf, new BigDecimal(maxExternalDistance), null);
 					for(PlacementNeighbour neighbour: neighbours) {
 						BigDecimal distance = neighbour.getDistance();
-						Double scaledDistance = Math.pow(distance.doubleValue(), distanceScalingExponent) * placement.likeWeightRatio;
-						
 						String neighbourLeafName = neighbour.getPhyloLeaf().getName();
 						List<String> neighbourAncestorAlmtNames = leafNameToAncestorAlmtNames.get(neighbourLeafName);
 						for(String neighbourAncestorAlmtName: neighbourAncestorAlmtNames) {
@@ -142,13 +146,6 @@ public class MaxLikelihoodGenotyper extends BaseGenotyper<MaxLikelihoodGenotyper
 										closestTarget = neighbour;
 									}
 								}
-								allNeighboursScaledDistanceTotal = allNeighboursScaledDistanceTotal + scaledDistance;
-								Double currentTotal = almtNameToScaledDistanceTotal.get(neighbourAncestorAlmtName);
-								if(currentTotal == null) {
-									currentTotal = 0.0;
-								}
-								currentTotal = currentTotal + scaledDistance;
-								almtNameToScaledDistanceTotal.put(neighbourAncestorAlmtName, currentTotal);
 								break;
 							}
 						}
@@ -200,6 +197,30 @@ public class MaxLikelihoodGenotyper extends BaseGenotyper<MaxLikelihoodGenotyper
 		return queryGenotypingResults;
 	
 	}
+
+	private Set<String> getCladesForWhichInternal(PhyloLeaf placementLeaf) {
+		// if the grandparent internal node of the query is within a given clade, the query is "internal" to that clade.
+		Set<String> cladesForWhichInternal = new LinkedHashSet<String>();
+		PhyloInternal parentInternal = placementLeaf.getParentPhyloBranch().getParentPhyloInternal();
+		if(parentInternal != null) {
+			PhyloInternal grandparentInternal = parentInternal.getParentPhyloBranch().getParentPhyloInternal();
+			if(grandparentInternal != null) {
+				PhyloInternal internalNode = grandparentInternal;
+				while(internalNode != null) {
+					Map<String, Object> internalUserData = internalNode.getUserData();
+					if(internalUserData != null) {
+						Collection<? extends String> internalClades = (Collection<? extends String>) internalUserData.get(PhyloImporter.GLUE_ALIGNMENT_NAMES_USER_DATA_KEY);
+						if(internalClades != null) {
+							cladesForWhichInternal.addAll(internalClades);
+						}
+					}
+					internalNode = internalNode.getParentPhyloBranch().getParentPhyloInternal();
+				}
+			}
+		}
+		return cladesForWhichInternal;
+	}
+
 	
 	@Override
 	public List<? extends BaseCladeCategory> getCladeCategories() {

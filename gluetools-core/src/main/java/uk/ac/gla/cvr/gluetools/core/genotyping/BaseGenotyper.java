@@ -1,19 +1,26 @@
 package uk.ac.gla.cvr.gluetools.core.genotyping;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
-import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.ListCladeCategoryCommand;
-import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.QueryGenotypingResult;
+import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeVisitor;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodPlacer;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodPlacer.PlacerResultInternal;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodSingleQueryResult;
@@ -64,6 +71,30 @@ public abstract class BaseGenotyper<T extends BaseGenotyper<T>> extends ModulePl
 		return genotype(cmdContext, glueProjectPhyloTree, edgeIndexToPhyloBranch, singleQueryResults);
 	}
 
+	// take the GLUE project phylo tree on which genotyping will be based and
+	// map each reference member to the list of constrained ancestor alignments.
+	protected Map<String, List<String>> referenceMemberAncestorAlmts(CommandContext cmdContext,
+			PhyloTree glueProjectPhyloTree) {
+		Map<String, List<String>> leafNameToAncestorAlmtNames = new LinkedHashMap<String, List<String>>();
+		glueProjectPhyloTree.accept(new PhyloTreeVisitor() {
+			@Override
+			public void visitLeaf(PhyloLeaf phyloLeaf) {
+				String leafName = phyloLeaf.getName();
+				Map<String,String> memberPkMap = Project.targetPathToPkMap(ConfigurableTable.alignment_member, leafName);
+				AlignmentMember almtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, memberPkMap);
+				List<Alignment> ancestorAlmts = almtMember.getAlignment().getAncestors();
+				List<String> ancestorAlmtNames = new ArrayList<String>();
+				for(Alignment ancestorAlmt: ancestorAlmts) {
+					ancestorAlmtNames.add(ancestorAlmt.getName());
+				}
+				leafNameToAncestorAlmtNames.put(leafName, ancestorAlmtNames);
+			}
+			
+		});
+		return leafNameToAncestorAlmtNames;
+	}
+
+	
 	public abstract List<? extends BaseCladeCategory> getCladeCategories();
 
 }

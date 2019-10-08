@@ -23,7 +23,7 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood;
+package uk.ac.gla.cvr.gluetools.core.genotyping;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -32,8 +32,6 @@ import java.util.Optional;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableColumn;
-import uk.ac.gla.cvr.gluetools.core.genotyping.AbstractGenotypeCommand.DetailLevel;
-import uk.ac.gla.cvr.gluetools.core.genotyping.BaseCladeCategory;
 
 public class GenotypingTableResult extends BaseTableResult<QueryGenotypingResult> {
 

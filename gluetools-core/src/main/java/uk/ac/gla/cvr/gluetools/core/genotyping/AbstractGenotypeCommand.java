@@ -35,9 +35,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
-import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.GenotypingDocumentResult;
-import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.GenotypingTableResult;
-import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.QueryGenotypingResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 

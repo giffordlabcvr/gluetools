@@ -23,21 +23,18 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood;
+package uk.ac.gla.cvr.gluetools.core.genotyping.simpledistance;
 
-import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentClass;
-import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentField;
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
+import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
+import uk.ac.gla.cvr.gluetools.core.genotyping.GenotypePlacerResultDocumentCommand;
 
-@PojoDocumentClass
-public class QueryCladeResult {
-
-	@PojoDocumentField
-	public String cladeName;
-
-	@PojoDocumentField
-	public String cladeRenderedName;
-
-	@PojoDocumentField
-	public Double percentScore;
+@CommandClass(
+		commandWords={"genotype", "placer-result-document"}, 
+		description = "Generate genotyping results from a placer result document", 
+		docoptUsages = { },
+		metaTags = {CmdMeta.inputIsComplex}	
+)
+public class SimpleDistanceGenotypePlacerResultDocumentCommand extends GenotypePlacerResultDocumentCommand<SimpleDistanceGenotyper> {
 	
 }

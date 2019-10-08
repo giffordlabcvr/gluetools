@@ -23,52 +23,21 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood;
-
-import java.util.ArrayList;
-import java.util.List;
+package uk.ac.gla.cvr.gluetools.core.genotyping;
 
 import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentClass;
 import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentField;
-import uk.ac.gla.cvr.gluetools.core.document.pojo.PojoDocumentListField;
 
 @PojoDocumentClass
-public class QueryCladeCategoryResult {
+public class QueryCladeResult {
 
 	@PojoDocumentField
-	public String categoryName;
+	public String cladeName;
 
 	@PojoDocumentField
-	public String categoryDisplayName;
+	public String cladeRenderedName;
 
-	@PojoDocumentListField(itemClass = QueryCladeResult.class)
-	public List<QueryCladeResult> queryCladeResult = new ArrayList<QueryCladeResult>();
+	@PojoDocumentField
+	public Double percentScore;
 	
-	@PojoDocumentField
-	public String finalClade;
-
-	@PojoDocumentField
-	public String finalCladeRenderedName;
-
-	// closest member of the final clade to the query.
-	@PojoDocumentField
-	public String closestMemberAlignmentName;
-	
-	@PojoDocumentField
-	public String closestMemberSourceName;
-
-	@PojoDocumentField
-	public String closestMemberSequenceID;
-
-	// closest phylo leaf which also passes the "valid target" where clause
-	@PojoDocumentField
-	public String closestTargetAlignmentName;
-	
-	@PojoDocumentField
-	public String closestTargetSourceName;
-
-	@PojoDocumentField
-	public String closestTargetSequenceID;
-
-
 }
