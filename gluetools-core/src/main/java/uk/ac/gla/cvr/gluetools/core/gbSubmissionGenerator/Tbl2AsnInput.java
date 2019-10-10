@@ -28,8 +28,8 @@ package uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator;
 import java.util.List;
 import java.util.Map;
 
-import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.featureProvider.GbFeatureSpecification;
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 
 public class Tbl2AsnInput {
 

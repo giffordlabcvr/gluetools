@@ -28,11 +28,11 @@ package uk.ac.gla.cvr.gluetools.core.datamodel.sequence;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 
 public class FastaSequenceObject extends AbstractSequenceObject {
 

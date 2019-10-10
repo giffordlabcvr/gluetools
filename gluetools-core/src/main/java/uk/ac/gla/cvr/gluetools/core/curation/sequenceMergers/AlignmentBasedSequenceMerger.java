@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
-import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;import org.w3c.dom.Element;
+import org.w3c.dom.Element;
 
 import freemarker.template.Template;
 import freemarker.template.TemplateModel;
@@ -49,6 +49,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FreemarkerUtils;
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 
 /*
  * Module for creating sequences from alignments, based on assigning alignment members into exclusive groups.

@@ -38,7 +38,7 @@ import java.util.UUID;
 import javax.json.JsonObject;
 
 import org.apache.commons.io.IOUtils;
-import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;import org.w3c.dom.Element;
+import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.jplace.JPlaceResult;
@@ -60,6 +60,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 
 public class RaxmlEpaRunner extends RaxmlRunner {
 

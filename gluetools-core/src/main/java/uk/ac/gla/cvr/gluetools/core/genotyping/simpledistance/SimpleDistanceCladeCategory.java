@@ -40,16 +40,17 @@ public class SimpleDistanceCladeCategory extends BaseCladeCategory {
 	public static final String MAX_INTERNAL_DISTANCE = "maxInternalDistance";
 	public static final String MIN_PLACEMENT_PERCENTAGE = "minPlacementPercentage";
 
-	// If the query is within <maxDistance> patristic distance of a reference sequence in clade X, 
-	// then the query may be assigned to clade X. If multiple clades within a clade category meet this 
+	// If for a given placement, the query is within <maxDistance> patristic distance of a reference sequence in clade X, 
+	// then the query may be assigned to clade X for that placement. If multiple clades within a clade category meet this 
 	// criterion, the clade with the nearest distance wins.
 	private Double maxDistance;
 	// if <useInternalDistance> is true, a query may be assigned to clade X if it is internal to clade X
 	// (i.e. its grandparent internal node is a descendent of the node that defines X) based on a different
 	// distance threshold
 	private Boolean useInternalDistance;
-	// If <useInternalDistance> is true and the query is within <maxInternalDistance> patristic distance 
-	// of a reference sequence in clade X, *and* it is internal to clade X, then it may be assigned to clade X. 
+	// If <useInternalDistance> is true and, for a given placement, the query is within <maxInternalDistance> 
+	// patristic distance of a reference sequence in clade X, *and* it is internal to clade X, then it may be 
+	// assigned to clade X. 
 	// If <useInternalDistance> is true and <maxInternalDistance> is null (the default) then being internal
 	// to clade X is enough to assign the query to clade X. 
 	

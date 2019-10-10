@@ -30,7 +30,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.cayenne.exp.Expression;
-import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;import org.w3c.dom.Element;
+import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.member.VariationScanCommandResult;
@@ -55,6 +55,7 @@ import uk.ac.gla.cvr.gluetools.core.variationscanner.BaseVariationScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanRenderHints;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScannerMatchResult;
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 
 public abstract class FastaSequenceBaseVariationScanCommand extends FastaSequenceReporterCommand<CommandResult> 
 	implements ProvidedProjectModeCommand{

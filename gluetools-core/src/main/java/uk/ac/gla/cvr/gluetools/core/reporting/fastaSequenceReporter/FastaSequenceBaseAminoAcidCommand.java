@@ -27,7 +27,6 @@ package uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter;
 
 import java.util.List;
 
-import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAminoAcidAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -41,6 +40,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SimpleNucleotideContentPr
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 
 public abstract class FastaSequenceBaseAminoAcidCommand extends FastaSequenceReporterCommand<FastaSequenceAminoAcidResult> 
 	implements ProvidedProjectModeCommand{

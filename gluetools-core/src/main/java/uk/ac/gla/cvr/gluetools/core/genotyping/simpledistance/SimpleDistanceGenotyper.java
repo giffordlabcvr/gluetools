@@ -41,13 +41,9 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
-import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
-import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
-import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.genotyping.BaseCladeCategory;
 import uk.ac.gla.cvr.gluetools.core.genotyping.BaseGenotyper;
 import uk.ac.gla.cvr.gluetools.core.genotyping.QueryCladeCategoryResult;
-import uk.ac.gla.cvr.gluetools.core.genotyping.QueryCladeResult;
 import uk.ac.gla.cvr.gluetools.core.genotyping.QueryGenotypingResult;
 import uk.ac.gla.cvr.gluetools.core.phylogenyImporter.PhyloImporter;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
@@ -111,10 +107,10 @@ public class SimpleDistanceGenotyper extends BaseGenotyper<SimpleDistanceGenotyp
 				queryCladeCategoryResult.categoryName = cladeCategory.getName();
 				queryCladeCategoryResult.categoryDisplayName = cladeCategory.getDisplayName();
 				
-				Double maxExternalDistance = cladeCategory.getMaxDistance();
+				Double maxDistance = cladeCategory.getMaxDistance();
 				Double maxInternalDistance = cladeCategory.getMaxInternalDistance();
 				Double minPlacementPercentage = cladeCategory.getMinPlacementPercentage();
-
+				boolean useInternalDistance = cladeCategory.useInternalDistance();
 				SelectQuery cladeCategoryAlmtSelectQuery = new SelectQuery(Alignment.class, cladeCategory.getWhereClause());
 				Map<String, Alignment> cladeCategoryAlmtNameToAlmt = 
 						GlueDataObject.query(cmdContext, Alignment.class, cladeCategoryAlmtSelectQuery).stream()
@@ -128,63 +124,59 @@ public class SimpleDistanceGenotyper extends BaseGenotyper<SimpleDistanceGenotyp
 				for(MaxLikelihoodSinglePlacement placement: queryResult.singlePlacement) {
 					PhyloLeaf placementLeaf = MaxLikelihoodPlacer
 							.addPlacementToPhylogeny(glueProjectPhyloTree, edgeIndexToPhyloBranch, queryResult, placement);
-					Set<String> cladesForWhichInternal = getCladesForWhichInternal(placementLeaf);
+
+					// find the clade assignment for the placement, if any, based on maxDistance alone.
+					String maxDistanceCladeAssignmentAlmtName = null;
+					PlacementNeighbour maxDistanceCladeAssignmentNeighbour = null;
 					
-					List<PlacementNeighbour> neighbours = PlacementNeighbourFinder.findNeighbours(placementLeaf, new BigDecimal(maxExternalDistance), null);
+					List<PlacementNeighbour> neighbours = PlacementNeighbourFinder.findNeighbours(placementLeaf, null, null);
 					for(PlacementNeighbour neighbour: neighbours) {
 						BigDecimal distance = neighbour.getDistance();
-						String neighbourLeafName = neighbour.getPhyloLeaf().getName();
-						List<String> neighbourAncestorAlmtNames = leafNameToAncestorAlmtNames.get(neighbourLeafName);
-						for(String neighbourAncestorAlmtName: neighbourAncestorAlmtNames) {
-							if(cladeCategoryAlmtNameToAlmt.containsKey(neighbourAncestorAlmtName)) {
-								PlacementNeighbour cladeClosestNeighbour = cladeToClosestNeighbour.get(neighbourAncestorAlmtName);
-								if(cladeClosestNeighbour == null || neighbour.getDistance().compareTo(cladeClosestNeighbour.getDistance()) < 0) {
-									cladeToClosestNeighbour.put(neighbourAncestorAlmtName, neighbour);
-								}
-								if((boolean) (neighbour.getPhyloLeaf().getUserData().get(MaxLikelihoodPlacer.PLACER_VALID_TARGET_USER_DATA_KEY))) {
-									if(closestTarget == null || neighbour.getDistance().compareTo(closestTarget.getDistance()) < 0) {
-										closestTarget = neighbour;
-									}
-								}
-								break;
+						// as a secondary task in this loop, update the closest valid target.
+						if((boolean) (neighbour.getPhyloLeaf().getUserData().get(MaxLikelihoodPlacer.PLACER_VALID_TARGET_USER_DATA_KEY))) {
+							if(closestTarget == null || neighbour.getDistance().compareTo(closestTarget.getDistance()) < 0) {
+								closestTarget = neighbour;
 							}
 						}
-					}
-					MaxLikelihoodPlacer.removePlacementFromPhylogeny(placementLeaf);
-				}
-				for(Map.Entry<String, Double> entry: almtNameToScaledDistanceTotal.entrySet()) {
-					String almtName = entry.getKey();
-					Double scaledDistanceTotal = entry.getValue();
-					if(allNeighboursScaledDistanceTotal == 0.0) {
-						continue;
-					}
-					QueryCladeResult queryCladeResult = new QueryCladeResult();
-					queryCladeCategoryResult.queryCladeResult.add(queryCladeResult);
-					queryCladeResult.cladeName = almtName;
-					queryCladeResult.cladeRenderedName = cladeCategoryAlmtNameToAlmt.get(almtName).getRenderedName();
-					queryCladeResult.percentScore = 
-							(scaledDistanceTotal / allNeighboursScaledDistanceTotal ) * 100.0;
-					if(queryCladeResult.percentScore >= cladeCategory.getFinalCladeCutoff()) {
-						queryCladeCategoryResult.finalClade = almtName;
-						queryCladeCategoryResult.finalCladeRenderedName = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(almtName)).getRenderedName();
-						PlacementNeighbour closestNeighbourWithinFinalClade = cladeToClosestNeighbour.get(almtName);
-						if(closestNeighbourWithinFinalClade != null) {
-							Map<String,String> closestMemberPkMap = 
-									Project.targetPathToPkMap(ConfigurableTable.alignment_member, 
-											closestNeighbourWithinFinalClade.getPhyloLeaf().getName());
-							queryCladeCategoryResult.closestMemberAlignmentName = closestMemberPkMap.get(AlignmentMember.ALIGNMENT_NAME_PATH);
-							queryCladeCategoryResult.closestMemberSourceName = closestMemberPkMap.get(AlignmentMember.SOURCE_NAME_PATH);
-							queryCladeCategoryResult.closestMemberSequenceID = closestMemberPkMap.get(AlignmentMember.SEQUENCE_ID_PATH);
+						if(distance.doubleValue() <= maxDistance) {
+							String neighbourLeafName = neighbour.getPhyloLeaf().getName();
+							// find which GLUE alignments this leaf is in.
+							List<String> neighbourAncestorAlmtNames = leafNameToAncestorAlmtNames.get(neighbourLeafName);
+							// find which of these, if any, is a clade within the current clade category.
+							for(String neighbourAncestorAlmtName: neighbourAncestorAlmtNames) {
+								if(cladeCategoryAlmtNameToAlmt.containsKey(neighbourAncestorAlmtName)) {
+									// update cladeToClosestNeighbour accordingly.
+									PlacementNeighbour cladeClosestNeighbour = cladeToClosestNeighbour.get(neighbourAncestorAlmtName);
+									if(cladeClosestNeighbour == null || neighbour.getDistance().compareTo(cladeClosestNeighbour.getDistance()) < 0) {
+										cladeToClosestNeighbour.put(neighbourAncestorAlmtName, neighbour);
+									}
+									if(maxDistanceCladeAssignmentNeighbour == null || neighbour.getDistance().compareTo(maxDistanceCladeAssignmentNeighbour.getDistance()) < 0) {
+										maxDistanceCladeAssignmentNeighbour = neighbour;
+										maxDistanceCladeAssignmentAlmtName = neighbourAncestorAlmtName;
+									}
+									break;
+								}
+							}
+							
 						}
 					}
-					if(closestTarget != null) {
-						Map<String,String> closestTargetPkMap = 
-								Project.targetPathToPkMap(ConfigurableTable.alignment_member, 
-										closestTarget.getPhyloLeaf().getName());
-						queryCladeCategoryResult.closestTargetAlignmentName = closestTargetPkMap.get(AlignmentMember.ALIGNMENT_NAME_PATH);
-						queryCladeCategoryResult.closestTargetSourceName = closestTargetPkMap.get(AlignmentMember.SOURCE_NAME_PATH);
-						queryCladeCategoryResult.closestTargetSequenceID = closestTargetPkMap.get(AlignmentMember.SEQUENCE_ID_PATH);
+					
+					// find the clade assignment for the placement. An "internal" assignment might override the maxDistance assignment. 
+					String cladeAssignmentAlmtName = maxDistanceCladeAssignmentAlmtName;
+					PlacementNeighbour cladeAssignmentNeighbour = maxDistanceCladeAssignmentNeighbour;
+
+					if(useInternalDistance) {
+						Set<String> cladesForWhichInternal = getCladesForWhichInternal(placementLeaf);
+						for(PlacementNeighbour neighbour: neighbours) {
+							BigDecimal distance = neighbour.getDistance();
+						}
+						
 					}
+					
+					
+					
+					
+					MaxLikelihoodPlacer.removePlacementFromPhylogeny(placementLeaf);
 				}
 			}
 			resultsComplete++;

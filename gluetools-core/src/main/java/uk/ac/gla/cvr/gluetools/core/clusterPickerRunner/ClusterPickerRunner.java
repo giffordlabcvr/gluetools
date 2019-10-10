@@ -38,7 +38,7 @@ import java.util.UUID;
 import java.util.regex.Pattern;
 
 import org.apache.commons.io.IOUtils;
-import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;import org.w3c.dom.Element;
+import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.clusterPickerRunner.ClusterPickerException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -57,6 +57,7 @@ import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils;
 import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 
 @PluginClass(elemName="clusterPickerRunner",
 	description="Binding to software for identifying supported clusters within a tree")

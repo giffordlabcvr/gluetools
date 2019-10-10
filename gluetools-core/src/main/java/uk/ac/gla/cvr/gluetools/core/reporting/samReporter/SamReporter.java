@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.logging.Level;
 
-import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;import org.w3c.dom.Element;
+import org.w3c.dom.Element;
 
 import htsjdk.samtools.SAMRecord;
 import htsjdk.samtools.ValidationStringency;
@@ -57,6 +57,7 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterCommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 
 @PluginClass(elemName="samReporter",
 		description="Provides various commands for analysing deep sequencing data in SAM/BAM files")

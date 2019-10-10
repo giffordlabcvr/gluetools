@@ -30,10 +30,10 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.Map;
 
-import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 
 
 public class TemporaryMultiSeqBlastDB extends BlastDB<TemporaryMultiSeqBlastDB> {

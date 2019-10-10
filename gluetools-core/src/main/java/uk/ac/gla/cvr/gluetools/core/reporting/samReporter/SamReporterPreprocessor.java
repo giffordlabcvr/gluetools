@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.logging.Level;
 
-import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 import htsjdk.samtools.SAMFileHeader;
 import htsjdk.samtools.SAMFileHeader.SortOrder;
 import htsjdk.samtools.SAMFileWriter;
@@ -30,6 +29,7 @@ import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporter.SamRefSens
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.session.SamFileSession;
 import uk.ac.gla.cvr.gluetools.core.session.SessionKey;
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 
 public class SamReporterPreprocessor {
 

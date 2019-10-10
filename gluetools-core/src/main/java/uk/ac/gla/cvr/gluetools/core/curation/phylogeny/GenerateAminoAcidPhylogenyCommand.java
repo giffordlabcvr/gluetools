@@ -27,7 +27,7 @@ package uk.ac.gla.cvr.gluetools.core.curation.phylogeny;
 
 import java.util.Map;
 
-import uk.ac.gla.cvr.gluetools.utils.fasta.ProteinSequence;import org.w3c.dom.Element;
+import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAminoAcidAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.SimpleAminoAcidColumnsSelector;
@@ -40,6 +40,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AlignmentColumnsSelector;
+import uk.ac.gla.cvr.gluetools.utils.fasta.ProteinSequence;
 
 public abstract class GenerateAminoAcidPhylogenyCommand<P extends PhylogenyGenerator<P>> extends GeneratePhylogenyCommand<P> {
 

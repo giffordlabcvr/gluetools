@@ -33,7 +33,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.apache.cayenne.exp.Expression;
-import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;import org.w3c.dom.Element;
+import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.clusterPickerRunner.ClusterPickerException.Code;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.AbstractStringAlmtRowConsumer;
@@ -59,6 +59,7 @@ import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeVisitor;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 
 @CommandClass(commandWords={"run", "cluster-picker", "file"},
 	docoptUsages="-a <alignmentName> [-w <whereClause>] -t <treeFileName> <treeFileFormat> [-d <dataDir>]",

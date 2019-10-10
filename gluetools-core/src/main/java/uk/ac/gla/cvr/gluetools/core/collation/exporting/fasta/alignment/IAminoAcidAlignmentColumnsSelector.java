@@ -30,7 +30,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import uk.ac.gla.cvr.gluetools.utils.fasta.ProteinSequence;
 import gnu.trove.map.TIntIntMap;
 import gnu.trove.map.hash.TIntIntHashMap;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledAminoAcid;
@@ -44,6 +43,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.NucleotideContentProvider
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+import uk.ac.gla.cvr.gluetools.utils.fasta.ProteinSequence;
 
 public interface IAminoAcidAlignmentColumnsSelector extends IAlignmentColumnsSelector {
 

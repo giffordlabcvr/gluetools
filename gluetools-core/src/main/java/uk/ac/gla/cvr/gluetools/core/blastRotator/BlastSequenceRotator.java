@@ -33,7 +33,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.logging.Level;
 
-import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;import org.w3c.dom.Element;
+import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.blastRotator.BlastSequenceRotatorException.Code;
 import uk.ac.gla.cvr.gluetools.core.blastRotator.RotationResultRow.Status;
@@ -56,6 +56,7 @@ import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.BlastDbManager;
 import uk.ac.gla.cvr.gluetools.programs.blast.dbManager.MultiReferenceBlastDB;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
+import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 
 @PluginClass(elemName="blastSequenceRotator",
 		description="Identifies circular sequences requiring rotation using nucleotide BLAST against a ReferenceSequence")
