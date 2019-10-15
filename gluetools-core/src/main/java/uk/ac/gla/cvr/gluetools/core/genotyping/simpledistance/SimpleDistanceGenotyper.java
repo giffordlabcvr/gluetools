@@ -160,7 +160,7 @@ public class SimpleDistanceGenotyper extends BaseGenotyper<SimpleDistanceGenotyp
 							
 						}
 					}
-					
+
 					// find the clade assignment for the placement. An "internal" assignment might override the maxDistance assignment. 
 					String cladeAssignmentAlmtName = maxDistanceCladeAssignmentAlmtName;
 					PlacementNeighbour cladeAssignmentNeighbour = maxDistanceCladeAssignmentNeighbour;
@@ -173,7 +173,7 @@ public class SimpleDistanceGenotyper extends BaseGenotyper<SimpleDistanceGenotyp
 						
 					}
 					
-					
+					// mothballing development of this for now, as I'm not going to use it within BTV-GLUE as originally planned.
 					
 					
 					MaxLikelihoodPlacer.removePlacementFromPhylogeny(placementLeaf);

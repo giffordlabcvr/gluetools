@@ -133,7 +133,8 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(NexusExporter.class);
 		registerPluginClass(TreeTransformer.class);
 		registerPluginClass(MaxLikelihoodPlacer.class);
-		registerPluginClass(SimpleDistanceGenotyper.class);
+		// mothballed for the time being.
+		// registerPluginClass(SimpleDistanceGenotyper.class);
 		registerPluginClass(MaxLikelihoodGenotyper.class);
 		registerPluginClass(FigTreeAnnotationExporter.class);
 		registerPluginClass(ClusterPickerRunner.class);
