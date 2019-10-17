@@ -110,7 +110,16 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 	
 	// number of sequences to try to retrieve with each search
 	private static final String E_FETCH_BATCH_SIZE = "eFetchBatchSize";
-	
+
+	// boolean, whether to retry if HTTP error 502 is the response
+	private static final String RETRY_ON_502 = "retryOn502";
+
+	// maximum number of retries. Resets each time there is a success
+	private static final String MAX_RETRIES = "maxRetries";
+
+	// number of seconds to back off in between retries
+	private static final String RETRY_BACKOFF_SECONDS = "retryBackoffSeconds";
+
 	// max number of sequences to retrieve with each search
 	private static final String E_SEARCH_RET_MAX = "eSearchRetMax";
 	
@@ -142,6 +151,9 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 	private SequenceIdField sequenceIdField;
 	private String giNumberFieldName;
 	private Integer maxDownloaded = null;
+	private boolean retryOn502;
+	private int maxRetries;
+	private int retryBackoffSeconds;
 	
 	public NcbiImporter() {
 		super();
@@ -157,6 +169,9 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		addSimplePropertyName(SEQUENCE_ID_FIELD);
 		addSimplePropertyName(SEQUENCE_FORMAT);
 		addSimplePropertyName(MAX_DOWNLOADED);
+		addSimplePropertyName(RETRY_ON_502);
+		addSimplePropertyName(MAX_RETRIES);
+		addSimplePropertyName(RETRY_BACKOFF_SECONDS);
 	}
 
 	@Override
@@ -176,6 +191,11 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 				ncbiImporterElem, SEQUENCE_ID_FIELD, false)).orElse(SequenceIdField.GI_NUMBER);
 		maxDownloaded = PluginUtils.configureIntProperty(ncbiImporterElem, MAX_DOWNLOADED, false);
 		giNumberFieldName = PluginUtils.configureStringProperty(ncbiImporterElem, GI_NUMBER_FIELD_NAME, "gb_gi_number");
+
+		retryOn502 = Optional.ofNullable(PluginUtils.configureBooleanProperty(ncbiImporterElem, RETRY_ON_502, false)).orElse(true);
+		maxRetries = PluginUtils.configureIntProperty(ncbiImporterElem, MAX_RETRIES, 100);
+		retryBackoffSeconds = PluginUtils.configureIntProperty(ncbiImporterElem, RETRY_BACKOFF_SECONDS, 10);
+
 		
 		String overwriteExisting = PluginUtils.configureStringProperty(ncbiImporterElem, "overwriteExisting", false);
 		if(overwriteExisting != null) {
@@ -340,14 +360,27 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		if(giNumbers.isEmpty()) {
 			return retrievedSequences;
 		}
-		Object eFetchResponseObject;
-		try(CloseableHttpClient httpClient = createHttpClient(cmdContext)) {
-			HttpUriRequest eFetchRequest = createEFetchRequest(giNumbers);
+		Object eFetchResponseObject = null;
+		int maxTries = retryOn502 ? this.maxRetries : 1;
+		int tries = 0;
+		
+		while(tries < maxTries && eFetchResponseObject == null) {
+			tries++;
+			try(CloseableHttpClient httpClient = createHttpClient(cmdContext)) {
+				HttpUriRequest eFetchRequest = createEFetchRequest(giNumbers);
 				log("Requesting "+giNumbers.size()+" sequences from NCBI via eFetch");
 				eFetchResponseObject = runHttpRequestGetDocument("eFetch", eFetchRequest, httpClient);
 				log("NCBI eFetch response received");
-		} catch (IOException e) {
-			throw new NcbiImporterException(e, NcbiImporterException.Code.IO_ERROR, "eFetch", e.getLocalizedMessage());
+			} catch (IOException e) {
+				throw new NcbiImporterException(e, NcbiImporterException.Code.IO_ERROR, "eFetch", e.getLocalizedMessage());
+			} catch (NcbiImporterException nie) {
+				if(nie.getCode() == NcbiImporterException.Code.HTTP_ERROR_502 && retryOn502 && tries < maxTries) {
+					log("Encountered HTTP error 502, backing off for "+retryBackoffSeconds+"s. "+(maxTries-tries)+" retry attempts remaining.");
+					try {Thread.sleep(retryBackoffSeconds * 1000);} catch (InterruptedException e) {}
+				} else {
+					throw nie;
+				}
+			}
 		}
 		List<Document> individualGBFiles = divideDocuments((Document) eFetchResponseObject);
 		for(Document individualFile: individualGBFiles) {
@@ -463,7 +496,11 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		try(CloseableHttpResponse response = httpClient.execute(httpRequest);) {
 			if(response.getStatusLine().getStatusCode() != 200) {
 				logResponse(requestName, response);
-				throw new NcbiImporterException(NcbiImporterException.Code.PROTOCOL_ERROR, requestName, response.getStatusLine().toString());
+				if(response.getStatusLine().getStatusCode() == 502) {
+					throw new NcbiImporterException(NcbiImporterException.Code.HTTP_ERROR_502, requestName, response.getStatusLine().toString());
+				} else {
+					throw new NcbiImporterException(NcbiImporterException.Code.PROTOCOL_ERROR, requestName, response.getStatusLine().toString());
+				}
 			}
 
 			HttpEntity entity = response.getEntity();
