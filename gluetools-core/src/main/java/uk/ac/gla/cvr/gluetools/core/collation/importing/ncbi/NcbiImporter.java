@@ -114,6 +114,9 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 	// boolean, whether to retry if HTTP error 502 is the response
 	private static final String RETRY_ON_502 = "retryOn502";
 
+	// boolean, whether to retry if there is a formatting error processing the response
+	private static final String RETRY_ON_FORMATTING_ERROR = "retryOnFormattingError";
+
 	// maximum number of retries. Resets each time there is a success
 	private static final String MAX_RETRIES = "maxRetries";
 
@@ -152,6 +155,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 	private String giNumberFieldName;
 	private Integer maxDownloaded = null;
 	private boolean retryOn502;
+	private boolean retryOnFormattingError;
 	private int maxRetries;
 	private int retryBackoffSeconds;
 	
@@ -170,6 +174,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		addSimplePropertyName(SEQUENCE_FORMAT);
 		addSimplePropertyName(MAX_DOWNLOADED);
 		addSimplePropertyName(RETRY_ON_502);
+		addSimplePropertyName(RETRY_ON_FORMATTING_ERROR);
 		addSimplePropertyName(MAX_RETRIES);
 		addSimplePropertyName(RETRY_BACKOFF_SECONDS);
 	}
@@ -193,8 +198,9 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 		giNumberFieldName = PluginUtils.configureStringProperty(ncbiImporterElem, GI_NUMBER_FIELD_NAME, "gb_gi_number");
 
 		retryOn502 = Optional.ofNullable(PluginUtils.configureBooleanProperty(ncbiImporterElem, RETRY_ON_502, false)).orElse(true);
-		maxRetries = PluginUtils.configureIntProperty(ncbiImporterElem, MAX_RETRIES, 100);
-		retryBackoffSeconds = PluginUtils.configureIntProperty(ncbiImporterElem, RETRY_BACKOFF_SECONDS, 10);
+		retryOnFormattingError = Optional.ofNullable(PluginUtils.configureBooleanProperty(ncbiImporterElem, RETRY_ON_FORMATTING_ERROR, false)).orElse(true);
+		maxRetries = PluginUtils.configureIntProperty(ncbiImporterElem, MAX_RETRIES, 10000);
+		retryBackoffSeconds = PluginUtils.configureIntProperty(ncbiImporterElem, RETRY_BACKOFF_SECONDS, 60);
 
 		
 		String overwriteExisting = PluginUtils.configureStringProperty(ncbiImporterElem, "overwriteExisting", false);
@@ -361,7 +367,7 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 			return retrievedSequences;
 		}
 		Object eFetchResponseObject = null;
-		int maxTries = retryOn502 ? this.maxRetries : 1;
+		int maxTries = (retryOn502 || retryOnFormattingError) ? this.maxRetries : 1;
 		int tries = 0;
 		
 		while(tries < maxTries && eFetchResponseObject == null) {
@@ -376,6 +382,9 @@ public class NcbiImporter extends SequenceImporter<NcbiImporter> {
 			} catch (NcbiImporterException nie) {
 				if(nie.getCode() == NcbiImporterException.Code.HTTP_ERROR_502 && retryOn502 && tries < maxTries) {
 					log("Encountered HTTP error 502, backing off for "+retryBackoffSeconds+"s. "+(maxTries-tries)+" retry attempts remaining.");
+					try {Thread.sleep(retryBackoffSeconds * 1000);} catch (InterruptedException e) {}
+				} else if(nie.getCode() == NcbiImporterException.Code.FORMATTING_ERROR && retryOnFormattingError && tries < maxTries) {
+					log("Encountered formatting error, backing off for "+retryBackoffSeconds+"s. "+(maxTries-tries)+" retry attempts remaining.");
 					try {Thread.sleep(retryBackoffSeconds * 1000);} catch (InterruptedException e) {}
 				} else {
 					throw nie;
