@@ -37,6 +37,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.scripting.CommandDocumentToMapVisitor;
 import uk.ac.gla.cvr.gluetools.core.command.scripting.NashornContext;
+import uk.ac.gla.cvr.gluetools.core.command.scripting.NashornScriptingException;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker.EcmaFunctionInvokerException.Code;
 import uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker.resultType.EcmaFunctionOkFromNullResultType;
@@ -134,6 +135,9 @@ public class EcmaFunction implements Plugin {
 		NashornContext nashornContext = cmdContext.getNashornContext();
 		nashornContext.setScriptContext(ecmaFunctionInvoker.ensureScriptContext(cmdContext));
 		JSObject functionJSObject = nashornContext.lookupFunction(getName());
+		if(functionJSObject == null) {
+			throw new EcmaFunctionInvokerException(Code.FUNCTION_INVOCATION_EXCEPTION, ecmaFunctionInvoker.getModuleName(), getName(), "Function not found: "+getName());
+		}
 		Object cmdResultObj = null;
 		Object[] inputArray;
 		if(consumesDocument) {
