@@ -22,6 +22,8 @@
 		</requestQueue>
 	</requestQueueManager>
 	<requestGatekeeper>
+
+		<!-- HCV-GLUE -->
 		<modePathRegexFilter>
 			<regex>^/project/hcv</regex>
 			<!-- general -->
@@ -186,18 +188,150 @@
 				<simpleCommandFilter words="render-object"/>
 			</modePathRegexFilter>			
 		</modePathRegexFilter>
+
+		<!-- HEV-GLUE -->
 		<modePathRegexFilter>
 			<regex>^/project/hev</regex>
 		</modePathRegexFilter>
+
+		<!-- BTV-GLUE -->
 		<modePathRegexFilter>
 			<regex>^/project/btv</regex>
+			<!-- general -->
+			<simpleCommandFilter words="multi-render">
+				<arg name="tableName">who_region</arg>
+				<arg name="rendererModuleName">whoRegionTreeRenderer</arg>
+			</simpleCommandFilter>
+			<!-- segment clade tree page -->
+			<modePathRegexFilter>
+				<regex>.*/alignment/AL_S[0-9]+_MASTER</regex>
+				<simpleCommandFilter words="descendent-tree"/>
+			</modePathRegexFilter>
+			<!-- sequences page -->
+			<modePathRegexFilter>
+				<regex>.*/module/fastaExporter$</regex>
+				<simpleCommandFilter words="web-export">
+					<queueAssignmentFilter>
+							<queueName>download</queueName>						
+					</queueAssignmentFilter>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
+			<simpleCommandFilter words="count sequence"/>
+			<simpleCommandFilter words="list sequence"/>
+			<simpleCommandFilter words="web-list sequence"/>
+			<!-- alignment page -->
+			<modePathRegexFilter>
+				<regex>.*/alignment/.*</regex>
+				<simpleCommandFilter words="render-object">
+					<arg name="rendererModuleName">btvAlignmentRenderer</arg>
+				</simpleCommandFilter>
+				<simpleCommandFilter words="count member"/>
+				<simpleCommandFilter words="list member"/>
+				<simpleCommandFilter words="web-list member">
+					<queueAssignmentFilter>
+						<queueName>download</queueName>						
+					</queueAssignmentFilter>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/reference/.*</regex>
+				<simpleCommandFilter words="show feature tree"/>
+			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/module/fastaExporter$</regex>
+				<simpleCommandFilter words="web-export-member">
+					<queueAssignmentFilter>
+							<queueName>download</queueName>						
+					</queueAssignmentFilter>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/module/fastaAlignmentExporter$</regex>
+				<simpleCommandFilter words="web-export">
+					<queueAssignmentFilter>
+							<queueName>download</queueName>						
+					</queueAssignmentFilter>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/module/fastaProteinAlignmentExporter$</regex>
+				<simpleCommandFilter words="web-export">
+					<queueAssignmentFilter>
+							<queueName>download</queueName>						
+					</queueAssignmentFilter>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
+			<!-- sequence page -->
+			<modePathRegexFilter>
+				<regex>.*/sequence/.*$</regex>
+				<simpleCommandFilter words="render-object">
+					<arg name="rendererModuleName">btvSequenceRenderer</arg>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
+			<!-- analysis page -->
+			<modePathRegexFilter>
+				<regex>.*/module/btvReportingController$</regex>
+				<simpleCommandFilter words="invoke-consumes-binary-function">
+					<arg name="functionName">reportFastaWeb</arg>
+					<queueAssignmentFilter>
+						<queueName>analysis</queueName>						
+					</queueAssignmentFilter>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/module/btvS[0-9]+VisualisationUtility$</regex>
+				<simpleCommandFilter words="visualise-feature"/>
+			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/module/btvSvgPhyloVisualisation$</regex>
+				<simpleCommandFilter words="invoke-function">
+					<arg name="functionName">visualisePhyloAsSvg</arg>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
+			<!-- isolates page -->
+			
+			<modePathRegexFilter>
+				<regex>.*/module/btvIsolateWebExporter$</regex>
+				<simpleCommandFilter words="invoke-function">
+					<arg name="functionName">exportIsolateTable</arg>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
+			<simpleCommandFilter words="multi-render">
+					<arg name="tableName">isolate</arg>
+					<arg name="rendererModuleName">btvIsolateRenderer</arg>
+			</simpleCommandFilter>
+			<simpleCommandFilter words="list custom-table-row">
+					<arg name="tableName">isolate</arg>
+			</simpleCommandFilter>
+			<simpleCommandFilter words="count custom-table-row">
+					<arg name="tableName">isolate</arg>
+			</simpleCommandFilter>
+			<!-- isolate page -->
+			<modePathRegexFilter>
+				<regex>.*/custom-table-row/isolate/.*$</regex>
+				<simpleCommandFilter words="render-object">
+					<arg name="rendererModuleName">btvIsolateRenderer</arg>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
+			<!-- version info -->
+			<simpleCommandFilter words="show setting">
+				<arg name="settingName">project-version</arg>
+			</simpleCommandFilter>
+			<simpleCommandFilter words="glue-engine show-version"/>
+			<!-- reference sequence -->
+			<modePathRegexFilter>
+				<regex>.*/reference/.*$</regex>
+				<simpleCommandFilter words="render-object"/>
+			</modePathRegexFilter>			
 		</modePathRegexFilter>
+
+		<!-- RABV-GLUE -->
 		<modePathRegexFilter>
 			<regex>^/project/rabv</regex>
 		</modePathRegexFilter>
 
 
-
+		<!-- HBV-GLUE -->
 		<modePathRegexFilter>
 			<regex>^/project/hbv</regex>
 			<!-- analysis page -->
