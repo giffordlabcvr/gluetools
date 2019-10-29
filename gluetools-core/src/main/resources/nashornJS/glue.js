@@ -191,8 +191,8 @@ var glue = {
 			if(!_.isArray(sessionArgs)) {
 				throw new Error("inSession: sessionArgs must be array");
 			}
+			this.initSession(sessionType, sessionArgs);
 			try {
-				this.initSession(sessionType, sessionArgs);
 				inSessionFunction();
 			} finally {
 				this.closeSession(sessionType, sessionArgs);
