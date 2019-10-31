@@ -288,6 +288,11 @@
 					<arg name="functionName">visualisePhyloAsSvg</arg>
 				</simpleCommandFilter>
 			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/module/btvFeatureToSvgTransformer$</regex>
+				<simpleCommandFilter words="transform-to-web-file"/>
+			</modePathRegexFilter>		
+			
 			<!-- isolates page -->
 			
 			<modePathRegexFilter>
