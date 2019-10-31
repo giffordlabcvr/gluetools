@@ -49,13 +49,14 @@ import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 
 @CommandClass( 
 		commandWords={"export"}, 
-		docoptUsages={"<alignmentName> [ -s <selectorName> | -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd> | -n <ntStart> <ntEnd>] ] [-c] (-w <whereClause> | -a) [-e] [-y <lineFeedStyle>] (-o <fileName> | -p)"},
+		docoptUsages={"<alignmentName> [ -s <selectorName> | -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd> | -n <ntStart> <ntEnd>] | -u <uNtStart> <uNtEnd> ] [-c] (-w <whereClause> | -a) [-e] [-y <lineFeedStyle>] (-o <fileName> | -p)"},
 		docoptOptions={
 			"-s <selectorName>, --selectorName <selectorName>      Column selector module",
 			"-r <relRefName>, --relRefName <relRefName>            Related reference",
 			"-f <featureName>, --featureName <featureName>         Restrict to a given feature",
 			"-l, --labelledCodon                                   Region between codon labels",
 			"-n, --ntRegion                                        Specific nucleotide region",
+			"-u, --uNtRegion                                       Unconstrained nucleotide region",
 			"-c, --recursive                                       Include descendent members",
 			"-w <whereClause>, --whereClause <whereClause>         Qualify exported members",
 		    "-a, --allMembers                                      Export all members",
@@ -67,7 +68,8 @@ import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 		description="Export nucleotide alignment to a FASTA file", 
 		furtherHelp="The file is saved to a location relative to the current load/save directory.\n"
 				+ "The --labeledCodon option may be used only for coding features.\n" 
-				+ "If --ntRegion is used, the coordinates are relative to the named reference sequence.") 
+				+ "If --ntRegion is used, the coordinates are relative to the named reference sequence. "
+				+ "The --uNtRegion option may be used directly on an unconstrained alignment to select a region based on the alignment's native coordinate space") 
 public class FastaAlignmentExportCommand extends BaseFastaAlignmentExportCommand<CommandResult> {
 
 	public static final String PREVIEW = "preview";

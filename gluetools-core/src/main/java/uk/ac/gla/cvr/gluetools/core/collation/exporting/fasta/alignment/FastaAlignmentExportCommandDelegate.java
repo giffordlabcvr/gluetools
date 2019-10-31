@@ -66,6 +66,9 @@ public class FastaAlignmentExportCommandDelegate {
 	public static final String NT_REGION = "ntRegion";
 	public static final String NT_START = "ntStart";
 	public static final String NT_END = "ntEnd";
+	public static final String U_NT_REGION = "uNtRegion";
+	public static final String U_NT_START = "uNtStart";
+	public static final String U_NT_END = "uNtEnd";
 	public static final String RECURSIVE = "recursive";
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String ALL_MEMBERS = "allMembers";
@@ -86,6 +89,9 @@ public class FastaAlignmentExportCommandDelegate {
 	private Boolean ntRegion;
 	private Integer ntStart;
 	private Integer ntEnd;
+	private Boolean uNtRegion;
+	private Integer uNtStart;
+	private Integer uNtEnd;
 	private Boolean excludeEmptyRows;
 	private String selectorName;
 	private LineFeedStyle lineFeedStyle;
@@ -102,6 +108,9 @@ public class FastaAlignmentExportCommandDelegate {
 		ntRegion = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, NT_REGION, false)).orElse(false);
 		ntStart = PluginUtils.configureIntProperty(configElem, NT_START, false);
 		ntEnd = PluginUtils.configureIntProperty(configElem, NT_END, false);
+		uNtRegion = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, U_NT_REGION, false)).orElse(false);
+		uNtStart = PluginUtils.configureIntProperty(configElem, U_NT_START, false);
+		uNtEnd = PluginUtils.configureIntProperty(configElem, U_NT_END, false);
 		recursive = PluginUtils.configureBooleanProperty(configElem, RECURSIVE, true);
 		excludeEmptyRows = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, EXCLUDE_EMPTY_ROWS, false)).orElse(Boolean.FALSE);
 		selectorName = PluginUtils.configureStringProperty(configElem, SELECTOR_NAME, false);
@@ -109,52 +118,40 @@ public class FastaAlignmentExportCommandDelegate {
 		if(!whereClause.isPresent() && !allMembers || whereClause.isPresent() && allMembers) {
 			usageError1();
 		}
-		if(selectorName != null && ( relRefName != null || featureName != null )) {
-			usageError1a();
-		}
-		if(relRefName != null && featureName == null || relRefName == null && featureName != null) {
+		if(! ( 
+				// selector
+				(selectorName!=null && relRefName==null && featureName==null && uNtRegion==false && uNtStart==null && uNtEnd == null && 
+				labelledCodon==false && lcStart==null && lcEnd==null && ntRegion==false && ntStart==null && ntEnd==null) || 
+
+				// relRef+feature
+				(selectorName==null && relRefName!=null && featureName!=null && uNtRegion==false && uNtStart==null && uNtEnd == null && 
+				labelledCodon==false && lcStart==null && lcEnd==null && ntRegion==false && ntStart==null && ntEnd==null) || 
+
+				// relRef+feature with labeled codon region
+				(selectorName==null && relRefName!=null && featureName!=null && uNtRegion==false && uNtStart==null && uNtEnd == null && 
+				labelledCodon==true && lcStart!=null && lcEnd!=null && ntRegion==false && ntStart==null && ntEnd==null) || 
+
+				// relRef+feature with NT region
+				(selectorName==null && relRefName!=null && featureName!=null && uNtRegion==false && uNtStart==null && uNtEnd == null && 
+				labelledCodon==false && lcStart==null && lcEnd==null && ntRegion==true && ntStart!=null && ntEnd!=null) || 
+
+				// unconstrained NT region
+				(selectorName==null && relRefName==null && featureName==null && uNtRegion==true && uNtStart!=null && uNtEnd != null && 
+				labelledCodon==false && lcStart==null && lcEnd==null && ntRegion==false && ntStart==null && ntEnd==null)
+				) ) {
 			usageError2();
 		}
-		if(selectorName != null && ( ntRegion || labelledCodon )) {
-			usageError3a();
-		}
-		if(labelledCodon && (lcStart == null || lcEnd == null)) {
-			usageError4();
-		}
-		if(ntRegion && labelledCodon) {
-			usageError5();
-		}
-		if(ntRegion && (ntStart == null || ntEnd == null)) {
-			usageError6();
-		}
-		
 	}
 
 	private void usageError1() {
 		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <whereClause> or <allMembers> must be specified, but not both");
 	}
 
-	private void usageError1a() {
-		throw new CommandException(Code.COMMAND_USAGE_ERROR, "If <selectorName> is used then <relRefName> and <featureName> may not be used");
+	private void usageError2() {
+		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Invalid usage. Options are (1) <selectorName>, (2) <relRefName> and <featureName>, (3) <relRefName> and <featureName> with labeled codon coordinates, "+
+				"(4) <relRefName> and <featureName> with nucleotide coordinates, or (5) unconstrained nucleotide coordinates");
 	}
 	
-	private void usageError2() {
-		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either both <relRefName> and <featureName> must be specified or neither");
-	}
-
-	private void usageError3a() {
-		throw new CommandException(Code.COMMAND_USAGE_ERROR, "If <selectorName> is used then neither --ntRegion or --labelledCodon may be specified");
-	}
-
-	private void usageError4() {
-		throw new CommandException(Code.COMMAND_USAGE_ERROR, "If --labelledCodon is used, both <lcStart> and <lcEnd> must be specified");
-	}
- 	private void usageError5() {
-		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either --ntRegion or --labelledCodon may be specified, but not both");
-	}
- 	private void usageError6() {
-		throw new CommandException(Code.COMMAND_USAGE_ERROR, "If --ntRegion is used, both <ntStart> and <ntEnd> must be specified");
-	}
 
 	public String getAlignmentName() {
 		return alignmentName;
@@ -273,6 +270,8 @@ public class FastaAlignmentExportCommandDelegate {
 			return getNucleotideSelectorForLabeledCodonRegion(cmdContext, featureLocation, lcStart, lcEnd);
 		} else if(relRefName != null && featureName != null) {
 			return new SimpleNucleotideColumnsSelector(relRefName, featureName, null, null);
+		} else if(uNtRegion && uNtStart != null && uNtEnd != null) {
+			return new UnconstrainedNucleotideColumnsSelector(uNtStart, uNtEnd);
 		} else {
 			return null;
 		}

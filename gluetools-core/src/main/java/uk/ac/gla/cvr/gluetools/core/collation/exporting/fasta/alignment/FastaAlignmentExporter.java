@@ -34,6 +34,9 @@ import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.AbstractMemberSupplier;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
+import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
@@ -61,9 +64,25 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 			CommandContext cmdContext, IAlignmentColumnsSelector alignmentColumnsSelector,
 			Boolean excludeEmptyRows, 
 			AbstractMemberSupplier memberSupplier, AbstractStringAlmtRowConsumer almtRowConsumer) {
-		
-		List<ReferenceSegment> featureRefSegs = initFeatureRefSegs(cmdContext, alignmentColumnsSelector);
-		List<ReferenceSegment> constrainingRefSegs = initConstrainingRefSegs(cmdContext, memberSupplier, featureRefSegs);
+
+		// reference segments defining the output columns, coordinate space may be based on a reference (the translateToRef) or not.
+		List<ReferenceSegment> outputRefSegs = initOutputRefSegs(cmdContext, memberSupplier, alignmentColumnsSelector);
+
+		// name of a related reference that the member QA segs must be translated to before applying the output ref segs, may be null.
+		String translateToRefName = null;
+		Alignment alignment = memberSupplier.supplyAlignment(cmdContext);
+		if(alignmentColumnsSelector != null) {
+			String selectorRelatedRefName = alignmentColumnsSelector.getRelatedRefName();
+			if(selectorRelatedRefName != null) {
+				translateToRefName = alignment.getRelatedRef(cmdContext, selectorRelatedRefName).getName();
+			} else {
+				if(alignment.isConstrained()) {
+					throw new CommandException(Code.COMMAND_FAILED_ERROR, "Unconstrained columns selector may only be used on an unconstrained alignment");
+				}
+			}
+		} else if(alignment.isConstrained()) {
+			translateToRefName = alignment.getConstrainingRef().getName();
+		}
 		
 		int numMembers = memberSupplier.countMembers(cmdContext);
 		//GlueLogger.getGlueLogger().log(Level.FINEST, "processing "+numMembers+" alignment members");
@@ -71,9 +90,13 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 		//int processed = 0;
 		int batchSize = 500;
 		while(offset < numMembers) {
-			Alignment alignment = memberSupplier.supplyAlignment(cmdContext);
+			alignment = memberSupplier.supplyAlignment(cmdContext);
 			List<AlignmentMember> almtMembers = memberSupplier.supplyMembers(cmdContext, offset, batchSize);
-			createAlignment(cmdContext, excludeEmptyRows, alignmentColumnsSelector, alignment, almtMembers, featureRefSegs, constrainingRefSegs, almtRowConsumer);
+			ReferenceSequence translateToRef = null;
+			if(translateToRefName != null) {
+				translateToRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(translateToRefName));
+			}
+			createAlignment(cmdContext, excludeEmptyRows, translateToRef, outputRefSegs, almtMembers, almtRowConsumer);
 			//processed += almtMembers.size();
 			//GlueLogger.getGlueLogger().log(Level.FINEST, "processed "+processed+" alignment members");
 			offset += batchSize;
@@ -82,21 +105,12 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 		
 	}
 
-	private static List<ReferenceSegment> initFeatureRefSegs(CommandContext cmdContext, IAlignmentColumnsSelector alignmentColumnsSelector) {
-		if(alignmentColumnsSelector != null) {
-			return alignmentColumnsSelector.selectAlignmentColumns(cmdContext);
-		}
-		return null;
-	}
-
 	// set of refsegs that define the nucleotide column of the output.
-	private static List<ReferenceSegment> initConstrainingRefSegs(CommandContext cmdContext, AbstractMemberSupplier memberSupplier, List<ReferenceSegment> featureRefSegs) {
-		List<ReferenceSegment> constrainingRefSegs;
-		if(featureRefSegs != null && !featureRefSegs.isEmpty()) {
-			// just clone the feature refsegs
-			constrainingRefSegs = featureRefSegs.stream().map(frs -> frs.clone()).collect(Collectors.toList());
+	private static List<ReferenceSegment> initOutputRefSegs(CommandContext cmdContext, AbstractMemberSupplier memberSupplier, IAlignmentColumnsSelector alignmentColumnsSelector) {
+		if(alignmentColumnsSelector != null) {
+			return alignmentColumnsSelector.selectAlignmentColumns(cmdContext).stream().map(frs -> frs.clone()).collect(Collectors.toList());
 		} else {
-			// no feature refsegs available, return list containing a single segment spanning the whole alignment width.
+			// no columns selector, return list containing a single segment spanning the whole alignment width.
 			ReferenceSegment minMaxSeg = new ReferenceSegment(1, 1);
 			ReferenceSequence alignmentRef = memberSupplier.supplyAlignment(cmdContext).getRefSequence();
 			if(alignmentRef != null) {
@@ -117,37 +131,26 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 					cmdContext.newObjectContext();
 				}
 			}
-			constrainingRefSegs = Arrays.asList(minMaxSeg);
+			return Arrays.asList(minMaxSeg);
 		}
-		return constrainingRefSegs;
 	}
 	
 	private static void createAlignment(CommandContext cmdContext, Boolean excludeEmptyRows,
-			IAlignmentColumnsSelector alignmentColumnsSelector,
-			Alignment alignment, List<AlignmentMember> almtMembers, List<ReferenceSegment> featureRefSegs, 
-			List<ReferenceSegment> constrainingRefSegs, AbstractStringAlmtRowConsumer almtRowConsumer) {
+			ReferenceSequence translateToRef, List<ReferenceSegment> outputRefSegs, List<AlignmentMember> almtMembers, 
+			AbstractStringAlmtRowConsumer almtRowConsumer) {
 
 		for(AlignmentMember almtMember: almtMembers) {
 			List<QueryAlignedSegment> memberQaSegs = almtMember.segmentsAsQueryAlignedSegments();
-			if(alignmentColumnsSelector != null) {
-				// related reference specified in order to specify feature location
-				Alignment tipAlmt = almtMember.getAlignment();
-				ReferenceSequence relatedRef = alignment.getRelatedRef(cmdContext, alignmentColumnsSelector.getRelatedRefName());
-				memberQaSegs = tipAlmt.translateToRelatedRef(cmdContext, memberQaSegs, relatedRef);
-			} else {
-				// no feature location but still need to translate to ancestor-constraining reference, 
-				// because member is of a descendent alignment.
-				if(!alignment.getName().equals(almtMember.getAlignment().getName())) {
-					ReferenceSequence acRef2 = alignment.getRefSequence();
-					memberQaSegs = almtMember.getAlignment().translateToAncConstrainingRef(cmdContext, memberQaSegs, acRef2);
-				}
+			if(translateToRef != null) {
+				Alignment memberAlmt = almtMember.getAlignment();
+				memberQaSegs = memberAlmt.translateToRelatedRef(cmdContext, memberQaSegs, translateToRef);
 			}
-			List<QueryAlignedSegment> coveredRegionSegs = ReferenceSegment.intersection(memberQaSegs, constrainingRefSegs, ReferenceSegment.cloneLeftSegMerger());
-			List<ReferenceSegment> nonCoveredRegionSegs = ReferenceSegment.subtract(constrainingRefSegs, coveredRegionSegs);
+			List<QueryAlignedSegment> coveredRegionSegs = ReferenceSegment.intersection(memberQaSegs, outputRefSegs, ReferenceSegment.cloneLeftSegMerger());
+			List<ReferenceSegment> nonCoveredRegionSegs = ReferenceSegment.subtract(outputRefSegs, coveredRegionSegs);
 			
 			String memberNTs = almtMember.getSequence().getSequenceObject().getNucleotides(cmdContext);
 			int alWidth = 0;
-			for(ReferenceSegment constrainingRefSeg: constrainingRefSegs) {
+			for(ReferenceSegment constrainingRefSeg: outputRefSegs) {
 				alWidth += constrainingRefSeg.getCurrentLength();
 			}
 			StringBuffer alignmentRow = new StringBuffer(alWidth);

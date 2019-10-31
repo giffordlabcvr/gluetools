@@ -30,7 +30,7 @@ import java.util.List;
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 
-public class MemberShowFeatureSegmentsResult extends BaseTableResult<QueryAlignedSegment> {
+public class MemberQueryAlignedSegmentsTableResult extends BaseTableResult<QueryAlignedSegment> {
 
 	public static final String 
 		MEMBER_NT_START = "memberNtStart",
@@ -39,7 +39,7 @@ public class MemberShowFeatureSegmentsResult extends BaseTableResult<QueryAligne
 		REL_REF_NT_END = "relRefNtEnd";
 
 
-	public MemberShowFeatureSegmentsResult(List<QueryAlignedSegment> rowData) {
+	public MemberQueryAlignedSegmentsTableResult(List<QueryAlignedSegment> rowData) {
 		super("memberShowFeatureSegmentsResult", 
 				rowData, 
 				column(MEMBER_NT_START, qas -> qas.getQueryStart()),

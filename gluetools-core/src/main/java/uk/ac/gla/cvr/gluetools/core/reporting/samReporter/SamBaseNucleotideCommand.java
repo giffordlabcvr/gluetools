@@ -84,7 +84,11 @@ public abstract class SamBaseNucleotideCommand<R extends CommandResult, C extend
 			if(almtColsSelector == null) {
 				throw new CommandException(Code.COMMAND_FAILED_ERROR, "Unable to resolve alignment columns selector");
 			}
-			ReferenceSequence relatedRef = linkingAlmt.getRelatedRef(cmdContext, almtColsSelector.getRelatedRefName());
+			String relatedRefName = almtColsSelector.getRelatedRefName();
+			if(relatedRefName == null) {
+				throw new CommandException(Code.COMMAND_FAILED_ERROR, "Unable to use columns selector without related ref");
+			}
+			ReferenceSequence relatedRef = linkingAlmt.getRelatedRef(cmdContext, relatedRefName);
 
 			List<QueryAlignedSegment> samRefToTargetRefSegs = getSamRefToTargetRefSegs(cmdContext, samReporter, samReporterPreprocessorSession, consoleCmdContext, targetRef);
 

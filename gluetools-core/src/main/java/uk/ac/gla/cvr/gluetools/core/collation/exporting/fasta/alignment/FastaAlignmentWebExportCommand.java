@@ -44,13 +44,14 @@ import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManager.WebFileType;
 
 @CommandClass( 
 		commandWords={"web-export"}, 
-		docoptUsages={"<alignmentName> [-s <selectorName> | -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd> | -n <ntStart> <ntEnd>] ] [-c] (-w <whereClause> | -a) [-e] -o <fileName>"},
+		docoptUsages={"<alignmentName> [-s <selectorName> | -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd> | -n <ntStart> <ntEnd>] | -u <uNtStart> <uNtEnd> ] [-c] (-w <whereClause> | -a) [-e] -o <fileName>"},
 		docoptOptions={
 			"-s <selectorName>, --selectorName <selectorName>      Column selector module",
 			"-r <relRefName>, --relRefName <relRefName>            Related reference",
 			"-f <featureName>, --featureName <featureName>         Restrict to a given feature",
 			"-l, --labelledCodon                                   Region between codon labels",
 			"-n, --ntRegion                                        Specific nucleotide region",
+			"-u, --uNtRegion                                       Unconstrained nucleotide region",
 			"-c, --recursive                                       Include descendent members",
 			"-w <whereClause>, --whereClause <whereClause>         Qualify exported members",
 		    "-a, --allMembers                                      Export all members",
@@ -60,7 +61,8 @@ import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManager.WebFileType;
 		metaTags = { CmdMeta.webApiOnly },
 		description="Export nucleotide alignment (web API)", 
 		furtherHelp="The --labeledCodon option may be used only for coding features.\n" 
-				+ "If --ntRegion is used, the coordinates are relative to the named reference sequence.") 
+				+ "If --ntRegion is used, the coordinates are relative to the named reference sequence."
+				+ "The --uNtRegion option may be used directly on an unconstrained alignment to select a region based on the alignment's native coordinate space")  
 public class FastaAlignmentWebExportCommand extends BaseFastaAlignmentExportCommand<CommandWebFileResult> {
 
 	public static final String FILE_NAME = "fileName";

@@ -45,7 +45,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 @CommandClass(
 		commandWords={"show", "feature-segments"}, 
-		description = "Show the homology for a specific feature", 
+		description = "Show the homology for a specific feature relative to a specific reference sequence", 
 		docoptUsages = { "-r <relRefName> -f <featureName> [-q]"},
 		docoptOptions={
 				"-r <relRefName>, --relRefName <relRefName>     Related reference",
@@ -106,7 +106,7 @@ public class MemberShowFeatureSegmentsCommand extends MemberModeCommand<CommandR
 		if(queryAlignedSegments) {
 			return new QueryAlignedSegment.QueryAlignedSegmentsResult(memberToFeatureLocRefSegsMerged);
 		} else {
-			return new MemberShowFeatureSegmentsResult(memberToFeatureLocRefSegsMerged);
+			return new MemberQueryAlignedSegmentsTableResult(memberToFeatureLocRefSegsMerged);
 		}
 	}
 
