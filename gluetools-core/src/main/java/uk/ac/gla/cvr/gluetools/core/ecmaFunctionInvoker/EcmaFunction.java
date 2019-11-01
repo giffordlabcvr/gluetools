@@ -37,7 +37,6 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.scripting.CommandDocumentToMapVisitor;
 import uk.ac.gla.cvr.gluetools.core.command.scripting.NashornContext;
-import uk.ac.gla.cvr.gluetools.core.command.scripting.NashornScriptingException;
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
 import uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker.EcmaFunctionInvokerException.Code;
 import uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker.resultType.EcmaFunctionOkFromNullResultType;

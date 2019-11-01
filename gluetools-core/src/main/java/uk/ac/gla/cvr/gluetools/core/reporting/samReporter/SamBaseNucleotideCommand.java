@@ -28,6 +28,7 @@ package uk.ac.gla.cvr.gluetools.core.reporting.samReporter;
 import java.io.IOException;
 import java.util.List;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import gnu.trove.map.TIntObjectMap;
 import gnu.trove.map.hash.TIntObjectHashMap;
@@ -104,7 +105,8 @@ public abstract class SamBaseNucleotideCommand<R extends CommandResult, C extend
 			List<QueryAlignedSegment> samRefToRelatedRefSegsFull = linkingAlmt.translateToRelatedRef(cmdContext, samRefToLinkingAlmtSegs, relatedRef);
 
 			// trim down to the selected area.
-			List<ReferenceSegment> selectedRefSegs = almtColsSelector.selectAlignmentColumns(cmdContext);
+			List<ReferenceSegment> selectedRefSegs = almtColsSelector.selectAlignmentColumns(linkingAlmt, cmdContext).stream()
+					.map(frs -> new ReferenceSegment(frs.getRefStart(), frs.getRefEnd())).collect(Collectors.toList());
 			
 			List<QueryAlignedSegment> samRefToRelatedRefSegs = 
 					ReferenceSegment.intersection(samRefToRelatedRefSegsFull, selectedRefSegs, ReferenceSegment.cloneLeftSegMerger());

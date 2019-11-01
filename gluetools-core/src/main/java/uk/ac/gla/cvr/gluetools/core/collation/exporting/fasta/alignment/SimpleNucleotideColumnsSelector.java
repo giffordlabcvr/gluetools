@@ -28,9 +28,9 @@ package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment;
 import java.util.List;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AlignmentColumnsSelectorException;
 import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.NucleotideRegionSelector;
-import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
 public class SimpleNucleotideColumnsSelector implements IAlignmentColumnsSelector {
 
@@ -49,7 +49,7 @@ public class SimpleNucleotideColumnsSelector implements IAlignmentColumnsSelecto
 	}
 
 	@Override
-	public List<ReferenceSegment> selectAlignmentColumns(CommandContext cmdContext) {
+	public List<FeatureReferenceSegment> selectAlignmentColumns(Alignment alignment, CommandContext cmdContext) {
 		return nucleotideRegionSelector.selectAlignmentColumns(cmdContext, relatedRefName);
 	}
 

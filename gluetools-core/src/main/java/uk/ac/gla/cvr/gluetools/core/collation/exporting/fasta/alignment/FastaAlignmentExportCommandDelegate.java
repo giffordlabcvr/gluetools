@@ -66,9 +66,7 @@ public class FastaAlignmentExportCommandDelegate {
 	public static final String NT_REGION = "ntRegion";
 	public static final String NT_START = "ntStart";
 	public static final String NT_END = "ntEnd";
-	public static final String U_NT_REGION = "uNtRegion";
-	public static final String U_NT_START = "uNtStart";
-	public static final String U_NT_END = "uNtEnd";
+	public static final String INCLUDE_INSERTIONS = "includeInsertions";
 	public static final String RECURSIVE = "recursive";
 	public static final String WHERE_CLAUSE = "whereClause";
 	public static final String ALL_MEMBERS = "allMembers";
@@ -89,9 +87,7 @@ public class FastaAlignmentExportCommandDelegate {
 	private Boolean ntRegion;
 	private Integer ntStart;
 	private Integer ntEnd;
-	private Boolean uNtRegion;
-	private Integer uNtStart;
-	private Integer uNtEnd;
+	private Boolean includeInsertions;
 	private Boolean excludeEmptyRows;
 	private String selectorName;
 	private LineFeedStyle lineFeedStyle;
@@ -108,9 +104,7 @@ public class FastaAlignmentExportCommandDelegate {
 		ntRegion = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, NT_REGION, false)).orElse(false);
 		ntStart = PluginUtils.configureIntProperty(configElem, NT_START, false);
 		ntEnd = PluginUtils.configureIntProperty(configElem, NT_END, false);
-		uNtRegion = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, U_NT_REGION, false)).orElse(false);
-		uNtStart = PluginUtils.configureIntProperty(configElem, U_NT_START, false);
-		uNtEnd = PluginUtils.configureIntProperty(configElem, U_NT_END, false);
+		includeInsertions = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, INCLUDE_INSERTIONS, false)).orElse(false);
 		recursive = PluginUtils.configureBooleanProperty(configElem, RECURSIVE, true);
 		excludeEmptyRows = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, EXCLUDE_EMPTY_ROWS, false)).orElse(Boolean.FALSE);
 		selectorName = PluginUtils.configureStringProperty(configElem, SELECTOR_NAME, false);
@@ -120,24 +114,24 @@ public class FastaAlignmentExportCommandDelegate {
 		}
 		if(! ( 
 				// selector
-				(selectorName!=null && relRefName==null && featureName==null && uNtRegion==false && uNtStart==null && uNtEnd == null && 
+				(selectorName!=null && relRefName==null && featureName==null && 
 				labelledCodon==false && lcStart==null && lcEnd==null && ntRegion==false && ntStart==null && ntEnd==null) || 
 
 				// relRef+feature
-				(selectorName==null && relRefName!=null && featureName!=null && uNtRegion==false && uNtStart==null && uNtEnd == null && 
+				(selectorName==null && relRefName!=null && featureName!=null && 
 				labelledCodon==false && lcStart==null && lcEnd==null && ntRegion==false && ntStart==null && ntEnd==null) || 
 
 				// relRef+feature with labeled codon region
-				(selectorName==null && relRefName!=null && featureName!=null && uNtRegion==false && uNtStart==null && uNtEnd == null && 
+				(selectorName==null && relRefName!=null && featureName!=null && 
 				labelledCodon==true && lcStart!=null && lcEnd!=null && ntRegion==false && ntStart==null && ntEnd==null) || 
 
-				// relRef+feature with NT region
-				(selectorName==null && relRefName!=null && featureName!=null && uNtRegion==false && uNtStart==null && uNtEnd == null && 
+				// relRef+feature + NT region
+				(selectorName==null && relRefName!=null && featureName!=null && 
 				labelledCodon==false && lcStart==null && lcEnd==null && ntRegion==true && ntStart!=null && ntEnd!=null) || 
-
-				// unconstrained NT region
-				(selectorName==null && relRefName==null && featureName==null && uNtRegion==true && uNtStart!=null && uNtEnd != null && 
-				labelledCodon==false && lcStart==null && lcEnd==null && ntRegion==false && ntStart==null && ntEnd==null)
+				
+				//none
+				(selectorName==null && relRefName==null && featureName==null && 
+				labelledCodon==false && lcStart==null && lcEnd==null && ntRegion==true && ntStart==null && ntEnd==null)
 				) ) {
 			usageError2();
 		}
@@ -149,7 +143,7 @@ public class FastaAlignmentExportCommandDelegate {
 
 	private void usageError2() {
 		throw new CommandException(Code.COMMAND_USAGE_ERROR, "Invalid usage. Options are (1) <selectorName>, (2) <relRefName> and <featureName>, (3) <relRefName> and <featureName> with labeled codon coordinates, "+
-				"(4) <relRefName> and <featureName> with nucleotide coordinates, or (5) unconstrained nucleotide coordinates");
+				"(4) <relRefName> with nucleotide coordinates, or (5) none of the above");
 	}
 	
 
@@ -261,20 +255,28 @@ public class FastaAlignmentExportCommandDelegate {
 	}
 
 	public IAlignmentColumnsSelector getNucleotideAlignmentColumnsSelector(CommandContext cmdContext) {
+		IAlignmentColumnsSelector selector;
+		
 		if(selectorName != null) {
-			return Module.resolveModulePlugin(cmdContext, AlignmentColumnsSelector.class, selectorName);
+			selector = Module.resolveModulePlugin(cmdContext, AlignmentColumnsSelector.class, selectorName);
 		} else if(relRefName != null && featureName != null && ntStart != null && ntEnd != null) {
-			return new SimpleNucleotideColumnsSelector(relRefName, featureName, ntStart, ntEnd);
+			selector = new SimpleNucleotideColumnsSelector(relRefName, featureName, ntStart, ntEnd);
 		} else if(relRefName != null && featureName != null && lcStart != null && lcEnd != null) {
 			FeatureLocation featureLocation = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relRefName, featureName));
-			return getNucleotideSelectorForLabeledCodonRegion(cmdContext, featureLocation, lcStart, lcEnd);
+			selector = getNucleotideSelectorForLabeledCodonRegion(cmdContext, featureLocation, lcStart, lcEnd);
 		} else if(relRefName != null && featureName != null) {
-			return new SimpleNucleotideColumnsSelector(relRefName, featureName, null, null);
-		} else if(uNtRegion && uNtStart != null && uNtEnd != null) {
-			return new UnconstrainedNucleotideColumnsSelector(uNtStart, uNtEnd);
+			selector = new SimpleNucleotideColumnsSelector(relRefName, featureName, null, null);
 		} else {
-			return null;
+			selector = null;
 		}
+		if(includeInsertions) {
+			if(selector == null) {
+				throw new CommandException(Code.COMMAND_FAILED_ERROR, "The <includeInsertions> option cannot be used without a related reference sequence.");
+			} else {
+				selector = new InsertionSpanningAlignmentColumnsSelector(selector);
+			}
+		}
+		return selector;
 	}
 
 	public static IAlignmentColumnsSelector getNucleotideSelectorForLabeledCodonRegion(CommandContext cmdContext,
@@ -302,6 +304,7 @@ public class FastaAlignmentExportCommandDelegate {
 			NucleotideRegionSelector regionSelector = new NucleotideRegionSelector();
 			regionSelector.setStartNt(refSeg.getRefStart());
 			regionSelector.setEndNt(refSeg.getRefEnd());
+			regionSelector.setFeatureName(featureLocation.getFeature().getName());
 			alignmentColumnsSelector.addRegionSelector(regionSelector);
 		}
 		return alignmentColumnsSelector;

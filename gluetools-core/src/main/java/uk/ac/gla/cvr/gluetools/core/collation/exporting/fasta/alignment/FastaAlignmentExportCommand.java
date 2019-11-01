@@ -49,14 +49,14 @@ import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 
 @CommandClass( 
 		commandWords={"export"}, 
-		docoptUsages={"<alignmentName> [ -s <selectorName> | -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd> | -n <ntStart> <ntEnd>] | -u <uNtStart> <uNtEnd> ] [-c] (-w <whereClause> | -a) [-e] [-y <lineFeedStyle>] (-o <fileName> | -p)"},
+		docoptUsages={"<alignmentName> [ -s <selectorName> | -r <relRefName> ( -f <featureName> [-l <lcStart> <lcEnd> | -n <ntStart> <ntEnd> ] ) [-i] ] [-c] (-w <whereClause> | -a) [-e] [-y <lineFeedStyle>] (-o <fileName> | -p)"},
 		docoptOptions={
 			"-s <selectorName>, --selectorName <selectorName>      Column selector module",
 			"-r <relRefName>, --relRefName <relRefName>            Related reference",
 			"-f <featureName>, --featureName <featureName>         Restrict to a given feature",
 			"-l, --labelledCodon                                   Region between codon labels",
 			"-n, --ntRegion                                        Specific nucleotide region",
-			"-u, --uNtRegion                                       Unconstrained nucleotide region",
+			"-i, --includeInsertions                               Include insertions relative to the reference",
 			"-c, --recursive                                       Include descendent members",
 			"-w <whereClause>, --whereClause <whereClause>         Qualify exported members",
 		    "-a, --allMembers                                      Export all members",

@@ -39,7 +39,6 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.NucleotideContentProvider
 import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AlignmentColumnsSelectorException;
 import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AminoAcidRegionSelector;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
-import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
 import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 
@@ -61,7 +60,7 @@ public class SimpleAminoAcidColumnsSelector implements IAminoAcidAlignmentColumn
 	}
 
 	@Override
-	public List<ReferenceSegment> selectAlignmentColumns(CommandContext cmdContext) {
+	public List<FeatureReferenceSegment> selectAlignmentColumns(Alignment alignment, CommandContext cmdContext) {
 		return this.aaRegionSelector.selectAlignmentColumns(cmdContext, relatedRefName);
 	}
 
@@ -69,6 +68,7 @@ public class SimpleAminoAcidColumnsSelector implements IAminoAcidAlignmentColumn
 	public String getRelatedRefName() {
 		return relatedRefName;
 	}
+
 
 	@Override
 	public void checkAminoAcidSelector(CommandContext cmdContext) {

@@ -32,6 +32,7 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FeatureReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAminoAcidAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter.SimpleDataObjectNameInstantiator;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -87,19 +88,21 @@ public class AlignmentColumnsSelector extends ModulePlugin<AlignmentColumnsSelec
 
 	
 	@Override
-	public List<ReferenceSegment> selectAlignmentColumns(CommandContext cmdContext) {
+	public List<FeatureReferenceSegment> selectAlignmentColumns(Alignment alignment ,CommandContext cmdContext) {
 		RegionSelector firstRegionSelector = this.regionSelectors.get(0);
-		List<ReferenceSegment> refSegs = firstRegionSelector.selectAlignmentColumns(cmdContext, getRelatedRefName());
+		List<FeatureReferenceSegment> refSegs = firstRegionSelector.selectAlignmentColumns(cmdContext, getRelatedRefName());
 	
 		for(int i = 1; i < this.regionSelectors.size(); i++) {
 			RegionSelector nextRegionSelector = this.regionSelectors.get(i);
-			List<ReferenceSegment> nextRefSegs = nextRegionSelector.selectAlignmentColumns(cmdContext, getRelatedRefName());
+			List<FeatureReferenceSegment> nextRefSegs = nextRegionSelector.selectAlignmentColumns(cmdContext, getRelatedRefName());
 			// maybe we could make a union function out of the below code?
-			List<ReferenceSegment> intersection = ReferenceSegment.intersection(refSegs, nextRefSegs, ReferenceSegment.cloneRightSegMerger());
+			List<FeatureReferenceSegment> intersection = ReferenceSegment.intersection(refSegs, nextRefSegs, ReferenceSegment.cloneRightSegMerger());
 			refSegs = ReferenceSegment.subtract(refSegs, intersection);
 			refSegs.addAll(nextRefSegs);
 			ReferenceSegment.sortByRefStart(refSegs);
-			refSegs = ReferenceSegment.mergeAbutting(refSegs, ReferenceSegment.mergeAbuttingFunctionReferenceSegment(), ReferenceSegment.abutsPredicateReferenceSegment());
+			refSegs = ReferenceSegment.mergeAbutting(refSegs, 
+					FeatureReferenceSegment.mergeAbuttingFunctionFeatureReferenceSegment(), 
+					FeatureReferenceSegment.abutsPredicateFeatureReferenceSegment());
 		}
 		
 		return refSegs;

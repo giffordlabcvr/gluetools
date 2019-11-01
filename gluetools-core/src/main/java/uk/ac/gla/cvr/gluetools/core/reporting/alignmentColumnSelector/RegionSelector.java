@@ -29,6 +29,7 @@ import java.util.List;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FeatureReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
@@ -57,11 +58,11 @@ public abstract class RegionSelector implements Plugin {
 		this.featureName = PluginUtils.configureStringProperty(configElem, "featureName", true);
 	}
 
-	public final List<ReferenceSegment> selectAlignmentColumns(CommandContext cmdContext, String relRefName) {
-		List<ReferenceSegment> refSegs = selectAlignmentColumnsInternal(cmdContext, relRefName);
+	public final List<FeatureReferenceSegment> selectAlignmentColumns(CommandContext cmdContext, String relRefName) {
+		List<FeatureReferenceSegment> refSegs = selectAlignmentColumnsInternal(cmdContext, relRefName);
 		if(this.excludeRegionSelectors != null) {
 			for(RegionSelector excludeRegionSelector: excludeRegionSelectors) {
-				List<ReferenceSegment> excludeRefSegs = excludeRegionSelector.selectAlignmentColumns(cmdContext, relRefName);
+				List<FeatureReferenceSegment> excludeRefSegs = excludeRegionSelector.selectAlignmentColumns(cmdContext, relRefName);
 				refSegs = ReferenceSegment.subtract(refSegs, excludeRefSegs);
 			}
 		}
@@ -72,7 +73,7 @@ public abstract class RegionSelector implements Plugin {
 		return excludeRegionSelectors;
 	}
 
-	protected abstract List<ReferenceSegment> selectAlignmentColumnsInternal(CommandContext cmdContext, String relRefName);
+	protected abstract List<FeatureReferenceSegment> selectAlignmentColumnsInternal(CommandContext cmdContext, String relRefName);
 
 
 	public void checkWithinParentFeature(CommandContext cmdContext, Feature parentFeature) {

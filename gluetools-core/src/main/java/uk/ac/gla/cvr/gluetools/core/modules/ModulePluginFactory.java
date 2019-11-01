@@ -56,7 +56,6 @@ import uk.ac.gla.cvr.gluetools.core.fastaUtility.FastaUtility;
 import uk.ac.gla.cvr.gluetools.core.featurePresenceRecorder.FeaturePresenceRecorder;
 import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.GbSubmisisonGenerator;
 import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.MaxLikelihoodGenotyper;
-import uk.ac.gla.cvr.gluetools.core.genotyping.simpledistance.SimpleDistanceGenotyper;
 import uk.ac.gla.cvr.gluetools.core.modeltest.ModelTester;
 import uk.ac.gla.cvr.gluetools.core.phyloUtility.PhyloUtility;
 import uk.ac.gla.cvr.gluetools.core.phylogenyImporter.PhyloImporter;

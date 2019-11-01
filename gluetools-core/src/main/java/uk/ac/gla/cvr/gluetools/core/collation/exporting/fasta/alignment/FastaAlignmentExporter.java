@@ -77,7 +77,7 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 				translateToRefName = alignment.getRelatedRef(cmdContext, selectorRelatedRefName).getName();
 			} else {
 				if(alignment.isConstrained()) {
-					throw new CommandException(Code.COMMAND_FAILED_ERROR, "Unconstrained columns selector may only be used on an unconstrained alignment");
+					throw new CommandException(Code.COMMAND_FAILED_ERROR, "Selector including insertions may only be used on an unconstrained alignment");
 				}
 			}
 		} else if(alignment.isConstrained()) {
@@ -107,12 +107,13 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 
 	// set of refsegs that define the nucleotide column of the output.
 	private static List<ReferenceSegment> initOutputRefSegs(CommandContext cmdContext, AbstractMemberSupplier memberSupplier, IAlignmentColumnsSelector alignmentColumnsSelector) {
+		Alignment alignment = memberSupplier.supplyAlignment(cmdContext);
 		if(alignmentColumnsSelector != null) {
-			return alignmentColumnsSelector.selectAlignmentColumns(cmdContext).stream().map(frs -> frs.clone()).collect(Collectors.toList());
+			return alignmentColumnsSelector.selectAlignmentColumns(alignment, cmdContext).stream().map(frs -> frs.clone()).collect(Collectors.toList());
 		} else {
 			// no columns selector, return list containing a single segment spanning the whole alignment width.
 			ReferenceSegment minMaxSeg = new ReferenceSegment(1, 1);
-			ReferenceSequence alignmentRef = memberSupplier.supplyAlignment(cmdContext).getRefSequence();
+			ReferenceSequence alignmentRef = alignment.getRefSequence();
 			if(alignmentRef != null) {
 				// constrained alignment
 				minMaxSeg.setRefEnd(alignmentRef.getSequence().getSequenceObject().getNucleotides(cmdContext).length());
@@ -135,6 +136,14 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 		}
 	}
 	
+	// iterate over alignment members creating alignment rows and passing them to an alignment row consumer.
+	//
+	// outputRefSegs defines which parts of the alignment to include
+	// this can be defined in terms of a specific related ref's coordinate space (the translateToRef). Alternatively, 
+	// it can be defined in the alignment's own coordinate space, in which case translateToRef is null
+	// 
+	// if translateToRef is non-null, the member qaSegs, which are initially based on the alignments space, 
+	// are translated to the space of translateToRef.
 	private static void createAlignment(CommandContext cmdContext, Boolean excludeEmptyRows,
 			ReferenceSequence translateToRef, List<ReferenceSegment> outputRefSegs, List<AlignmentMember> almtMembers, 
 			AbstractStringAlmtRowConsumer almtRowConsumer) {
@@ -145,6 +154,8 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 				Alignment memberAlmt = almtMember.getAlignment();
 				memberQaSegs = memberAlmt.translateToRelatedRef(cmdContext, memberQaSegs, translateToRef);
 			}
+			// we want to define coveredRegionSegs, for which nucleotide content will be drawn from the Member sequence, 
+			// and nonCoveredRegionSegs, for which we will add gap characters.
 			List<QueryAlignedSegment> coveredRegionSegs = ReferenceSegment.intersection(memberQaSegs, outputRefSegs, ReferenceSegment.cloneLeftSegMerger());
 			List<ReferenceSegment> nonCoveredRegionSegs = ReferenceSegment.subtract(outputRefSegs, coveredRegionSegs);
 			
@@ -155,6 +166,7 @@ public class FastaAlignmentExporter extends AbstractFastaAlignmentExporter<Fasta
 			}
 			StringBuffer alignmentRow = new StringBuffer(alWidth);
 			
+			// in this mixed list, we can identify the nonCoveredRegionSegs as being RefSegs as opposed to QA segs.
 			List<ReferenceSegment> mixedRegionSegs = new ArrayList<ReferenceSegment>();
 			mixedRegionSegs.addAll(coveredRegionSegs);
 			mixedRegionSegs.addAll(nonCoveredRegionSegs);

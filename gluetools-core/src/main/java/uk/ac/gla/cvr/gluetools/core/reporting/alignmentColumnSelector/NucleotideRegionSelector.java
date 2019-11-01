@@ -27,9 +27,11 @@ package uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FeatureReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
@@ -52,18 +54,19 @@ public class NucleotideRegionSelector extends RegionSelector {
 	}
 
 	@Override
-	protected List<ReferenceSegment> selectAlignmentColumnsInternal(CommandContext cmdContext, String relRefName) {
+	protected List<FeatureReferenceSegment> selectAlignmentColumnsInternal(CommandContext cmdContext, String relRefName) {
 		return selectAlignmentColumns(cmdContext, relRefName, getFeatureName(), startNt, endNt);
 	}
 
-	public static List<ReferenceSegment> selectAlignmentColumns(CommandContext cmdContext, String relRefName, String featureName, Integer startNt, Integer endNt) {
+	public static List<FeatureReferenceSegment> selectAlignmentColumns(CommandContext cmdContext, String relRefName, String featureName, Integer startNt, Integer endNt) {
 		int startNtToUse;
 		int endNtToUse;
 		
 		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relRefName, featureName));
-
+		List<FeatureReferenceSegment> featureRefSegs = featureLoc.segmentsAsReferenceSegments().stream()
+				.map(rs -> new FeatureReferenceSegment(featureName, rs.getRefStart(), rs.getRefEnd()))
+				.collect(Collectors.toList());
 		
-		List<ReferenceSegment> featureRefSegs = featureLoc.segmentsAsReferenceSegments();
 		if(startNt != null) {
 			startNtToUse = startNt;
 		} else {
@@ -74,8 +77,11 @@ public class NucleotideRegionSelector extends RegionSelector {
 		} else {
 			endNtToUse = ReferenceSegment.maxRefEnd(featureRefSegs);
 		}
-		return ReferenceSegment
-				.intersection(featureRefSegs, Arrays.asList(new ReferenceSegment(startNtToUse, endNtToUse)), ReferenceSegment.cloneLeftSegMerger());
+		List<FeatureReferenceSegment> result = Arrays.asList(new FeatureReferenceSegment(featureName, startNtToUse, endNtToUse));
+		if(featureRefSegs != null) {
+			result = ReferenceSegment.intersection(featureRefSegs, result, ReferenceSegment.cloneLeftSegMerger());
+		}
+		return result;
 	}
 
 	public void setStartNt(Integer startNt) {

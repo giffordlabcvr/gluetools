@@ -34,6 +34,7 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodonReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FeatureReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
@@ -64,24 +65,24 @@ public class AminoAcidRegionSelector extends RegionSelector {
 	}
 
 	@Override
-	protected List<ReferenceSegment> selectAlignmentColumnsInternal(CommandContext cmdContext, String relRefName) {
+	protected List<FeatureReferenceSegment> selectAlignmentColumnsInternal(CommandContext cmdContext, String relRefName) {
 		List<LabeledCodon> selectedLabeledCodons = selectLabeledCodons(cmdContext, relRefName);
 		return refSegsForSelectedLabeledCodons(selectedLabeledCodons);
 		
 	}
 
-	private List<ReferenceSegment> refSegsForSelectedLabeledCodons(
+	private List<FeatureReferenceSegment> refSegsForSelectedLabeledCodons(
 			List<LabeledCodon> selectedLabeledCodons) {
-		List<ReferenceSegment> selectedRefSegs = new ArrayList<ReferenceSegment>();
+		List<FeatureReferenceSegment> selectedRefSegs = new ArrayList<FeatureReferenceSegment>();
 		for(LabeledCodon selectedLabeledCodon: selectedLabeledCodons) {
 			List<LabeledCodonReferenceSegment> lcRefSegments = selectedLabeledCodon.getLcRefSegments();
 			lcRefSegments.forEach(lcRefSeg -> {
-				selectedRefSegs.add(new ReferenceSegment(lcRefSeg.getRefStart(), lcRefSeg.getRefEnd()));
+				selectedRefSegs.add(new FeatureReferenceSegment(getFeatureName(), lcRefSeg.getRefStart(), lcRefSeg.getRefEnd()));
 			});
 		}
 		return ReferenceSegment.mergeAbutting(selectedRefSegs, 
-				ReferenceSegment.mergeAbuttingFunctionReferenceSegment(), 
-				ReferenceSegment.abutsPredicateReferenceSegment());
+				FeatureReferenceSegment.mergeAbuttingFunctionFeatureReferenceSegment(), 
+				FeatureReferenceSegment.abutsPredicateFeatureReferenceSegment());
 	}
 
 	public void setStartCodon(String startCodon) {
@@ -100,7 +101,7 @@ public class AminoAcidRegionSelector extends RegionSelector {
 		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relatedRef.getName(), getFeatureName()));
 		List<QueryAlignedSegment> memberToAlmtSegs = almtMember.segmentsAsQueryAlignedSegments();
 		List<QueryAlignedSegment> memberToRelatedRef = almtMember.getAlignment().translateToRelatedRef(cmdContext, memberToAlmtSegs, relatedRef);
-		List<ReferenceSegment> selectedRefSegs = refSegsForSelectedLabeledCodons(selectLabeledCodons(cmdContext, relatedRef.getName()));
+		List<FeatureReferenceSegment> selectedRefSegs = refSegsForSelectedLabeledCodons(selectLabeledCodons(cmdContext, relatedRef.getName()));
 		memberToRelatedRef = ReferenceSegment.intersection(memberToRelatedRef, selectedRefSegs, QueryAlignedSegment.cloneLeftSegMerger());
 		return featureLoc.translateQueryNucleotides(cmdContext, translator, memberToRelatedRef, almtMember.getSequence().getSequenceObject());
 	}
@@ -179,7 +180,7 @@ public class AminoAcidRegionSelector extends RegionSelector {
 	public List<LabeledQueryAminoAcid> translateQueryNucleotides(CommandContext cmdContext,
 			String relRefName, List<QueryAlignedSegment> queryToRefSegs, Translator translator, NucleotideContentProvider queryNucleotideContent) {
 		FeatureLocation featureLoc = GlueDataObject.lookup(cmdContext, FeatureLocation.class, FeatureLocation.pkMap(relRefName, getFeatureName()));
-		List<ReferenceSegment> refSegs = selectAlignmentColumns(cmdContext, relRefName);
+		List<FeatureReferenceSegment> refSegs = selectAlignmentColumns(cmdContext, relRefName);
 		List<QueryAlignedSegment> queryToRefSegsInRegion = ReferenceSegment.intersection(refSegs, queryToRefSegs, ReferenceSegment.cloneRightSegMerger());
 		return featureLoc.translateQueryNucleotides(cmdContext, translator, queryToRefSegsInRegion, queryNucleotideContent);
 	}
