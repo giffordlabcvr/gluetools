@@ -186,7 +186,14 @@ public abstract class BaseGbSubmissionGeneratorCommand<C, SR, R extends CommandR
 				Map<String, String> sourceInfoMap = new LinkedHashMap<String, String>();
 				sourceInfoMap.put("SeqID", id);
 				for(SourceInfoProvider sourceInfoProvider: sourceInfoProviders) {
-					sourceInfoMap.put(sourceInfoProvider.getSourceModifier(), sourceInfoProvider.provideSourceInfo(seq));
+					String sourceInfo = sourceInfoProvider.provideSourceInfo(seq);
+					String sourceModifier = sourceInfoProvider.getSourceModifier();
+					if(sourceModifier.equals("note")) { // append notes
+						if(sourceInfoMap.containsKey("note")) {
+							sourceInfo = sourceInfoMap.get("note")+"; "+sourceInfo;
+						}
+					}
+					sourceInfoMap.put(sourceModifier, sourceInfo);
 				}
 				List<GbFeatureSpecification> featureSpecs = new ArrayList<GbFeatureSpecification>();
 				
