@@ -131,7 +131,7 @@ public class FastaAlignmentExportCommandDelegate {
 				
 				//none
 				(selectorName==null && relRefName==null && featureName==null && 
-				labelledCodon==false && lcStart==null && lcEnd==null && ntRegion==true && ntStart==null && ntEnd==null)
+				labelledCodon==false && lcStart==null && lcEnd==null && ntRegion==false && ntStart==null && ntEnd==null)
 				) ) {
 			usageError2();
 		}
