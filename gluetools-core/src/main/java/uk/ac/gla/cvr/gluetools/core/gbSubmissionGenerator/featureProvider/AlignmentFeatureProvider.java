@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
+import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
@@ -25,11 +26,15 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.translation.CommandContextTranslator;
+import uk.ac.gla.cvr.gluetools.core.translation.Translator;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
 
 public abstract class AlignmentFeatureProvider extends FeatureProvider {
 
 	public static final String GLUE_FEATURE_NAME = "glueFeatureName";
 	public static final String MIN_COVERAGE_PCT = "minCoveragePct";
+	public static final String MAX_CODING_X_PCT = "maxCodingXPct";
 	public static final String FEATURE_KEY = "featureKey";
 	public static final String QUALIFIER = "qualifier";
 	public static final String SPAN_INSERTIONS = "spanInsertions";
@@ -39,6 +44,10 @@ public abstract class AlignmentFeatureProvider extends FeatureProvider {
 	// named feature on the reference, no GenBank feature is generated.
 	private Double minCoveragePct;
 
+	// maximum number of Xs in the translation of a coding feature.
+	// if this is exceeded, no GenBank feature is generated
+	private Double maxCodingXPct;
+	
 	// default true: if true, insertions in the alignment member relative to the reference will be spanned.
 	private Boolean spanInsertions;
 
@@ -53,6 +62,9 @@ public abstract class AlignmentFeatureProvider extends FeatureProvider {
 		this.minCoveragePct = Optional.ofNullable(PluginUtils
 				.configureDoubleProperty(configElem, MIN_COVERAGE_PCT, 0.0, false, 100.0, true, false))
 				.orElse(10.0);
+		this.maxCodingXPct = Optional.ofNullable(PluginUtils
+				.configureDoubleProperty(configElem, MAX_CODING_X_PCT, 0.0, false, 100.0, true, false))
+				.orElse(null);
 		this.featureKey = PluginUtils.configureStringProperty(configElem, FEATURE_KEY, true);
 		this.qualifierKeyValueTemplates = PluginFactory.createPlugins(pluginConfigContext, QualifierKeyValueTemplate.class, 
 				PluginUtils.findConfigElements(configElem, QUALIFIER));
@@ -63,6 +75,10 @@ public abstract class AlignmentFeatureProvider extends FeatureProvider {
 
 	protected Double getMinCoveragePct() {
 		return minCoveragePct;
+	}
+
+	protected Double getMaxCodingXPct() {
+		return maxCodingXPct;
 	}
 
 	protected String getGlueFeatureName() {
@@ -130,42 +146,88 @@ public abstract class AlignmentFeatureProvider extends FeatureProvider {
 				Double minCoveragePct = getMinCoveragePct();
 				if(memberCoveragePct < minCoveragePct) {
 					GlueLogger.log(Level.FINEST, "No GenBank feature generated for sequence "+
-							sequence.getSource().getName()+"/"+sequence.getSequenceID()+" based on feature location "+
-							featureLocation.pkMap()+": member coverage percent "+
+							sequence.getSource().getName()+"/"+sequence.getSequenceID()+" because feature location "+
+							featureLocation.pkMap()+": coverage percent "+
 							memberCoveragePct+" was less than the minimum "+minCoveragePct);
 					return null;
 				}
+				
+				if(feature.codesAminoAcids()) {
+					// delete regions at the start and end of the feature which translate to X.
+					Translator translator = new CommandContextTranslator(cmdContext);
+					List<LabeledQueryAminoAcid> lqaas = featureLocation.translateQueryNucleotides(cmdContext, translator, memberFeatureSegments, sequence.getSequenceObject());
+					
+					List<ReferenceSegment> xRegionsToDelete = new ArrayList<ReferenceSegment>();
+					for(int i = 0; i < lqaas.size(); i++) {
+						LabeledQueryAminoAcid lqaa = lqaas.get(i);
+						if(lqaa.getLabeledAminoAcid().getTranslationInfo().getSingleCharTranslation() == 'X') {
+							xRegionsToDelete.addAll(lqaa.getLabeledAminoAcid().getLabeledCodon().getLcRefSegments());
+						} else {
+							break;
+						}
+					}
+					for(int i = lqaas.size()-1; i > 0 ; i--) {
+						LabeledQueryAminoAcid lqaa = lqaas.get(i);
+						if(lqaa.getLabeledAminoAcid().getTranslationInfo().getSingleCharTranslation() == 'X') {
+							xRegionsToDelete.addAll(lqaa.getLabeledAminoAcid().getLabeledCodon().getLcRefSegments());
+						} else {
+							break;
+						}
+					}
+					ReferenceSegment.sortByRefStart(xRegionsToDelete);
+					memberFeatureSegments = ReferenceSegment.subtract(memberFeatureSegments, xRegionsToDelete);
+				}
+				
+				Double maxCodingXPct = getMaxCodingXPct();
+				if(maxCodingXPct != null && feature.codesAminoAcids()) {
+					Translator translator = new CommandContextTranslator(cmdContext);
+					int totalAminoAcids = 0;
+					int numXs = 0;
+					for(int i = 0; i < fLocSegments.size(); i++) {
+						ReferenceSegment fLocSegment = fLocSegments.get(i);
+						List<QueryAlignedSegment> memberGbFeatureSegs = getMemberGbFeatureSegs(cmdContext, featureLocation, sequence, memberFeatureSegments, fLocSegment);
+						List<LabeledQueryAminoAcid> lqaas = featureLocation.translateQueryNucleotides(cmdContext, translator, memberGbFeatureSegs, sequence.getSequenceObject());
+						totalAminoAcids += lqaas.size();
+						for(LabeledQueryAminoAcid lqaa: lqaas) {
+							if(lqaa.getLabeledAminoAcid().getTranslationInfo().getSingleCharTranslation() == 'X') {
+								numXs++;
+							}
+						}
+					}
+					double codingXPct = ( numXs / (double) totalAminoAcids ) * 100.0;
+					if( codingXPct > maxCodingXPct ) {
+						GlueLogger.log(Level.FINEST, "No GenBank feature generated for sequence "+
+								sequence.getSource().getName()+"/"+sequence.getSequenceID()+" because the proportion of Xs in the translation of "+
+								featureLocation.pkMap()+" ("+numXs+"/"+totalAminoAcids+") "+
+								"was greater than the maximum "+maxCodingXPct);
+						return null;
+					}
+				}
+
+				
 				String featureKey = getFeatureKey();
 				Map<String, String> qualifierKeyValues = 
 						generateQualifierKeyValuesFromFeatureLocation(cmdContext, sequence.getSequenceID(), featureLocation); 
 				List<GbFeatureInterval> gbFeatureIntervals = new ArrayList<GbFeatureInterval>();
 				
-				
 				for(int i = 0; i < fLocSegments.size(); i++) {
 					ReferenceSegment fLocSegment = fLocSegments.get(i);
-					List<QueryAlignedSegment> memberFLocSegments = 
-							ReferenceSegment.intersection(allMemberToRefSegments, Arrays.asList(fLocSegment), ReferenceSegment.cloneLeftSegMerger());
-					if(getSpanInsertions()) {
-						memberFLocSegments = Arrays.asList(new QueryAlignedSegment(
-								ReferenceSegment.minRefStart(memberFLocSegments), 
-								ReferenceSegment.maxRefEnd(memberFLocSegments), 
-								QueryAlignedSegment.minQueryStart(memberFLocSegments), 
-								QueryAlignedSegment.maxQueryEnd(memberFLocSegments)));
-					}
-					for(int j = 0 ; j < memberFLocSegments.size(); j++) {
-						QueryAlignedSegment memberFLocSegment = memberFLocSegments.get(j);
-						int startNt = memberFLocSegment.getQueryStart();
+					List<QueryAlignedSegment> memberGbFeatureSegs = getMemberGbFeatureSegs(cmdContext, featureLocation, sequence, memberFeatureSegments, fLocSegment);
+					
+					for(int j = 0 ; j < memberGbFeatureSegs.size(); j++) {
+						QueryAlignedSegment memberGbFeatureSeg = memberGbFeatureSegs.get(j);
+						int startNt = memberGbFeatureSeg.getQueryStart();
 						boolean incompleteStart = false;
-						int endNt = memberFLocSegment.getQueryEnd();
+						int endNt = memberGbFeatureSeg.getQueryEnd();
 						boolean incompleteEnd = false; 
-						int refStartNt = memberFLocSegment.getRefStart();
+						int refStartNt = memberGbFeatureSeg.getRefStart();
 						
 						if(i == 0 && j == 0 && 
-								memberFLocSegment.getRefStart() > fLocSegment.getRefStart()) {
+								memberGbFeatureSeg.getRefStart() > fLocSegment.getRefStart()) {
 							incompleteStart = true;
 						}
-						if(i == fLocSegments.size() - 1 && j == memberFLocSegments.size() - 1 && 
-								memberFLocSegment.getRefEnd() < fLocSegment.getRefEnd()) {
+						if(i == fLocSegments.size() - 1 && j == memberGbFeatureSegs.size() - 1 && 
+								memberGbFeatureSeg.getRefEnd() < fLocSegment.getRefEnd()) {
 							incompleteEnd = true;
 						}
 						gbFeatureIntervals.add(new GbFeatureInterval(startNt, refStartNt, incompleteStart, endNt, incompleteEnd));
@@ -197,5 +259,44 @@ public abstract class AlignmentFeatureProvider extends FeatureProvider {
 			
 				return new GbFeatureSpecification(gbFeatureIntervals, featureKey, qualifierKeyValues);
 			}
+
+	private List<QueryAlignedSegment> getMemberGbFeatureSegs(CommandContext cmdContext, FeatureLocation featureLocation, Sequence sequence, List<QueryAlignedSegment> allMemberToRefSegments,
+			ReferenceSegment fLocSegment) {
+		String nts = sequence.getSequenceObject().getNucleotides(cmdContext);
+		List<QueryAlignedSegment> memberFLocSegments = 
+				ReferenceSegment.intersection(allMemberToRefSegments, Arrays.asList(fLocSegment), ReferenceSegment.cloneLeftSegMerger());
+		if(getSpanInsertions()) {
+			memberFLocSegments = Arrays.asList(new QueryAlignedSegment(
+					ReferenceSegment.minRefStart(memberFLocSegments), 
+					ReferenceSegment.maxRefEnd(memberFLocSegments), 
+					QueryAlignedSegment.minQueryStart(memberFLocSegments), 
+					QueryAlignedSegment.maxQueryEnd(memberFLocSegments)));
+		}
+		// trim segment end regions that are Ns.
+		List<QueryAlignedSegment> resultSegs = new ArrayList<QueryAlignedSegment>();
+		for(QueryAlignedSegment memberFLocSeg: memberFLocSegments) {
+			boolean retain = true;
+			while(FastaUtils.nt(nts, memberFLocSeg.getQueryStart()) == 'N') {
+				if(memberFLocSeg.getCurrentLength() == 1) {
+					retain = false;
+					break;
+				}
+				memberFLocSeg.truncateLeft(1);
+			}
+			if(retain) {
+				while(FastaUtils.nt(nts, memberFLocSeg.getQueryEnd()) == 'N') {
+					if(memberFLocSeg.getCurrentLength() == 1) {
+						retain = false;
+						break;
+					}
+					memberFLocSeg.truncateRight(1);
+				}
+			}
+			if(retain) {
+				resultSegs.add(memberFLocSeg);
+			}
+		}
+		return resultSegs;
+	}
 	
 }
