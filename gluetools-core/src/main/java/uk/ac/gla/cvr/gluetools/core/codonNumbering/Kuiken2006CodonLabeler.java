@@ -25,8 +25,10 @@
 */
 package uk.ac.gla.cvr.gluetools.core.codonNumbering;
 
+import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.w3c.dom.Element;
@@ -242,6 +244,52 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 			
 			if(!ReferenceSegment.sameRegion(matchingRootRefCodon.getLcRefSegments(), featureRefCodonInRootRefSegs)) {
 				if(mustMatchExactly) {
+					if(featureRefCodonInRootRefSegs.size() == 2) {
+						// sometimes the feature ref has a deletion relative to the root ref, but although the size of the deletion is 
+						// a multiple of 3, it is not codon aligned in the alignment. It may be unwise to force it to be codon aligned (as this
+						// would change the phylogenetics) or impossible (because of overlapping coding regions in different reading frames).
+						// The upshot is that 2NTs of the query codon maps to one reference codon and the other NT maps to a different reference
+						// codon. Pragmatically, we will label this according to the majority verdict.
+						QueryAlignedSegment s1 = featureRefCodonInRootRefSegs.get(0);
+						QueryAlignedSegment s2 = featureRefCodonInRootRefSegs.get(1);
+						if( ( s2.getRefStart() - (s1.getRefEnd() + 1) ) % 3 == 0) { // deletion is multiple of 3.
+							Map<String, Integer> matchingCodonLabelToCount = new LinkedHashMap<String, Integer>();
+							for(int i = 0; i < s1.getCurrentLength(); i++) {
+								LabeledCodon matchingCodon = rootRefNtToLabeledCodon.get(s1.getRefStart()+i);
+								if(matchingCodon != null) {
+									Integer count = matchingCodonLabelToCount.get(matchingCodon.getCodonLabel());
+									if(count == null) {
+										count = 1;
+									} else {
+										count = count+1;
+									}
+									if(count.intValue() == 2) {
+										return matchingCodon;
+									}
+									matchingCodonLabelToCount.put(matchingCodon.getCodonLabel(), count);
+								}
+							}
+							for(int i = 0; i < s2.getCurrentLength(); i++) {
+								LabeledCodon matchingCodon = rootRefNtToLabeledCodon.get(s2.getRefStart()+i);
+								if(matchingCodon != null) {
+									Integer count = matchingCodonLabelToCount.get(matchingCodon.getCodonLabel());
+									if(count == null) {
+										count = 1;
+									} else {
+										count = count+1;
+									}
+									if(count.intValue() == 2) {
+										return matchingCodon;
+									}
+									matchingCodonLabelToCount.put(matchingCodon.getCodonLabel(), count);
+								}
+							}
+							
+						}
+						
+					}
+					
+					
 					throw new Kuiken2006CodonLabelerException(Code.MAPPING_ERROR, rootRef.getName(), featureRef.getName(), feature.getName(), featureRefCodonLcSegments.toString(), 
 							codonDesc+" matches some coordinate of codon "+matchingRootRefCodon.getCodonLabel()+" on the root reference ("+featureRefCodonInRootRefSegs.get(0).getRefStart()+") but not the correct region -- "+
 									featureRefCodonInRootRefSegs+" rather than "+matchingRootRefCodon.getLcRefSegments());
