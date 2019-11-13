@@ -122,8 +122,8 @@ public class AminoAcidRegionSelector extends RegionSelector {
 			List<LabeledCodon> labeledCodons = featureLoc.getLabeledCodons(cmdContext);
 			endLabeledCodon = labeledCodons.get(labeledCodons.size()-1); 
 		}
-		if(endLabeledCodon.getNtStart() < startLabeledCodon.getNtStart()) {
-			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Codon with label \""+endCodon+"\" occurs before codon with label \""+startCodon+"\"");
+		if(endLabeledCodon.getTranslationIndex() < startLabeledCodon.getTranslationIndex()) {
+			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Feature "+featureLoc.getFeature().getName()+": Codon with label \""+endLabeledCodon.getCodonLabel()+"\" occurs before codon with label \""+startLabeledCodon.getCodonLabel()+"\"");
 		}
 		List<LabeledCodon> selectedLabeledCodons = featureLoc.getLabeledCodons(cmdContext, startLabeledCodon, endLabeledCodon);
 		List<RegionSelector> excludeRegionSelectors = getExcludeRegionSelectors();
