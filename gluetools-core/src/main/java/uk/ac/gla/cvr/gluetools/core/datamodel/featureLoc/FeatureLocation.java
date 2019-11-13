@@ -644,7 +644,9 @@ public class FeatureLocation extends _FeatureLocation {
 		} else {
 			// List of reference segments, with each one associated with a labeled codon.
 			// May be multiple reference segments per labeled codon
-			List<LabeledCodonReferenceSegment> labeledCodonReferenceSegments = this.getLabeledCodonReferenceSegments(cmdContext);
+			// take copy to be thread safe
+			List<LabeledCodonReferenceSegment> labeledCodonReferenceSegments = // take copy to be thread safe
+					new ArrayList<LabeledCodonReferenceSegment>(this.getLabeledCodonReferenceSegments(cmdContext));
 			// have to do this, otherwise the intersection call will not work properly.
 			ReferenceSegment.sortByRefStart(labeledCodonReferenceSegments);
 			ReferenceSegment.sortByRefStart(queryToRefSegs);
