@@ -44,6 +44,7 @@ import uk.ac.gla.cvr.gluetools.core.command.dataUtils.DataUtilParseCountryComman
 import uk.ac.gla.cvr.gluetools.core.command.fileUtils.FileUtilDeleteFileCommand;
 import uk.ac.gla.cvr.gluetools.core.command.fileUtils.FileUtilListFilesCommand;
 import uk.ac.gla.cvr.gluetools.core.command.fileUtils.FileUtilLoadStringCommand;
+import uk.ac.gla.cvr.gluetools.core.command.fileUtils.FileUtilMakeDirectoriesCommand;
 import uk.ac.gla.cvr.gluetools.core.command.fileUtils.FileUtilSaveStringCommand;
 
 public abstract class BaseCommandFactory extends CommandFactory {
@@ -70,6 +71,7 @@ public abstract class BaseCommandFactory extends CommandFactory {
 		registerCommandClass(FileUtilDeleteFileCommand.class);
 		registerCommandClass(FileUtilSaveStringCommand.class);
 		registerCommandClass(FileUtilLoadStringCommand.class);
+		registerCommandClass(FileUtilMakeDirectoriesCommand.class);
 
 		setCmdGroup(new CommandGroup("data-utils", "Data utility commands", 95, true));
 		registerCommandClass(DataUtilParseCountryCommand.class);
