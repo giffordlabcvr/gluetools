@@ -96,12 +96,24 @@ public class TabularUtility extends ModulePlugin<TabularUtility>{
 	}
 
 	public static TabularData tabularDataFromBytes(byte[] bytes, Pattern columnDelimiterRegex) {
+		return tabularDataFromBytes(bytes, columnDelimiterRegex, false, null);
+	}
+	
+	public static TabularData tabularDataFromBytes(byte[] bytes, Pattern columnDelimiterRegex, boolean explicitColumnNames, List<String> suppliedColumnNames) {
 		String inputString = new String(bytes);
 		String[] allLines = inputString.split("\\r\\n|\\r|\\n");
-		String headerLine = allLines[0];
-		String[] columnNames = headerLine.split(columnDelimiterRegex.pattern());
+		String[] columnNames;
+		int startLine;
+		if(explicitColumnNames) {
+			columnNames = suppliedColumnNames.toArray(new String[] {});
+			startLine = 0;
+		} else {
+			String headerLine = allLines[0];
+			columnNames = headerLine.split(columnDelimiterRegex.pattern());
+			startLine = 1;
+		}
 		List<String[]> rows = new ArrayList<String[]>();
-		for(int i = 1; i < allLines.length; i++) {
+		for(int i = startLine; i < allLines.length; i++) {
 			String line = allLines[i];
 			if(line.replaceAll(columnDelimiterRegex.pattern(), "").trim().isEmpty()) {
 				continue; // only whitespace and column delimiters.
