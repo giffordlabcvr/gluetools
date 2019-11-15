@@ -25,6 +25,7 @@
 */
 package uk.ac.gla.cvr.gluetools.core.tabularUtility;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.w3c.dom.Document;
@@ -84,10 +85,12 @@ public abstract class BaseSaveTabularCommand<R extends CommandResult> extends Mo
 		}
 		List<CommandArrayItem> columns = columnArray.getItems();
 		CommandArray rowArray = cmdDocument.getArray(BaseTableResult.ROW);
+		List<CommandArrayItem> rows;
 		if(rowArray == null) {
-			throw new CommandException(Code.COMMAND_FAILED_ERROR, "No row array");
+			rows = new ArrayList<CommandArrayItem>();
+		} else {
+			rows = rowArray.getItems();
 		}
-		List<CommandArrayItem> rows = rowArray.getItems();
 		ElementTableResult elementTableResult = new ElementTableResult(rootTableName, rows, columns);
 		return saveData(cmdContext, tabularUtility.getOutputFormat(), fileName, elementTableResult);
 	}
