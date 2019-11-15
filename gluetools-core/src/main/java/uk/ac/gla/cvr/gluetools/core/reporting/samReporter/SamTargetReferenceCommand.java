@@ -54,7 +54,7 @@ import uk.ac.gla.cvr.gluetools.core.reporting.samReporter.SamReporterPreprocesso
 					"The <samRefSense> may be FORWARD or REVERSE_COMPLEMENT, indicating the presumed sense of the SAM reference, relative to the GLUE references.",
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class SamTargetReferenceCommand extends BaseSamReporterCommand<SamTargetReferenceResult> implements ProvidedProjectModeCommand {
+public class SamTargetReferenceCommand extends ExtendedSamReporterCommand<SamTargetReferenceResult> implements ProvidedProjectModeCommand {
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -74,7 +74,7 @@ public class SamTargetReferenceCommand extends BaseSamReporterCommand<SamTargetR
 	}
 	
 	@CompleterClass
-	public static class Completer extends BaseSamReporterCommand.Completer {
+	public static class Completer extends ExtendedSamReporterCommand.Completer {
 		public Completer() {
 			super();
 		}

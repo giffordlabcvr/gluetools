@@ -59,7 +59,7 @@ import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 
 // SAM reporter command which links the SAM reads to a GLUE reference before performing
 // some kind of analysis.
-public abstract class ReferenceLinkedSamReporterCommand<R extends CommandResult> extends BaseSamReporterCommand<R> {
+public abstract class ReferenceLinkedSamReporterCommand<R extends CommandResult> extends ExtendedSamReporterCommand<R> {
 
 	public static final String SELECTOR_NAME = "selectorName";
 	public static final String REL_REF_NAME = "relRefName";
@@ -212,7 +212,7 @@ public abstract class ReferenceLinkedSamReporterCommand<R extends CommandResult>
 		return linkingAlmtName;
 	}
 	
-	public static class Completer extends BaseSamReporterCommand.Completer {
+	public static class Completer extends ExtendedSamReporterCommand.Completer {
 		public Completer() {
 			super();
 			registerModuleNameLookup("selectorName", "alignmentColumnsSelector");

@@ -224,7 +224,7 @@ public class SamReporterPreprocessor {
 		}
 		
 		public DNASequence getConsensus(ConsoleCommandContext consoleCmdContext, 
-				SamReporter samReporter, BaseSamReporterCommand<?> samReporterCommand, boolean mayGenerateAmbiguities) {
+				SamReporter samReporter, ExtendedSamReporterCommand<?> samReporterCommand, boolean mayGenerateAmbiguities) {
 			ConsensusKey consensusKey = new ConsensusKey(samReporter, samReporterCommand, mayGenerateAmbiguities);
 			return getConsensus(consoleCmdContext, consensusKey);
 		}
@@ -244,7 +244,7 @@ public class SamReporterPreprocessor {
 			return consensusSequence;
 		}
 		
-		public ReferenceSequence getTargetRefBasedOnPlacer(ConsoleCommandContext consoleCmdContext, SamReporter samReporter, BaseSamReporterCommand<?> samReporterCommand) {
+		public ReferenceSequence getTargetRefBasedOnPlacer(ConsoleCommandContext consoleCmdContext, SamReporter samReporter, ExtendedSamReporterCommand<?> samReporterCommand) {
 			ConsensusKey consensusKey = new ConsensusKey(samReporter, samReporterCommand, false);
 			String targetRefName = cachedTargetRefName.get(consensusKey);
 			ReferenceSequence targetRef;
@@ -257,7 +257,7 @@ public class SamReporterPreprocessor {
 			return targetRef;
 		}
 
-		public ReferenceDistance getTargetRefDistanceBasedOnPlacer(ConsoleCommandContext consoleCmdContext, SamReporter samReporter, BaseSamReporterCommand<?> samReporterCommand) {
+		public ReferenceDistance getTargetRefDistanceBasedOnPlacer(ConsoleCommandContext consoleCmdContext, SamReporter samReporter, ExtendedSamReporterCommand<?> samReporterCommand) {
 			ConsensusKey consensusKey = new ConsensusKey(samReporter, samReporterCommand, false);
 			return getTargetRefDistance(consoleCmdContext, samReporter, consensusKey);
 		}
@@ -291,7 +291,7 @@ public class SamReporterPreprocessor {
 		}
 		
 		
-		public List<QueryAlignedSegment> getSamRefToTargetRefSegs(ConsoleCommandContext consoleCmdContext, SamReporter samReporter, BaseSamReporterCommand<?> samReporterCommand, String targetRefName) {
+		public List<QueryAlignedSegment> getSamRefToTargetRefSegs(ConsoleCommandContext consoleCmdContext, SamReporter samReporter, ExtendedSamReporterCommand<?> samReporterCommand, String targetRefName) {
 			ConsensusKey consensusKey = new ConsensusKey(samReporter, samReporterCommand, false);
 			SamToTargetSegsKey samToTargetSegsKey = new SamToTargetSegsKey(consensusKey, targetRefName);
 			List<QueryAlignedSegment> samRefToTargetRefSegs = cachedSamRefToTargetRefSegs.get(samToTargetSegsKey);
@@ -344,7 +344,7 @@ public class SamReporterPreprocessor {
 		private SamRefSense samRefSense;
 		private boolean mayGenerateAmbiguities;
 		
-		public ConsensusKey(SamReporter samReporter, BaseSamReporterCommand<?> samReporterCommand, boolean mayGenerateAmbiguities) {
+		public ConsensusKey(SamReporter samReporter, ExtendedSamReporterCommand<?> samReporterCommand, boolean mayGenerateAmbiguities) {
 			super();
 			this.minDepth = samReporterCommand.getConsensusMinDepth(samReporter);
 			this.minQScore = samReporterCommand.getConsensusMinQScore(samReporter);

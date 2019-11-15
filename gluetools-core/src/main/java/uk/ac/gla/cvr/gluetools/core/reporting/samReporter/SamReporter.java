@@ -151,6 +151,7 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		registerModulePluginCmdClass(ListSamReferenceCommand.class);
 		registerModulePluginCmdClass(SamExportNucleotideAlignmentCommand.class);
 		registerModulePluginCmdClass(SamTargetReferenceCommand.class);
+		registerModulePluginCmdClass(SamMappedReadsCommand.class);
 		addSimplePropertyName(MAX_LIKELIHOOD_PLACER_MODULE_NAME);
 		addSimplePropertyName(MAX_LIKELIHOOD_PLACER_DISTANCE_CUTOFF);
 		addSimplePropertyName(ALIGNER_MODULE_NAME);

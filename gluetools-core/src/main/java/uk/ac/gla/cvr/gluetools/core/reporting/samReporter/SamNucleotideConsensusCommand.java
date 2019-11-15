@@ -77,7 +77,7 @@ import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 					"(default value is derived from the module config).",
 		metaTags = {CmdMeta.consoleOnly}	
 )
-public class SamNucleotideConsensusCommand extends BaseSamReporterCommand<CommandResult> implements ProvidedProjectModeCommand {
+public class SamNucleotideConsensusCommand extends ExtendedSamReporterCommand<CommandResult> implements ProvidedProjectModeCommand {
 
 	public static final String CONSENSUS_ID = "consensusID";
 	public static final String PREVIEW = "preview";
@@ -135,7 +135,7 @@ public class SamNucleotideConsensusCommand extends BaseSamReporterCommand<Comman
 
 
 	@CompleterClass
-	public static class Completer extends BaseSamReporterCommand.Completer {
+	public static class Completer extends ExtendedSamReporterCommand.Completer {
 		public Completer() {
 			super();
 			registerPathLookup("outputFileName", false);

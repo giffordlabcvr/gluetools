@@ -54,30 +54,15 @@ public abstract class BaseSamReporterCommand<R extends CommandResult> extends Mo
 	public static final String FILE_NAME = "fileName";
 	public static final String SAM_REF_NAME = "samRefName";
 
-	public static final String MIN_Q_SCORE = "minQScore";
-	public static final String MIN_MAP_Q = "minMapQ";
-	public static final String MIN_DEPTH = "minDepth";
-	
-	public static final String SAM_REF_SENSE = "samRefSense";
-	
 	private String fileName;
 	private String samRefName;
 	
-	private Optional<Integer> minQScore;
-	private Optional<Integer> minDepth;
-	private Optional<Integer> minMapQ;
-	
-	private Optional<SamRefSense> samRefSense;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		this.fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, true);
 		this.samRefName = PluginUtils.configureStringProperty(configElem, SAM_REF_NAME, false);
-		this.minQScore = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, MIN_Q_SCORE, 0, true, 99, true, false));
-		this.minMapQ = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, MIN_MAP_Q, 0, true, 99, true, false));
-		this.minDepth = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, MIN_DEPTH, 0, true, null, false, false));
-		this.samRefSense = Optional.ofNullable(PluginUtils.configureEnumProperty(SamRefSense.class, configElem, SAM_REF_SENSE, false));
 	}
 
 	public String getFileName() {
@@ -86,34 +71,6 @@ public abstract class BaseSamReporterCommand<R extends CommandResult> extends Mo
 
 	public String getSuppliedSamRefName() {
 		return samRefName;
-	}
-
-	public int getMinQScore(SamReporter samReporter) {
-		return minQScore.orElse(samReporter.getDefaultMinQScore());
-	}
-
-	public int getMinDepth(SamReporter samReporter) {
-		return minDepth.orElse(samReporter.getDefaultMinDepth());
-	}
-
-	public int getMinMapQ(SamReporter samReporter) {
-		return minMapQ.orElse(samReporter.getDefaultMinMapQ());
-	}
-
-	public SamRefSense getSamRefSense(SamReporter samReporter) {
-		return samRefSense.orElse(samReporter.getDefaultSamRefSense());
-	}
-	
-	protected Optional<Integer> getSuppliedMinQScore() {
-		return minQScore;
-	}
-
-	protected Optional<Integer> getSuppliedMinDepth() {
-		return minDepth;
-	}
-
-	protected Optional<Integer> getSuppliedMinMapQ() {
-		return minMapQ;
 	}
 
 	protected static class SamRefInfo {
@@ -195,22 +152,9 @@ public abstract class BaseSamReporterCommand<R extends CommandResult> extends Mo
 		public Completer() {
 			super();
 			registerPathLookup("fileName", false);
-			registerEnumLookup("samRefSense", SamRefSense.class);
 			registerVariableInstantiator("samRefName", new SamRefNameInstantiator());
 		}
 		
 	}
 
-	public int getConsensusMinDepth(SamReporter samReporter) {
-		return samReporter.getConsensusMinDepth();
-	}
-
-	public int getConsensusMinQScore(SamReporter samReporter) {
-		return samReporter.getConsensusMinQScore();
-	}
-
-	public int getConsensusMinMapQ(SamReporter samReporter) {
-		return samReporter.getConsensusMinMapQ();
-	}
-	
 }
