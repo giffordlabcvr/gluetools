@@ -1,0 +1,116 @@
+<gluetools>
+	<database>
+		<username>glue_tools</username>
+		<password>gluetools12345</password>
+		<jdbcUrl>jdbc:mysql://glue-db.cvr.gla.ac.uk:3306/GLUETOOLS_APP?characterEncoding=UTF-8</jdbcUrl>	
+	</database>
+	<properties>
+		<!-- Scripting -->
+		<!-- In reality the VM has 4 cores. We can overload them effectively because the resistance scanning piece which uses
+		     the parallelism spends a lot of time accessing the DB. So I've put 20 here, matching the 20 sequence maximum.
+		     
+		     A better design would be for the invocation of the parallelCommands function to specify a load factor. This would get
+		     multiplied by the CPUs setting to give the number of workers created in the executor service thread pool.
+		     For CPU-intensive parallel commands you would use a load factor of 1, whereas if there was DB access you might use a 
+		     higher load factor.
+		      -->
+		<property>
+			<name>gluetools.core.scripting.parallel.cpus</name>
+			<value>20</value>
+		</property>
+		<!-- Web files -->
+	    <property>
+			<name>gluetools.core.webfiles.enabled</name>
+			<value>true</value>
+		</property>
+		<property>
+			<name>gluetools.core.webfiles.root.dir</name>
+			<value>/opt/gluetools/glue_web_files/glue_tools</value>
+		</property>
+		<!-- BLAST specific config -->
+		<property>
+			<name>gluetools.core.programs.blast.blastn.executable</name>
+			<value>/opt/gluetools/blast/ncbi-blast-2.2.31+/bin/blastn</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.blast.tblastn.executable</name>
+			<value>/opt/gluetools/blast/ncbi-blast-2.2.31+/bin/tblastn</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.blast.makeblastdb.executable</name>
+			<value>/opt/gluetools/blast/ncbi-blast-2.2.31+/bin/makeblastdb</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.blast.temp.dir</name>
+			<value>/opt/gluetools/tmp/blastfiles</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.blast.db.dir</name>
+			<value>/opt/gluetools/tmp/blastdbs</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.blast.search.threads</name>
+			<value>4</value>
+		</property>
+		<!-- RAxML-specific config -->
+		<property>
+			<name>gluetools.core.programs.raxml.raxmlhpc.executable</name>
+			<value>/opt/gluetools/raxml/bin/raxmlHPC-PTHREADS-AVX2</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.raxml.raxmlhpc.cpus</name>
+			<value>4</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.raxml.temp.dir</name>
+			<value>/opt/gluetools/tmp/raxmlfiles</value>
+		</property>
+		<!-- MAFFT-specific config -->
+		<property>
+			<name>gluetools.core.programs.mafft.executable</name>
+			<value>/usr/local/bin/mafft</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.mafft.cpus</name>
+			<value>4</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.mafft.temp.dir</name>
+			<value>/opt/gluetools/tmp/mafftfiles</value>
+		</property>
+		<!-- SAM/BAM file processing -->
+		<property>
+			<name>gluetools.core.sam.temp.dir</name>
+			<value>/opt/gluetools/tmp/samfiles</value>
+		</property>
+		<property>
+			<name>gluetools.core.sam.cpus</name>
+			<value>4</value>
+		</property>
+		<!-- Cayenne -->
+		<property>
+			<name>cayenne.querycache.size</name>
+			<value>30000</value>
+		</property>
+	</properties>
+	<requestQueueManager>
+		<requestQueue>
+			<queueName>default</queueName>
+			<numWorkers>4</numWorkers>		
+			<maxRequests>20</maxRequests>
+		</requestQueue>
+	</requestQueueManager>
+	<requestGatekeeper> 
+		<modePathRegexFilter>
+			<regex>^/</regex>
+			<simpleCommandFilter words="webdocs list-command-modes"/>
+			<simpleCommandFilter words="webdocs document-command-mode"/>
+			<simpleCommandFilter words="webdocs document-mode-command"/>
+			<simpleCommandFilter words="webdocs document-non-mode-commands"/>
+			<simpleCommandFilter words="webdocs document-non-mode-command"/>
+			<simpleCommandFilter words="webdocs list-module-types"/>
+			<simpleCommandFilter words="webdocs document-module-type"/>
+			<simpleCommandFilter words="webdocs document-module-command"/>
+		</modePathRegexFilter>
+	</requestGatekeeper> 
+</gluetools>
