@@ -22,7 +22,8 @@ public class SamConsensusGenerator implements SamPairedParallelProcessor<SamCons
 	public String getNgsConsensus(ConsoleCommandContext cmdContext, SamReporterPreprocessorSession samReporterPreprocessorSession, ValidationStringency validationStringency, 
 			String samRefName, int minQScore, int minMapQ, int minDepth, SamRefSense samRefSense,
 			boolean mayGenerateAmbiguities, 
-			boolean consensusProduceAmbiguityCodes, double consensusAmbiguityMinProportion, int consensusAmbiguityMinReads) {
+			boolean consensusProduceAmbiguityCodes, int consensusAmbiguityCodesMinDepth, 
+			double consensusAmbiguityMinProportion, int consensusAmbiguityMinReads) {
 	
 		if(!EnumSet.of(SamRefSense.FORWARD, SamRefSense.REVERSE_COMPLEMENT).contains(samRefSense)) {
 			throw new RuntimeException("SAM ref sense should be determined by the point of forming the consensus");
@@ -50,7 +51,7 @@ public class SamConsensusGenerator implements SamPairedParallelProcessor<SamCons
 	    		counts[ResidueUtils.CONCRETE_NT_C] = mergedResult.cCounts[i];
 	    		counts[ResidueUtils.CONCRETE_NT_G] = mergedResult.gCounts[i];
 	    		counts[ResidueUtils.CONCRETE_NT_T] = mergedResult.tCounts[i];
-	    		if(mayGenerateAmbiguities && consensusProduceAmbiguityCodes) {
+	    		if(mayGenerateAmbiguities && consensusProduceAmbiguityCodes && totalDepth > consensusAmbiguityCodesMinDepth) {
 	    			int concreteNtsBitmap = 0;
 		    		for(int j = 0; j < 4; j++) {
 		    			double proportion = 0;

@@ -79,6 +79,10 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 
 	// boolean -- if true the nucleotide-consensus command may produce ambiguity codes
 	public static final String CONSENSUS_PRODUCE_AMBIGUITY_CODES = "consensusProduceAmbiguityCodes";
+
+	// integer -- Only produce ambiguity codes if the depth is at least this figure, otherwise fall back to highest-proportion-wins.
+	public static final String CONSENSUS_AMBIGUITY_CODES_MIN_DEPTH = "consensusAmbiguityCodesMinDepth";
+
 	// double -- at a given nucleotide position, a specific base must represent at least this proportion of reads
 	// to contribute to the ambiguity code.
 	public static final String CONSENSUS_AMBIGUITY_MIN_PROPORTION = "consensusAmbiguityMinProportion";
@@ -128,9 +132,11 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 	// minimum read depth used by consensus-calling
 	private int consensusMinDepth;
 	
-	
-	
 	private boolean consensusProduceAmbiguityCodes;
+
+	// integer -- Only produce ambiguity codes if the depth is at least this figure, otherwise fall back to highest-proportion-wins.
+	private int consensusAmbiguityCodesMinDepth;
+
 	// double -- at a given nucleotide position, a specific base must represent at least this proportion of reads
 	// to contribute to the ambiguity code.
 	private double consensusAmbiguityMinProportion;
@@ -167,6 +173,7 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		addSimplePropertyName(CONSENSUS_MIN_MAP_Q);
 
 		addSimplePropertyName(CONSENSUS_PRODUCE_AMBIGUITY_CODES);
+		addSimplePropertyName(CONSENSUS_AMBIGUITY_CODES_MIN_DEPTH);
 		addSimplePropertyName(CONSENSUS_AMBIGUITY_MIN_PROPORTION);
 		addSimplePropertyName(CONSENSUS_AMBIGUITY_MIN_READS);
 
@@ -192,6 +199,7 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		this.consensusMinDepth = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, CONSENSUS_MIN_DEPTH, 0, true, null, false, false)).orElse(0);
 
 		this.consensusProduceAmbiguityCodes = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, CONSENSUS_PRODUCE_AMBIGUITY_CODES, false)).orElse(false);
+		this.consensusAmbiguityCodesMinDepth = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, CONSENSUS_AMBIGUITY_CODES_MIN_DEPTH, false)).orElse(0);
 		this.consensusAmbiguityMinProportion = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, CONSENSUS_AMBIGUITY_MIN_PROPORTION, 0.0, false, 0.5, true, false)).orElse(0.05);
 		this.consensusAmbiguityMinReads = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, CONSENSUS_AMBIGUITY_MIN_READS, 1, true, null, false, false)).orElse(1);
 
@@ -326,6 +334,10 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		return consensusProduceAmbiguityCodes;
 	}
 
+	public int getConsensusAmbiguityCodesMinDepth() {
+		return consensusAmbiguityCodesMinDepth;
+	}
+	
 	public double getConsensusAmbiguityMinProportion() {
 		return consensusAmbiguityMinProportion;
 	}

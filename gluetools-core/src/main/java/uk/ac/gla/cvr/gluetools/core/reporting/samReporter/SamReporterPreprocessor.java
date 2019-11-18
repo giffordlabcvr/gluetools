@@ -239,7 +239,8 @@ public class SamReporterPreprocessor {
 					samReporter.getSamReaderValidationStringency(), 
 					consensusKey.suppliedSamRefName, consensusKey.minQScore, consensusKey.minMapQ, consensusKey.minDepth, 
 					consensusKey.samRefSense, consensusKey.mayGenerateAmbiguities, 
-					samReporter.getConsensusProduceAmbiguityCodes(), samReporter.getConsensusAmbiguityMinProportion(), samReporter.getConsensusAmbiguityMinReads());
+					samReporter.getConsensusProduceAmbiguityCodes(), samReporter.getConsensusAmbiguityCodesMinDepth(), 
+					samReporter.getConsensusAmbiguityMinProportion(), samReporter.getConsensusAmbiguityMinReads());
 			cachedConsensus.put(consensusKey, consensusSequence);
 			return consensusSequence;
 		}
