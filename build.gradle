@@ -36,7 +36,7 @@ task deployAll(dependsOn: [
 	':gluetools-core:install', 
 	':gluetools-web:install', 
 	':gluetools-ws:install', 
-	':gluetoolsApp:deployAll',
+	':gluetoolsApp:cargoRedeployRemote',
 	':gluetools-mysql-docker:docker', 
 	':gluetools-mysql-docker:dockerTag', 
 	':gluetools-mysql-docker:dockerPush', 

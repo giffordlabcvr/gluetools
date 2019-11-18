@@ -43,7 +43,10 @@ buildscript {
 }
 
 task deployDeps(dependsOn: ['copyGluetoolsWebWar', 
-	'gluetoolsWsWithContextWar', 'deployGluetoolsConfigGluetoolsCVR'])
+	'gluetoolsWsWithContextWar', 'deployGluetoolsConfigGluetoolsCVR',
+	':gluetools-core:install', 
+	':gluetools-web:install', 
+	':gluetools-ws:install'])
 
 cargoRedeployRemote.dependsOn deployDeps
 
@@ -102,11 +105,6 @@ task gluetoolsWsWithContextWar(type: Jar, dependsOn: copyGluetoolsWsWar) {
         rename("gluetools-ws-context.xml", "context.xml")
     }
 }
-
-task deployAll(dependsOn: ['cargoRedeployRemote', 
-	':gluetools-core:install', 
-	':gluetools-web:install', 
-	':gluetools-ws:install'])
 
 
 // gluetools xml config for CVR vm 
