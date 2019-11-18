@@ -30,21 +30,32 @@ apply plugin: 'org.hidetake.ssh'
 sourceCompatibility = 1.8
 
 remotes {
-  omega {
-    host = 'omega.cvr.gla.ac.uk'
+  gluetools_cvr {
+    host = 'glue-tools.cvr.gla.ac.uk'
     user = 'sing01j'
-    identity = file('/Users/joshsinger/.ssh/omega_id_rsa')
-  }
-  alpha {
-    host = 'alpha.cvr.gla.ac.uk'
-    user = 'sing01j'
-    identity = file('/Users/joshsinger/.ssh/alpha_id_rsa')
-  }
-  gluehome_aws {
-    host = '52.16.113.119'
-    user = 'ubuntu'
-    identity = file('/Users/joshsinger/.ssh/gluehome-aws.pem')
-  }
+    identity = file('/Users/joshsinger/.ssh/glue-tools_id_rsa')
+  }  
+}
+
+repositories {
+    mavenCentral()
+	// this is for the vpp dependency of the cayenne tools. 
+    maven {
+    	url 'https://repo.spring.io/plugins-release/'
+    }
+    // required for j-text-utils
+    // maven {
+    //	url 'http://d-maven.googlecode.com/svn/trunk/repo'
+    // }
+}
+
+configurations {
+    cgen
+}
+
+dependencies {
+   	compile group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.0.1'
+    cgen group: 'org.apache.cayenne', name: 'cayenne-tools', version: '3.1.1'
 }
 
 buildscript {
@@ -79,182 +90,12 @@ jar {
 
 }
 
-task deployGlueConfigOmega {
-  ext.omegaDir = new File(projectDir, 'omega')
-  ext.glueConfigFile = new File(omegaDir, 'gluetools-config.xml')
-  ext.glueConfigTouchfile = new File(buildDir, '/deployGlueConfigOmega.touchfile')
-  inputs.file glueConfigFile
-  outputs.file glueConfigTouchfile
-  doLast {
-	  println "Uploading "+glueConfigFile.name
-	  ssh.run {
-	    session(remotes.omega) {
-	      execute 'mkdir -p /home/sing01j/gluetools/conf'
-	      execute 'chmod a+rw /home/sing01j/gluetools/conf'
-	      put from: glueConfigFile, into: '/home/sing01j/gluetools/conf'
-	    }
-	  }
-	  glueConfigTouchfile.delete()
-	  buildDir.mkdirs()
-	  glueConfigTouchfile.createNewFile()
-  }
-}
-
-task deployGlueConfigAlphaSing01j {
-  ext.alphaDir = new File(projectDir, 'alpha')
-  ext.glueConfigFile = new File(alphaDir, 'gluetools-config-sing01j.xml')
-  ext.glueConfigTouchfile = new File(buildDir, '/deployGlueConfigAlphaSing01j.touchfile')
-  inputs.file glueConfigFile
-  outputs.file glueConfigTouchfile
-  doLast {
-	  println "Uploading "+glueConfigFile.name
-	  ssh.run {
-	    session(remotes.alpha) {
-	      execute 'mkdir -p /home2/sing01j/gluetools/conf'
-	      execute 'chmod a+rw /home2/sing01j/gluetools/conf'
-	      put from: glueConfigFile, into: '/home2/sing01j/gluetools/conf/gluetools-config-sing01j.xml'
-	    }
-	  }
-	  glueConfigTouchfile.delete()
-	  buildDir.mkdirs()
-	  glueConfigTouchfile.createNewFile()
-  }
-}
-
-
-task deployGlueConfigAlphaGiff01r {
-  ext.alphaDir = new File(projectDir, 'alpha')
-  ext.glueConfigFile = new File(alphaDir, 'gluetools-config-giff01r.xml')
-  ext.glueConfigTouchfile = new File(buildDir, '/deployGlueConfigAlphaGiff01r.touchfile')
-  inputs.file glueConfigFile
-  outputs.file glueConfigTouchfile
-  doLast {
-	  println "Uploading "+glueConfigFile.name
-	  ssh.run {
-	    session(remotes.alpha) {
-	      execute 'mkdir -p /home2/sing01j/gluetools/conf'
-	      execute 'chmod a+rw /home2/sing01j/gluetools/conf'
-	      put from: glueConfigFile, into: '/home2/sing01j/gluetools/conf/gluetools-config-giff01r.xml'
-	    }
-	  }
-	  glueConfigTouchfile.delete()
-	  buildDir.mkdirs()
-	  glueConfigTouchfile.createNewFile()
-  }
-}
-
-
-
-
-
-
-// gluetools core jar on Omega
-task deployJarOmega(dependsOn: ['jar']) {
-  ext.jarFile = new File(buildDir, '/libs/'+project.name+"-"+version+'.jar')
-  ext.deployJarOmegaTouchfile = new File(buildDir, '/deployJarOmega.touchfile')
-  inputs.file jarFile
-  outputs.file deployJarOmegaTouchfile
-  doLast {
-	  println "Uploading "+jarFile.name
-	  ssh.run {
-	    session(remotes.omega) {
-	      execute 'rm -f /home/sing01j/gluetools/lib/*.jar'
-	      put from: jarFile, into: '/home/sing01j/gluetools/lib/'
-	      execute 'chmod a+r /home/sing01j/gluetools/lib/*'
-	    }
-	  }
-	  deployJarOmegaTouchfile.delete()
-	  buildDir.mkdirs()
-	  deployJarOmegaTouchfile.createNewFile()
-  }
-}
-
-// gluetools core jar on Alpha
-task deployJarAlpha(dependsOn: ['jar']) {
-  ext.jarFile = new File(buildDir, '/libs/'+project.name+"-"+version+'.jar')
-  ext.deployJarAlphaTouchfile = new File(buildDir, '/deployJarAlpha.touchfile')
-  inputs.file jarFile
-  outputs.file deployJarAlphaTouchfile
-  doLast {
-	  println "Uploading "+jarFile.name
-	  ssh.run {
-	    session(remotes.alpha) {
-	      execute 'rm -f /home2/sing01j/gluetools/lib/*.jar'
-	      put from: jarFile, into: '/home2/sing01j/gluetools/lib/'
-	      execute 'chmod a+r /home2/sing01j/gluetools/lib/*'
-	    }
-	  }
-	  deployJarAlphaTouchfile.delete()
-	  buildDir.mkdirs()
-	  deployJarAlphaTouchfile.createNewFile()
-  }
-}
-
-
-
-task dumpGlueDB(type: Exec) {
-	standardOutput = new FileOutputStream(new File('/tmp/gluedb.sql'))
-	commandLine '/usr/local/mysql/bin/mysqldump', '-u', 'gluetools', '--password=gluetools', 'GLUE_TOOLS'
-}
-
-task zipGlueDB(type: Exec, dependsOn: ['dumpGlueDB']) {
-	commandLine '/usr/bin/gzip', '-f', '/tmp/gluedb.sql'
-}
-
-
-task deployGlueDbToOmega(dependsOn: ['zipGlueDB']) {
-  doLast {
-	  println "Uploading GLUE DB"
-	  ssh.run {
-	    session(remotes.omega) {
-	 	  put from: '/tmp/gluedb.sql.gz', into: '/tmp/gluedb.sql.gz'
-	      execute 'echo "drop database GLUETOOLS; create database GLUETOOLS character set UTF8;" | mysql -u gluetools --password=gluetools GLUETOOLS'
-	      execute 'gunzip -c /tmp/gluedb.sql.gz | mysql -u gluetools --password=gluetools GLUETOOLS'
-	      execute 'rm /tmp/gluedb.sql.gz'
-	    }
-	  }
-  }
-}
-
-task deployGlueDbToAlpha(dependsOn: ['zipGlueDB']) {
-  doLast {
-	  println "Uploading GLUE DB"
-	  ssh.run {
-	    session(remotes.alpha) {
-	 	  put from: '/tmp/gluedb.sql.gz', into: '/tmp/gluedb.sql.gz'
-	      execute 'echo "drop database GLUETOOLS_SING01J; create database GLUETOOLS_SING01J character set UTF8;" | mysql -u sing01j --password=sing01j GLUETOOLS_SING01J'
-	      execute 'gunzip -c /tmp/gluedb.sql.gz | mysql -u sing01j --password=sing01j GLUETOOLS_SING01J'
-	      execute 'rm /tmp/gluedb.sql.gz'
-	    }
-	  }
-  }
-}
-
-
-repositories {
-    mavenCentral()
-	// this is for the vpp dependency of the cayenne tools. 
-    maven {
-    	url 'https://repo.spring.io/plugins-release/'
-    }
-    // required for j-text-utils
-    // maven {
-    //	url 'http://d-maven.googlecode.com/svn/trunk/repo'
-    // }
-}
-
-
 task checkCayenneTools {
 	doLast {
 	    ant.taskdef(name:'cgen', 
 	    			classname:'org.apache.cayenne.tools.CayenneGeneratorTask', 
 	    			classpath: configurations.cgen.asPath)
     }
-}
-
-
-configurations {
-    cgen
 }
 
 
@@ -280,13 +121,6 @@ task datamodelDigs(dependsOn: 'checkCayenneTools') {
 		String mapFile1 = 'src/main/resources/digs-map.map.xml'
 		ant.cgen(map: mapFile1, destDir: destDir, usepkgpath: true, superpkg: superPkg)
 	}
-}
-
-
-
-dependencies {
-   	compile group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.0.1'
-    cgen group: 'org.apache.cayenne', name: 'cayenne-tools', version: '3.1.1'
 }
 
 test {
@@ -332,120 +166,6 @@ task glueInstallDirZip(type: Zip) {
 }
 
 
-// assumes Ubuntu 14.04
-// should be idempotent -- if some sections fail, e.g. because of an intermittent timeout issue, just run again.
-// mafft download line might fail if they change the version available on the web.
-task initGlueAWSWebServer {
-  doLast {
-	  ssh.run {
-	    // session(remotes.gluetest) {
-	    session(remotes.gluehome_aws) {
-
-	    	// stuff to manipulate package installer settings to allow non-interactive config
-		    execute 'sudo apt-get install -y python-software-properties debconf-utils'
-	    
-	    	// Oracle Java 8
-			// this repo contains Oracle Java installer 
-			execute 'sudo add-apt-repository -y ppa:webupd8team/java'
-			execute 'sudo apt-get update'
-			// accept oracle license
-			execute 'echo "oracle-java8-installer shared/accepted-oracle-license-v1-1 select true" | sudo debconf-set-selections'
-			// install java8 jdk
-			execute 'sudo apt-get install -y oracle-java8-installer'
-
-
-
-
-            // Apache Tomcat 7
-			execute 'sudo apt-get install -y tomcat7' 
-			// tell Tomcat where to find Java
-			execute "sudo sed -i 's/#JAVA_HOME.*/JAVA_HOME=\\/usr\\/lib\\/jvm\\/java-8-oracle\\/jre/g' /etc/default/tomcat7"
-
-			// Required for running Tomcat on port 80
-			execute "sudo apt-get install -y authbind"
-			execute "sudo sed -i 's/#AUTHBIND=no/AUTHBIND=yes/g' /etc/default/tomcat7"
-			// Increase Tomcat's Java heap to 1 Gb
-			execute "sudo sed -i 's/JAVA_OPTS.*/JAVA_OPTS=\"-Djava.awt.headless=true -Xmx1024m -XX:+UseConcMarkSweepGC\"/g' /etc/default/tomcat7"
-
-			execute "sudo touch /etc/authbind/byport/80"
-			execute "sudo chmod 500 /etc/authbind/byport/80"
-			execute "sudo chown tomcat7 /etc/authbind/byport/80"
-			
-
-			// start Tomcat
-			execute 'sudo service tomcat7 start'
-
-			// MySQL (normally 5.5)
-			execute 'echo "mysql-server mysql-server/root_password password root123" | sudo debconf-set-selections'
-			execute 'echo "mysql-server mysql-server/root_password_again password root123" | sudo debconf-set-selections'
-			execute 'sudo apt-get -y install mysql-server'
-			// start on boot
-			execute 'sudo update-rc.d mysql defaults'
-			
-			execute "sudo mkdir -p /opt/gluetools"
-			
-			// GIT
-			execute "sudo apt-get install -y git"
-			
-			// MAKE
-			execute "sudo apt-get install -y make" 
-
-			// GCC
-			execute "sudo apt-get install -y gcc" 
-			
-			// RAXML
-			execute "rm -rf ~/standard-RAxML"
-			execute "sudo rm -rf /opt/gluetools/raxml"
-			execute "cd ~; git clone https://github.com/stamatak/standard-RAxML.git"
-			execute "cd ~/standard-RAxML/ ; git checkout 3abe69b"
-			execute "cd ~/standard-RAxML/ ; make -f Makefile.AVX.PTHREADS.gcc"
-			execute "sudo mkdir -p /opt/gluetools/raxml/bin"
-			execute "sudo mkdir -p /opt/gluetools/raxml/tmp"
-			execute "sudo chmod a+rwx /opt/gluetools/raxml/tmp"
-			execute "sudo cp ~/standard-RAxML/raxmlHPC-PTHREADS-AVX /opt/gluetools/raxml/bin"
-
-			// MAFFT
-			execute "rm -rf ~/mafft-7.305-with-extensions-src.tgz"
-			execute "rm -rf ~/mafft-7.305-with-extensions"
-			execute "sudo rm -rf /opt/gluetools/mafft"
-			execute "sudo mkdir -p /opt/gluetools/mafft/tmp"
-			execute "sudo chmod a+rwx /opt/gluetools/mafft/tmp"
-			execute "cd ~; wget http://mafft.cbrc.jp/alignment/software/mafft-7.305-with-extensions-src.tgz"
-			execute "tar xvfz mafft-7.305-with-extensions-src.tgz"
-			execute "cd ~/mafft-7.305-with-extensions/core ; make clean ; make ; sudo make install"
-
-			// BLAST			
-			execute "rm -rf ~/ncbi-blast-2.2.31+-x64-linux.tar.gz"
-			execute "rm -rf ~/ncbi-blast-2.2.31+"
-			execute "sudo rm -rf /opt/gluetools/blast"
-			execute "sudo mkdir -p /opt/gluetools/blast"
-			execute "cd ~; wget ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.2.31/ncbi-blast-2.2.31+-x64-linux.tar.gz"
-			execute "cd ~; tar xvfz ncbi-blast-2.2.31+-x64-linux.tar.gz"
-			execute "sudo cp -r ~/ncbi-blast-2.2.31+ /opt/gluetools/blast"
-			execute "sudo mkdir -p /opt/gluetools/blast/ncbi-blast-2.2.31+/blastdbs"
-			execute "sudo chmod a+rwx /opt/gluetools/blast/ncbi-blast-2.2.31+/blastdbs"
-
-	    }
-	  }
-  }
-}
-
-// this must be invoked only after the relevant root webapps are in place, otherwise tomcat start will fail 
-task updateGlueAWSServerXml {
-  doLast {
-	  ssh.run {
-	    session(remotes.gluehome_aws) {
-
-			execute 'sudo service tomcat7 stop; sleep 10s'
-			put from: 'gluehome_aws/server.xml', into: '/home/ubuntu/server.xml'
-			execute "sudo cp /home/ubuntu/server.xml /etc/tomcat7/server.xml"
-			execute 'sudo service tomcat7 start'
-
-	    }
-	  }
-  }
-}
-
 docker {
     name 'cvrbioinformatics/gluetools:'+project.version
     tags 'latest'
@@ -470,16 +190,4 @@ tasks.docker.dependsOn { tasks.jar }
      into 'build/docker/docker'
  }
  
-
-
-// add stuff inside this task for testing setup
-task initGlueAWSWebServerTemp {
-  doLast {
-	  ssh.run {
-	    // session(remotes.gluetest) {
-	    session(remotes.gluehome_aws) {
-		}
-	}
-  }
-}
 
