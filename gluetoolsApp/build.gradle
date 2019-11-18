@@ -103,7 +103,10 @@ task gluetoolsWsWithContextWar(type: Jar, dependsOn: copyGluetoolsWsWar) {
     }
 }
 
-task deployAll(dependsOn: ['cargoRedeployRemote'])
+task deployAll(dependsOn: ['cargoRedeployRemote', 
+	':gluetools-core:install', 
+	':gluetools-web:install', 
+	':gluetools-ws:install'])
 
 
 // gluetools xml config for CVR vm 
