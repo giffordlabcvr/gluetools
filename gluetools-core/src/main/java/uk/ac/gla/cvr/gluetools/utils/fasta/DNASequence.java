@@ -27,7 +27,7 @@ public class DNASequence extends AbstractSequence {
 				throw new FastaUtilsException(Code.INVALID_NUCLEOTIDE_CHARACTER, "'"+new String(new char[] {stringChar})+"'", Integer.toString(i+1));
 			}
 		}
-		this.validatedString = ntString;
+		this.validatedString = ntStringUpper;
 	}
 	
 	public String toString() {
