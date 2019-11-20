@@ -25,26 +25,59 @@
 */
 package uk.ac.gla.cvr.gluetools.core.command.project.module;
 
-import org.w3c.dom.Document;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.validation.ValidateException;
+import uk.ac.gla.cvr.gluetools.core.validation.ValidateResult;
 
 @CommandClass(
 		commandWords={"validate"}, 
+		docoptUsages={"[-t]"},
+		docoptOptions={
+			"-t, --errorsAsTable  Return errors as a table",
+		},
 		description = "Validate the module's configuration", 
-		docoptUsages = {""}, 
-		docoptOptions = {}
+		furtherHelp = "If --errorsAsTable is used, the errors will be listed as a table and the result will be OK. "+
+				"Otherwise, a ValidateException will be thrown at the first error."
 )
-public class ModuleValidateCommand extends ModuleDocumentCommand<OkResult> {
+public class ModuleValidateCommand extends ModuleDocumentCommand<CommandResult> {
+
+	private boolean errorsAsTable;
+	
+	@Override
+	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
+		super.configure(pluginConfigContext, configElem);
+		this.errorsAsTable = Optional
+				.ofNullable(PluginUtils.configureBooleanProperty(configElem, "errorsAsTable", false)).orElse(false);
+	}
 
 	@Override
-	protected OkResult processDocument(CommandContext cmdContext,
+	protected CommandResult processDocument(CommandContext cmdContext,
 			Module module, Document modulePluginDoc) {
-		module.validate(cmdContext);
-		return new OkResult();
+		List<ValidateException> valExceptions = new ArrayList<ValidateException>();
+		module.validate(cmdContext, valExceptions, errorsAsTable);
+		if(errorsAsTable) {
+			return new ValidateResult(valExceptions);
+		} else {
+			return new OkResult();
+		}
 	}
+
+	@CompleterClass
+	public static class Completer extends AdvancedCmdCompleter {}
 
 }

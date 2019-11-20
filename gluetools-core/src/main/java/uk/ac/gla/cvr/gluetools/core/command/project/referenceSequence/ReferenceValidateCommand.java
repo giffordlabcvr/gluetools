@@ -25,26 +25,60 @@
 */
 package uk.ac.gla.cvr.gluetools.core.command.project.referenceSequence;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.w3c.dom.Element;
+
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.validation.ValidateException;
+import uk.ac.gla.cvr.gluetools.core.validation.ValidateResult;
 
 @CommandClass( 
 		commandWords={"validate"}, 
-		docoptUsages={""},
-		docoptOptions={},
+		docoptUsages={"[-t]"},
+		docoptOptions={
+			"-t, --errorsAsTable  Return errors as a table",
+		},
 		metaTags={},
 		description="Validate that a reference sequence is correctly defined.", 
-		furtherHelp="Also validates any feature locations for this reference sequence.") 
-public class ReferenceValidateCommand extends ReferenceSequenceModeCommand<OkResult> {
+		furtherHelp="Also validates any feature locations for this reference sequence. "+
+				"If --errorsAsTable is used, the errors will be listed as a table and the result will be OK. "+
+				"Otherwise, a ValidateException will be thrown at the first error.") 
+public class ReferenceValidateCommand extends ReferenceSequenceModeCommand<CommandResult> {
+
+	private boolean errorsAsTable;
+	
+	@Override
+	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
+		super.configure(pluginConfigContext, configElem);
+		this.errorsAsTable = Optional
+				.ofNullable(PluginUtils.configureBooleanProperty(configElem, "errorsAsTable", false)).orElse(false);
+	}
 
 	@Override
-	public OkResult execute(CommandContext cmdContext) {
+	public CommandResult execute(CommandContext cmdContext) {
+		List<ValidateException> valExceptions = new ArrayList<ValidateException>();
 		ReferenceSequence refSeq = lookupRefSeq(cmdContext);
-		refSeq.validate(cmdContext);
-		return new OkResult();
+		refSeq.validate(cmdContext, valExceptions, errorsAsTable);
+		if(errorsAsTable) {
+			return new ValidateResult(valExceptions);
+		} else {
+			return new OkResult();
+		}
 	}
-	
+
+	@CompleterClass
+	public static class Completer extends AdvancedCmdCompleter {}
+
 }
 

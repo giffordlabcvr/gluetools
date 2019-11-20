@@ -25,24 +25,58 @@
 */
 package uk.ac.gla.cvr.gluetools.core.command.project.feature;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
+
+import org.w3c.dom.Element;
+
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.validation.ValidateException;
+import uk.ac.gla.cvr.gluetools.core.validation.ValidateResult;
 
 @CommandClass( 
 		commandWords={"validate"}, 
-		docoptUsages={""},
-		docoptOptions={},
+		docoptUsages={"[-t]"},
+		docoptOptions={
+			"-t, --errorsAsTable  Return errors as a table",
+		},
 		metaTags={},
-		description="Validate that a feature is correctly defined.", 
-		furtherHelp="") 
-public class FeatureValidateCommand extends FeatureModeCommand<OkResult> {
+		description="Validate that a feature is correctly defined.",
+		furtherHelp =
+				"If --errorsAsTable is used, the errors will be listed as a table and the result will be OK. "+
+				"Otherwise, a ValidateException will be thrown at the first error.") 
+public class FeatureValidateCommand extends FeatureModeCommand<CommandResult> {
+
+	private boolean errorsAsTable;
+	
+	@Override
+	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
+		super.configure(pluginConfigContext, configElem);
+		this.errorsAsTable = Optional
+				.ofNullable(PluginUtils.configureBooleanProperty(configElem, "errorsAsTable", false)).orElse(false);
+	}
 
 	@Override
-	public OkResult execute(CommandContext cmdContext) {
-		lookupFeature(cmdContext).validate(cmdContext);
-		return new OkResult();
+	public CommandResult execute(CommandContext cmdContext) {
+		List<ValidateException> valExceptions = new ArrayList<ValidateException>();
+		lookupFeature(cmdContext).validate(cmdContext, valExceptions, errorsAsTable);
+		if(errorsAsTable) {
+			return new ValidateResult(valExceptions);
+		} else {
+			return new OkResult();
+		}
 	}
-	
+
+	@CompleterClass
+	public static class Completer extends AdvancedCmdCompleter {}
+
 }
 

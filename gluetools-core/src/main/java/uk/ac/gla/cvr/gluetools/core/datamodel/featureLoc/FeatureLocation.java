@@ -58,11 +58,13 @@ import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.ModifiedLabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.SimpleLabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocationException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
@@ -78,6 +80,7 @@ import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 import uk.ac.gla.cvr.gluetools.core.translationModification.OutputAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.translationModification.TranslationModifier;
 import uk.ac.gla.cvr.gluetools.core.translationModification.TranslationModifierException;
+import uk.ac.gla.cvr.gluetools.core.validation.ValidateException;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.BaseVariationScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.VariationScanResult;
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
@@ -374,63 +377,88 @@ public class FeatureLocation extends _FeatureLocation {
 		return nextAncestor.getCodonNumberingAncestorLocation(cmdContext);
 	}
 
+	private String targetPath(CommandContext cmdContext) {
+		return ((InsideProjectMode) (cmdContext.peekCommandMode()))
+			.getProject().pkMapToTargetPath(ConfigurableTable.feature_location.name(), pkMap());
+	}
 	
-	public void validate(CommandContext cmdContext) {
-		List<FeatureSegment> segments = getSegments();
-		ReferenceSegment.sortByRefStart(segments);
-		Feature feature = getFeature();
-		// feature location must have segments.
-		if(segments.isEmpty()) {
-			throw new FeatureLocationException(FeatureLocationException.Code.FEATURE_LOCATION_HAS_NO_SEGMENTS, 
-					getReferenceSequence().getName(), feature.getName());
+	private void handleException(CommandContext cmdContext, List<ValidateException> valExceptions, boolean errorsAsTable, Throwable th) {
+		if(th instanceof ValidateException) {
+			throw (ValidateException) th;
 		}
-		// if the feature has a next ancestor (first non-informational ancestor) then there must be a feature location for
-		// that next ancestor.
-		Feature nextAncestorFeature = feature.getNextAncestor();
-		FeatureLocation nextAncestorFeatureLocation = getNextAncestorLocation(cmdContext);
-		if(nextAncestorFeature != null && nextAncestorFeatureLocation == null) {
-			throw new FeatureLocationException(FeatureLocationException.Code.NEXT_ANCESTOR_FEATURE_LOCATION_UNDEFINED, 
-					getReferenceSequence().getName(), feature.getName(), nextAncestorFeature.getName());
+		ValidateException valException = new ValidateException(targetPath(cmdContext), th);
+		if(!errorsAsTable) {
+			throw valException;
+		} else {
+			valExceptions.add(valException);
 		}
-		// if the feature location has a next ancestor, this feature location must be contained within it.
-		if(nextAncestorFeatureLocation != null) {
-			List<FeatureSegment> ancestorSegments = nextAncestorFeatureLocation.getSegments();
-			ReferenceSegment.sortByRefStart(ancestorSegments);
-			if(!ReferenceSegment.covers(ancestorSegments, segments)) {
-				throw new FeatureLocationException(FeatureLocationException.Code.FEATURE_LOCATION_NOT_CONTAINED_WITHIN_NEXT_ANCESTOR, 
-						getReferenceSequence().getName(), feature.getName(), nextAncestorFeature.getName());
+	}
+	
+	public void validate(CommandContext cmdContext, List<ValidateException> valExceptions, boolean errorsAsTable) {
+		try {
+			List<FeatureSegment> segments = getSegments();
+			ReferenceSegment.sortByRefStart(segments);
+			Feature feature = getFeature();
+			// feature location must have segments.
+			if(segments.isEmpty()) {
+				handleException(cmdContext, valExceptions, errorsAsTable, 
+						new FeatureLocationException(FeatureLocationException.Code.FEATURE_LOCATION_HAS_NO_SEGMENTS, 
+								getReferenceSequence().getName(), feature.getName()));
 			}
-		}
-		int lastSpliceIndex = Integer.MIN_VALUE;
-		String lastModifierName = "NULL";
-		for(FeatureSegment segment: segments) {
-			if(segment.getSpliceIndex() < lastSpliceIndex) {
-				throw new FeatureLocationException(FeatureLocationException.Code.SPLICE_INDEX_ERROR, 
-						getReferenceSequence().getName(), feature.getName(), "Splice index must increase monotonically along the genome");
-				
+			// if the feature has a next ancestor (first non-informational ancestor) then there must be a feature location for
+			// that next ancestor.
+			Feature nextAncestorFeature = feature.getNextAncestor();
+			FeatureLocation nextAncestorFeatureLocation = getNextAncestorLocation(cmdContext);
+			if(nextAncestorFeature != null && nextAncestorFeatureLocation == null) {
+				handleException(cmdContext, valExceptions, errorsAsTable, 
+						new FeatureLocationException(FeatureLocationException.Code.NEXT_ANCESTOR_FEATURE_LOCATION_UNDEFINED, 
+								getReferenceSequence().getName(), feature.getName(), nextAncestorFeature.getName()));
 			}
-			String segModifierName = segment.getTranslationModifierName();
-			if(segModifierName == null) {segModifierName = "NULL";} 
-			if(!segModifierName.equals(lastModifierName) && segment.getSpliceIndex() == lastSpliceIndex) {
-				throw new FeatureLocationException(FeatureLocationException.Code.SPLICE_INDEX_ERROR, 
-						getReferenceSequence().getName(), feature.getName(), "Segments with translation modifiers must have a unique splice index");
+			// if the feature location has a next ancestor, this feature location must be contained within it.
+			if(nextAncestorFeatureLocation != null) {
+				List<FeatureSegment> ancestorSegments = nextAncestorFeatureLocation.getSegments();
+				ReferenceSegment.sortByRefStart(ancestorSegments);
+				if(!ReferenceSegment.covers(ancestorSegments, segments)) {
+					handleException(cmdContext, valExceptions, errorsAsTable, 
+							new FeatureLocationException(FeatureLocationException.Code.FEATURE_LOCATION_NOT_CONTAINED_WITHIN_NEXT_ANCESTOR, 
+									getReferenceSequence().getName(), feature.getName(), nextAncestorFeature.getName()));
+				}
 			}
-			lastSpliceIndex = segment.getSpliceIndex();
-		}
-		Map<Integer, List<FeatureSegment>> spliceIndexToFSegs = segments.stream().collect(Collectors.groupingBy(FeatureSegment::getSpliceIndex));
-		for(List<FeatureSegment> fSegs: spliceIndexToFSegs.values()) {
-			Set<Integer> transcriptionIndices = fSegs.stream().map(FeatureSegment::getTranscriptionIndex).collect(Collectors.toSet());
-			if(transcriptionIndices.size() != 1) {
-				throw new FeatureLocationException(FeatureLocationException.Code.SPLICE_INDEX_ERROR, 
-						getReferenceSequence().getName(), feature.getName(), "Segments with the same splice index must have the same transcription index");
+			int lastSpliceIndex = Integer.MIN_VALUE;
+			String lastModifierName = "NULL";
+			for(FeatureSegment segment: segments) {
+				if(segment.getSpliceIndex() < lastSpliceIndex) {
+					handleException(cmdContext, valExceptions, errorsAsTable, 
+							new FeatureLocationException(FeatureLocationException.Code.SPLICE_INDEX_ERROR, 
+									getReferenceSequence().getName(), feature.getName(), "Splice index must increase monotonically along the genome"));
+
+				}
+				String segModifierName = segment.getTranslationModifierName();
+				if(segModifierName == null) {segModifierName = "NULL";} 
+				if(!segModifierName.equals(lastModifierName) && segment.getSpliceIndex() == lastSpliceIndex) {
+					handleException(cmdContext, valExceptions, errorsAsTable, 
+							new FeatureLocationException(FeatureLocationException.Code.SPLICE_INDEX_ERROR, 
+									getReferenceSequence().getName(), feature.getName(), "Segments with translation modifiers must have a unique splice index"));
+				}
+				lastSpliceIndex = segment.getSpliceIndex();
 			}
+			Map<Integer, List<FeatureSegment>> spliceIndexToFSegs = segments.stream().collect(Collectors.groupingBy(FeatureSegment::getSpliceIndex));
+			for(List<FeatureSegment> fSegs: spliceIndexToFSegs.values()) {
+				Set<Integer> transcriptionIndices = fSegs.stream().map(FeatureSegment::getTranscriptionIndex).collect(Collectors.toSet());
+				if(transcriptionIndices.size() != 1) {
+					handleException(cmdContext, valExceptions, errorsAsTable, 
+							new FeatureLocationException(FeatureLocationException.Code.SPLICE_INDEX_ERROR, 
+									getReferenceSequence().getName(), feature.getName(), "Segments with the same splice index must have the same transcription index"));
+				}
+			}
+
+			if(feature.codesAminoAcids()) {
+				checkCodingFeatureLocation(cmdContext, valExceptions, errorsAsTable);
+			}
+			getVariations().forEach(variation -> variation.validate(cmdContext, valExceptions, errorsAsTable));
+		} catch(Throwable th) {
+			handleException(cmdContext, valExceptions, errorsAsTable, th);
 		}
-		
-		if(feature.codesAminoAcids()) {
-			checkCodingFeatureLocation(cmdContext);
-		}
-		getVariations().forEach(variation -> variation.validate(cmdContext));
-		
 	}
 	
 	/*
@@ -453,7 +481,7 @@ public class FeatureLocation extends _FeatureLocation {
 	 *     
 	 */
 
-	private void checkCodingFeatureLocation(CommandContext cmdContext) {
+	private void checkCodingFeatureLocation(CommandContext cmdContext, List<ValidateException> valExceptions, boolean errorsAsTable) {
 		List<FeatureSegment> featureSegs = getSegments();
 		ReferenceSegment.sortByRefStart(featureSegs);
 		
@@ -462,13 +490,15 @@ public class FeatureLocation extends _FeatureLocation {
 		if(!feature.hasOwnCodonNumbering()) {
 			for(FeatureSegment featureSeg: featureSegs) {
 				if(!featureSeg.getSpliceIndex().equals(1)) {
-					throw new FeatureLocationException(FeatureLocationException.Code.CODING_FEATURE_LOCATION_ERROR, 
-							getReferenceSequence().getName(), feature.getName(), "Coding feature without own codon numbering may not use non-default splice index on segments");
+					handleException(cmdContext, valExceptions, errorsAsTable, 
+							new FeatureLocationException(FeatureLocationException.Code.CODING_FEATURE_LOCATION_ERROR, 
+							getReferenceSequence().getName(), feature.getName(), "Coding feature without own codon numbering may not use non-default splice index on segments"));
 					
 				}
 				if(featureSeg.getTranslationModifierName() != null) {
-					throw new FeatureLocationException(FeatureLocationException.Code.CODING_FEATURE_LOCATION_ERROR, 
-							getReferenceSequence().getName(), feature.getName(), "Coding feature without own codon numbering may not use translation modifier on segments");
+					handleException(cmdContext, valExceptions, errorsAsTable, 
+							new FeatureLocationException(FeatureLocationException.Code.CODING_FEATURE_LOCATION_ERROR, 
+							getReferenceSequence().getName(), feature.getName(), "Coding feature without own codon numbering may not use translation modifier on segments"));
 				}
 			}
 		}
@@ -479,18 +509,19 @@ public class FeatureLocation extends _FeatureLocation {
 			if(translationModifierName == null) {
 				uncodedRegions.add(featureSeg.asReferenceSegment());
 			} else {
-				TranslationModifier translationModifier;
+				TranslationModifier translationModifier = null;
 				try {
 					translationModifier = Module.resolveModulePlugin(cmdContext, TranslationModifier.class, translationModifierName);
 				} catch(GlueException ge) {
-					throw new FeatureLocationException(ge, FeatureLocationException.Code.CODING_FEATURE_LOCATION_ERROR, 
-							getReferenceSequence().getName(), feature.getName(), "Error resolving translation modifier: "+ge.getLocalizedMessage());
+					handleException(cmdContext, valExceptions, errorsAsTable, 
+							new FeatureLocationException(ge, FeatureLocationException.Code.CODING_FEATURE_LOCATION_ERROR, 
+							getReferenceSequence().getName(), feature.getName(), "Error resolving translation modifier: "+ge.getLocalizedMessage()));
 				
 				}
-				if(featureSeg.getCurrentLength() != translationModifier.getSegmentNtLength()) {
-					throw new FeatureLocationException(FeatureLocationException.Code.CODING_FEATURE_LOCATION_ERROR, 
+				if(translationModifier != null && featureSeg.getCurrentLength() != translationModifier.getSegmentNtLength()) {
+					handleException(cmdContext, valExceptions, errorsAsTable, new FeatureLocationException(FeatureLocationException.Code.CODING_FEATURE_LOCATION_ERROR, 
 							getReferenceSequence().getName(), feature.getName(), "Segment of incorrect length ("+featureSeg.getCurrentLength()+
-							") for translation modifier -- should be "+translationModifier.getSegmentNtLength());
+							") for translation modifier -- should be "+translationModifier.getSegmentNtLength()));
 				}
 				
 			}
@@ -501,8 +532,8 @@ public class FeatureLocation extends _FeatureLocation {
 		}
 		// all regions of the coding feature location (without translation modifiers) must be part of a labeled codon.
 		if(!uncodedRegions.isEmpty()) {
-			throw new FeatureLocationException(FeatureLocationException.Code.CODING_FEATURE_LOCATION_HAS_UNCODED_REGIONS, 
-					getReferenceSequence().getName(), feature.getName(), uncodedRegions.toString());
+			handleException(cmdContext, valExceptions, errorsAsTable, new FeatureLocationException(FeatureLocationException.Code.CODING_FEATURE_LOCATION_HAS_UNCODED_REGIONS, 
+					getReferenceSequence().getName(), feature.getName(), uncodedRegions.toString()));
 		}
 		// every labeled codon which overlaps the feature location must overlap entirely.
 		List<ReferenceSegment> featureRefSegs = new ArrayList<ReferenceSegment>();
@@ -512,8 +543,8 @@ public class FeatureLocation extends _FeatureLocation {
 		
 		for(LabeledCodon labeledCodon: labeledCodons) {
 			if(!ReferenceSegment.covers(featureRefSegs, labeledCodon.getLcRefSegments())) {
-				throw new FeatureLocationException(FeatureLocationException.Code.CODING_FEATURE_LOCATION_DOES_NOT_COVER_CODON, 
-						getReferenceSequence().getName(), feature.getName(), labeledCodon.getCodonLabel());
+				handleException(cmdContext, valExceptions, errorsAsTable, new FeatureLocationException(FeatureLocationException.Code.CODING_FEATURE_LOCATION_DOES_NOT_COVER_CODON, 
+						getReferenceSequence().getName(), feature.getName(), labeledCodon.getCodonLabel()));
 			}
 		}
 

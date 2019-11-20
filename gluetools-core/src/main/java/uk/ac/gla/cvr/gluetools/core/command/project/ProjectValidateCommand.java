@@ -25,40 +25,74 @@
 */
 package uk.ac.gla.cvr.gluetools.core.command.project;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.apache.cayenne.query.SelectQuery;
+import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.validation.ValidateException;
+import uk.ac.gla.cvr.gluetools.core.validation.ValidateResult;
 
 @CommandClass( 
 		commandWords={"validate"}, 
-		docoptUsages={""},
-		docoptOptions={},
+		docoptUsages={"[-t]"},
+		docoptOptions={
+			"-t, --errorsAsTable  Return errors as a table",
+		},
 		metaTags={},
 		description="Validate that a project is correctly defined.", 
-		furtherHelp="Currently, this validates the project's reference sequences, features and modules") 
-public class ProjectValidateCommand extends ProjectModeCommand<OkResult> {
+		furtherHelp="This validates the project's reference sequences (including feature locations and variations), features and modules"+
+			"If --errorsAsTable is used, the errors will be listed as a table and the result will be OK. "+
+			"Otherwise, a ValidateException will be thrown at the first error."
+		) 
+public class ProjectValidateCommand extends ProjectModeCommand<CommandResult> {
+
+
+	private boolean errorsAsTable;
+	
+	@Override
+	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
+		super.configure(pluginConfigContext, configElem);
+		this.errorsAsTable = Optional
+				.ofNullable(PluginUtils.configureBooleanProperty(configElem, "errorsAsTable", false)).orElse(false);
+	}
 
 	@Override
-	public OkResult execute(CommandContext cmdContext) {
+	public CommandResult execute(CommandContext cmdContext) {
+		List<ValidateException> valExceptions = new ArrayList<ValidateException>();
+
 		List<Feature> features = 
 				GlueDataObject.query(cmdContext, Feature.class, new SelectQuery(Feature.class));
-		features.forEach(feature -> feature.validate(cmdContext));
+		features.forEach(feature -> feature.validate(cmdContext, valExceptions, errorsAsTable));
 		List<ReferenceSequence> refSeqs = 
 				GlueDataObject.query(cmdContext, ReferenceSequence.class, new SelectQuery(ReferenceSequence.class));
-		refSeqs.forEach(refSeq -> refSeq.validate(cmdContext));
+		refSeqs.forEach(refSeq -> refSeq.validate(cmdContext, valExceptions, errorsAsTable));
 		List<Module> modules = 
 				GlueDataObject.query(cmdContext, Module.class, new SelectQuery(Module.class));
-		modules.forEach(module -> module.validate(cmdContext));
-		return new OkResult();
+		modules.forEach(module -> module.validate(cmdContext, valExceptions, errorsAsTable));
+		if(errorsAsTable) {
+			return new ValidateResult(valExceptions);
+		} else {
+			return new OkResult();
+		}
 	}
-	
+
+	@CompleterClass
+	public static class Completer extends AdvancedCmdCompleter {}
+
 }
 

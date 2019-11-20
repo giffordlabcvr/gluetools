@@ -44,6 +44,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequenceException.Code;
+import uk.ac.gla.cvr.gluetools.core.validation.ValidateException;
 
 @GlueDataClass(
 		defaultObjectRendererFtlFile = "defaultRenderers/reference.ftlx",
@@ -79,8 +80,8 @@ public class ReferenceSequence extends _ReferenceSequence implements HasDisplayN
 	}
 
 
-	public void validate(CommandContext cmdContext) {
-		getFeatureLocations().forEach(featureLoc -> featureLoc.validate(cmdContext));
+	public void validate(CommandContext cmdContext, List<ValidateException> valExceptions, boolean errorsAsTable) {
+		getFeatureLocations().forEach(featureLoc -> featureLoc.validate(cmdContext, valExceptions, errorsAsTable));
 
 	}
 

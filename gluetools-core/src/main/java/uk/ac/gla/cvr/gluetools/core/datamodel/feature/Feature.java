@@ -36,13 +36,16 @@ import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.CodonLabeler;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.HasDisplayName;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.FeatureException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureMetatag.FeatureMetatag.FeatureMetatagType;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
+import uk.ac.gla.cvr.gluetools.core.validation.ValidateException;
 
 @GlueDataClass(
 		defaultListedProperties = { _Feature.NAME_PROPERTY, 
@@ -119,17 +122,41 @@ public class Feature extends _Feature implements HasDisplayName {
 		
 	}
 	
-	public void validate(CommandContext cmdContext) {
-		if(codesAminoAcids()) {
-			if(!hasOwnCodonNumbering()) {
-				Feature nextAncestor = getNextAncestor();
-				if(nextAncestor == null) {
-					throw new FeatureException(Code.CODING_FEATURE_EXCEPTION, "Coding feature "+getName()+" does not have its own codon numbering but doesn't have a coding next ancestor");
-				}
-				if(!nextAncestor.codesAminoAcids()) {
-					throw new FeatureException(Code.CODING_FEATURE_EXCEPTION, "Coding feature "+getName()+" does not have its own codon numbering so it's next ancestor must be coding");
+	private String targetPath(CommandContext cmdContext) {
+		return ((InsideProjectMode) (cmdContext.peekCommandMode()))
+			.getProject().pkMapToTargetPath(ConfigurableTable.feature.name(), pkMap());
+	}
+	
+	private void handleException(CommandContext cmdContext, List<ValidateException> valExceptions, boolean errorsAsTable, Throwable th) {
+		if(th instanceof ValidateException) {
+			throw (ValidateException) th;
+		}
+		ValidateException valException = new ValidateException(targetPath(cmdContext), th);
+		if(!errorsAsTable) {
+			throw valException;
+		} else {
+			valExceptions.add(valException);
+		}
+	}
+
+	
+	public void validate(CommandContext cmdContext, List<ValidateException> valExceptions, boolean errorsAsTable) {
+		try {
+			if(codesAminoAcids()) {
+				if(!hasOwnCodonNumbering()) {
+					Feature nextAncestor = getNextAncestor();
+					if(nextAncestor == null) {
+						handleException(cmdContext, valExceptions, errorsAsTable, 
+								new FeatureException(Code.CODING_FEATURE_EXCEPTION, "Coding feature "+getName()+" does not have its own codon numbering but doesn't have a coding next ancestor"));
+					}
+					if(!nextAncestor.codesAminoAcids()) {
+						handleException(cmdContext, valExceptions, errorsAsTable, 
+								new FeatureException(Code.CODING_FEATURE_EXCEPTION, "Coding feature "+getName()+" does not have its own codon numbering so it's next ancestor must be coding"));
+					}
 				}
 			}
+		} catch(Throwable th) {
+			handleException(cmdContext, valExceptions, errorsAsTable, th);
 		}
 	}
 

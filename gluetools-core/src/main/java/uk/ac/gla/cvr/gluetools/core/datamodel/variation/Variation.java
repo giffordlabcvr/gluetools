@@ -36,6 +36,7 @@ import java.util.stream.Collectors;
 import gnu.trove.map.TIntObjectMap;
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledCodon;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataClass;
 import uk.ac.gla.cvr.gluetools.core.datamodel.HasDisplayName;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
@@ -43,6 +44,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.auto._Variation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.feature.Feature;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
@@ -51,6 +53,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.varAlmtNote.VarAlmtNote;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variation.VariationException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.variationMetatag.VariationMetatag.VariationMetatagType;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
+import uk.ac.gla.cvr.gluetools.core.validation.ValidateException;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidDeletionMatchResult;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidDeletionScanner;
 import uk.ac.gla.cvr.gluetools.core.variationscanner.AminoAcidInsertionMatchResult;
@@ -140,55 +143,82 @@ public class Variation extends _Variation implements HasDisplayName {
 		return variationType;
 	}	
 
-	public void validate(CommandContext cmdContext) {
-		
-		FeatureLocation featureLoc = getFeatureLoc();
-		Feature feature = featureLoc.getFeature();
-		ReferenceSequence refSeq = featureLoc.getReferenceSequence();
-		
-		VariationType variationType = getVariationType();
-		if(variationType.name().startsWith("aminoAcid")) {
-			if(!featureLoc.getFeature().codesAminoAcids()) {
-				throw new VariationException(Code.AMINO_ACID_VARIATION_MUST_BE_DEFINED_ON_CODING_FEATURE, 
-						refSeq.getName(), feature.getName(), getName());
-			}
-			FeatureLocation codonNumberingAncestorLocation = featureLoc.getCodonNumberingAncestorLocation(cmdContext);
-			if(codonNumberingAncestorLocation == null) {
-				throw new VariationException(Code.AMINO_ACID_VARIATION_HAS_NO_CODON_NUMBERING_ANCESTOR, 
-						refSeq.getName(), feature.getName(), getName(), variationType);
-			}
+	private String targetPath(CommandContext cmdContext) {
+		return ((InsideProjectMode) (cmdContext.peekCommandMode()))
+			.getProject().pkMapToTargetPath(ConfigurableTable.variation.name(), pkMap());
+	}
+	
+	private void handleException(CommandContext cmdContext, List<ValidateException> valExceptions, boolean errorsAsTable, Throwable th) {
+		if(th instanceof ValidateException) {
+			throw (ValidateException) th;
 		}
-		Integer refStart = getRefStart();
-		Integer refEnd = getRefEnd();
-		List<FeatureSegment> featureLocSegments = featureLoc.getSegments();
-		if(variationType != VariationType.conjunction) {
-			if(!ReferenceSegment.covers(featureLocSegments, 
-				Collections.singletonList(new ReferenceSegment(refStart, refEnd)))) {
-				throw new VariationException(Code.VARIATION_LOCATION_OUT_OF_RANGE, 
-						refSeq.getName(), feature.getName(), getName(), 
-						Integer.toString(refStart), Integer.toString(refEnd));
-			}
+		ValidateException valException = new ValidateException(targetPath(cmdContext), th);
+		if(!errorsAsTable) {
+			throw valException;
+		} else {
+			valExceptions.add(valException);
 		}
-		if(variationType.name().startsWith("aminoAcid")) {
-			TIntObjectMap<LabeledCodon> startRefNtToLabeledCodon = featureLoc.getStartRefNtToLabeledCodon(cmdContext);
-			TIntObjectMap<LabeledCodon> endRefNtToLabeledCodon = featureLoc.getEndRefNtToLabeledCodon(cmdContext);
-			if(variationType == VariationType.aminoAcidInsertion) {
-				if(startRefNtToLabeledCodon.get(refEnd) == null || 
-						endRefNtToLabeledCodon.get(refStart) == null) {
-					// AA insertions should start at the end of a codon and finish at the start of one.
-					throw new VariationException(Code.AMINO_ACID_VARIATION_NOT_CODON_ALIGNED, 
-							refSeq.getName(), feature.getName(), getName(), Integer.toString(refStart), Integer.toString(refEnd));
-				}				
-			} else if(startRefNtToLabeledCodon.get(refStart) == null || 
-					endRefNtToLabeledCodon.get(refEnd) == null) {
-				// All other AA variations should start at the start of a codon and finish at the end of one.
-				throw new VariationException(Code.AMINO_ACID_VARIATION_NOT_CODON_ALIGNED, 
-						refSeq.getName(), feature.getName(), getName(), Integer.toString(refStart), Integer.toString(refEnd));
+	}
+
+	
+	public void validate(CommandContext cmdContext, List<ValidateException> valExceptions, boolean errorsAsTable) {
+		try {
+
+			FeatureLocation featureLoc = getFeatureLoc();
+			Feature feature = featureLoc.getFeature();
+			ReferenceSequence refSeq = featureLoc.getReferenceSequence();
+
+			VariationType variationType = getVariationType();
+			if(variationType.name().startsWith("aminoAcid")) {
+				if(!featureLoc.getFeature().codesAminoAcids()) {
+					handleException(cmdContext, valExceptions, errorsAsTable, 
+							new VariationException(Code.AMINO_ACID_VARIATION_MUST_BE_DEFINED_ON_CODING_FEATURE, 
+									refSeq.getName(), feature.getName(), getName()));
+				}
+				FeatureLocation codonNumberingAncestorLocation = featureLoc.getCodonNumberingAncestorLocation(cmdContext);
+				if(codonNumberingAncestorLocation == null) {
+					handleException(cmdContext, valExceptions, errorsAsTable, 
+							new VariationException(Code.AMINO_ACID_VARIATION_HAS_NO_CODON_NUMBERING_ANCESTOR, 
+									refSeq.getName(), feature.getName(), getName(), variationType));
+				}
 			}
-		
-		} 
-		getScanner(cmdContext).validate();
-		
+			Integer refStart = getRefStart();
+			Integer refEnd = getRefEnd();
+			List<FeatureSegment> featureLocSegments = featureLoc.getSegments();
+			if(variationType != VariationType.conjunction) {
+				if(!ReferenceSegment.covers(featureLocSegments, 
+						Collections.singletonList(new ReferenceSegment(refStart, refEnd)))) {
+					handleException(cmdContext, valExceptions, errorsAsTable, 
+							new VariationException(Code.VARIATION_LOCATION_OUT_OF_RANGE, 
+									refSeq.getName(), feature.getName(), getName(), 
+									Integer.toString(refStart), Integer.toString(refEnd)));
+				}
+			}
+			if(variationType.name().startsWith("aminoAcid")) {
+				TIntObjectMap<LabeledCodon> startRefNtToLabeledCodon = featureLoc.getStartRefNtToLabeledCodon(cmdContext);
+				TIntObjectMap<LabeledCodon> endRefNtToLabeledCodon = featureLoc.getEndRefNtToLabeledCodon(cmdContext);
+				if(variationType == VariationType.aminoAcidInsertion) {
+					if(startRefNtToLabeledCodon.get(refEnd) == null || 
+							endRefNtToLabeledCodon.get(refStart) == null) {
+						// AA insertions should start at the end of a codon and finish at the start of one.
+						handleException(cmdContext, valExceptions, errorsAsTable, 
+								new VariationException(Code.AMINO_ACID_VARIATION_NOT_CODON_ALIGNED, 
+										refSeq.getName(), feature.getName(), getName(), Integer.toString(refStart), Integer.toString(refEnd)));
+					}				
+				} else if(startRefNtToLabeledCodon.get(refStart) == null || 
+						endRefNtToLabeledCodon.get(refEnd) == null) {
+					// All other AA variations should start at the start of a codon and finish at the end of one.
+					handleException(cmdContext, valExceptions, errorsAsTable, 
+							new VariationException(Code.AMINO_ACID_VARIATION_NOT_CODON_ALIGNED, 
+									refSeq.getName(), feature.getName(), getName(), Integer.toString(refStart), Integer.toString(refEnd)));
+				}
+
+			}
+			getScanner(cmdContext).validate();
+		} catch(Throwable th) {
+			handleException(cmdContext, valExceptions, errorsAsTable, th);
+		}
+
 	}	
 
 

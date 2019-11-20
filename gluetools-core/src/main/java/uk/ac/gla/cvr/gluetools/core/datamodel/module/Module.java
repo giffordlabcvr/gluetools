@@ -51,6 +51,7 @@ import uk.ac.gla.cvr.gluetools.core.modules.ModulePluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactoryException;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactoryException.Code;
+import uk.ac.gla.cvr.gluetools.core.validation.ValidateException;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 
 @GlueDataClass(defaultListedProperties = {_Module.NAME_PROPERTY})
@@ -160,9 +161,30 @@ public class Module extends _Module {
 		super.writePropertyDirectly(propName, val);
 	}
 	
-	public void validate(CommandContext cmdContext) {
-		ModulePlugin<?> modulePlugin = getModulePlugin(cmdContext);
-		modulePlugin.validate(cmdContext);
+	private String targetPath(CommandContext cmdContext) {
+		return "module/"+getName(); // not a configurable table.
+	}
+	
+	private void handleException(CommandContext cmdContext, List<ValidateException> valExceptions, boolean errorsAsTable, Throwable th) {
+		if(th instanceof ValidateException) {
+			throw (ValidateException) th;
+		}
+		ValidateException valException = new ValidateException(targetPath(cmdContext), th);
+		if(!errorsAsTable) {
+			throw valException;
+		} else {
+			valExceptions.add(valException);
+		}
+	}
+
+	
+	public final void validate(CommandContext cmdContext, List<ValidateException> valExceptions, boolean errorsAsTable) {
+		try {
+			ModulePlugin<?> modulePlugin = getModulePlugin(cmdContext);
+			modulePlugin.validate(cmdContext);
+		} catch(Throwable th) {
+			handleException(cmdContext, valExceptions, errorsAsTable, th);
+		}
 	}
 	
 	
