@@ -339,6 +339,87 @@
 		<!-- HBV-GLUE -->
 		<modePathRegexFilter>
 			<regex>^/project/hbv</regex>
+			<!-- general -->
+			<simpleCommandFilter words="multi-render">
+				<arg name="tableName">m49_region</arg>
+				<arg name="rendererModuleName">m49RegionTreeRenderer</arg>
+			</simpleCommandFilter>
+			<!-- clade tree page -->
+			<modePathRegexFilter>
+				<regex>.*/alignment/AL_MASTER</regex>
+				<simpleCommandFilter words="descendent-tree"/>
+			</modePathRegexFilter>
+			<!-- sequences page -->
+			<modePathRegexFilter>
+				<regex>.*/module/fastaExporter$</regex>
+				<simpleCommandFilter words="web-export">
+					<queueAssignmentFilter>
+							<queueName>download</queueName>						
+					</queueAssignmentFilter>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
+			<simpleCommandFilter words="count sequence"/>
+			<simpleCommandFilter words="list sequence"/>
+			<simpleCommandFilter words="web-list sequence"/>
+			<!-- alignment page -->
+			<modePathRegexFilter>
+				<regex>.*/alignment/.*</regex>
+				<simpleCommandFilter words="render-object">
+					<arg name="rendererModuleName">hbvAlignmentRenderer</arg>
+				</simpleCommandFilter>
+				<simpleCommandFilter words="count member"/>
+				<simpleCommandFilter words="list member"/>
+				<simpleCommandFilter words="web-list member">
+					<queueAssignmentFilter>
+						<queueName>download</queueName>						
+					</queueAssignmentFilter>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/reference/.*</regex>
+				<simpleCommandFilter words="show feature tree"/>
+			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/module/fastaExporter$</regex>
+				<simpleCommandFilter words="web-export-member">
+					<queueAssignmentFilter>
+							<queueName>download</queueName>						
+					</queueAssignmentFilter>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/module/fastaAlignmentExporter$</regex>
+				<simpleCommandFilter words="web-export">
+					<queueAssignmentFilter>
+							<queueName>download</queueName>						
+					</queueAssignmentFilter>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/module/fastaProteinAlignmentExporter$</regex>
+				<simpleCommandFilter words="web-export">
+					<queueAssignmentFilter>
+							<queueName>download</queueName>						
+					</queueAssignmentFilter>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
+			<!-- sequence page -->
+			<modePathRegexFilter>
+				<regex>.*/sequence/.*$</regex>
+				<simpleCommandFilter words="render-object">
+					<arg name="rendererModuleName">hbvSequenceRenderer</arg>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
+			<!-- version info -->
+			<simpleCommandFilter words="show setting">
+				<arg name="settingName">project-version</arg>
+			</simpleCommandFilter>
+			<simpleCommandFilter words="glue-engine show-version"/>
+			<!-- reference sequence -->
+			<modePathRegexFilter>
+				<regex>.*/reference/.*$</regex>
+				<simpleCommandFilter words="render-object"/>
+			</modePathRegexFilter>			
 			<!-- analysis page -->
 			<modePathRegexFilter>
 				<regex>.*/module/hdrReportingController$</regex>
