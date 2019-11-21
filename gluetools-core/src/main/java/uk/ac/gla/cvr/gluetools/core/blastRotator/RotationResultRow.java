@@ -4,7 +4,6 @@ public class RotationResultRow {
 
 	public enum Status {
 		NO_BLAST_HITS,
-		MULTIPLE_BLAST_HITS,
 		NO_ACCEPTABLE_HSPS,
 		NO_ROTATION_NECESSARY,
 		OVERLAPPING_QUERY_HSPS,
@@ -15,11 +14,13 @@ public class RotationResultRow {
 	private String querySequenceId;
 	private Status status;
 	private Integer rotationNts;
+	private Integer sequenceLength;
 	
-	public RotationResultRow(String querySequenceId, Status status, Integer rotationNts) {
+	public RotationResultRow(String querySequenceId, Integer sequenceLength, Status status, Integer rotationNts) {
 		super();
 		this.querySequenceId = querySequenceId;
 		this.status = status;
+		this.sequenceLength = sequenceLength;
 		this.rotationNts = rotationNts;
 	}
 	
@@ -33,6 +34,9 @@ public class RotationResultRow {
 
 	public Integer getRotationNts() {
 		return rotationNts;
+	}
+	public Integer getSequenceLength() {
+		return sequenceLength;
 	}
 	
 }

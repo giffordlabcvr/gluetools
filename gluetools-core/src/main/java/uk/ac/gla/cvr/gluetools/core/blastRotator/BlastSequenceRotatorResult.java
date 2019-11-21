@@ -9,6 +9,7 @@ public class BlastSequenceRotatorResult extends BaseTableResult<RotationResultRo
 	public BlastSequenceRotatorResult(List<RotationResultRow> rowObjects) {
 		super("blastSequenceRotatorResult", rowObjects, 
 				column("querySequenceId", row -> row.getQuerySequenceId()), 
+				column("sequenceLength", row -> row.getSequenceLength()), 
 				column("status", row -> row.getStatus().name()), 
 				column("rotationNts", row -> row.getRotationNts()));
 	}

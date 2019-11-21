@@ -133,7 +133,7 @@ public class BlastUtils {
 		return hsps;
 	}
 
-	private static BlastSegmentList mergeSegments(
+	public static BlastSegmentList mergeSegments(
 			List<BlastSegmentList> perHspAlignedSegments, boolean respectQueryOrder) {
 		if(perHspAlignedSegments.isEmpty()) {
 			return new BlastSegmentList();
@@ -152,7 +152,7 @@ public class BlastUtils {
 	}
 
 	// check the HSP for assumptions
-	private static void checkBlastHsp(BlastHsp hsp) {
+	public static void checkBlastHsp(BlastHsp hsp) {
 		String refName = hsp.getBlastHit().getReferenceName();
 		String queryId = hsp.getBlastHit().getBlastResult().getQueryFastaId();
 	
