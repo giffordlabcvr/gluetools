@@ -140,7 +140,7 @@
 			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
 		</attributes>
 	</classpathentry>
-	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/junit/junit/4.13-beta-3/8c935ccfbc74f560aed6fb24ce52c7d177327a52/junit-4.13-beta-3-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/junit/junit/4.13-beta-3/24e695de7450859f58dcfb2d818af908aee93e36/junit-4.13-beta-3.jar">
+	<classpathentry sourcepath="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/junit/junit/4.13-rc-1/edfd6caf8dfc29b83551c6b73a473e9b3311dd36/junit-4.13-rc-1-sources.jar" kind="lib" path="/Users/joshsinger/.gradle/caches/modules-2/files-2.1/junit/junit/4.13-rc-1/97e4daa24b748504621d6da2cd3aa5d241fea443/junit-4.13-rc-1.jar">
 		<attributes>
 			<attribute name="gradle_used_by_scope" value="main,test"/>
 			<attribute name="org.eclipse.jst.component.nondependency" value=""/>
