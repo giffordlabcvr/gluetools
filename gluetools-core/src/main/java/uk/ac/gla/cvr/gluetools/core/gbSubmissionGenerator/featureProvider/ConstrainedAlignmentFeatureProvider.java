@@ -28,6 +28,8 @@ import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 // named in the <glueFeatureName> element. The homology of the sequence within the constrained alignment, 
 // in the region of this feature location, is used to generate the genbank feature specification.
 
+
+
 @PluginClass(elemName="constrainedAlignmentFeatureProvider")
 public class ConstrainedAlignmentFeatureProvider extends AlignmentFeatureProvider {
 
@@ -38,16 +40,23 @@ public class ConstrainedAlignmentFeatureProvider extends AlignmentFeatureProvide
 	// default: false. If true, the feature location may be absent on the selected constraining reference,
 	// in this case no GenBank feature will be provided.
 	public static final String FEATURE_LOCATION_MAY_BE_ABSENT = "featureLocationMayBeAbsent";
+
+	// default: false. If true, the alignment member may be absent,
+	// in this case no GenBank feature will be provided.
+	public static final String ALIGNMENT_MEMBER_MAY_BE_ABSENT = "alignmentMemberMayBeAbsent";
 	
 	private String ancestorAlignmentName;
 	private boolean featureLocationMayBeAbsent;
-	
+	private Boolean alignmentMemberMayBeAbsent;
+
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		this.ancestorAlignmentName = PluginUtils.configureStringProperty(configElem, ANCESTOR_ALIGNMENT_NAME, true);
 		this.featureLocationMayBeAbsent = Optional.ofNullable(PluginUtils
 				.configureBooleanProperty(configElem, FEATURE_LOCATION_MAY_BE_ABSENT, false)).orElse(false);
+		this.alignmentMemberMayBeAbsent = Optional.ofNullable(PluginUtils
+				.configureBooleanProperty(configElem, ALIGNMENT_MEMBER_MAY_BE_ABSENT, false)).orElse(false);
 	}
 
 	@Override
@@ -57,6 +66,10 @@ public class ConstrainedAlignmentFeatureProvider extends AlignmentFeatureProvide
 			throw new FeatureProviderException(Code.CONFIG_ERROR, "Alignment "+ancestorAlmt.getName()+" is not constrained");
 		}
 		AlignmentMember almtMember = getUniqueAlignmentMembership(sequence, ancestorAlmt);
+		
+		if(almtMember == null) {
+			return null;
+		}
 		ReferenceSequence constrainingReference = almtMember.getAlignment().getRefSequence();
 
 		List<QueryAlignedSegment> allMemberToRefSegments = almtMember.segmentsAsQueryAlignedSegments();
@@ -71,6 +84,9 @@ public class ConstrainedAlignmentFeatureProvider extends AlignmentFeatureProvide
 	private AlignmentMember getUniqueAlignmentMembership(Sequence sequence, Alignment ancestorAlmt) {
 		List<AlignmentMember> constrainedAlignmentMemberships = getConstrainedAlignmentMemberships(sequence, ancestorAlmt);
 		if(constrainedAlignmentMemberships.size() == 0) {
+			if(this.alignmentMemberMayBeAbsent) {
+				return null;
+			}
 			throw new FeatureProviderException(Code.UNABLE_TO_ESTABLISH_ALIGNMENT_MEMBER, sequence.getSource().getName(), sequence.getSequenceID(), 
 					"Not a member of constrained alignment "+ancestorAlmt.getName()+" or one of its descendents");
 		}
