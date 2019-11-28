@@ -25,8 +25,12 @@
 */
 package uk.ac.gla.cvr.gluetools.core.command.result;
 
+import java.io.BufferedWriter;
 import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
 import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
@@ -35,9 +39,20 @@ public class OutputStreamCommandResultRenderingContext implements CommandResultR
 	private ResultOutputFormat consoleOutputFormat;
 	private LineFeedStyle lineFeedStyle;
 	private boolean renderTableHeaders;
+
+	
 	public OutputStreamCommandResultRenderingContext(OutputStream outputStream, ResultOutputFormat consoleOutputFormat,
 			LineFeedStyle lineFeedStyle, boolean renderTableHeaders) {
-		this.printWriter = new PrintWriter(outputStream);
+		this(outputStream, consoleOutputFormat, lineFeedStyle, renderTableHeaders, Charset.defaultCharset().name());
+	}
+		
+	public OutputStreamCommandResultRenderingContext(OutputStream outputStream, ResultOutputFormat consoleOutputFormat,
+			LineFeedStyle lineFeedStyle, boolean renderTableHeaders, String charsetName) {
+		try {
+			this.printWriter = new PrintWriter(new BufferedWriter(new OutputStreamWriter(outputStream, charsetName)), false);
+		} catch (UnsupportedEncodingException e) {
+			throw new RuntimeException(e);
+		}
 		this.consoleOutputFormat = consoleOutputFormat;
 		this.lineFeedStyle = lineFeedStyle;
 		this.renderTableHeaders = renderTableHeaders;
