@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
@@ -124,7 +125,10 @@ public class Tbl2AsnRunner implements Plugin {
 							new OutputStreamCommandResultRenderingContext(baos, ResultOutputFormat.TAB, LineFeedStyle.forOS(), true);
 					SourceInfoTableResult sourceInfoTableResult = new SourceInfoTableResult(sourceColumnHeaders, Arrays.asList(sourceInfoMap));
 					sourceInfoTableResult.renderResult(renderingContext);
-					writeFile(new File(tempDir, input.getId()+".src"), baos.toByteArray());
+					// note: GenBank doesn't do accented / diacritic characters so replace these with the nearest equivalent.
+					String sourceFileString = new String(baos.toByteArray());
+					String accentsStrippedString = StringUtils.stripAccents(sourceFileString);
+					writeFile(new File(tempDir, input.getId()+".src"), accentsStrippedString.getBytes());
 				}
 				
 				List<GbFeatureSpecification> gbFeatureSpecifications = input.getGbFeatureSpecifications();
