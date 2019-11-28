@@ -38,6 +38,9 @@ public abstract class AlignmentFeatureProvider extends FeatureProvider {
 	public static final String FEATURE_KEY = "featureKey";
 	public static final String QUALIFIER = "qualifier";
 	public static final String SPAN_INSERTIONS = "spanInsertions";
+	public static final String EXTEND_TO_LATER_STOP_CODON = "extendToLaterStopCodon";
+
+
 	
 	private String glueFeatureName;
 	// if the alignment member does not cover at least this percentage of the 
@@ -51,9 +54,12 @@ public abstract class AlignmentFeatureProvider extends FeatureProvider {
 	// default true: if true, insertions in the alignment member relative to the reference will be spanned.
 	private Boolean spanInsertions;
 
-	
+	// default false: if true, and featureKay is CDS, will try to extend the feature until it hits a later stop codon.
+	private Boolean extendToLaterStopCodon;
+
 	private String featureKey;
 	private List<QualifierKeyValueTemplate> qualifierKeyValueTemplates;
+
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -70,7 +76,8 @@ public abstract class AlignmentFeatureProvider extends FeatureProvider {
 				PluginUtils.findConfigElements(configElem, QUALIFIER));
 		this.spanInsertions = Optional.ofNullable(PluginUtils
 				.configureBooleanProperty(configElem, SPAN_INSERTIONS, false)).orElse(true);
-
+		this.extendToLaterStopCodon = Optional.ofNullable(PluginUtils
+				.configureBooleanProperty(configElem, EXTEND_TO_LATER_STOP_CODON, false)).orElse(false);
 	}
 
 	protected Double getMinCoveragePct() {
@@ -203,7 +210,34 @@ public abstract class AlignmentFeatureProvider extends FeatureProvider {
 						return null;
 					}
 				}
+				
+				boolean extendFeatureEnd = false;
 
+				if(this.extendToLaterStopCodon && feature.codesAminoAcids()) {
+					Translator translator = new CommandContextTranslator(cmdContext);
+					int numStops = 0;
+					boolean reachesEndOfFeature = false;
+					for(int i = 0; i < fLocSegments.size(); i++) {
+						ReferenceSegment fLocSegment = fLocSegments.get(i);
+						List<QueryAlignedSegment> memberGbFeatureSegs = getMemberGbFeatureSegs(cmdContext, featureLocation, sequence, memberFeatureSegments, fLocSegment);
+						if(i == fLocSegments.size() - 1) {
+							Integer maxRefEnd = QueryAlignedSegment.maxRefEnd(memberGbFeatureSegs);
+							Integer refEnd = fLocSegment.getRefEnd();
+							if(maxRefEnd.equals(refEnd)) {
+								reachesEndOfFeature = true;
+							}
+						}
+						List<LabeledQueryAminoAcid> lqaas = featureLocation.translateQueryNucleotides(cmdContext, translator, memberGbFeatureSegs, sequence.getSequenceObject());
+						for(LabeledQueryAminoAcid lqaa: lqaas) {
+							if(lqaa.getLabeledAminoAcid().getTranslationInfo().getSingleCharTranslation() == '*') {
+								numStops++;
+							}
+						}
+					}
+					if(numStops == 0 && reachesEndOfFeature) {
+						extendFeatureEnd = true;
+					}
+				}
 				
 				String featureKey = getFeatureKey();
 				Map<String, String> qualifierKeyValues = 
@@ -230,6 +264,19 @@ public abstract class AlignmentFeatureProvider extends FeatureProvider {
 								memberGbFeatureSeg.getRefEnd() < fLocSegment.getRefEnd()) {
 							incompleteEnd = true;
 						}
+						if(extendFeatureEnd && i == fLocSegments.size() - 1 && j == memberGbFeatureSegs.size() - 1 && incompleteEnd == false) {
+							String sequenceNts = sequence.getSequenceObject().getNucleotides(cmdContext);
+							boolean stopFound = false;
+							Translator translator = new CommandContextTranslator(cmdContext);
+							while(endNt <= sequenceNts.length()-3 && !stopFound) {
+								String nextAA = translator.translateToAaString(FastaUtils.subSequence(sequenceNts, endNt+1, endNt+3));
+								endNt = endNt+3;
+								if(nextAA.equals("*")) {
+									stopFound = true;
+								}
+							}
+						}
+						
 						gbFeatureIntervals.add(new GbFeatureInterval(startNt, refStartNt, incompleteStart, endNt, incompleteEnd));
 					}
 					if(gbFeatureIntervals.size() == 0) {
