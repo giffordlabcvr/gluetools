@@ -422,6 +422,30 @@
 			</modePathRegexFilter>			
 			<!-- analysis page -->
 			<modePathRegexFilter>
+				<regex>.*/module/hbvReportingController$</regex>
+				<simpleCommandFilter words="invoke-consumes-binary-function">
+					<arg name="functionName">reportFastaWeb</arg>
+					<queueAssignmentFilter>
+						<queueName>analysis</queueName>						
+					</queueAssignmentFilter>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/module/hbvVisualisationUtility$</regex>
+				<simpleCommandFilter words="visualise-feature"/>
+			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/module/hbvSvgPhyloVisualisation$</regex>
+				<simpleCommandFilter words="invoke-function">
+					<arg name="functionName">visualisePhyloAsSvg</arg>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/module/hbvFeatureToSvgTransformer$</regex>
+				<simpleCommandFilter words="transform-to-web-file"/>
+			</modePathRegexFilter>		
+			<!-- Ahmed's analysis page -->
+			<modePathRegexFilter>
 				<regex>.*/module/hdrReportingController$</regex>
 				<simpleCommandFilter words="invoke-consumes-binary-function">
 					<arg name="functionName">reportFastaWeb</arg>
