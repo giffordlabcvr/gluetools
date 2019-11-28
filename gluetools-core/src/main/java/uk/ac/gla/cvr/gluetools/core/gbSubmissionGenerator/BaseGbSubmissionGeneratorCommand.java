@@ -138,12 +138,17 @@ public abstract class BaseGbSubmissionGeneratorCommand<C, SR, R extends CommandR
 		} else if(this.whereClause != null) {
 			selectQuery = new SelectQuery(Sequence.class, this.whereClause);
 		} else {
+			// specific sequence
 			selectQuery = new SelectQuery(Sequence.class, 
 					ExpressionFactory.matchExp(Sequence.SOURCE_NAME_PATH, this.sourceName)
 					.andExp(ExpressionFactory.matchExp(Sequence.SEQUENCE_ID_PROPERTY, this.sequenceID)));
 		}
 		
 		int totalNumSeqs = GlueDataObject.count(cmdContext, selectQuery);
+		if(this.specificSequence && totalNumSeqs == 0) {
+			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Sequence "+this.sourceName+"/"+this.sequenceID+" not found");
+		}
+		
 		int batchSize = 250;
 		int processed = 0;
 		int offset = 0;
