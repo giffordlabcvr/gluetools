@@ -97,38 +97,9 @@ public abstract class BaseGbSubmissionGeneratorCommand<C, SR, R extends CommandR
 		byte[] templateBytes = consoleCmdContext.loadBytes(templateFile);
 
 		StructuredCommentProvider structuredCommentProvider = gbSubmisisonGenerator.getStructuredCommentProvider();
-		byte[] structuredCommentBytes = null;
-		if(structuredCommentProvider != null) {
-			Map<String, String> structuredComments = structuredCommentProvider.generateStructuredComments();
-			if(!structuredComments.isEmpty()) {
-				String lineBreakChars = LineFeedStyle.forOS().getLineBreakChars();
-				ByteArrayOutputStream baos = new ByteArrayOutputStream();
-				PrintWriter printWriter = new PrintWriter(baos);
-				printWriter.write("StructuredCommentPrefix\t##Assembly-Data-START##");
-				printWriter.write(lineBreakChars);
-				structuredComments.forEach((k, v) -> {
-					printWriter.write(k);
-					printWriter.write("\t");
-					printWriter.write(v);
-					printWriter.write(lineBreakChars);
-				});
-				printWriter.flush();
-				structuredCommentBytes = baos.toByteArray();
-			}
-			
-		}
 		
 		
-		File dataDirFile = null;
-		if(dataDir != null) {
-			dataDirFile = consoleCmdContext.fileStringToFile(dataDir);
-			dataDirFile.mkdirs();
-			if(!dataDirFile.exists()) {
-				throw new Tbl2AsnException(Tbl2AsnException.Code.TBL2ASN_FILE_EXCEPTION, 
-						"Unable to create data directory "+dataDirFile.getAbsolutePath());
-
-			}
-		}
+		File dataDirFile = initDataDirFile(consoleCmdContext);
 		
 		C context = initContext(consoleCmdContext);
 					
@@ -164,8 +135,6 @@ public abstract class BaseGbSubmissionGeneratorCommand<C, SR, R extends CommandR
 			GlueLogger.getGlueLogger().finest("Retrieving sequences");
 			List<Sequence> sequences = GlueDataObject.query(cmdContext, Sequence.class, selectQuery);
 
-			List<Tbl2AsnInput> inputs = new ArrayList<Tbl2AsnInput>();
-			
 			List<SourceInfoProvider> sourceInfoProviders = gbSubmisisonGenerator.getSourceInfoProviders();
 			
 			if(!gbSubmisisonGenerator.getSuppressGlueNote()) {
@@ -180,6 +149,13 @@ public abstract class BaseGbSubmissionGeneratorCommand<C, SR, R extends CommandR
 			List<String> sourceColumnHeaders = new ArrayList<String>();
 			sourceColumnHeaders.add("SeqID");
 			sourceInfoProviders.forEach(sip -> sourceColumnHeaders.add(sip.getSourceModifier()));
+			
+			// Annoyingly, tbl2asn takes only one static structured comments file per run
+			// whereas sometimes different sequences within the submissions were actually sequenced using
+			// slightly different technologies.
+			// What we do is partition them up using the structured comments map, and do separate tbl2asn runs per 
+			// value of this map.
+			Map<Map<String,String>, List<Tbl2AsnInput>> structuredCommentsMapToInputsList = new LinkedHashMap<Map<String,String>, List<Tbl2AsnInput>>();
 			
 			sequences.forEach(seq -> {
 				String id = gbSubmisisonGenerator.generateId(seq);
@@ -209,14 +185,31 @@ public abstract class BaseGbSubmissionGeneratorCommand<C, SR, R extends CommandR
 					}
 				}
 				
+				Map<String, String> structuredComments;
+				if(structuredCommentProvider != null) {
+					structuredComments = structuredCommentProvider.generateStructuredComments(seq);
+				} else {
+					structuredComments = new LinkedHashMap<String, String>();
+				}
+				List<Tbl2AsnInput> inputs = structuredCommentsMapToInputsList.get(structuredComments);
+				if(inputs == null) {
+					inputs = new ArrayList<Tbl2AsnInput>();
+					structuredCommentsMapToInputsList.put(structuredComments, inputs);
+				}
 				inputs.add(new Tbl2AsnInput(seq.getSource().getName(), seq.getSequenceID(), id, 
 					FastaUtils.ntStringToSequence(seq.getSequenceObject().getNucleotides(cmdContext)), 
 					sourceInfoMap, featureSpecs));
 			});
 
-			List<Tbl2AsnResult> batchResults = gbSubmisisonGenerator.getTbl2AsnRunner().
-					runTbl2Asn(consoleCmdContext, sourceColumnHeaders, inputs, templateBytes, structuredCommentBytes, gbSubmisisonGenerator.getAssemblyGapSpecifier(),
-							generateGbf, validate, dataDirFile);
+			List<Tbl2AsnResult> batchResults = new ArrayList<Tbl2AsnResult>();
+					
+			structuredCommentsMapToInputsList.forEach((scm, inputs) -> {
+				byte[] structuredCommentBytes = getStructuredCommentBytes(scm);
+				batchResults.addAll(gbSubmisisonGenerator.getTbl2AsnRunner().
+				runTbl2Asn(consoleCmdContext, sourceColumnHeaders, inputs, templateBytes, 
+						structuredCommentBytes, gbSubmisisonGenerator.getAssemblyGapSpecifier(),
+						generateGbf, validate, dataDirFile));
+			});
 			
 			
 			batchResults.forEach(tbl2AsnResult -> {
@@ -230,6 +223,44 @@ public abstract class BaseGbSubmissionGeneratorCommand<C, SR, R extends CommandR
 			cmdContext.newObjectContext();
 		}
 		return finalResult(intermediateResults);
+	}
+
+
+
+	private File initDataDirFile(ConsoleCommandContext consoleCmdContext) {
+		File dataDirFile = null;
+		if(dataDir != null) {
+			dataDirFile = consoleCmdContext.fileStringToFile(dataDir);
+			dataDirFile.mkdirs();
+			if(!dataDirFile.exists()) {
+				throw new Tbl2AsnException(Tbl2AsnException.Code.TBL2ASN_FILE_EXCEPTION, 
+						"Unable to create data directory "+dataDirFile.getAbsolutePath());
+
+			}
+		}
+		return dataDirFile;
+	}
+
+
+
+	private byte[] getStructuredCommentBytes(Map<String, String> structuredComments) {
+		byte[] structuredCommentBytes = null;
+		if(!structuredComments.isEmpty()) {
+			String lineBreakChars = LineFeedStyle.forOS().getLineBreakChars();
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			PrintWriter printWriter = new PrintWriter(baos);
+			printWriter.write("StructuredCommentPrefix\t##Assembly-Data-START##");
+			printWriter.write(lineBreakChars);
+			structuredComments.forEach((k, v) -> {
+				printWriter.write(k);
+				printWriter.write("\t");
+				printWriter.write(v);
+				printWriter.write(lineBreakChars);
+			});
+			printWriter.flush();
+			structuredCommentBytes = baos.toByteArray();
+		}
+		return structuredCommentBytes;
 	}
 
 	public static class GbSubmissionGeneratorCompleter extends AdvancedCmdCompleter {
