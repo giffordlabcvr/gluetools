@@ -5,13 +5,13 @@ DB_FILE=${1}.sql.gz
 
 case "${1}" in
 "hcv_glue" | "ncbi_hcv_glue")
-    URL_PREFIX=http://hcv.glue.cvr.ac.uk/hcv_glue_dbs
+    URL_PREFIX=http://hcv-glue.cvr.gla.ac.uk/hcv_glue_dbs
     ;;
 "rabv_glue" | "ncbi_rabv_glue")
     URL_PREFIX=http://rabv.glue.cvr.ac.uk/rabv_glue_dbs
     ;;
 "btv_glue")
-    URL_PREFIX=http://btv.glue.cvr.ac.uk/btv_glue_dbs
+    URL_PREFIX=http://btv-glue.cvr.gla.ac.uk/btv_glue_dbs
     ;;
 *)
     echo Unknown GLUE project ${1}
