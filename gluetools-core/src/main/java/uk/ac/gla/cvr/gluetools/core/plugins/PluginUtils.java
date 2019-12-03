@@ -75,6 +75,12 @@ public class PluginUtils {
 	public static Template configureFreemarkerTemplateProperty(PluginConfigContext pluginConfigContext, 
 			Element configElem, String propertyName, boolean required) {
 		String templateString = PluginUtils.configureStringProperty(configElem, propertyName, required);
+		Template template = templateFromString(pluginConfigContext, propertyName, templateString);
+		return template;
+	}
+
+	private static Template templateFromString(PluginConfigContext pluginConfigContext, String propertyName,
+			String templateString) {
 		Template template = null;
 		if(templateString != null) {
 			Configuration freemarkerConfiguration = pluginConfigContext.getFreemarkerConfiguration();
@@ -219,6 +225,16 @@ public class PluginUtils {
 		propertyElems.forEach(e -> setValidConfig(configElem, e));
 		return propertyElems.stream().map(Element::getTextContent).collect(Collectors.toList());
 	}
+
+	
+	public static List<Template> configureFreemarkerTemplatesProperty(PluginConfigContext pluginConfigContext, Element configElem, String propertyName) {
+		List<Element> propertyElems = GlueXmlUtils.findChildElements(configElem, propertyName);
+		propertyElems.forEach(e -> setValidConfig(configElem, e));
+		return propertyElems.stream()
+				.map(e -> templateFromString(pluginConfigContext, propertyName, e.getTextContent()))
+				.collect(Collectors.toList());
+	}
+
 	
 	public static String configureString(Element configElem, String xPathExpression, String defaultValue)  {
 		String configured = configureString(configElem, xPathExpression, false);
