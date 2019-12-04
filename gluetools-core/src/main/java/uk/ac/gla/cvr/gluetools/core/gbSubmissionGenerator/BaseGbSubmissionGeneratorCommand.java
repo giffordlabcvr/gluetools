@@ -128,6 +128,15 @@ public abstract class BaseGbSubmissionGeneratorCommand<C, SR, R extends CommandR
 
 		List<SR> intermediateResults = new ArrayList<SR>();
 
+		List<SourceInfoProvider> sourceInfoProviders = new ArrayList<SourceInfoProvider>(gbSubmisisonGenerator.getSourceInfoProviders());
+		if(!gbSubmisisonGenerator.getSuppressGlueNote()) {
+			StaticSourceInfoProvider glueNoteProvider = new StaticSourceInfoProvider();
+			glueNoteProvider.setSourceModifier("note");		
+			String glueEngineVersion = cmdContext.getGluetoolsEngine().getGluecoreProperties().getProperty("version", null);
+			glueNoteProvider.setValue("GenBank record generated using GLUE v"+glueEngineVersion+" (http://glue-tools.cvr.gla.ac.uk)");
+			sourceInfoProviders.add(glueNoteProvider);
+		}
+
 		while(processed < totalNumSeqs) {
 			selectQuery.setFetchLimit(batchSize);
 			selectQuery.setPageSize(batchSize);
@@ -135,15 +144,6 @@ public abstract class BaseGbSubmissionGeneratorCommand<C, SR, R extends CommandR
 			GlueLogger.getGlueLogger().finest("Retrieving sequences");
 			List<Sequence> sequences = GlueDataObject.query(cmdContext, Sequence.class, selectQuery);
 
-			List<SourceInfoProvider> sourceInfoProviders = gbSubmisisonGenerator.getSourceInfoProviders();
-			
-			if(!gbSubmisisonGenerator.getSuppressGlueNote()) {
-				StaticSourceInfoProvider glueNoteProvider = new StaticSourceInfoProvider();
-				glueNoteProvider.setSourceModifier("note");		
-				String glueEngineVersion = cmdContext.getGluetoolsEngine().getGluecoreProperties().getProperty("version", null);
-				glueNoteProvider.setValue("GenBank record generated using GLUE v"+glueEngineVersion+" (http://glue-tools.cvr.gla.ac.uk)");
-				sourceInfoProviders.add(glueNoteProvider);
-			}
 			
 			List<FeatureProvider> featureProviders = gbSubmisisonGenerator.getFeatureProviders();
 			List<String> sourceColumnHeaders = new ArrayList<String>();
