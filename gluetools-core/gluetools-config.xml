@@ -380,15 +380,12 @@
 				<simpleCommandFilter words="show feature tree"/>
 			</modePathRegexFilter>
 			<modePathRegexFilter>
-				<regex>.*/module/fastaExporter$</regex>
+				<regex>.*/module/hbvFastaExporter$</regex>
 				<simpleCommandFilter words="web-export-member">
 					<queueAssignmentFilter>
 							<queueName>download</queueName>						
 					</queueAssignmentFilter>
 				</simpleCommandFilter>
-			</modePathRegexFilter>
-			<modePathRegexFilter>
-				<regex>.*/module/fastaAlignmentExporter$</regex>
 				<simpleCommandFilter words="web-export">
 					<queueAssignmentFilter>
 							<queueName>download</queueName>						
@@ -396,7 +393,15 @@
 				</simpleCommandFilter>
 			</modePathRegexFilter>
 			<modePathRegexFilter>
-				<regex>.*/module/fastaProteinAlignmentExporter$</regex>
+				<regex>.*/module/hbvFastaAlignmentExporter$</regex>
+				<simpleCommandFilter words="web-export">
+					<queueAssignmentFilter>
+							<queueName>download</queueName>						
+					</queueAssignmentFilter>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/module/hbvFastaProteinAlignmentExporter$</regex>
 				<simpleCommandFilter words="web-export">
 					<queueAssignmentFilter>
 							<queueName>download</queueName>						
