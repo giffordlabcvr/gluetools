@@ -3,10 +3,12 @@ package uk.ac.gla.cvr.gluetools.core.requestQueue;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 
 public class RequestTicket {
 
@@ -63,6 +65,7 @@ public class RequestTicket {
 			if(cause instanceof GlueException) {
 				throw ((GlueException) cause);
 			}
+			GlueLogger.getGlueLogger().log(Level.SEVERE, "Non-GLUE exception: "+cause.getLocalizedMessage(), cause);
 			throw new RequestQueueManagerException(cause, RequestQueueManagerException.Code.REQUEST_ERROR, cause.getLocalizedMessage());
 		} catch (InterruptedException e) {
 			throw new RequestQueueManagerException(e, RequestQueueManagerException.Code.REQUEST_INTERRUPTED, e.getLocalizedMessage());

@@ -30,11 +30,13 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.function.Supplier;
+import java.util.logging.Level;
 
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 import uk.ac.gla.cvr.gluetools.core.GluetoolsEngine;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 
 public class RequestQueueManagerException extends GlueException {
 
@@ -92,6 +94,7 @@ public class RequestQueueManagerException extends GlueException {
 			if(cause instanceof GlueException) {
 				throw ((GlueException) cause);
 			}
+			GlueLogger.getGlueLogger().log(Level.SEVERE, "Non-GLUE exception: "+cause.getLocalizedMessage(), cause);
 			throw new RequestQueueManagerException(cause, RequestQueueManagerException.Code.REQUEST_ERROR, cause.getLocalizedMessage());
 		} catch (InterruptedException e) {
 			throw new RequestQueueManagerException(e, RequestQueueManagerException.Code.REQUEST_INTERRUPTED, e.getLocalizedMessage());
