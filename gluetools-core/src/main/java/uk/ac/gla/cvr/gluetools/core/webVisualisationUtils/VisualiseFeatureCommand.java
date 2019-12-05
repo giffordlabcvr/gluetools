@@ -3,6 +3,9 @@ package uk.ac.gla.cvr.gluetools.core.webVisualisationUtils;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
@@ -14,12 +17,15 @@ import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
 import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.PojoCommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.featureLoc.FeatureLocation;
+import uk.ac.gla.cvr.gluetools.core.datamodel.featureSegment.FeatureSegment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.NucleotideContentProvider;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SimpleNucleotideContentProvider;
@@ -65,6 +71,7 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 	private static final String FEATURE_NAME = "featureName";
 	private static final String QUERY_TO_TARGET_REF_SEGMENTS = "queryToTargetRefSegments";
 	private static final String QUERY_NUCLEOTIDES = "queryNucleotides";
+	private static final String QUERY_ROTATION = "queryRotation";
 	private static final String QUERY_DETAILS = "queryDetails";
 
 	private String targetReferenceName;
@@ -73,6 +80,11 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 	private List<QueryAlignedSegment> queryToTargetRefSegments = new ArrayList<QueryAlignedSegment>();
 	private NucleotideContentProvider nucleotideContent;
 	private List<Detail> queryDetails;
+	// rightward rotation which has been applied to the query nucleotides.
+	// we need to reverse this when rendering the query coordinates.
+	private Integer queryRotation; 
+	private Integer sequenceLength;
+	
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -82,9 +94,12 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
 		List<Element> queryToTargetRefSegElems = PluginUtils.findConfigElements(configElem, QUERY_TO_TARGET_REF_SEGMENTS);
 		this.queryToTargetRefSegments = PluginFactory.createPlugins(pluginConfigContext, QueryAlignedSegment.class, queryToTargetRefSegElems);
-		this.nucleotideContent = new SimpleNucleotideContentProvider(PluginUtils.configureStringProperty(configElem, QUERY_NUCLEOTIDES, true));
+		String queryNucleotides = PluginUtils.configureStringProperty(configElem, QUERY_NUCLEOTIDES, true);
+		this.sequenceLength = queryNucleotides.length();
+		this.nucleotideContent = new SimpleNucleotideContentProvider(queryNucleotides);
 		List<Element> queryDetailElems = PluginUtils.findConfigElements(configElem, QUERY_DETAILS);
 		this.queryDetails = PluginFactory.createPlugins(pluginConfigContext, Detail.class, queryDetailElems);
+		this.queryRotation = Optional.ofNullable(PluginUtils.configureIntProperty(configElem, QUERY_ROTATION, false)).orElse(0);
 	}
 
 
@@ -126,17 +141,17 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 		List<QueryAlignedSegment> refToUSegs = allColumnsAlmt.getSegments("reference");
 		List<QueryAlignedSegment> uToRefSegs = QueryAlignedSegment.invertList(refToUSegs);
 		
+		
 		List<ReferenceSegment> featureLocSegs = featureLoc.segmentsAsReferenceSegments();
 		List<QueryAlignedSegment> uToRefFeatureLocSegs = ReferenceSegment.intersection(uToRefSegs, featureLocSegs,
 				ReferenceSegment.cloneLeftSegMerger());
+		List<QueryAlignedSegment> refToUFeatureLocSegs = QueryAlignedSegment.invertList(uToRefFeatureLocSegs);
 
-		// offset required to shift "U" NT coordinates to display coordinates so that the named feature starts at display location 1.
-		int displayNtOffset = QueryAlignedSegment.minQueryStart(uToRefFeatureLocSegs)-1;
+		List<FeatureSegment> rotatedFeatureSegs = featureLoc.getRotatedReferenceSegments();
+		CoordContext coordContext = new CoordContext(rotatedFeatureSegs, uToRefFeatureLocSegs);
 
-		// calculate width of display alignment
-		int displayNtWidth = QueryAlignedSegment.maxQueryEnd(uToRefFeatureLocSegs)-displayNtOffset;
 
-		char[] refNtsInUSpace = new char[displayNtWidth];
+		char[] refNtsInDisplaySpace = new char[coordContext.getDisplayNtWidth()];
 		TIntCharMap translationIndexToRefAa = new TIntCharHashMap();
 		
 		VisualisationAnnotationRow<RefNtContentAnnotation> refNtContentRow = new VisualisationAnnotationRow<RefNtContentAnnotation>();
@@ -144,15 +159,14 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 		VisualisationAnnotationRow<RefNtIndexAnnotation> refNtIndexRow = new VisualisationAnnotationRow<RefNtIndexAnnotation>();
 		refNtIndexRow.annotationType = "refNtIndex";
 
-		List<QueryAlignedSegment> refToUFeatureLocSegs = QueryAlignedSegment.invertList(uToRefFeatureLocSegs);
 
 		refToUFeatureLocSegs.forEach(seg -> {
 			RefNtContentAnnotation refNtContent = new RefNtContentAnnotation();
-			refNtContent.displayNtPos = seg.getRefStart()-displayNtOffset;
+			refNtContent.displayNtPos = coordContext.uToDisplayNt(seg.getRefStart());
 			refNtContent.ntContent = FastaUtils.subSequence(referenceNucleotides, seg.getQueryStart(), seg.getQueryEnd()).toString();
 			refNtContentRow.annotations.add(refNtContent);
 			RefNtIndexAnnotation refStartAnnotation = new RefNtIndexAnnotation();
-			refStartAnnotation.displayNtPos = seg.getRefStart()-displayNtOffset;
+			refStartAnnotation.displayNtPos = coordContext.uToDisplayNt(seg.getRefStart());
 			refStartAnnotation.ntIndex = seg.getQueryStart();
 			refStartAnnotation.endOfSegment = true;
 			refNtIndexRow.annotations.add(refStartAnnotation);
@@ -160,7 +174,7 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 			for(int ntIndex = seg.getQueryStart()+1; ntIndex < seg.getQueryEnd(); ntIndex++) {
 				if(ntIndex % 10 == 0) {
 					RefNtIndexAnnotation regularAnnotation = new RefNtIndexAnnotation();
-					regularAnnotation.displayNtPos = (ntIndex+seg.getQueryToReferenceOffset())-displayNtOffset;
+					regularAnnotation.displayNtPos = coordContext.uToDisplayNt(ntIndex+seg.getQueryToReferenceOffset());
 					regularAnnotation.ntIndex = ntIndex;
 					regularAnnotation.endOfSegment = false;
 					refNtIndexRow.annotations.add(regularAnnotation);
@@ -168,26 +182,27 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 			}
 			
 			RefNtIndexAnnotation refEndAnnotation = new RefNtIndexAnnotation();
-			refEndAnnotation.displayNtPos = seg.getRefEnd()-displayNtOffset;
+			refEndAnnotation.displayNtPos = coordContext.uToDisplayNt(seg.getRefEnd());
 			refEndAnnotation.ntIndex = seg.getQueryEnd();
 			refEndAnnotation.endOfSegment = true;
 			refNtIndexRow.annotations.add(refEndAnnotation);
-			int uIndex = seg.getRefStart()-displayNtOffset;
+			int uIndex = coordContext.uToDisplayNt(seg.getRefStart());
 			for(int refNtIndex = seg.getQueryStart(); refNtIndex <= seg.getQueryEnd(); refNtIndex++) {
-				refNtsInUSpace[uIndex-1] = FastaUtils.nt(referenceNucleotides, refNtIndex);
+				refNtsInDisplaySpace[uIndex-1] = FastaUtils.nt(referenceNucleotides, refNtIndex);
 				uIndex++;
 			}
 		});
 
 
-		int uFeatureStart = ReferenceSegment.minRefStart(refToUFeatureLocSegs);
-		int uFeatureEnd = ReferenceSegment.maxRefEnd(refToUFeatureLocSegs);
-		
 		List<QueryAlignedSegment> queryToUSegs = allColumnsAlmt.getSegments("query");
 
-		List<QueryAlignedSegment> queryToUFeatureLocSegs = 
-				ReferenceSegment.intersection(queryToUSegs, Arrays.asList(new ReferenceSegment(uFeatureStart, uFeatureEnd)), 
-						ReferenceSegment.cloneLeftSegMerger());
+		List<QueryAlignedSegment> queryToUFeatureLocSegs = new ArrayList<QueryAlignedSegment>();
+		
+		for(TranscriptionRegionInfo transRegionInfo: coordContext.transRegionInfos) {
+			queryToUFeatureLocSegs.addAll(ReferenceSegment.intersection(queryToUSegs, Arrays.asList(new ReferenceSegment(transRegionInfo.minU, transRegionInfo.maxU)), 
+					ReferenceSegment.cloneLeftSegMerger()));
+		}
+		ReferenceSegment.sortByRefStart(queryToUFeatureLocSegs);
 
 		VisualisationAnnotationRow<QueryNtContentAnnotation> queryNtContentRow = new VisualisationAnnotationRow<QueryNtContentAnnotation>();
 		queryNtContentRow.annotationType = "queryNtContent";
@@ -195,42 +210,43 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 		queryNtIndexRow.annotationType = "queryNtIndex";
 		queryToUFeatureLocSegs.forEach(seg -> {
 			QueryNtContentAnnotation queryNtContent = new QueryNtContentAnnotation();
-			queryNtContent.displayNtPos = seg.getRefStart()-displayNtOffset;
+			queryNtContent.displayNtPos = coordContext.uToDisplayNt(seg.getRefStart());
 			
 			queryNtContent.ntContent = nucleotideContent.getNucleotides(cmdContext, seg.getQueryStart(), seg.getQueryEnd()).toString();
-			int uIndex = seg.getRefStart()-displayNtOffset;
+			int displayIndex = coordContext.uToDisplayNt(seg.getRefStart());
 			int displayPos = queryNtContent.displayNtPos;
 			for(int queryNtIndex = seg.getQueryStart(); queryNtIndex <= seg.getQueryEnd(); queryNtIndex++) {
-				char refNt = refNtsInUSpace[uIndex-1];
+				char refNt = refNtsInDisplaySpace[displayIndex-1];
 				char queryNt = nucleotideContent.nt(cmdContext, queryNtIndex);
 				if(refNt != 0 && refNt != queryNt) {
 					queryNtContent.ntDisplayPosDifferences.add(displayPos);
 				}
-				uIndex++;
+				displayIndex++;
 				displayPos++;
 			}
 			
 			
 			queryNtContentRow.annotations.add(queryNtContent);
 			QueryNtIndexAnnotation queryStartAnnotation = new QueryNtIndexAnnotation();
-			queryStartAnnotation.displayNtPos = seg.getRefStart()-displayNtOffset;
-			queryStartAnnotation.ntIndex = seg.getQueryStart();
+			queryStartAnnotation.displayNtPos = coordContext.uToDisplayNt(seg.getRefStart());
+			queryStartAnnotation.ntIndex = correctRotation(seg.getQueryStart());
 			queryStartAnnotation.endOfSegment = true;
 			queryNtIndexRow.annotations.add(queryStartAnnotation);
 			
 			for(int ntIndex = seg.getQueryStart()+1; ntIndex < seg.getQueryEnd(); ntIndex++) {
-				if(ntIndex % 10 == 0) {
+				Integer ntIndexRotationCorrected = correctRotation(ntIndex);
+				if(ntIndexRotationCorrected == 1 || ntIndexRotationCorrected % 10 == 0 || ntIndexRotationCorrected.equals(sequenceLength)) {
 					QueryNtIndexAnnotation regularAnnotation = new QueryNtIndexAnnotation();
-					regularAnnotation.displayNtPos = (ntIndex+seg.getQueryToReferenceOffset())-displayNtOffset;
-					regularAnnotation.ntIndex = ntIndex;
+					regularAnnotation.displayNtPos = coordContext.uToDisplayNt(ntIndex+seg.getQueryToReferenceOffset());
+					regularAnnotation.ntIndex = ntIndexRotationCorrected;
 					regularAnnotation.endOfSegment = false;
 					queryNtIndexRow.annotations.add(regularAnnotation);
 				}
 			}
 			
 			QueryNtIndexAnnotation queryEndAnnotation = new QueryNtIndexAnnotation();
-			queryEndAnnotation.displayNtPos = seg.getRefEnd()-displayNtOffset;
-			queryEndAnnotation.ntIndex = seg.getQueryEnd();
+			queryEndAnnotation.displayNtPos = coordContext.uToDisplayNt(seg.getRefEnd());
+			queryEndAnnotation.ntIndex = correctRotation(seg.getQueryEnd());
 			queryEndAnnotation.endOfSegment = true;
 			queryNtIndexRow.annotations.add(queryEndAnnotation);
 		});
@@ -252,7 +268,7 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 
 				int refNt = refLqaa.getQueryNtStart();
 				QueryAlignedSegment qaSeg = new QueryAlignedSegment(refNt, refNt, refNt, refNt);
-				int displayNtPos = QueryAlignedSegment.translateSegments(Arrays.asList(qaSeg), refToUSegs).get(0).getRefStart()-displayNtOffset;
+				int displayNtPos = coordContext.uToDisplayNt(QueryAlignedSegment.translateSegments(Arrays.asList(qaSeg), refToUSegs).get(0).getRefStart());
 				
 				LabeledCodon labeledCodon = labeledAminoAcid.getLabeledCodon();
 				CodonLabelAnnotation codonLabelAnnotation = new CodonLabelAnnotation();
@@ -280,7 +296,7 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 
 				int queryNt = queryLqaa.getQueryNtStart();
 				QueryAlignedSegment qaSeg = new QueryAlignedSegment(queryNt, queryNt, queryNt, queryNt);
-				int displayNtPos = QueryAlignedSegment.translateSegments(Arrays.asList(qaSeg), queryToUSegs).get(0).getRefStart()-displayNtOffset;
+				int displayNtPos = coordContext.uToDisplayNt(QueryAlignedSegment.translateSegments(Arrays.asList(qaSeg), queryToUSegs).get(0).getRefStart());
 
 				LabeledCodon labeledCodon = labeledAminoAcid.getLabeledCodon();
 				QueryAaContentAnnotation queryAaContentAnnotation = new QueryAaContentAnnotation();
@@ -309,7 +325,7 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 		featureVisualisation.comparisonReferenceDisplayName = comparisonReference.getRenderedName();
 		featureVisualisation.featureName = featureLoc.getFeature().getName();
 		featureVisualisation.featureDisplayName = featureLoc.getFeature().getRenderedName();
-		featureVisualisation.displayNtWidth = displayNtWidth;
+		featureVisualisation.displayNtWidth = coordContext.getDisplayNtWidth();
 		if(codonLabelRow != null) {
 			featureVisualisation.annotationRows.add(codonLabelRow);
 		}
@@ -343,8 +359,8 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 				for(QueryAlignedSegment detailSegmentToU: detailSegmentsToU) {
 					DetailAnnotationSegment detailAnnotationSegment = new DetailAnnotationSegment();
 					detailAnnotationSegment.segmentId = segmentId;
-					detailAnnotationSegment.displayNtStart = detailSegmentToU.getRefStart() - displayNtOffset;
-					detailAnnotationSegment.displayNtEnd = detailSegmentToU.getRefEnd() - displayNtOffset;
+					detailAnnotationSegment.displayNtStart = coordContext.uToDisplayNt(detailSegmentToU.getRefStart());
+					detailAnnotationSegment.displayNtEnd = coordContext.uToDisplayNt(detailSegmentToU.getRefEnd());
 					detailAnnotation.segments.add(detailAnnotationSegment);
 				}
 				detailAnnotation.minRefStart = ReferenceSegment.minRefStart(detailAnnotation.segments);
@@ -376,11 +392,90 @@ public class VisualiseFeatureCommand extends ModulePluginCommand<PojoCommandResu
 			DetailAnnotationRow detailAnnotationRow = new DetailAnnotationRow();
 			detailAnnotationRow.annotationType = "detail";
 			detailAnnotationRow.trackNumber = i;
-			trackTrees.get(i).findOverlapping(1, displayNtWidth, detailAnnotationRow.annotations);
+			trackTrees.get(i).findOverlapping(1, coordContext.getDisplayNtWidth(), detailAnnotationRow.annotations);
 			featureVisualisation.annotationRows.add(detailAnnotationRow);
 		}		
 		return new PojoCommandResult<FeatureVisualisation>(featureVisualisation);
 		
+	}
+
+	// holds info about region of the U alignment corresponding to FeatureSegs with the same transcription index.
+	private class TranscriptionRegionInfo {
+		int minU;
+		int maxU;
+		// offset required to shift "U" NT coordinates to display coordinates so that the named feature starts at display location 1.
+		int displayNtOffset;
+	}
+	
+	private class CoordContext {
+		// width of the display
+		private int displayNtWidth;
+
+		private List<TranscriptionRegionInfo> transRegionInfos = new ArrayList<TranscriptionRegionInfo>();
+		
+		public CoordContext(List<FeatureSegment> rotatedFeatureSegs, List<QueryAlignedSegment> uToRefFeatureLocSegs) {
+			super();
+			
+			Map<Integer, List<FeatureSegment>> transcriptionIndexToFeatureSegs = 
+					rotatedFeatureSegs.stream().collect(Collectors.groupingBy(FeatureSegment::getTranscriptionIndex));
+			
+			int transIdx = 1;
+			int displayWidthSoFar = 0;
+			boolean wrappedRound = false;
+			List<FeatureSegment> transIdxFeatureSegs = transcriptionIndexToFeatureSegs.get(new Integer(transIdx));
+			TranscriptionRegionInfo lastTransRegionInfo = null;
+			while(transIdxFeatureSegs != null) {
+				TranscriptionRegionInfo transRegionInfo = new TranscriptionRegionInfo();
+				List<QueryAlignedSegment> uToTransRegionSegs = 
+						ReferenceSegment.intersection(uToRefFeatureLocSegs, transIdxFeatureSegs, ReferenceSegment.cloneLeftSegMerger());
+
+				transRegionInfo.minU = QueryAlignedSegment.minQueryStart(uToTransRegionSegs);
+				transRegionInfo.maxU = QueryAlignedSegment.maxQueryEnd(uToTransRegionSegs);
+				if(lastTransRegionInfo != null && !wrappedRound) {
+					if(transRegionInfo.minU < lastTransRegionInfo.maxU) {
+						wrappedRound = true;
+					}
+				}
+				if(wrappedRound) {
+					transRegionInfo.displayNtOffset = 1 + (displayWidthSoFar - transRegionInfo.minU);
+				} else {
+					transRegionInfo.displayNtOffset = 1 - (transRegionInfo.minU + displayWidthSoFar);
+				}
+				transRegionInfos.add(transRegionInfo);
+				int regionDisplayNtWidth = (transRegionInfo.maxU - transRegionInfo.minU) + 1;
+				displayWidthSoFar += regionDisplayNtWidth;
+				transIdx++;
+				lastTransRegionInfo = transRegionInfo;
+				transIdxFeatureSegs = transcriptionIndexToFeatureSegs.get(new Integer(transIdx));
+			}
+			this.displayNtWidth = displayWidthSoFar;
+		}
+
+		// map u coodinate to display coordinate.
+		public Integer uToDisplayNt(Integer u) {
+			for(TranscriptionRegionInfo transRegionInfo: transRegionInfos) {
+				if(u >= transRegionInfo.minU && u <= transRegionInfo.maxU) {
+					return u + transRegionInfo.displayNtOffset;
+				}
+			}
+			throw new CommandException(Code.COMMAND_FAILED_ERROR, "u value "+u+" not in expected regions");
+		}
+
+		public int getDisplayNtWidth() {
+			return displayNtWidth;
+		}
+	}
+	
+
+	private Integer correctRotation(Integer queryStart) {
+		if(queryRotation.equals(0)) {
+			return queryStart;
+		}
+		Integer result = queryStart - queryRotation;
+		if(result < 1) {
+			result = this.sequenceLength + result;
+		}
+		return result;
 	}
 	
 }

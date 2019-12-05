@@ -584,7 +584,7 @@ public class FeatureLocation extends _FeatureLocation {
 		return GlueDataObject.query(cmdContext, Variation.class, query);
 	}
 
-	private List<FeatureSegment> getRotatedReferenceSegments() {
+	public List<FeatureSegment> getRotatedReferenceSegments() {
 		List<FeatureSegment> featureLocRefSegs = new ArrayList<FeatureSegment>(getSegments());
 		featureLocRefSegs.sort(new Comparator<FeatureSegment>() {
 			@Override
