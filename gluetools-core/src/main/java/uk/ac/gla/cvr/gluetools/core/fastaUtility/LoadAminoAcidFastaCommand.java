@@ -62,7 +62,7 @@ public class LoadAminoAcidFastaCommand extends ModulePluginCommand<AminoAcidFast
 	@Override
 	protected AminoAcidFastaCommandResult execute(CommandContext cmdContext, FastaUtility fastaUtility) {
 		byte[] bytes = ((ConsoleCommandContext) cmdContext).loadBytes(fileName);
-		return new AminoAcidFastaCommandResult(FastaUtils.parseFastaProtein(bytes));
+		return new AminoAcidFastaCommandResult(FastaUtils.parseFastaProtein(bytes, fastaUtility.getTrimFastaIdAfterFirstSpace()));
 	}
 
 	@CompleterClass

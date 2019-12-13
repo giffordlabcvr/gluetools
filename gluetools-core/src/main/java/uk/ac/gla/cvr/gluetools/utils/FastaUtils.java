@@ -61,7 +61,7 @@ public class FastaUtils {
 	}
 	
 	public static <T extends AbstractSequence> Map<String, T> parseFasta(byte[] fastaBytes,
-			Function<String, T> sequenceCreator, BiFunction<T, String, String> headerParser) {
+			Function<String, T> sequenceCreator, BiFunction<T, String, String> headerParser, boolean trimFastaIdAfterFirstSpace) {
 		Map<String, T> idToSequence = new LinkedHashMap<String, T>();
 		String fastaString = new String(fastaBytes);
 		String[] lines = fastaString.split("\\r|\\r\\n|\\n");
@@ -84,6 +84,11 @@ public class FastaUtils {
 				}
 				nextSequenceBuf = new StringBuffer();
 				nextHeaderLine = line.substring(1);
+				int firstIndexOfSpace = nextHeaderLine.indexOf(' ');
+				if(trimFastaIdAfterFirstSpace && firstIndexOfSpace >= 0) {
+					nextHeaderLine = nextHeaderLine.substring(0, firstIndexOfSpace);
+				}
+
 			} else {
 				if(nextSequenceBuf != null) {
 					nextSequenceBuf.append(line.trim());
@@ -122,13 +127,21 @@ public class FastaUtils {
 		}
 	}
 
-	
+
 	public static Map<String, ProteinSequence> parseFastaProtein(byte[] fastaBytes) {
-		return parseFasta(fastaBytes, aaString -> new ProteinSequence(aaString), (ps, line) -> line);
+		return parseFastaProtein(fastaBytes, false);
+	}
+	
+	public static Map<String, ProteinSequence> parseFastaProtein(byte[] fastaBytes, boolean trimFastaIdAfterFirstSpace) {
+		return parseFasta(fastaBytes, aaString -> new ProteinSequence(aaString), (ps, line) -> line, trimFastaIdAfterFirstSpace);
 	}
 
 	public static Map<String, DNASequence> parseFasta(byte[] fastaBytes) {
-		return parseFasta(fastaBytes, ntString -> new DNASequence(ntString), (ps, line) -> line);
+		return parseFasta(fastaBytes, false);
+	}
+	
+	public static Map<String, DNASequence> parseFasta(byte[] fastaBytes, boolean trimFastaIdAfterFirstSpace) {
+		return parseFasta(fastaBytes, ntString -> new DNASequence(ntString), (ps, line) -> line, true);
 	}
 
 	public static byte[] mapToFasta(Map<String, ? extends AbstractSequence> fastaIdToSequence, LineFeedStyle lineFeedStyle) {

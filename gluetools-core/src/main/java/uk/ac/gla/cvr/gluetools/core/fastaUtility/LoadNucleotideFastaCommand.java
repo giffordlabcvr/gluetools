@@ -62,7 +62,7 @@ public class LoadNucleotideFastaCommand extends ModulePluginCommand<NucleotideFa
 	@Override
 	protected NucleotideFastaCommandResult execute(CommandContext cmdContext, FastaUtility fastaUtility) {
 		byte[] bytes = ((ConsoleCommandContext) cmdContext).loadBytes(fileName);
-		return new NucleotideFastaCommandResult(FastaUtils.parseFasta(bytes));
+		return new NucleotideFastaCommandResult(FastaUtils.parseFasta(bytes, fastaUtility.getTrimFastaIdAfterFirstSpace()));
 	}
 
 	@CompleterClass

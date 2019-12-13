@@ -60,7 +60,7 @@ public class Base64ToNucleotideFastaCommand extends ModulePluginCommand<Nucleoti
 	@Override
 	protected NucleotideFastaCommandResult execute(CommandContext cmdContext, FastaUtility fastaUtility) {
 		byte[] bytes = Base64.getDecoder().decode(base64);
-		return new NucleotideFastaCommandResult(FastaUtils.parseFasta(bytes));
+		return new NucleotideFastaCommandResult(FastaUtils.parseFasta(bytes, fastaUtility.getTrimFastaIdAfterFirstSpace()));
 	}
 
 	

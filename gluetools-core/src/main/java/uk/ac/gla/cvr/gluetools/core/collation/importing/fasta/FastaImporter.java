@@ -63,7 +63,7 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Va
 	private static final String REMOVE_LEADING_NS = "removeLeadingNs";
 	private static final String REMOVE_TRAILING_NS = "removeTrailingNs";
 	private static final String SOURCE_NAME = "sourceName";
-	
+
 	private Pattern nullRegex = null;
 	private RegexExtractorFormatter mainExtractor = null;
 	private List<RegexExtractorFormatter> valueConverters = null;
@@ -113,7 +113,7 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Va
 		FastaUtils.normalizeFastaBytes(cmdContext, fastaBytes);
 		Map<String, ImporterDNASequence> idToSequence = FastaUtils.parseFasta(fastaBytes, 
 				s -> new ImporterDNASequence(s), 
-				new HeaderParser());
+				new HeaderParser(), false);
 		ensureSourceExists(cmdContext, sourceName);
 		
 		List<String> updatableProperties = fieldParsers.stream().map(fp -> fp.getProperty()).collect(Collectors.toList());

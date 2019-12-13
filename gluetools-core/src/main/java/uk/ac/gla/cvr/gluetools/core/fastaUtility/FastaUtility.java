@@ -25,17 +25,27 @@
 */
 package uk.ac.gla.cvr.gluetools.core.fastaUtility;
 
+import java.util.Optional;
+
+import org.w3c.dom.Element;
+
 import uk.ac.gla.cvr.gluetools.core.command.CommandGroup;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 @PluginClass(elemName="fastaUtility", 
 		description="Provides various commands to the scripting layer for processing FASTA data")
 public class FastaUtility extends ModulePlugin<FastaUtility>{
 
+	public static final String TRIM_FASTA_ID_AFTER_FIRST_SPACE = "trimFastaIdAfterFirstSpace";
 
+	private boolean trimFastaIdAfterFirstSpace;
+	
 	public FastaUtility() {
 		super();
+		addSimplePropertyName(TRIM_FASTA_ID_AFTER_FIRST_SPACE);
 		setCmdGroup(new CommandGroup("file-operations", "Commands to operate on FASTA files", 90, false));
 		registerModulePluginCmdClass(LoadNucleotideFastaCommand.class);
 		registerModulePluginCmdClass(SaveNucleotideFastaCommand.class);
@@ -45,5 +55,19 @@ public class FastaUtility extends ModulePlugin<FastaUtility>{
 		registerModulePluginCmdClass(ReverseComplementFastaStringCommand.class);
 		registerModulePluginCmdClass(Base64ToNucleotideFastaCommand.class);
 	}
+
+	@Override
+	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
+		super.configure(pluginConfigContext, configElem);
+		this.trimFastaIdAfterFirstSpace = Optional.ofNullable(PluginUtils
+				.configureBooleanProperty(configElem, TRIM_FASTA_ID_AFTER_FIRST_SPACE, false)).orElse(true);
+	}
+
+	public boolean getTrimFastaIdAfterFirstSpace() {
+		return trimFastaIdAfterFirstSpace;
+	}
+
+	
+	
 
 }
