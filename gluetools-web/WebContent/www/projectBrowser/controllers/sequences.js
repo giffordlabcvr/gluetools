@@ -66,16 +66,18 @@ projectBrowser.controller('sequencesCtrl',
 				$scope.pagingContext = pagingContext.createPagingContext($scope.updateCount, $scope.updatePage);
 				$scope.pagingContext.countChanged();
 			}
+
+			$scope.downloadSequences = function(moduleName, cmdParams) {
 			
-			$scope.downloadSequences = function(moduleName) {
 				saveFile.saveAsDialog("FASTA sequence file", 
 						"sequences.fasta",
 						function(fileName) {
 
 					console.log("Downloading sequences, using module '"+moduleName+"'");
-					var cmdParams = {
-							fileName: fileName
-					};
+					if(cmdParams == null) {
+						cmdParams = {};
+					}
+					cmdParams.fileName = fileName;
 					if($scope.whereClause) {
 						cmdParams.whereClause = $scope.whereClause;
 					}

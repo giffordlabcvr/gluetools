@@ -247,16 +247,17 @@ projectBrowser.controller('alignmentCtrl',
 			}
 			
 			
-			$scope.downloadSequences = function(moduleName) {
+			$scope.downloadSequences = function(moduleName, cmdParams) {
 				saveFile.saveAsDialog("FASTA sequence file", 
 						$scope.almtName+"_sequences.fasta",
 						function(fileName) {
 					console.log("Downloading sequences, using module '"+moduleName+"'");
-					var cmdParams = {
-							alignmentName: $scope.almtName,
-							recursive: true,
-							fileName: fileName
-					};
+					if(cmdParams == null) {
+						cmdParams = {};
+					}
+					cmdParams.alignmentName = $scope.almtName;
+					cmdParams.recursive = true;
+					cmdParams.fileName = fileName;
 					if($scope.memberWhereClause) {
 						cmdParams.whereClause = $scope.memberWhereClause;
 					}
