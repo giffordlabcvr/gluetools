@@ -71,8 +71,8 @@ public abstract class AbstractSequenceObject implements NucleotideContentProvide
 			if(cmdContext.getProjectSettingValue(ProjectSettingOption.IGNORE_NT_SEQUENCE_HYPHENS).equals("true")) {
 				processedNucleotides = processedNucleotides.replaceAll("-", "");
 			}
-			String reverseComplementFieldName = cmdContext.getProjectSettingValue(ProjectSettingOption.SEQUENCE_REVERSE_COMPLEMENT_BOOLEAN_FIELD);
-			if(applyReverseComplement)
+			if(applyReverseComplement) {
+				String reverseComplementFieldName = cmdContext.getProjectSettingValue(ProjectSettingOption.SEQUENCE_REVERSE_COMPLEMENT_BOOLEAN_FIELD);
 				if(reverseComplementFieldName != null) {
 					Object reverseComplementFieldValueObj = sequence.readProperty(reverseComplementFieldName);
 					if(reverseComplementFieldValueObj != null) {
@@ -85,28 +85,30 @@ public abstract class AbstractSequenceObject implements NucleotideContentProvide
 						}
 					}
 				}
-		}
-		if(applyRotation) {
-			String rotationFieldName = cmdContext.getProjectSettingValue(ProjectSettingOption.SEQUENCE_ROTATION_INTEGER_FIELD);
-			if(rotationFieldName != null) {
-				Object rotationFieldValueObj = sequence.readProperty(rotationFieldName);
-				if(rotationFieldValueObj != null) {
-					if(rotationFieldValueObj instanceof Integer) {
-						Integer rotationFieldValueInt = (Integer) rotationFieldValueObj;
-						int ntLength = processedNucleotides.length();
-						if(rotationFieldValueInt < 0 || rotationFieldValueInt >= ntLength ) {
-							throw new SequenceException(Code.SEQUENCE_FIELD_ERROR, "Rotation field value "+rotationFieldValueInt+
-									" out of range for sequence "+sequence.getSource().getName()+"/"+sequence.getSequenceID());
+			}
+			if(applyRotation) {
+				String rotationFieldName = cmdContext.getProjectSettingValue(ProjectSettingOption.SEQUENCE_ROTATION_INTEGER_FIELD);
+				if(rotationFieldName != null) {
+					Object rotationFieldValueObj = sequence.readProperty(rotationFieldName);
+					if(rotationFieldValueObj != null) {
+						if(rotationFieldValueObj instanceof Integer) {
+							Integer rotationFieldValueInt = (Integer) rotationFieldValueObj;
+							int ntLength = processedNucleotides.length();
+							if(rotationFieldValueInt < 0 || rotationFieldValueInt >= ntLength ) {
+								throw new SequenceException(Code.SEQUENCE_FIELD_ERROR, "Rotation field value "+rotationFieldValueInt+
+										" out of range for sequence "+sequence.getSource().getName()+"/"+sequence.getSequenceID());
+							}
+							if(rotationFieldValueInt > 0) {
+								processedNucleotides = rightRotate(processedNucleotides, rotationFieldValueInt);
+							}
+						} else {
+							throw new SequenceException(Code.SEQUENCE_FIELD_ERROR, "Sequence field '"+rotationFieldName+"' must be of type INTEGER");
 						}
-						if(rotationFieldValueInt > 0) {
-							processedNucleotides = rightRotate(processedNucleotides, rotationFieldValueInt);
-						}
-					} else {
-						throw new SequenceException(Code.SEQUENCE_FIELD_ERROR, "Sequence field '"+rotationFieldName+"' must be of type INTEGER");
 					}
 				}
 			}
 		}
+
 		return processedNucleotides;
 	}
 	
