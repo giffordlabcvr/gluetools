@@ -49,11 +49,13 @@ import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManager.WebFileType;
 
 @CommandClass( 
 		commandWords={"web-export"}, 
-		docoptUsages={"(-w <whereClause> | -a) -f <fileName>"},
+		docoptUsages={"(-w <whereClause> | -a) [-r] [-t] -f <fileName>"},
 		docoptOptions={
 			"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>  LF or CRLF",
 			"-w <whereClause>, --whereClause <whereClause>        Qualify exported sequences",
 		    "-a, --allSequences                                   Export all project sequences",
+			"-r, --suppressReverseComplement                      Suppress reverse complement",
+			"-t, --suppressRotation                               Suppress rotation",
 			"-f <fileName>, --fileName <fileName>                 FASTA output file"},
 		metaTags = { CmdMeta.webApiOnly },
 		description="Export sequences to a FASTA file") 

@@ -48,14 +48,19 @@ import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 public abstract class BaseExportCommand<R extends CommandResult> extends ModulePluginCommand<R, FastaExporter> implements ProvidedProjectModeCommand {
 	
 	public static final String LINE_FEED_STYLE = "lineFeedStyle";
+	public static final String SUPPRESS_REVERSE_COMPLEMENT = "suppressReverseComplement";
+	public static final String SUPPRESS_ROTATION = "suppressRotation";
 
 	private LineFeedStyle lineFeedStyle;
-
+	private Boolean suppressReverseComplement;
+	private Boolean suppressRotation;
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		lineFeedStyle = Optional.ofNullable(PluginUtils.configureEnumProperty(LineFeedStyle.class, configElem, LINE_FEED_STYLE, false)).orElse(LineFeedStyle.LF);
+		this.suppressReverseComplement = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, SUPPRESS_REVERSE_COMPLEMENT, false)).orElse(false);
+		this.suppressRotation = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, SUPPRESS_ROTATION, false)).orElse(false);
 	}
 
 	protected void export(CommandContext cmdContext, AbstractSequenceSupplier sequenceSupplier, 
@@ -65,7 +70,7 @@ public abstract class BaseExportCommand<R extends CommandResult> extends ModuleP
 			public void consumeSequence(CommandContext cmdContext, Sequence sequence) {
 				String fastaId = fastaExporter.generateFastaId(sequence);
 				printWriter.append(FastaUtils.seqIdCompoundsPairToFasta(fastaId,
-						sequence.getSequenceObject().getNucleotides(cmdContext), lineFeedStyle));
+						sequence.getSequenceObject().getNucleotides(cmdContext, !suppressReverseComplement, !suppressRotation), lineFeedStyle));
 				printWriter.flush();
 			}
 		};
@@ -79,7 +84,7 @@ public abstract class BaseExportCommand<R extends CommandResult> extends ModuleP
 			@Override
 			public void consumeSequence(CommandContext cmdContext, Sequence sequence) {
 				String fastaId = fastaExporter.generateFastaId(sequence);
-				DNASequence ntSequence = FastaUtils.ntStringToSequence(sequence.getSequenceObject().getNucleotides(cmdContext));
+				DNASequence ntSequence = FastaUtils.ntStringToSequence(sequence.getSequenceObject().getNucleotides(cmdContext, !suppressReverseComplement, !suppressRotation));
 				ntFastaMap.put(fastaId, ntSequence);
 			}
 		};

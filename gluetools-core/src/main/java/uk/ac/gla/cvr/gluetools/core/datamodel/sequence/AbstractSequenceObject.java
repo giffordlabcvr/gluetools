@@ -41,6 +41,9 @@ public abstract class AbstractSequenceObject implements NucleotideContentProvide
 
 	private SequenceFormat seqFormat;
 	private String processedNucleotides = null;
+	// whether reverse complement / rotation was applied to processedNucleotides
+	private boolean reverseComplementApplied = true;
+	private boolean rotationApplied = true;
 	private Sequence sequence;
 	
 	public AbstractSequenceObject(SequenceFormat seqFormat, Sequence sequence) {
@@ -54,24 +57,36 @@ public abstract class AbstractSequenceObject implements NucleotideContentProvide
 	}
 
 	public final String getNucleotides(CommandContext cmdContext) {
+		return getNucleotides(cmdContext, true, true);
+	}
+
+	public final String getNucleotides(CommandContext cmdContext, boolean applyReverseComplement, boolean applyRotation) {
+		if(applyReverseComplement != reverseComplementApplied || applyRotation != rotationApplied) {
+			processedNucleotides = null;
+			reverseComplementApplied = applyReverseComplement;
+			rotationApplied = applyRotation;
+		}
 		if(processedNucleotides == null) {
 			processedNucleotides = getNucleotidesInternal(cmdContext).toUpperCase();
 			if(cmdContext.getProjectSettingValue(ProjectSettingOption.IGNORE_NT_SEQUENCE_HYPHENS).equals("true")) {
 				processedNucleotides = processedNucleotides.replaceAll("-", "");
 			}
 			String reverseComplementFieldName = cmdContext.getProjectSettingValue(ProjectSettingOption.SEQUENCE_REVERSE_COMPLEMENT_BOOLEAN_FIELD);
-			if(reverseComplementFieldName != null) {
-				Object reverseComplementFieldValueObj = sequence.readProperty(reverseComplementFieldName);
-				if(reverseComplementFieldValueObj != null) {
-					if(reverseComplementFieldValueObj instanceof Boolean) {
-						if((Boolean) reverseComplementFieldValueObj) {
-							processedNucleotides = FastaUtils.reverseComplement(processedNucleotides);
+			if(applyReverseComplement)
+				if(reverseComplementFieldName != null) {
+					Object reverseComplementFieldValueObj = sequence.readProperty(reverseComplementFieldName);
+					if(reverseComplementFieldValueObj != null) {
+						if(reverseComplementFieldValueObj instanceof Boolean) {
+							if((Boolean) reverseComplementFieldValueObj) {
+								processedNucleotides = FastaUtils.reverseComplement(processedNucleotides);
+							}
+						} else {
+							throw new SequenceException(Code.SEQUENCE_FIELD_ERROR, "Sequence field '"+reverseComplementFieldName+"' must be of type BOOLEAN");
 						}
-					} else {
-						throw new SequenceException(Code.SEQUENCE_FIELD_ERROR, "Sequence field '"+reverseComplementFieldName+"' must be of type BOOLEAN");
 					}
 				}
-			}
+		}
+		if(applyRotation) {
 			String rotationFieldName = cmdContext.getProjectSettingValue(ProjectSettingOption.SEQUENCE_ROTATION_INTEGER_FIELD);
 			if(rotationFieldName != null) {
 				Object rotationFieldValueObj = sequence.readProperty(rotationFieldName);

@@ -49,11 +49,13 @@ import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManager.WebFileType;
 
 @CommandClass( 
 		commandWords={"web-export-member"}, 
-		docoptUsages={"<alignmentName> [-c] [-w <whereClause>] [-y <lineFeedStyle>] -o <fileName>"},
+		docoptUsages={"<alignmentName> [-c] [-w <whereClause>] [-y <lineFeedStyle>] [-r] [-t] -o <fileName>"},
 		docoptOptions={
 				"-c, --recursive                                      Include members of descendent alignments",
 				"-w <whereClause>, --whereClause <whereClause>        Qualify exported members",
 				"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>  LF or CRLF",
+				"-r, --suppressReverseComplement                      Suppress reverse complement",
+				"-t, --suppressRotation                               Suppress rotation",
 			    "-o <fileName>, --fileName <fileName>                 File name"
 		},
 		metaTags = { CmdMeta.webApiOnly },
