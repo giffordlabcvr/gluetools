@@ -310,6 +310,14 @@ public class BlastSequenceRotator extends ModulePlugin<BlastSequenceRotator> {
 				lastQaSeg = qaSeg;
 			}
 		}
+		if(rotationNts != null && rotationNts.equals(0) && status == Status.ROTATION_NECESSARY) {
+			status = Status.NO_ROTATION_NECESSARY;
+			rotationNts = null;
+		}
+		if(rotationNts == null && status == Status.ROTATION_NECESSARY) {
+			status = Status.NO_ROTATION_NECESSARY;
+			rotationNts = null;
+		}
 		return new RotationResultRow(queryId, sequenceLength, status, rotationNts);
 	}
 
