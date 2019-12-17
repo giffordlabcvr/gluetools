@@ -40,7 +40,6 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.blastRecogniser.CategoryResultResolver;
 import uk.ac.gla.cvr.gluetools.core.blastRecogniser.CategoryResultResolverFactory;
-import uk.ac.gla.cvr.gluetools.core.blastRecogniser.RecognitionCategory;
 import uk.ac.gla.cvr.gluetools.core.blastRecogniser.RecognitionCategoryResult;
 import uk.ac.gla.cvr.gluetools.core.blastRecogniser.RecognitionCategoryResult.Direction;
 import uk.ac.gla.cvr.gluetools.core.blastRotator.BlastSequenceRotatorException.Code;
@@ -56,7 +55,6 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
-import uk.ac.gla.cvr.gluetools.programs.blast.BlastHit;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastHsp;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastHspFilter;
 import uk.ac.gla.cvr.gluetools.programs.blast.BlastResult;
@@ -335,6 +333,7 @@ public class BlastSequenceRotator extends ModulePlugin<BlastSequenceRotator> {
 	private String multiDbName() {
 		return "blastSequenceRotator_"+getModuleName();
 	}
+	@SuppressWarnings("unused")
 	private String singleDbName(String refName) {
 		return "blastSequenceRotator_"+getModuleName()+"_"+refName;
 	}
