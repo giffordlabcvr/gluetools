@@ -7,6 +7,9 @@ case "${1}" in
 "hcv_glue" | "ncbi_hcv_glue")
     URL_PREFIX=http://hcv-glue.cvr.gla.ac.uk/hcv_glue_dbs
     ;;
+"hbv_glue" | "ncbi_hbv_glue")
+    URL_PREFIX=http://hbv-glue.cvr.gla.ac.uk/hbv_glue_dbs
+    ;;
 "rabv_glue" | "ncbi_rabv_glue")
     URL_PREFIX=http://rabv.glue.cvr.ac.uk/rabv_glue_dbs
     ;;
