@@ -420,6 +420,18 @@
 				<arg name="settingName">project-version</arg>
 			</simpleCommandFilter>
 			<simpleCommandFilter words="glue-engine show-version"/>
+			<simpleCommandFilter words="show extension-setting">
+				<arg name="extensionName">ncbi_hbv</arg>
+				<arg name="extSettingName">extension-build-id</arg>
+			</simpleCommandFilter>
+			<simpleCommandFilter words="show extension-setting">
+				<arg name="extensionName">ncbi_hbv</arg>
+				<arg name="extSettingName">extension-build-date</arg>
+			</simpleCommandFilter>
+			<simpleCommandFilter words="show extension-setting">
+				<arg name="extensionName">ncbi_hbv</arg>
+				<arg name="extSettingName">extension-version</arg>
+			</simpleCommandFilter>
 			<!-- reference sequence -->
 			<modePathRegexFilter>
 				<regex>.*/reference/.*$</regex>
