@@ -159,7 +159,7 @@ public class AddFeatureSegmentCommand extends FeatureLocModeCommand<CreateResult
 				throw new CommandException(CommandException.Code.COMMAND_FAILED_ERROR, "Region spanning start and end labeled codons "+refSegs.toString()+" is not a single nucleotide segment");
 			}
 			refStart = refSegs.get(0).getRefStart();
-			refStart = refSegs.get(0).getRefEnd();
+			refEnd = refSegs.get(0).getRefEnd();
 		}
 		TranslationModifier translationModifier = null;
 		if(this.translationModifier != null) {
