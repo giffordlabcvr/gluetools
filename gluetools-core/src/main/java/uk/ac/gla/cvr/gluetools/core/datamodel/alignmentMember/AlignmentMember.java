@@ -154,7 +154,9 @@ public class AlignmentMember extends _AlignmentMember {
 	}
 	
 	public List<QueryAlignedSegment> segmentsAsQueryAlignedSegments() {
-		return getAlignedSegments().stream().map(seg -> seg.asQueryAlignedSegment()).collect(Collectors.toList());
+		List<QueryAlignedSegment> qaSegs = getAlignedSegments().stream().map(seg -> seg.asQueryAlignedSegment()).collect(Collectors.toList());
+		ReferenceSegment.sortByRefStart(qaSegs);
+		return qaSegs;
 	}
 	
 	public ReferenceSequence targetReferenceFromMember() {
