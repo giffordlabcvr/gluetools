@@ -150,7 +150,7 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 					initialFeatureRefCodon.setCodonLabel(initialRootRefCodon.getCodonLabel());
 					int upstreamIdx = 1;
 					for(LabeledCodon labeledCodon: upstreamFeatureRefCodons) {
-						labeledCodon.setCodonLabel("upstream-"+upstreamIdx);
+						labeledCodon.setCodonLabel("U"+upstreamIdx);
 						upstreamIdx++;
 					}
 					break;
@@ -180,7 +180,7 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 					finalFeatureRefCodon.setCodonLabel(finalRootRefCodon.getCodonLabel());
 					int downstreamIdx = 1;
 					for(LabeledCodon labeledCodon: downstreamFeatureRefCodons) {
-						labeledCodon.setCodonLabel("downstream-"+downstreamIdx);
+						labeledCodon.setCodonLabel("D"+downstreamIdx);
 						downstreamIdx++;	
 					}
 					break;
