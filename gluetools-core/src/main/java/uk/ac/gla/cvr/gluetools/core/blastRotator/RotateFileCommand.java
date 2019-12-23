@@ -70,7 +70,6 @@ public class RotateFileCommand extends ModulePluginCommand<BlastSequenceRotatorR
 	protected BlastSequenceRotatorResult execute(CommandContext cmdContext, BlastSequenceRotator blastSequenceRotator) {
 		ConsoleCommandContext consoleCommandContext = (ConsoleCommandContext) cmdContext;
 		byte[] fastaBytes = consoleCommandContext.loadBytes(inputFile);
-		FastaUtils.normalizeFastaBytes(cmdContext, fastaBytes);
 		Map<String, DNASequence> querySequenceMap = FastaUtils.parseFasta(fastaBytes);
 		Map<String, RotationResultRow> queryIdToResultRow = blastSequenceRotator.rotate(cmdContext, querySequenceMap);
 		List<RotationResultRow> resultRows = new ArrayList<RotationResultRow>(queryIdToResultRow.values());

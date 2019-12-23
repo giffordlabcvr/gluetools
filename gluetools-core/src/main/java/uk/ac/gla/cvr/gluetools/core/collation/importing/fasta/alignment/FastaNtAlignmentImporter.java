@@ -137,7 +137,6 @@ public abstract class FastaNtAlignmentImporter<I extends FastaNtAlignmentImporte
 		}
 		
 		byte[] fastaFileBytes = cmdContext.loadBytes(fileName);
-		FastaUtils.normalizeFastaBytes(cmdContext, fastaFileBytes);
 		
 		Map<String, DNASequence> sequenceMap = FastaUtils.parseFasta(fastaFileBytes);
 		List<Map<String, Object>> resultListOfMaps = new ArrayList<Map<String, Object>>();

@@ -69,7 +69,6 @@ public class RecogniseFileCommand extends ModulePluginCommand<BlastSequenceRecog
 	protected BlastSequenceRecogniserResult execute(CommandContext cmdContext, BlastSequenceRecogniser blastSequenceRecogniser) {
 		ConsoleCommandContext consoleCommandContext = (ConsoleCommandContext) cmdContext;
 		byte[] fastaBytes = consoleCommandContext.loadBytes(inputFile);
-		FastaUtils.normalizeFastaBytes(cmdContext, fastaBytes);
 		Map<String, DNASequence> querySequenceMap = FastaUtils.parseFasta(fastaBytes);
 		Map<String, List<RecognitionCategoryResult>> queryIdToCatResult = blastSequenceRecogniser.recognise(cmdContext, querySequenceMap);
 		List<BlastSequenceRecogniserResultRow> resultRows = BlastSequenceRecogniserResultRow.rowsFromMap(queryIdToCatResult);

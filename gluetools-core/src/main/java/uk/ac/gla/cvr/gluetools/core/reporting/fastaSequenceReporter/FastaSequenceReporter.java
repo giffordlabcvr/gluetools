@@ -84,7 +84,6 @@ public class FastaSequenceReporter extends ModulePlugin<FastaSequenceReporter> {
 	
 	public static Entry<String, DNASequence> getFastaEntry(ConsoleCommandContext consoleCmdContext, String fileName) {
 		byte[] fastaFileBytes = consoleCmdContext.loadBytes(fileName);
-		FastaUtils.normalizeFastaBytes(consoleCmdContext, fastaFileBytes);
 		Map<String, DNASequence> headerToSeq = FastaUtils.parseFasta(fastaFileBytes);
 		if(headerToSeq.size() > 1) {
 			throw new FastaSequenceException(Code.MULTIPLE_FASTA_FILE_SEQUENCES, fileName);

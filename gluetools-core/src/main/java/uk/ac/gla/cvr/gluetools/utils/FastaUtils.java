@@ -32,8 +32,6 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.logging.Level;
 
-import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
-import uk.ac.gla.cvr.gluetools.core.datamodel.projectSetting.ProjectSettingOption;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.SequenceException.Code;
 import uk.ac.gla.cvr.gluetools.core.document.CommandArray;
@@ -50,16 +48,6 @@ public class FastaUtils {
 	public static final String AMINO_ACID_FASTA_DOC_ROOT = "aminoAcidFasta";
 	public static final String NUCLEOTIDE_FASTA_DOC_ROOT = "nucleotideFasta";
 
-	public static void normalizeFastaBytes(CommandContext cmdContext, byte[] fastaBytes) {
-		if(cmdContext.getProjectSettingValue(ProjectSettingOption.INTERPRET_FASTA_QUESTIONMARK_AS_N).equals("true")) {
-			for(int i = 0; i < fastaBytes.length; i++) {
-				if(fastaBytes[i] == '?') {
-					fastaBytes[i] = 'N';
-				}
-			}
-		}
-	}
-	
 	public static <T extends AbstractSequence> Map<String, T> parseFasta(byte[] fastaBytes,
 			Function<String, T> sequenceCreator, BiFunction<T, String, String> headerParser, boolean trimFastaIdAfterFirstSpace) {
 		Map<String, T> idToSequence = new LinkedHashMap<String, T>();
@@ -113,7 +101,7 @@ public class FastaUtils {
 	
 	public static DNASequence ntStringToSequence(String ntString) {
 		try {
-			return new DNASequence(ntString);
+			return new DNASequence(ntString.replace('?', 'N'));
 		} catch (FastaUtilsException fue) {
 			throw new SequenceException(fue, Code.SEQUENCE_FORMAT_ERROR, "FASTA format error: "+fue.getLocalizedMessage());
 		}

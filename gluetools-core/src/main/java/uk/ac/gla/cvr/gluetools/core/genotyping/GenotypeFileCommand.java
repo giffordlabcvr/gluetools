@@ -60,7 +60,6 @@ public abstract class GenotypeFileCommand<P extends BaseGenotyper<P>> extends Ab
 	protected CommandResult execute(CommandContext cmdContext, P maxLikelihoodGenotyper) {
 		ConsoleCommandContext consoleCommandContext = (ConsoleCommandContext) cmdContext;
 		byte[] fastaBytes = consoleCommandContext.loadBytes(fileName);
-		FastaUtils.normalizeFastaBytes(cmdContext, fastaBytes);
 		Map<String, DNASequence> querySequenceMap = FastaUtils.parseFasta(fastaBytes);
 		File dataDirFile = CommandUtils.ensureDataDir(cmdContext, dataDir);
 		Map<String, QueryGenotypingResult> genotypeResults = maxLikelihoodGenotyper.genotype(cmdContext, querySequenceMap, dataDirFile);

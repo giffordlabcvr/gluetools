@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.FastaSequenceObject;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloFormat;
 import uk.ac.gla.cvr.gluetools.utils.VersionUtils;
 import uk.ac.gla.cvr.gluetools.utils.VersionUtilsException;
@@ -42,7 +43,12 @@ import uk.ac.gla.cvr.gluetools.utils.VersionUtilsException.Code;
 public enum ProjectSettingOption {
 
 	IGNORE_NT_SEQUENCE_HYPHENS("ignore-nt-sequence-hyphens", "If \"true\", any hyphens in the nucleotide section of submitted or stored sequence files will be ignored", "false", new String[]{"true", "false"}),
-	INTERPRET_FASTA_QUESTIONMARK_AS_N("interpret-fasta-questionmark-as-n", "If \"true\", any question mark the nucleotide section of submitted or stored sequence files will be interpreted as an N", "true", new String[]{"true", "false"}),
+	INTERPRET_FASTA_QUESTIONMARK_AS_N("interpret-fasta-questionmark-as-n", "DEPRECATED", null, null) {
+		@Override
+		public void onSet(CommandContext cmdContext, String oldVal, String newVal) {
+			GlueLogger.getGlueLogger().warning("Project setting 'interpret-fasta-questionmark-as-n' is deprecated, question marks are always interpreted as N. You can remove the setting.");
+		}
+	},
 	TRANSLATE_BEYOND_POSSIBLE_STOP("translate-beyond-possible-stop", "If \"true\" translation to proteins will continue beyond a possible but not definite stop codon such as NNN", "false", new String[]{"true", "false"}),
 	TRANSLATE_BEYOND_DEFINITE_STOP("translate-beyond-definite-stop", "If \"true\" translation to proteins will continue beyond a definite stop codon", "false", new String[]{"true", "false"}),
 	INFER_FEATURE_DISPLAY_ORDER("infer-feature-display-order", "If \"true\", feature display order will be inferred from the order in which the features were created.", "false", new String[]{"true", "false"}),

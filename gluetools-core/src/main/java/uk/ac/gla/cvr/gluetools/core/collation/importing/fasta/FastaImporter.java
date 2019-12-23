@@ -110,7 +110,6 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Va
 
 	public CreateResult doImport(ConsoleCommandContext cmdContext, String fileName) {
 		byte[] fastaBytes = cmdContext.loadBytes(fileName);
-		FastaUtils.normalizeFastaBytes(cmdContext, fastaBytes);
 		Map<String, ImporterDNASequence> idToSequence = FastaUtils.parseFasta(fastaBytes, 
 				s -> new ImporterDNASequence(s), 
 				new HeaderParser(), false);

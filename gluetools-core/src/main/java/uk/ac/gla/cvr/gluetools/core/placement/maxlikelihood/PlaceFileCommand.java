@@ -80,7 +80,6 @@ public class PlaceFileCommand extends AbstractPlaceCommand<OkResult> {
 	protected OkResult execute(CommandContext cmdContext, MaxLikelihoodPlacer maxLikelihoodPlacer) {
 		ConsoleCommandContext consoleCommandContext = (ConsoleCommandContext) cmdContext;
 		byte[] fastaBytes = consoleCommandContext.loadBytes(inputFile);
-		FastaUtils.normalizeFastaBytes(cmdContext, fastaBytes);
 		Map<String, DNASequence> querySequenceMap = FastaUtils.parseFasta(fastaBytes);
 		File dataDirFile = CommandUtils.ensureDataDir(consoleCommandContext, getDataDir());
 		PlacerResultInternal placerResultInternal = maxLikelihoodPlacer.place(consoleCommandContext, querySequenceMap, dataDirFile);
