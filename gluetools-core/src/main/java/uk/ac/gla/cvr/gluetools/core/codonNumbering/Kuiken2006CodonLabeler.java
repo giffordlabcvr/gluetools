@@ -117,7 +117,13 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 			featureRefTrlnIdxToCodon[featureRefCodon.getTranslationIndex()] = featureRefCodon;
 		}
 		TIntObjectMap<LabeledCodon> rootRefNtToLabeledCodon = new TIntObjectHashMap<LabeledCodon>();
-		for(LabeledCodon labeledCodon: rootRefFeatureLoc.getLabeledCodons(cmdContext)) {
+		List<LabeledCodon> rootRefLabeledCodons = rootRefFeatureLoc.getLabeledCodons(cmdContext);
+		// actual first labeled codon on the root ref
+		LabeledCodon firstRootRefLabeledCodon = rootRefLabeledCodons.get(0);
+		// actual last labeled codon on the root ref
+		LabeledCodon lastRootRefLabeledCodon = rootRefLabeledCodons.get(rootRefLabeledCodons.size()-1);
+		
+		for(LabeledCodon labeledCodon: rootRefLabeledCodons) {
 			for(ReferenceSegment refSeg: labeledCodon.getLcRefSegments()) {
 				for(int refNt = refSeg.getRefStart(); refNt <= refSeg.getRefEnd(); refNt++) {
 					rootRefNtToLabeledCodon.put(refNt, labeledCodon);
@@ -145,8 +151,8 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 			for(initialFeatureRefCodonIdx = 0; initialFeatureRefCodonIdx < featureRefTrlnIdxToCodon.length; initialFeatureRefCodonIdx++) {
 				initialFeatureRefCodon = featureRefTrlnIdxToCodon[initialFeatureRefCodonIdx];
 				initialRootRefCodon = findRootRefCodon(featureRef, rootRef, feature, featureRefToRootRefSegs, rootRefNtToLabeledCodon,
-						initialFeatureRefCodon, false, false, false, "Initial codon");
-				if(initialRootRefCodon != null) {
+						initialFeatureRefCodon, false, false, true, "Initial codon");
+				if(initialRootRefCodon != null && initialRootRefCodon.getCodonLabel().equals(firstRootRefLabeledCodon.getCodonLabel())) {
 					initialFeatureRefCodon.setCodonLabel(initialRootRefCodon.getCodonLabel());
 					int upstreamIdx = 1;
 					for(LabeledCodon labeledCodon: upstreamFeatureRefCodons) {
@@ -172,11 +178,13 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 
 		if(allowDownstreamLabelling) {
 			List<LabeledCodon> downstreamFeatureRefCodons = new LinkedList<LabeledCodon>();
+			// count back from the end of the feature ref, trying to find the final codon of the root ref.
+			// if you find it, label all subsequent feature ref codons using the Dxx style.
 			for(finalFeatureRefCodonIdx = featureRefTrlnIdxToCodon.length-1; finalFeatureRefCodonIdx > initialFeatureRefCodonIdx; finalFeatureRefCodonIdx--) {
 				finalFeatureRefCodon = featureRefTrlnIdxToCodon[finalFeatureRefCodonIdx];
 				finalRootRefCodon = findRootRefCodon(featureRef, rootRef, feature, featureRefToRootRefSegs, rootRefNtToLabeledCodon,
-						finalFeatureRefCodon, false, false, false, "Final codon");
-				if(finalRootRefCodon != null) {
+						finalFeatureRefCodon, false, false, true, "Final codon");
+				if(finalRootRefCodon != null && finalRootRefCodon.getCodonLabel().equals(lastRootRefLabeledCodon.getCodonLabel())) {
 					finalFeatureRefCodon.setCodonLabel(finalRootRefCodon.getCodonLabel());
 					int downstreamIdx = 1;
 					for(LabeledCodon labeledCodon: downstreamFeatureRefCodons) {
@@ -241,7 +249,8 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 				throw new Kuiken2006CodonLabelerException(Code.MAPPING_ERROR, rootRef.getName(), featureRef.getName(), feature.getName(), featureRefCodonLcSegments.toString(), 
 						codonDesc+" has homology to the the root reference "+featureRefCodonInRootRefSegs+" but is not homologous to any root reference codon");
 			}
-			
+		}
+		if(matchingRootRefCodon != null) {
 			if(!ReferenceSegment.sameRegion(matchingRootRefCodon.getLcRefSegments(), featureRefCodonInRootRefSegs)) {
 				if(mustMatchExactly) {
 					if(featureRefCodonInRootRefSegs.size() == 2) {
@@ -288,11 +297,13 @@ public class Kuiken2006CodonLabeler extends ModulePlugin<Kuiken2006CodonLabeler>
 						}
 						
 					}
-					
-					
-					throw new Kuiken2006CodonLabelerException(Code.MAPPING_ERROR, rootRef.getName(), featureRef.getName(), feature.getName(), featureRefCodonLcSegments.toString(), 
-							codonDesc+" matches some coordinate of codon "+matchingRootRefCodon.getCodonLabel()+" on the root reference ("+featureRefCodonInRootRefSegs.get(0).getRefStart()+") but not the correct region -- "+
-									featureRefCodonInRootRefSegs+" rather than "+matchingRootRefCodon.getLcRefSegments());
+					if(mustMatchCodon) {
+						throw new Kuiken2006CodonLabelerException(Code.MAPPING_ERROR, rootRef.getName(), featureRef.getName(), feature.getName(), featureRefCodonLcSegments.toString(), 
+								codonDesc+" matches some coordinate of codon "+matchingRootRefCodon.getCodonLabel()+" on the root reference ("+featureRefCodonInRootRefSegs.get(0).getRefStart()+") but not the correct region -- "+
+										featureRefCodonInRootRefSegs+" rather than "+matchingRootRefCodon.getLcRefSegments());
+					} else {
+						matchingRootRefCodon = null;
+					}
 				} else {
 					matchingRootRefCodon = null;
 				}
