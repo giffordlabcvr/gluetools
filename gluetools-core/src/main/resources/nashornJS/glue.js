@@ -71,10 +71,34 @@ function tableResultAsObjectList(tableResult) {
 	return objectList;
 }
 
+function GlueError(glueEx) {
+    this.name = 'GlueError';
+    this.message = glueEx.getMessage();
+    this.exClassSimpleName = glueEx.getClass().getSimpleName();
+    this.exClassFullName = glueEx.getClass().getName();
+	this.code = glueEx.getCode().name();
+    var args = {};
+    var argNames = glueEx.getCode().getArgNames();
+    var argValues = glueEx.getErrorArgs();
+    for(var i = 0; i < argNames.length; i++) {
+    	args[argNames[i]] = argValues[i];
+    }
+    this.args = args;
+    this.stack = (new Error()).stack;
+}
+GlueError.prototype = new Error;  
+  
+
 function recastException(x) {
-	var recastEx = new Error(x.getMessage());
-	recastEx.javaEx = x;
-	return(recastEx);
+	if(x instanceof Java.type("uk.ac.gla.cvr.gluetools.core.GlueException")) {
+		var recastEx = new GlueError(x);
+		recastEx.javaEx = x;
+		return(recastEx);
+	} else {
+		var recastEx = new Error(x.getMessage());
+		recastEx.javaEx = x;
+		return(recastEx);
+	}
 }
 
 // the point of this layer is to always throw an ECMAScript exception
