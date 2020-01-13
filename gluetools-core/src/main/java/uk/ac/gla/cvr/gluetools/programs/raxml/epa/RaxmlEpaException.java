@@ -23,32 +23,32 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.programs.raxml;
+package uk.ac.gla.cvr.gluetools.programs.raxml.epa;
 
-import java.util.List;
+import uk.ac.gla.cvr.gluetools.core.GlueException;
 
-import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
+public class RaxmlEpaException extends GlueException {
 
-public class RaxmlUtils {
+	public enum Code implements GlueErrorCode {
 
-	public static String 
-		RAXMLHPC_EXECUTABLE_PROPERTY = "gluetools.core.programs.raxml.raxmlhpc.executable"; 
+		RAXML_EPA_EXIT_138_ASSERTION_ERROR("errorTxt");
 
-	public static String 
-		RAXML_TEMP_DIR_PROPERTY = "gluetools.core.programs.raxml.temp.dir";
-
-	public static String 
-		RAXMLHPC_NUMBER_CPUS = "gluetools.core.programs.raxml.raxmlhpc.cpus";
-
-	
-	public static boolean validRaxmlName(String string) {
-		if(string.length() < 1 || string.length() > 256) {
-			return false;
+		private String[] argNames;
+		private Code(String... argNames) {
+			this.argNames = argNames;
 		}
-		if(!string.matches("[^ \t\n\r\f:\\(\\)\\[\\]]+")) {
-			return false;
+		@Override
+		public String[] getArgNames() {
+			return argNames;
 		}
-		return true;
 	}
 
+	public RaxmlEpaException(Code code, Object... errorArgs) {
+		super(code, errorArgs);
+	}
+
+	public RaxmlEpaException(Throwable cause, Code code,
+			Object... errorArgs) {
+		super(cause, code, errorArgs);
+	}
 }

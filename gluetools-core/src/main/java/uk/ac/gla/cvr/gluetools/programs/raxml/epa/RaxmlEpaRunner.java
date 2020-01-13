@@ -148,6 +148,15 @@ public class RaxmlEpaRunner extends RaxmlRunner {
 			
 			ProcessResult raxmlEpaProcessResult = ProcessUtils.runProcess(null, tempDir, commandWords); 
 
+			if(raxmlEpaProcessResult.getExitCode() == 134) {
+				String errorString = new String(raxmlEpaProcessResult.getErrorBytes());
+				if(errorString.contains("setRateModel: Assertion `rate >= 0.0001 && rate <= 1000000.0' failed")) {
+					throw new RaxmlEpaException(RaxmlEpaException.Code.RAXML_EPA_EXIT_138_ASSERTION_ERROR, 
+							"RAxML EPA exited with code 138 and the stderr mentioned the a failed assertion. This is a known bug which can be worked around by changing the set of inputs.");
+				}
+			}
+
+			
 			ProcessUtils.checkExitCode(commandWords, raxmlEpaProcessResult);
 
 			return resultObjectFromTempDir(tempDir, runSpecifier);
