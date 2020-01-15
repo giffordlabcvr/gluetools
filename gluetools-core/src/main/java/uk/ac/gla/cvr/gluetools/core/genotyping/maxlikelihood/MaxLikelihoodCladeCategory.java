@@ -29,22 +29,32 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.genotyping.BaseCladeCategory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
+import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException.Code;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
 public class MaxLikelihoodCladeCategory extends BaseCladeCategory {
 
 	public static final String DISTANCE_SCALING_EXPONENT = "distanceScalingExponent";
 	public static final String DISTANCE_CUTOFF = "distanceCutoff";
+	public static final String INTERNAL_DISTANCE_CUTOFF = "internalDistanceCutoff";
 	public static final String FINAL_CLADE_CUTOFF = "finalCladeCutoff";
 
 	private Double distanceScalingExponent;
 	private Double distanceCutoff;
+	private Double internalDistanceCutoff;
 	private Double finalCladeCutoff;
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		this.distanceCutoff = PluginUtils.configureDoubleProperty(configElem, DISTANCE_CUTOFF, 0.0, false, null, false, true);
+		this.internalDistanceCutoff = PluginUtils.configureDoubleProperty(configElem, INTERNAL_DISTANCE_CUTOFF, 0.0, false, null, false, false);
+		if(this.internalDistanceCutoff == null) {
+			this.internalDistanceCutoff = this.distanceCutoff;
+		} else if(this.internalDistanceCutoff < this.distanceCutoff) {
+			throw new PluginConfigException(Code.CONFIG_CONSTRAINT_VIOLATION, "The internalDistanceCutoff should be >= distanceCutoff");
+		}
 		this.finalCladeCutoff = PluginUtils.configureDoubleProperty(configElem, FINAL_CLADE_CUTOFF, 50.0, false, 100.0, true, true);
 		this.distanceScalingExponent = PluginUtils.configureDoubleProperty(configElem, DISTANCE_SCALING_EXPONENT, null, false, 0.0, false, true);
 	}
@@ -59,6 +69,10 @@ public class MaxLikelihoodCladeCategory extends BaseCladeCategory {
 
 	public Double getFinalCladeCutoff() {
 		return finalCladeCutoff;
+	}
+
+	public Double getInternalDistanceCutoff() {
+		return internalDistanceCutoff;
 	}
 	
 	

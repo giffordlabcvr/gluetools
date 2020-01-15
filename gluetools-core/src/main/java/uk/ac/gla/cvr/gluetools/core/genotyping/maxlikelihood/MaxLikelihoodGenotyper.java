@@ -29,9 +29,11 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -39,6 +41,8 @@ import org.apache.cayenne.query.SelectQuery;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
@@ -50,7 +54,9 @@ import uk.ac.gla.cvr.gluetools.core.genotyping.QueryCladeCategoryResult;
 import uk.ac.gla.cvr.gluetools.core.genotyping.QueryCladeResult;
 import uk.ac.gla.cvr.gluetools.core.genotyping.QueryGenotypingResult;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
+import uk.ac.gla.cvr.gluetools.core.phylogenyImporter.PhyloImporter;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodPlacer;
@@ -116,6 +122,7 @@ public class MaxLikelihoodGenotyper extends BaseGenotyper<MaxLikelihoodGenotyper
 				queryCladeCategoryResult.categoryDisplayName = cladeCategory.getDisplayName();
 				
 				Double distanceCutoff = cladeCategory.getDistanceCutoff();
+				Double internalDistanceCutoff = cladeCategory.getInternalDistanceCutoff();
 				Double distanceScalingExponent = cladeCategory.getDistanceScalingExponent();
 
 				SelectQuery cladeCategoryAlmtSelectQuery = new SelectQuery(Alignment.class, cladeCategory.getWhereClause());
@@ -132,6 +139,18 @@ public class MaxLikelihoodGenotyper extends BaseGenotyper<MaxLikelihoodGenotyper
 				for(MaxLikelihoodSinglePlacement placement: queryResult.singlePlacement) {
 					PhyloLeaf placementLeaf = MaxLikelihoodPlacer
 							.addPlacementToPhylogeny(glueProjectPhyloTree, edgeIndexToPhyloBranch, queryResult, placement);
+					Set<String> cladesForWhichInternal = getCladesForWhichInternal(placementLeaf);
+					List<String> categoryCladesForWhichInternal = cladesForWhichInternal.stream().filter(s -> cladeCategoryAlmtNameToAlmt.containsKey(s)).collect(Collectors.toList());
+					String categoryCladeForWhichInternal = null;
+					// a new leaf cannot be internal to multiple clades in a given category.
+					if(categoryCladesForWhichInternal.size() > 1) {
+						throw new CommandException(Code.COMMAND_FAILED_ERROR, "MaxLikelihoodGenotyper: query "
+								+queryResult.queryName+" is internal to multiple clades "+categoryCladesForWhichInternal+
+								" within a single category "+cladeCategory.getName()+" implying that the clades are incorrectly defined");
+					} else if(categoryCladesForWhichInternal.size() == 1) {
+						categoryCladeForWhichInternal = categoryCladesForWhichInternal.get(0);
+					}
+					
 					List<PlacementNeighbour> neighbours = PlacementNeighbourFinder.findNeighbours(placementLeaf, null, null);
 					for(PlacementNeighbour neighbour: neighbours) {
 						BigDecimal distance = neighbour.getDistance();
@@ -141,33 +160,48 @@ public class MaxLikelihoodGenotyper extends BaseGenotyper<MaxLikelihoodGenotyper
 								closestTarget = neighbour;
 							}
 						}
-						if(distance.compareTo(new BigDecimal(distanceCutoff)) <= 0) {
-							Double scaledDistance = Math.pow(distance.doubleValue(), distanceScalingExponent) * placement.likeWeightRatio;
-							String neighbourLeafName = neighbour.getPhyloLeaf().getName();
-							List<String> neighbourAncestorAlmtNames = leafNameToAncestorAlmtNames.get(neighbourLeafName);
-							for(String neighbourAncestorAlmtName: neighbourAncestorAlmtNames) {
-								if(cladeCategoryAlmtNameToAlmt.containsKey(neighbourAncestorAlmtName)) {
-									List<PlacementNeighbour> cladeClosestNeighbours = cladeToClosestNeighbours.get(neighbourAncestorAlmtName);
-									if(cladeClosestNeighbours == null) {
-										cladeClosestNeighbours = new ArrayList<PlacementNeighbour>();
-										cladeToClosestNeighbours.put(neighbourAncestorAlmtName, cladeClosestNeighbours);
-									}
-									if(cladeClosestNeighbours.size() == 0 || !useSingleReference) {
-										cladeClosestNeighbours.add(neighbour);
-										Double currentTotal = almtNameToScaledDistanceTotal.get(neighbourAncestorAlmtName);
-										if(useSingleReference) {
-											currentTotal = scaledDistance;
-										} else {
-											if(currentTotal == null) {
-												currentTotal = 0.0;
-											}
-											currentTotal = currentTotal + scaledDistance;
-										}
-										almtNameToScaledDistanceTotal.put(neighbourAncestorAlmtName, currentTotal);
-									}
+						String neighbourLeafName = neighbour.getPhyloLeaf().getName();
+
+						String neighbourCategoryClade = null;
+
+						List<String> neighbourCategoryClades = leafNameToAncestorAlmtNames.get(neighbourLeafName).
+								stream().filter(s -> cladeCategoryAlmtNameToAlmt.containsKey(s)).collect(Collectors.toList());
+						if(neighbourCategoryClades.size() > 1) {
+							throw new CommandException(Code.COMMAND_FAILED_ERROR, "MaxLikelihoodGenotyper: neighbour "
+									+neighbourLeafName+" is a member of multiple clades "+categoryCladesForWhichInternal+
+									" within a single category "+cladeCategory.getName()+" implying that the clades are incorrectly defined");
+						} else if(neighbourCategoryClades.size() == 1) {
+							neighbourCategoryClade = neighbourCategoryClades.get(0);
+						}
+						
+						if(neighbourCategoryClade != null) {
+							// two options, either (a) neighbour is within distanceCutoff of placement leaf.
+							// (b) placement leaf is internal to neighbourCladeCategory and neighbour is within internalDistanceCutoff of placement leaf
+							if(distance.compareTo(new BigDecimal(distanceCutoff)) <= 0 || 
+									( categoryCladeForWhichInternal != null &&
+									neighbourCategoryClade.equals(categoryCladeForWhichInternal) &&
+									distance.compareTo(new BigDecimal(internalDistanceCutoff)) <= 0 )) {
+								Double scaledDistance = Math.pow(distance.doubleValue(), distanceScalingExponent) * placement.likeWeightRatio;
+								List<PlacementNeighbour> cladeClosestNeighbours = cladeToClosestNeighbours.get(neighbourCategoryClade);
+								if(cladeClosestNeighbours == null) {
+									cladeClosestNeighbours = new ArrayList<PlacementNeighbour>();
+									cladeToClosestNeighbours.put(neighbourCategoryClade, cladeClosestNeighbours);
 								}
-							}
-						}	
+								if(cladeClosestNeighbours.size() == 0 || !useSingleReference) {
+									cladeClosestNeighbours.add(neighbour);
+									Double currentTotal = almtNameToScaledDistanceTotal.get(neighbourCategoryClade);
+									if(useSingleReference) {
+										currentTotal = scaledDistance;
+									} else {
+										if(currentTotal == null) {
+											currentTotal = 0.0;
+										}
+										currentTotal = currentTotal + scaledDistance;
+									}
+									almtNameToScaledDistanceTotal.put(neighbourCategoryClade, currentTotal);
+								}
+							}	
+						}
 					}
 					MaxLikelihoodPlacer.removePlacementFromPhylogeny(placementLeaf);
 				}
@@ -235,5 +269,42 @@ public class MaxLikelihoodGenotyper extends BaseGenotyper<MaxLikelihoodGenotyper
 		}
 	}
 	
-	
+	@SuppressWarnings("unchecked")
+	private Set<String> getCladesForWhichInternal(PhyloLeaf placementLeaf) {
+		// if the grandparent internal node of the query, or any more distant ancestor internal node, defines a given clade, 
+		// the query is "internal" to that clade.
+		Set<String> cladesForWhichInternal = new LinkedHashSet<String>();
+		PhyloBranch initialParentPhyloBranch = placementLeaf.getParentPhyloBranch();
+		PhyloInternal parentInternal = null;
+		if(initialParentPhyloBranch != null) {
+			parentInternal  = initialParentPhyloBranch.getParentPhyloInternal();
+		}
+		if(parentInternal != null) {
+			PhyloBranch grandparentPhyloBranch = parentInternal.getParentPhyloBranch();
+			PhyloInternal grandparentInternal = null;
+			if(grandparentPhyloBranch != null) {
+				grandparentInternal = grandparentPhyloBranch.getParentPhyloInternal();
+			}
+			if(grandparentInternal != null) {
+				PhyloInternal internalNode = grandparentInternal;
+				while(internalNode != null) {
+					Map<String, Object> internalUserData = internalNode.getUserData();
+					if(internalUserData != null) {
+						Collection<? extends String> internalClades = (Collection<? extends String>) internalUserData.get(PhyloImporter.GLUE_ALIGNMENT_NAMES_USER_DATA_KEY);
+						if(internalClades != null) {
+							cladesForWhichInternal.addAll(internalClades);
+						}
+					}
+					PhyloBranch parentPhyloBranch = internalNode.getParentPhyloBranch();
+					if(parentPhyloBranch != null) {
+						internalNode = parentPhyloBranch.getParentPhyloInternal();
+					} else {
+						internalNode = null;
+					}
+				}
+			}
+		}
+		return cladesForWhichInternal;
+	}
+
 }
