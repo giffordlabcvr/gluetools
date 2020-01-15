@@ -95,7 +95,13 @@ function recastException(x) {
 		recastEx.javaEx = x;
 		return(recastEx);
 	} else {
-		var recastEx = new Error(x.getMessage());
+		var recastEx;
+		var xMessage = x.getMessage();
+		if(xMessage != null) {
+			recastEx = new Error(x.getMessage());
+		} else {
+			recastEx = new Error("null");
+		}
 		recastEx.javaEx = x;
 		return(recastEx);
 	}
