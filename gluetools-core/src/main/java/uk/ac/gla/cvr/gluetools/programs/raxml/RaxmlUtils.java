@@ -25,10 +25,6 @@
 */
 package uk.ac.gla.cvr.gluetools.programs.raxml;
 
-import java.util.List;
-
-import uk.ac.gla.cvr.gluetools.utils.ProcessUtils.ProcessResult;
-
 public class RaxmlUtils {
 
 	public static String 
