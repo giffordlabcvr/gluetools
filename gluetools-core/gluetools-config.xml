@@ -478,8 +478,39 @@
 		</modePathRegexFilter>
 
 
+		<!-- COV-GLUE -->
+		<modePathRegexFilter>
+			<regex>^/project/cov</regex>
+			<!-- general -->
+			<simpleCommandFilter words="glue-engine show-version"/>
+			<!-- analysis -->
+			<modePathRegexFilter>
+				<regex>.*/module/covReportingController$</regex>
+				<simpleCommandFilter words="invoke-consumes-binary-function">
+					<arg name="functionName">reportFastaWeb</arg>
+					<queueAssignmentFilter>
+						<queueName>analysis</queueName>						
+					</queueAssignmentFilter>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/module/covVisualisationUtility$</regex>
+				<simpleCommandFilter words="visualise-feature"/>
+			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/module/covFeatureToSvgTransformer$</regex>
+				<simpleCommandFilter words="transform-to-web-file"/>
+			</modePathRegexFilter>		
+			<modePathRegexFilter>
+				<regex>.*/module/covSvgPhyloVisualisation$</regex>
+				<simpleCommandFilter words="invoke-function">
+					<arg name="functionName">visualisePhyloAsSvg</arg>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
+		</modePathRegexFilter>
 
 
+		<!-- GLUEtools app -->
 		<modePathRegexFilter>
 			<regex>^/</regex>
 			<simpleCommandFilter words="webdocs list-command-modes"/>
