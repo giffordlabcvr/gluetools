@@ -170,9 +170,6 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		if(phyloAlignment == null) {
 			throw new MaxLikelihoodPlacerException(Code.CONFIG_ERROR, "No such alignment \""+phyloAlignmentName+"\"");
 		}
-		if(!phyloAlignment.isConstrained()) {
-			throw new MaxLikelihoodPlacerException(Code.CONFIG_ERROR, "The phyloAlignment \""+phyloAlignmentName+"\" must be constrained");
-		}
 		Project project = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject();
 		project.checkProperty(ConfigurableTable.alignment.name(), phyloFieldName, EnumSet.of(FieldType.VARCHAR, FieldType.CLOB), true);
 
