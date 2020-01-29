@@ -28,6 +28,7 @@ package uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.protein
 import java.io.BufferedOutputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
+import java.util.Map;
 
 import org.w3c.dom.Element;
 
@@ -36,15 +37,18 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException;
 import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
+import uk.ac.gla.cvr.gluetools.core.command.result.AminoAcidFastaCommandResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.CommandWebFileResult;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManager;
 import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManager.WebFileType;
+import uk.ac.gla.cvr.gluetools.utils.fasta.ProteinSequence;
 
 @CommandClass( 
 		commandWords={"web-export"}, 
-		docoptUsages={"<alignmentName> (-s <selectorName> | -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd>]) [-c] (-w <whereClause> | -a) [-e] -o <fileName>"},
+		docoptUsages={"<alignmentName> (-s <selectorName> | -r <relRefName> -f <featureName> [-l <lcStart> <lcEnd>]) [-c] (-w <whereClause> | -a) [-e] (-o <fileName> | -p)"},
 		docoptOptions={
 			"-s <selectorName>, --selectorName <selectorName>     Columns selector module",
 			"-r <relRefName>, --relRefName <relRefName>           Related reference",
@@ -55,36 +59,47 @@ import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManager.WebFileType;
 		    "-a, --allMembers                                     Export all members",
 		    "-e, --excludeEmptyRows                               Exclude empty rows",
 		    "-o <fileName>, --fileName <fileName>                 File name", 
+			"-p, --preview                                        Preview output", 
 		},
 		metaTags = { CmdMeta.webApiOnly }, description = "Export protein alignment (web API)") 
-public class FastaProteinAlignmentWebExportCommand extends BaseFastaProteinAlignmentExportCommand<CommandWebFileResult> {
+public class FastaProteinAlignmentWebExportCommand extends BaseFastaProteinAlignmentExportCommand<CommandResult> {
 
+	public static final String PREVIEW = "preview";
 	public static final String FILE_NAME = "fileName";
-	
+
+	private Boolean preview;
 	private String fileName;
-	
-	@Override
-	public void configure(PluginConfigContext pluginConfigContext,
-			Element configElem) {
+
+	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
-		this.fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, true);
+		fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, false);
+		preview = PluginUtils.configureBooleanProperty(configElem, PREVIEW, true);
+		if(fileName == null && !preview || fileName != null && preview) {
+			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <fileName> or <preview> must be specified, but not both");
+		}
 	}
+
 	
 	@Override
-	protected CommandWebFileResult execute(CommandContext cmdContext, FastaProteinAlignmentExporter almtExporter) {
-		WebFilesManager webFilesManager = cmdContext.getGluetoolsEngine().getWebFilesManager();
-		String subDirUuid = webFilesManager.createSubDir(WebFileType.DOWNLOAD);
-		webFilesManager.createWebFileResource(WebFileType.DOWNLOAD, subDirUuid, fileName);
-		
-		try(OutputStream outputStream = webFilesManager.appendToWebFileResource(WebFileType.DOWNLOAD, subDirUuid, fileName)) {
-			PrintWriter printWriter = new PrintWriter(new BufferedOutputStream(outputStream, 65536));
-			super.exportProteinAlignment(cmdContext, almtExporter, printWriter);
-		} catch(Exception e) {
-			throw new CommandException(e, Code.COMMAND_FAILED_ERROR, "Write to web file resource "+subDirUuid+"/"+fileName+" failed: "+e.getMessage());
+	protected CommandResult execute(CommandContext cmdContext, FastaProteinAlignmentExporter almtExporter) {
+		if(preview) {
+			Map<String, ProteinSequence> proteinFastaMap = super.exportProteinAlignment(cmdContext, almtExporter);
+			return new AminoAcidFastaCommandResult(proteinFastaMap);
+		} else {
+			WebFilesManager webFilesManager = cmdContext.getGluetoolsEngine().getWebFilesManager();
+			String subDirUuid = webFilesManager.createSubDir(WebFileType.DOWNLOAD);
+			webFilesManager.createWebFileResource(WebFileType.DOWNLOAD, subDirUuid, fileName);
+			
+			try(OutputStream outputStream = webFilesManager.appendToWebFileResource(WebFileType.DOWNLOAD, subDirUuid, fileName)) {
+				PrintWriter printWriter = new PrintWriter(new BufferedOutputStream(outputStream, 65536));
+				super.exportProteinAlignment(cmdContext, almtExporter, printWriter);
+			} catch(Exception e) {
+				throw new CommandException(e, Code.COMMAND_FAILED_ERROR, "Write to web file resource "+subDirUuid+"/"+fileName+" failed: "+e.getMessage());
+			}
+			String webFileSizeString = webFilesManager.getSizeString(WebFileType.DOWNLOAD, subDirUuid, fileName);
+			
+			return new CommandWebFileResult("fastaProteinAlignmentWebExportResult", WebFileType.DOWNLOAD, subDirUuid, fileName, webFileSizeString);
 		}
-		String webFileSizeString = webFilesManager.getSizeString(WebFileType.DOWNLOAD, subDirUuid, fileName);
-		
-		return new CommandWebFileResult("fastaProteinAlignmentWebExportResult", WebFileType.DOWNLOAD, subDirUuid, fileName, webFileSizeString);
 	}
 	
 
