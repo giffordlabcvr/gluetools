@@ -23,7 +23,7 @@ public class ProteinSequence extends AbstractSequence {
 		String aaStringUpper = aaString.toUpperCase();
 		for(int i = 0; i < aaStringUpper.length(); i++) {
 			char stringChar = aaStringUpper.charAt(i);
-			if(stringChar < 0 || stringChar >= MAX_CHAR || !charValid[stringChar]) {
+			if(stringChar != 'X' && ( stringChar < 0 || stringChar >= MAX_CHAR || !charValid[stringChar])) {
 				throw new FastaUtilsException(Code.INVALID_AMINO_ACID_CHARACTER, "'"+new String(new char[] {stringChar})+"'", Integer.toString(i+1));
 			}
 		}
