@@ -65,6 +65,7 @@ public class PhyloUtility extends ModulePlugin<PhyloUtility> {
 		super();
 		registerModulePluginCmdClass(RerootPhylogenyCommand.class);
 		registerModulePluginCmdClass(RerootAlignmentPhylogenyCommand.class);
+		registerModulePluginCmdClass(ReadAlignmentPhylogenyCommand.class);
 		registerModulePluginCmdClass(ReformatPhylogenyCommand.class);
 		registerModulePluginCmdClass(UpdateAncestorBranchesCommand.class);
 		registerModulePluginCmdClass(UpdateAncestorSubtreesCommand.class);
