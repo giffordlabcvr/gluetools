@@ -507,21 +507,21 @@
 					<arg name="functionName">visualisePhyloAsSvg</arg>
 				</simpleCommandFilter>
 			</modePathRegexFilter>
-			<!-- mutations page -->
+			<!-- replacements page -->
 			<simpleCommandFilter words="count custom-table-row">
-				<arg name="tableName">cov_mutation</arg>
+				<arg name="tableName">cov_replacement</arg>
 			</simpleCommandFilter>
 			<simpleCommandFilter words="multi-render">
-				<arg name="tableName">cov_mutation</arg>
-				<arg name="rendererModuleName">covListMutationsRenderer</arg>
+				<arg name="tableName">cov_replacement</arg>
+				<arg name="rendererModuleName">covListReplacementsRenderer</arg>
 			</simpleCommandFilter>
-			<!-- mutation page -->
+			<!-- replacement page -->
 			<simpleCommandFilter words="count sequence"/>
 			<simpleCommandFilter words="list sequence"/>
 			<modePathRegexFilter>
-				<regex>.*/custom-table-row/cov_mutation/.*$</regex>
+				<regex>.*/custom-table-row/cov_replacement/.*$</regex>
 				<simpleCommandFilter words="render-object">
-					<arg name="rendererModuleName">covMutationRenderer</arg>
+					<arg name="rendererModuleName">covReplacementRenderer</arg>
 				</simpleCommandFilter>
 			</modePathRegexFilter>
 		</modePathRegexFilter>
