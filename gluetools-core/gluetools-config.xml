@@ -507,6 +507,23 @@
 					<arg name="functionName">visualisePhyloAsSvg</arg>
 				</simpleCommandFilter>
 			</modePathRegexFilter>
+			<!-- mutations page -->
+			<simpleCommandFilter words="count custom-table-row">
+				<arg name="tableName">cov_mutation</arg>
+			</simpleCommandFilter>
+			<simpleCommandFilter words="multi-render">
+				<arg name="tableName">cov_mutation</arg>
+				<arg name="rendererModuleName">covListMutationsRenderer</arg>
+			</simpleCommandFilter>
+			<!-- mutation page -->
+			<simpleCommandFilter words="count sequence"/>
+			<simpleCommandFilter words="list sequence"/>
+			<modePathRegexFilter>
+				<regex>.*/custom-table-row/cov_mutation/.*$</regex>
+				<simpleCommandFilter words="render-object">
+					<arg name="rendererModuleName">covMutationRenderer</arg>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
 		</modePathRegexFilter>
 
 
