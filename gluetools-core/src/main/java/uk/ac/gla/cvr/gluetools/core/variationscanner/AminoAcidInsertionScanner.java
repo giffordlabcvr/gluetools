@@ -68,7 +68,7 @@ public class AminoAcidInsertionScanner extends BaseAminoAcidVariationScanner<Ami
 		this.referenceNucleotides = featureLoc.getReferenceSequence()
 				.getSequence().getSequenceObject().getNucleotides(cmdContext);
 		this.startNtToLabeledCodon = featureLoc.getStartRefNtToLabeledCodon(cmdContext);
-		this.endNtToLabeledCodon = featureLoc.getStartRefNtToLabeledCodon(cmdContext);
+		this.endNtToLabeledCodon = featureLoc.getEndRefNtToLabeledCodon(cmdContext);
 		this.lcRefSegs = featureLoc.getLabeledCodonReferenceSegments(cmdContext);
 		Integer configuredFlankingAas = getIntMetatagValue(VariationMetatagType.FLANKING_AAS);
 		if(configuredFlankingAas != null) {
@@ -150,19 +150,18 @@ public class AminoAcidInsertionScanner extends BaseAminoAcidVariationScanner<Ami
 										(maxInsertionLengthAas == null || insertedRegionLength <= (maxInsertionLengthAas*3)) ) {
 									String insertedQryNts = FastaUtils.subSequence(queryNts, qryFirstInsertedNt, qryLastInsertedNt).toString();
 									boolean insertionIsCodonAligned = false;
-									String refLastCodonBeforeIns = null;
-									String refFirstCodonAfterIns = null;
+									LabeledCodon refLastCodonBeforeIns = endNtToLabeledCodon.get(refLastNtBeforeIns);
+									LabeledCodon refFirstCodonAfterIns = startNtToLabeledCodon.get(refFirstNtAfterIns);
 									String insertedQryAas = null;
-									if(endNtToLabeledCodon.get(refLastNtBeforeIns) != null &&
-											startNtToLabeledCodon.get(refFirstNtAfterIns) != null && 
+									if(refLastCodonBeforeIns != null &&
+											refFirstCodonAfterIns != null && 
 											insertedRegionLength % 3 == 0) {
 										insertionIsCodonAligned = true;
-										refLastCodonBeforeIns = endNtToLabeledCodon.get(refLastNtBeforeIns).getCodonLabel();
-										refFirstCodonAfterIns = startNtToLabeledCodon.get(refFirstNtAfterIns).getCodonLabel();
 										insertedQryAas = TranslationUtils.translateToAaString(insertedQryNts);
 									} 
 									matchResults.add(new AminoAcidInsertionMatchResult(
-											refLastCodonBeforeIns, refFirstCodonAfterIns, 
+											refLastCodonBeforeIns == null ? null : refLastCodonBeforeIns.getCodonLabel(), 
+											refFirstCodonAfterIns == null ? null : refFirstCodonAfterIns.getCodonLabel(), 
 											refLastNtBeforeIns, refFirstNtAfterIns, 
 											qryFirstInsertedNt, qryLastInsertedNt, 
 											insertedQryNts, insertedQryAas,
