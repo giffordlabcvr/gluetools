@@ -30,6 +30,7 @@ import java.util.List;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.codonNumbering.LabeledQueryAminoAcid;
+import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.IAminoAcidAlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
@@ -79,6 +80,26 @@ public abstract class MemberBaseAminoAcidCommand<R extends CommandResult> extend
 		return labeledQueryAminoAcids;
 	}
 
+	public static List<LabeledQueryAminoAcid> memberAminoAcids(CommandContext cmdContext,
+			AlignmentMember almtMember, IAminoAcidAlignmentColumnsSelector aaColumnsSelector) {
+		aaColumnsSelector.checkAminoAcidSelector(cmdContext);
+		Alignment alignment = almtMember.getAlignment();
+
+		List<QueryAlignedSegment> memberToAlmtSegs = almtMember.segmentsAsQueryAlignedSegments();
+		String relatedRefName = aaColumnsSelector.getRelatedRefName();
+		ReferenceSequence relatedRef = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(relatedRefName));
+		List<QueryAlignedSegment> memberToRelatedRefSegs = alignment.translateToRelatedRef(cmdContext, memberToAlmtSegs, relatedRef);
+
+		Sequence memberSequence = almtMember.getSequence();
+		NucleotideContentProvider memberSeqObj = memberSequence.getSequenceObject();
+
+		Translator translator = new CommandContextTranslator(cmdContext);
+		List<LabeledQueryAminoAcid> labeledQueryAminoAcids = 
+				aaColumnsSelector.translateQueryNucleotides(cmdContext, translator, memberToRelatedRefSegs, memberSeqObj);
+		return labeledQueryAminoAcids;
+	}
+
+	
 	protected List<LabeledQueryAminoAcid> getMemberAminoAcids(
 			CommandContext cmdContext) {
 		AlignmentMember almtMember = lookupMember(cmdContext);
@@ -90,6 +111,14 @@ public abstract class MemberBaseAminoAcidCommand<R extends CommandResult> extend
 		feature.checkCodesAminoAcids();
 		List<LabeledQueryAminoAcid> memberAminoAcids = memberAminoAcids(cmdContext, almtMember, relatedRef, featureLoc);
 		return memberAminoAcids;
+	}
+
+	protected String getRelRefName() {
+		return relRefName;
+	}
+
+	protected String getFeatureName() {
+		return featureName;
 	}
 
 
