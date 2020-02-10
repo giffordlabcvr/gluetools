@@ -126,7 +126,7 @@ public class Hanada2006Classification {
 			AminoAcidGroup originalGroup = aaIntClassifierToGroup[originalAAint][propClassOrdinal];
 			AminoAcidGroup replacementGroup = aaIntClassifierToGroup[replacementAAint][propClassOrdinal];
 			replClassification[propClassOrdinal] = new ReplacementClassification(propClass.longName, propClass.shortName, 
-					originalGroup.description, replacementGroup.description, originalGroup == replacementGroup);
+					originalGroup.description, replacementGroup.description, originalGroup != replacementGroup);
 		}
 		return replClassification;
 	}
