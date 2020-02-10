@@ -507,21 +507,34 @@
 					<arg name="functionName">visualisePhyloAsSvg</arg>
 				</simpleCommandFilter>
 			</modePathRegexFilter>
-			<!-- replacements page -->
+			<!-- replacements and deletions pages -->
 			<simpleCommandFilter words="count custom-table-row">
 				<arg name="tableName">cov_replacement</arg>
+			</simpleCommandFilter>
+			<simpleCommandFilter words="count custom-table-row">
+				<arg name="tableName">cov_deletion</arg>
 			</simpleCommandFilter>
 			<simpleCommandFilter words="multi-render">
 				<arg name="tableName">cov_replacement</arg>
 				<arg name="rendererModuleName">covListReplacementsRenderer</arg>
 			</simpleCommandFilter>
-			<!-- replacement page -->
+			<simpleCommandFilter words="multi-render">
+				<arg name="tableName">cov_deletion</arg>
+				<arg name="rendererModuleName">covListDeletionsRenderer</arg>
+			</simpleCommandFilter>
+			<!-- replacement and deletion page -->
 			<simpleCommandFilter words="count sequence"/>
 			<simpleCommandFilter words="list sequence"/>
 			<modePathRegexFilter>
 				<regex>.*/custom-table-row/cov_replacement/.*$</regex>
 				<simpleCommandFilter words="render-object">
 					<arg name="rendererModuleName">covReplacementRenderer</arg>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/custom-table-row/cov_deletion/.*$</regex>
+				<simpleCommandFilter words="render-object">
+					<arg name="rendererModuleName">covDeletionRenderer</arg>
 				</simpleCommandFilter>
 			</modePathRegexFilter>
 		</modePathRegexFilter>
