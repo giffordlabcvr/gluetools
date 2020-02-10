@@ -63,6 +63,8 @@ import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodPlacer;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginGroupRegistry;
 import uk.ac.gla.cvr.gluetools.core.replacementClassification.Hanada2006ReplacementClassifier;
+import uk.ac.gla.cvr.gluetools.core.replacementDistance.Grantham1974DistanceCalculator;
+import uk.ac.gla.cvr.gluetools.core.replacementDistance.Miyata1979DistanceCalculator;
 import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.figtree.annotationExporter.FigTreeAnnotationExporter;
@@ -178,6 +180,8 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		
 		setModulePluginGroup(new ModulePluginGroup("fineGrainedAminoAcid", "Module types for fine-grained amino acid analysis", 93));
 		registerPluginClass(Hanada2006ReplacementClassifier.class);
+		registerPluginClass(Grantham1974DistanceCalculator.class);
+		registerPluginClass(Miyata1979DistanceCalculator.class);
 	}
 
 	

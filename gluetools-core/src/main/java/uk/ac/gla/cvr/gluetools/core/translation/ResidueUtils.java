@@ -113,7 +113,7 @@ public class ResidueUtils {
 
 	public static final int AA_NUM_VALUES = 21;
 
-	private static int aaShortNameToInt(String shortName) {
+	public static int aaShortNameToInt(String shortName) {
 		switch(shortName) {
 		case "Ala":
 		    return AA_A;
