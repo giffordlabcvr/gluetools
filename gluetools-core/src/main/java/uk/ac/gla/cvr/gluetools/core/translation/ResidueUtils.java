@@ -113,6 +113,53 @@ public class ResidueUtils {
 
 	public static final int AA_NUM_VALUES = 21;
 
+	private static int aaShortNameToInt(String shortName) {
+		switch(shortName) {
+		case "Ala":
+		    return AA_A;
+		case "Cys":
+		    return AA_C;
+		case "Asp":
+		    return AA_D;
+		case "Glu":
+		    return AA_E;
+		case "Phe":
+		    return AA_F;
+		case "Gly":
+		    return AA_G;
+		case "His":
+		    return AA_H;
+		case "Ile":
+		    return AA_I;
+		case "Lys":
+		    return AA_K;
+		case "Leu":
+		    return AA_L;
+		case "Met":
+		    return AA_M;
+		case "Asn":
+		    return AA_N;
+		case "Pro":
+		    return AA_P;
+		case "Gln":
+		    return AA_Q;
+		case "Arg":
+		    return AA_R;
+		case "Ser":
+		    return AA_S;
+		case "Thr":
+		    return AA_T;
+		case "Val":
+		    return AA_V;
+		case "Trp":
+		    return AA_W;
+		case "Tyr":
+		    return AA_Y;
+		default:
+			throw new ResidueUtilsException(ResidueUtilsException.Code.UNKNOWN_AMINO_ACID_SHORT_NAME, shortName);
+		}
+	}
+	
 	
 	public static char intToAmbigNt(int intAmbigNt) {
 		return ALL_AMBIG_NTS.charAt(intAmbigNt);

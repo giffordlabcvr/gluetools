@@ -62,6 +62,7 @@ import uk.ac.gla.cvr.gluetools.core.phylogenyImporter.PhyloImporter;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodPlacer;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginGroupRegistry;
+import uk.ac.gla.cvr.gluetools.core.replacementClassification.Hanada2006ReplacementClassifier;
 import uk.ac.gla.cvr.gluetools.core.reporting.alignmentColumnSelector.AlignmentColumnsSelector;
 import uk.ac.gla.cvr.gluetools.core.reporting.fastaSequenceReporter.FastaSequenceReporter;
 import uk.ac.gla.cvr.gluetools.core.reporting.figtree.annotationExporter.FigTreeAnnotationExporter;
@@ -157,6 +158,8 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(TranslationModifier.class);
 
 		
+		
+		
 		setModulePluginGroup(new ModulePluginGroup("experimentalUnsupported", "Experimental / unsupported module types", 91));
 		registerPluginClass(ModelTester.class);
 		registerPluginClass(DigsImporter.class);
@@ -172,6 +175,9 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		setModulePluginGroup(new ModulePluginGroup("visualisation", "Visualisation module types", 92));
 		registerPluginClass(VisualisationUtility.class);
 		registerPluginClass(TreeVisualiser.class);
+		
+		setModulePluginGroup(new ModulePluginGroup("fineGrainedAminoAcid", "Module types for fine-grained amino acid analysis", 93));
+		registerPluginClass(Hanada2006ReplacementClassifier.class);
 	}
 
 	
