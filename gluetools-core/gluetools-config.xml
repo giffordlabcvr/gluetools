@@ -537,6 +537,10 @@
 					<arg name="rendererModuleName">covDeletionRenderer</arg>
 				</simpleCommandFilter>
 			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/module/covHanada2006ReplacementClassifier$</regex>
+				<simpleCommandFilter words="classify replacement"/>
+			</modePathRegexFilter>
 		</modePathRegexFilter>
 
 
