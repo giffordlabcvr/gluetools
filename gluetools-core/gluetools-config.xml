@@ -484,6 +484,7 @@
 			<!-- general -->
 			<simpleCommandFilter words="glue-engine show-version"/>
 			<!-- analysis -->
+			<simpleCommandFilter words="list feature"/>
 			<modePathRegexFilter>
 				<regex>.*/module/covReportingController$</regex>
 				<simpleCommandFilter words="invoke-consumes-binary-function">
