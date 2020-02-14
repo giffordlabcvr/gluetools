@@ -159,6 +159,54 @@ public class ResidueUtils {
 			throw new ResidueUtilsException(ResidueUtilsException.Code.UNKNOWN_AMINO_ACID_SHORT_NAME, shortName);
 		}
 	}
+
+	public static String aaIntToShortName(int aaInt) {
+		switch(aaInt) {
+		case AA_A:
+		    return "Ala";
+		case AA_C:
+		    return "Cys";
+		case AA_D:
+		    return "Asp";
+		case AA_E:
+		    return "Glu";
+		case AA_F:
+		    return "Phe";
+		case AA_G:
+		    return "Gly";
+		case AA_H:
+		    return "His";
+		case AA_I:
+		    return "Ile";
+		case AA_K:
+		    return "Lys";
+		case AA_L:
+		    return "Leu";
+		case AA_M:
+		    return "Met";
+		case AA_N:
+		    return "Asn";
+		case AA_P:
+		    return "Pro";
+		case AA_Q:
+		    return "Gln";
+		case AA_R:
+		    return "Arg";
+		case AA_S:
+		    return "Ser";
+		case AA_T:
+		    return "Thr";
+		case AA_V:
+		    return "Val";
+		case AA_W:
+		    return "Trp";
+		case AA_Y:
+		    return "Tyr";
+		default:
+			throw new ResidueUtilsException(ResidueUtilsException.Code.AA_INT_DOES_NOT_HAVE_SHORT_NAME, aaInt);
+		}
+	}
+
 	
 	
 	public static char intToAmbigNt(int intAmbigNt) {

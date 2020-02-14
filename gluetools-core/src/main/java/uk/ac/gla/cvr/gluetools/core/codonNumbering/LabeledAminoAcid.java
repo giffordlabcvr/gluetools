@@ -26,6 +26,7 @@
 package uk.ac.gla.cvr.gluetools.core.codonNumbering;
 
 import uk.ac.gla.cvr.gluetools.core.translation.AmbigNtTripletInfo;
+import uk.ac.gla.cvr.gluetools.core.translation.ResidueUtils;
 
 public class LabeledAminoAcid {
 
@@ -47,6 +48,14 @@ public class LabeledAminoAcid {
 
 	public AmbigNtTripletInfo getTranslationInfo() {
 		return translationInfo;
+	}
+
+	public String getAaShortName() {
+		char singleCharAA = translationInfo.getSingleCharTranslation();
+		if(singleCharAA == '-' || singleCharAA == 'X' || singleCharAA == '*') {
+			return null;
+		}
+		return ResidueUtils.aaIntToShortName(ResidueUtils.aaToInt(singleCharAA));
 	}
 	
 	

@@ -31,7 +31,8 @@ public class ResidueUtilsException extends GlueException {
 
 	public enum Code implements GlueErrorCode {
 		
-		UNKNOWN_AMINO_ACID_SHORT_NAME("unknownShortName");
+		UNKNOWN_AMINO_ACID_SHORT_NAME("unknownShortName"),
+		AA_INT_DOES_NOT_HAVE_SHORT_NAME("aaInt");
 
 		private String[] argNames;
 		private Code(String... argNames) {
