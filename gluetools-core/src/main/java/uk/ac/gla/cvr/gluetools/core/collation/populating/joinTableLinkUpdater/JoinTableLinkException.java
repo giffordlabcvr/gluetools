@@ -23,33 +23,34 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.collation.populating.xml;
+package uk.ac.gla.cvr.gluetools.core.collation.populating.joinTableLinkUpdater;
 
-import org.w3c.dom.Element;
+import uk.ac.gla.cvr.gluetools.core.GlueException;
 
-import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
+public class JoinTableLinkException extends GlueException {
 
-public class XmlPopulatorRuleFactory extends PluginFactory<XmlPopulatorRule>{
+	public enum Code implements GlueErrorCode {
+		CONFIG_ERROR("errorTxt"),
+		JOIN_TABLE_LINK_UPDATE_FAILED("errorTxt");
 
-	protected XmlPopulatorRuleFactory() {
-		super();
-		registerPluginClass(IsoCountryPropertyPopulatorRule.class);
-		registerPluginClass(XmlPropertyPopulatorRule.class);
-		registerPluginClass(XPathNodesRule.class);
-		registerPluginClass(XmlCreateCustomTableRowRule.class);
-		registerPluginClass(XmlJoinTableLinkRule.class);
+		private String[] argNames;
+		private Code(String... argNames) {
+			this.argNames = argNames;
+		}
+		@Override
+		public String[] getArgNames() {
+			return argNames;
+		}
 
-		// deprecated
-		registerPluginClass(IsoCountryFieldPopulatorRule.class);
-		registerPluginClass(XmlFieldPopulatorRule.class);
+	}
+
+	public JoinTableLinkException(Code code, Object... errorArgs) {
+		super(code, errorArgs);
+	}
+
+	public JoinTableLinkException(Throwable cause, Code code,
+			Object... errorArgs) {
+		super(cause, code, errorArgs);
 	}
 	
-	@Override
-	public XmlPopulatorRule instantiateFromElement(Element element) {
-		XmlPopulatorRule xmlPopulatorRule = super.instantiateFromElement(element);
-		xmlPopulatorRule.setRuleFactory(this);
-		return xmlPopulatorRule;
-	}
-
-
 }

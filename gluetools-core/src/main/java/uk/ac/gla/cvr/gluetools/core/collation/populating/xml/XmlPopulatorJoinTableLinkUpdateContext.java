@@ -23,34 +23,24 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.collation.populating.customRowCreator;
+package uk.ac.gla.cvr.gluetools.core.collation.populating.xml;
 
-import uk.ac.gla.cvr.gluetools.core.GlueException;
+import java.util.ArrayList;
+import java.util.List;
 
-public class PropertyPopulatorException extends GlueException {
+import uk.ac.gla.cvr.gluetools.core.collation.populating.joinTableLinkUpdater.JoinTableLinkUpdate;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 
-	public enum Code implements GlueErrorCode {
-		INVALID_PATH("startTable", "propertyPath", "errorTxt"),
-		NULL_LINK_TARGET("sourceName", "sequenceID", "propertyPath");
+public class XmlPopulatorJoinTableLinkUpdateContext extends XmlPopulatorContext {
 
-		private String[] argNames;
-		private Code(String... argNames) {
-			this.argNames = argNames;
-		}
-		@Override
-		public String[] getArgNames() {
-			return argNames;
-		}
-
-	}
-
-	public PropertyPopulatorException(Code code, Object... errorArgs) {
-		super(code, errorArgs);
-	}
-
-	public PropertyPopulatorException(Throwable cause, Code code,
-			Object... errorArgs) {
-		super(cause, code, errorArgs);
-	}
+	private List<JoinTableLinkUpdate> joinTableLinkUpdates = new ArrayList<JoinTableLinkUpdate>();
 	
+	public XmlPopulatorJoinTableLinkUpdateContext(CommandContext cmdContext, Sequence sequence) {
+		super(cmdContext, sequence);
+	}
+
+	public List<JoinTableLinkUpdate> getJoinTableLinkUpdates() {
+		return joinTableLinkUpdates;
+	}
 }

@@ -43,13 +43,24 @@ public class GenbankReferenceRule extends NodeSelectorRule {
 
 	@Override
 	public void configureLocal(PluginConfigContext pluginConfigContext, Element configElem) {
-		String refNumberXPath = "@refNumber";
-		String refNumberString = PluginUtils.configureString(configElem, refNumberXPath, "1");
-		String xPathString = "/GBSeq/GBSeq_references/GBReference[GBReference_reference='"+refNumberString+"']";
-		try {
-			setXPathExpression(GlueXmlUtils.createXPathEngine().compile(xPathString));
-		} catch (XPathExpressionException xpee) {
-			throw new PluginConfigException(xpee, Code.CONFIG_FORMAT_ERROR, refNumberXPath, xpee.getLocalizedMessage(), refNumberString);
+		String allowMultipleXPath = "@allowMultiple";
+		boolean allowMultiple = Boolean.parseBoolean(PluginUtils.configureString(configElem, allowMultipleXPath, "false"));
+		if(allowMultiple) {
+			String xPathString = "/GBSeq/GBSeq_references/GBReference";
+			try {
+				setXPathExpression(GlueXmlUtils.createXPathEngine().compile(xPathString));
+			} catch (XPathExpressionException xpee) {
+				throw new PluginConfigException(xpee, Code.CONFIG_FORMAT_ERROR, xPathString, xpee.getLocalizedMessage(), xPathString);
+			}
+		} else {
+			String refNumberXPath = "@refNumber";
+			String refNumberString = PluginUtils.configureString(configElem, refNumberXPath, "1");
+			String xPathString = "/GBSeq/GBSeq_references/GBReference[GBReference_reference='"+refNumberString+"']";
+			try {
+				setXPathExpression(GlueXmlUtils.createXPathEngine().compile(xPathString));
+			} catch (XPathExpressionException xpee) {
+				throw new PluginConfigException(xpee, Code.CONFIG_FORMAT_ERROR, refNumberXPath, xpee.getLocalizedMessage(), refNumberString);
+			}
 		}
 	}
 

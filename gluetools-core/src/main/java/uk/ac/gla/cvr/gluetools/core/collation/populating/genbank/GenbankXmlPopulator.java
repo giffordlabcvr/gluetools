@@ -39,11 +39,14 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.populating.customRowCreator.CustomRowCreator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.customRowCreator.CustomTableUpdate;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.joinTableLinkUpdater.JoinTableLinkUpdate;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.joinTableLinkUpdater.JoinTableLinkUpdater;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.PropertyPopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.PropertyPopulator.PropertyPathInfo;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.propertyPopulator.SequencePopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorContext;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorCustomTableUpdateContext;
+import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorJoinTableLinkUpdateContext;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorPropertyUpdateContext;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorRule;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.xml.XmlPopulatorRuleFactory;
@@ -71,6 +74,7 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 		super();
 		registerModulePluginCmdClass(GenbankXmlPopulatorPopulateCommand.class);
 		registerModulePluginCmdClass(GenbankXmlPopulatorUpdateCustomTablesCommand.class);
+		registerModulePluginCmdClass(GenbankXmlPopulatorUpdateJoinTableLinksCommand.class);
 	}
 
 	protected List<XmlPopulatorRule> getRules() {
@@ -97,6 +101,13 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 				new XmlPopulatorCustomTableUpdateContext(cmdContext, sequence);
 		runRules(sequence, xmlPopulatorCustomTableUpdateContext);
 		return xmlPopulatorCustomTableUpdateContext.getCustomTableUpdates();
+	}
+
+	private List<JoinTableLinkUpdate> updateJoinTableLinks(CommandContext cmdContext, Sequence sequence) {
+		XmlPopulatorJoinTableLinkUpdateContext xmlPopulatorJoinTableLinkUpdateContext = 
+				new XmlPopulatorJoinTableLinkUpdateContext(cmdContext, sequence);
+		runRules(sequence, xmlPopulatorJoinTableLinkUpdateContext);
+		return xmlPopulatorJoinTableLinkUpdateContext.getJoinTableLinkUpdates();
 	}
 
 	
@@ -159,6 +170,55 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 		return new CustomTableResult(rowData);
 
 	}
+
+	
+	CommandResult updateJoinTableLinks(CommandContext cmdContext, int batchSize, 
+			Optional<Expression> whereClause, boolean updateDB, boolean silent) {
+		Map<Map<String,String>, List<JoinTableLinkUpdate>> pkMapToUpdates = 
+				new LinkedHashMap<Map<String,String>, List<JoinTableLinkUpdate>>();
+
+		processSequences(cmdContext, batchSize, whereClause, updateDB, new SequenceConsumer() {
+			@Override
+			public void consumeSequence(Sequence sequence) {
+				pkMapToUpdates.put(sequence.pkMap(), updateJoinTableLinks(cmdContext, sequence));
+			}
+			@Override
+			public void applySequenceUpdates(Sequence seq) {
+				List<JoinTableLinkUpdate> updates = pkMapToUpdates.get(seq.pkMap());
+				updates.forEach( update -> {
+					JoinTableLinkUpdater.applyUpdateToDB(cmdContext, seq, update);
+				} );
+			}
+			@Override
+			public void batchComplete() {
+				if(silent) {
+					pkMapToUpdates.clear();
+				}
+			}
+		});
+		if(silent) {
+			return new OkResult();
+		}
+		List<Map<String, Object>> rowData = new ArrayList<Map<String,Object>>();
+		pkMapToUpdates.forEach((pkMap, updates) -> {
+			String sourceName = (String) pkMap.get(Sequence.SOURCE_NAME_PATH);
+			String sequenceID = (String) pkMap.get(Sequence.SEQUENCE_ID_PROPERTY);
+			updates.forEach(update -> {
+				Map<String, Object> row = new LinkedHashMap<String, Object>();
+				rowData.add(row);
+				row.put(Sequence.SOURCE_NAME_PATH, sourceName);
+				row.put(Sequence.SEQUENCE_ID_PROPERTY, sequenceID);
+				row.put("joinTable", update.getJoinTableName());
+				row.put("newJoinRowId", update.getNewJoinRowId());
+				row.put("destTable", update.getDestTableName());
+				row.put("destRowId", update.getDestRowId());
+			});
+		});
+		return new JoinTableLinkResult(rowData);
+
+	}
+
+	
 	
 	CommandResult populate(CommandContext cmdContext, int batchSize, 
 			Optional<Expression> whereClause, boolean updateDB, boolean silent, List<String> updatableProperties) {
@@ -242,6 +302,15 @@ public class GenbankXmlPopulator extends SequencePopulator<GenbankXmlPopulator> 
 		public CustomTableResult(List<Map<String, Object>> rowData) {
 			super("gbXmlCustomTableRowsResult", 
 					Arrays.asList(Sequence.SOURCE_NAME_PATH, Sequence.SEQUENCE_ID_PROPERTY, "customTable", "newRowId"), rowData);
+		}
+		
+	}
+
+	private static class JoinTableLinkResult extends TableResult {
+
+		public JoinTableLinkResult(List<Map<String, Object>> rowData) {
+			super("gbXmlJoinTableLinksResult", 
+					Arrays.asList(Sequence.SOURCE_NAME_PATH, Sequence.SEQUENCE_ID_PROPERTY, "joinTable", "newJoinRowId", "destTable", "destRowId"), rowData);
 		}
 		
 	}

@@ -33,6 +33,7 @@ import javax.xml.xpath.XPathExpression;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
+import uk.ac.gla.cvr.gluetools.core.collation.populating.genbank.GenbankReferenceRule;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -96,6 +97,9 @@ public abstract class NodeSelectorRule extends XmlPopulatorRule {
 
 	public final void execute(XmlPopulatorContext xmlPopulatorContext, Node node) {
 		List<Node> selectedNodes = selectNodes(node);
+//		if(this.getClass().equals(GenbankReferenceRule.class) && selectedNodes.size() > 1) {
+//			System.out.println(xmlPopulatorContext.getSequence().getSequenceID()+" multiple matches found for GenbankReferenceRule.");
+//		}
 		selectedNodes.forEach(selectedNode ->
 			executeChildRules(xmlPopulatorContext, selectedNode));
 	}
