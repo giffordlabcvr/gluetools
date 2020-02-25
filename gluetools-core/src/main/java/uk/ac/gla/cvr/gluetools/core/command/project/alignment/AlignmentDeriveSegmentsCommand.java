@@ -61,7 +61,15 @@ import uk.ac.gla.cvr.gluetools.core.segments.IReferenceSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 
-
+/**
+ * Current alignment	Source alignment	Notes
+ *
+ * constrained			constrained			No linkingReference specified. Alignments must have same constraining reference.
+ * constrained			unconstrained		No linkingReference specified. Constraining ref must be member of source alignment, otherwise skipped as target.
+ * unconstrained		constrained			No linkingReference specified, linking reference is implicitly source alignment's constraining reference.
+ * unconstrained		unconstrained		Must specify linkingReference, a member of both alignments not selected by whereClause.
+ *
+ */
 
 
 @CommandClass( 
@@ -76,21 +84,23 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 			    "-e, --existingMembersOnly                                     Derive only for existing",
 			    "-m <mergeStrategy>, --mergeStrategy <mergeStrategy>           Segment merge strategy"},
 		metaTags = {},
-		description="Derive alignment segments from an unconstrained alignment", 
+		description="Derive alignment segments from another alignment", 
 		furtherHelp=
-		"The source alignment named by <sourceAlmtName> must exist and be unconstrained. "+
 		"Segments will be added to members of one or more target alignments. By default the only target alignment is "+
 		"the current alignment. "+
-		"If the --recursive option is used, the current alignment's descendents are also included as target alignments. \n"+
-		"In order for a target alignment to be updated by this command, its reference must be a member of the source alignment, "+
-		"otherwise the target alignment will be skipped, with a warning. The warning can be suppressed using "+
-		"the --suppressSkippedWarning option (constrained target only).\n"+
+		"If the --recursive option is used, and the current alignment is constrained, the current alignment's descendents "+
+		"are also included as target alignments. \n"+
+		"In order for a constrained target alignment to be updated by this command, its reference must be a member of the unconstrained source alignment, "+
+		"or if the source alignment is constrained, they must have the same reference. "+
+		"If these conditions are not met, the target alignment will be skipped, with a warning. The warning can be suppressed using "+
+		"the --suppressSkippedWarning option.\n"+
 		"The <whereClause> selects members from the source alignment. These members will be "+
 		"added to the current alignment if they do not exist, unless --existingMembersOnly is specified. "+
 		"The --existingMembersOnly option must be used if --recursive is used. "+
 		"The command is available for constrained and unconstrained current alignments. "+
-		"However, if the current alignment is unconstrained, a <linkingReference> must be specified, "+
+		"However, if both the source and current alignment are unconstrained, a <linkingReference> must be specified, "+
 		"This must be a member of both source and target, and must not be one of the selected source members. "+
+		"If the source is constrained and current unconstrained, the linking reference is implicitly the source alignment's constraining reference. "+
 		"New aligned segments will be added to the current alignment's members, derived "+
 		"from the homology in the source alignment between the selected member and the constraining or linking reference member "+
 		"The <mergeStrategy> option governs how new segments derived from the source alignment "+
@@ -165,24 +175,37 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 	@Override
 	public AlignmentDeriveSegmentsResult execute(CommandContext cmdContext) {
 		Alignment currentAlignment = lookupAlignment(cmdContext);
-		if(currentAlignment.isConstrained()) {
-			if(this.linkingReference != null) {
-				throw new CommandException(Code.COMMAND_FAILED_ERROR, "The <linkingReference> option may only be used if the current alignment is unconstrained.");
-			}
-		} else {
-			if(this.recursive) {
-				throw new CommandException(Code.COMMAND_FAILED_ERROR, "The --recursive option may only be used if the current alignment is constrained.");
-			}
-		}
+		boolean currentAlignmentConstrained = currentAlignment.isConstrained();
 		Alignment sourceAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(sourceAlmtName));
-		if(sourceAlignment.isConstrained()) {
-			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Source alignment must be unconstrained.");
+		boolean sourceAlignmentConstrained = sourceAlignment.isConstrained();
+
+		if(currentAlignment.getName().equals(sourceAlignment.getName())) {
+			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Source and current alignment cannot be the same.");
 		}
+
+		if(this.recursive && !currentAlignmentConstrained) {
+			throw new CommandException(Code.COMMAND_FAILED_ERROR, "The --recursive option may only be used if the current alignment is constrained.");
+		}
+
+		if(this.linkingReference != null && (currentAlignmentConstrained || sourceAlignmentConstrained)) {
+			throw new CommandException(Code.COMMAND_FAILED_ERROR, "The <linkingReference> option may be used only when both source and current alignment are unconstrained.");
+		}
+
+		if(this.linkingReference == null && (!currentAlignmentConstrained) && (!sourceAlignmentConstrained)) {
+			throw new CommandException(Code.COMMAND_FAILED_ERROR, "The <linkingReference> option must be used when both source and current alignment are unconstrained.");
+		}
+
 		String sourceAlignmentName = sourceAlignment.getName();
 		ArrayList<Alignment> targetAlignments = new ArrayList<Alignment>();
 		targetAlignments.add(currentAlignment);
 		if(recursive) {
-			targetAlignments.addAll(currentAlignment.getDescendents());
+			List<Alignment> descendents = currentAlignment.getDescendents();
+			for(Alignment decAlmt: descendents) {
+				if(decAlmt.getName().equals(sourceAlignment.getName())) {
+					throw new CommandException(Code.COMMAND_FAILED_ERROR, "A descendent of the current alignment is the source alignment.");
+				}
+			}
+			targetAlignments.addAll(descendents);
 		}
 		List<String> targetAlignmentNames = targetAlignments.stream().map(al -> al.getName()).collect(Collectors.toList());
 		List<Map<String, Object>> listOfMaps = new ArrayList<Map<String, Object>>();
@@ -195,50 +218,77 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 	}
 
 	private void processTargetAlignment(CommandContext cmdContext, String sourceAlignmentName, List<Map<String, Object>> listOfMaps, String targetAlignmentName) {
+		Alignment sourceAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(sourceAlignmentName));
 		GlueLogger.getGlueLogger().finest("Processing target alignment "+targetAlignmentName);
-
 		Alignment targetAlignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(targetAlignmentName));
-		ReferenceSequence refSequence;
-		if(targetAlignment.isConstrained()) {
-			refSequence = targetAlignment.getRefSequence();
-		} else {
-			refSequence = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(this.linkingReference));
-		}
-		Sequence refSeqSeq = refSequence.getSequence();
-		String refSequenceSourceName = refSeqSeq.getSource().getName();
-		String refSequenceSeqID = refSeqSeq.getSequenceID();
-		Map<String, String> refMemberPkMap = AlignmentMember.pkMap(sourceAlignmentName, refSequenceSourceName, refSequenceSeqID);
-		AlignmentMember refSeqMemberInSourceAlmt = GlueDataObject.lookup(cmdContext, AlignmentMember.class, refMemberPkMap, true);
-
+		boolean sourceAlignmentConstrained = sourceAlignment.isConstrained();
+		boolean targetAlignmentConstrained = targetAlignment.isConstrained();
+		
+		// linking / constraining reference
+		ReferenceSequence refSequence = null;
+		
+		// membership of this reference in source / target alignments
+		Map<String, String> sourceRefMemberPkMap = null;
+		AlignmentMember refSeqMemberInSourceAlmt = null;
+		Map<String, String> targetRefMemberPkMap = null;
 		AlignmentMember refSeqMemberInTargetAlmt = null;
 
-		if(!targetAlignment.isConstrained()) {
-			if(refSeqMemberInSourceAlmt == null) {
-				throw new CommandException(Code.COMMAND_FAILED_ERROR, "Linking reference must be member of source alignment.");
+		
+		if(targetAlignmentConstrained && sourceAlignmentConstrained) {
+			refSequence = targetAlignment.getRefSequence();
+			if(!refSequence.getName().equals(sourceAlignment.getRefSequence().getName())) {
+				throw new CommandException(Code.COMMAND_FAILED_ERROR, "Where both source and target are constrained, they must have the same reference.");
 			}
-			refSeqMemberInTargetAlmt = GlueDataObject.lookup(cmdContext, AlignmentMember.class, 
-					AlignmentMember.pkMap(targetAlignmentName, refSequenceSourceName, refSequenceSeqID), true);
+		} else if(targetAlignmentConstrained && (!sourceAlignmentConstrained)) {
+			refSequence = targetAlignment.getRefSequence();
+			Sequence refSeqSeq = refSequence.getSequence();
+			String refSequenceSourceName = refSeqSeq.getSource().getName();
+			String refSequenceSeqID = refSeqSeq.getSequenceID();
+			sourceRefMemberPkMap = AlignmentMember.pkMap(sourceAlignmentName, refSequenceSourceName, refSequenceSeqID);
+			refSeqMemberInSourceAlmt = GlueDataObject.lookup(cmdContext, AlignmentMember.class, sourceRefMemberPkMap, true);
+			if(refSeqMemberInSourceAlmt == null) {
+				if(!suppressSkippedWarning) {
+					GlueLogger.getGlueLogger().warning("Skipping target alignment "+targetAlignmentName+
+							": its reference sequence "+refSequence.getName()+
+							" (source:"+refSequenceSourceName+", sequenceID:"+refSequenceSeqID+") "+
+							"is not a member of source alignment "+sourceAlignmentName);
+				}
+				return;
+			}
+		} else if((!targetAlignmentConstrained) && sourceAlignmentConstrained) {
+			refSequence = sourceAlignment.getRefSequence();
+			Sequence refSeqSeq = refSequence.getSequence();
+			String refSequenceSourceName = refSeqSeq.getSource().getName();
+			String refSequenceSeqID = refSeqSeq.getSequenceID();
+			targetRefMemberPkMap = AlignmentMember.pkMap(targetAlignmentName, refSequenceSourceName, refSequenceSeqID);
+			refSeqMemberInTargetAlmt = GlueDataObject.lookup(cmdContext, AlignmentMember.class, targetRefMemberPkMap, true);
+			if(refSeqMemberInTargetAlmt == null) {
+				throw new CommandException(Code.COMMAND_FAILED_ERROR, "Source constraining reference must be member of target alignment.");
+			}
+		} else if((!targetAlignmentConstrained) && (!sourceAlignmentConstrained)) {
+			refSequence = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(this.linkingReference));
+			Sequence refSeqSeq = refSequence.getSequence();
+			String refSequenceSourceName = refSeqSeq.getSource().getName();
+			String refSequenceSeqID = refSeqSeq.getSequenceID();
+			targetRefMemberPkMap = AlignmentMember.pkMap(targetAlignmentName, refSequenceSourceName, refSequenceSeqID);
+			refSeqMemberInTargetAlmt = GlueDataObject.lookup(cmdContext, AlignmentMember.class, targetRefMemberPkMap, true);
 			if(refSeqMemberInTargetAlmt == null) {
 				throw new CommandException(Code.COMMAND_FAILED_ERROR, "Linking reference must be member of target alignment.");
 			}
-		}
-		
-		if(targetAlignment.isConstrained() && refSeqMemberInSourceAlmt == null) {
-			if(!suppressSkippedWarning) {
-				GlueLogger.getGlueLogger().warning("Skipping target alignment "+targetAlignmentName+
-						": its reference sequence "+refSequence.getName()+
-						" (source:"+refSequenceSourceName+", sequenceID:"+refSequenceSeqID+") "+
-						"is not a member of source alignment "+sourceAlignmentName);
+			sourceRefMemberPkMap = AlignmentMember.pkMap(sourceAlignmentName, refSequenceSourceName, refSequenceSeqID);
+			refSeqMemberInSourceAlmt = GlueDataObject.lookup(cmdContext, AlignmentMember.class, sourceRefMemberPkMap, true);
+			if(refSeqMemberInSourceAlmt == null) {
+				throw new CommandException(Code.COMMAND_FAILED_ERROR, "Linking reference must be member of source alignment.");
 			}
-			return;
 		}
 
-		// by inverting the ref source member aligned segments, 
-		// we get segments that align the unconstrained source alignment's coordinates to the reference sequence.
-		List<QueryAlignedSegment> srcAlmtToRefQaSegs = 
-				refSeqMemberInSourceAlmt.getAlignedSegments().stream()
-				.map(refAS -> refAS.asQueryAlignedSegment().invert())
-				.collect(Collectors.toList());
+		List<QueryAlignedSegment> srcAlmtToRefQaSegs = null;
+		
+		if(!sourceAlignmentConstrained) {
+			// by inverting the ref source member aligned segments, 
+			// we get segments that align the unconstrained source alignment's coordinates to the reference sequence.
+			srcAlmtToRefQaSegs = QueryAlignedSegment.invertList(refSeqMemberInSourceAlmt.segmentsAsQueryAlignedSegments());
+		}
 
 		SelectQuery selectQuery;
 		Expression sourceAlmtMemberExp = ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, sourceAlignmentName);
@@ -271,7 +321,7 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 					new LinkedHashMap<Map<String,String>, AlignmentMember>();
 
 			updateMembersForBatch(cmdContext, targetAlignmentName,
-					refMemberPkMap, targetAlmtForCtx, selectedAlmtMembers,
+					sourceRefMemberPkMap, targetAlmtForCtx, selectedAlmtMembers,
 					targetMemberPkMapToExistingQaSegs,
 					targetMemberPkMapToAlmtMember);
 			cmdContext.commit();
@@ -312,23 +362,22 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 
 			Double prevRefCoverage = targetAlmtMember.getReferenceNtCoveragePercent(cmdContext);
 
-			List<AlignedSegment> memberToSrcSegs = sourceAlmtMember.getAlignedSegments();
-			List<QueryAlignedSegment> memberToSrcAlmtQaSegs = memberToSrcSegs.stream()
-					.map(AlignedSegment::asQueryAlignedSegment)
-					.collect(Collectors.toList());
+			List<QueryAlignedSegment> memberToSrcAlmtQaSegs = sourceAlmtMember.segmentsAsQueryAlignedSegments();
 
-			List<QueryAlignedSegment> memberToRefSegs = 
-					QueryAlignedSegment.translateSegments(memberToSrcAlmtQaSegs, srcAlmtToRefQaSegs);
+			List<QueryAlignedSegment> memberToRefSegs;
+			if(srcAlmtToRefQaSegs != null) {
+				memberToRefSegs = QueryAlignedSegment.translateSegments(memberToSrcAlmtQaSegs, srcAlmtToRefQaSegs);
+			} else {
+				// source alignment constrained.
+				memberToRefSegs = memberToSrcAlmtQaSegs;
+			}
 
 			List<QueryAlignedSegment> memberToTargetAlmtSegs = null;
 			if(targetAlmtForCtx.isConstrained()) {
 				memberToTargetAlmtSegs = memberToRefSegs;
 			} else {
-				List<QueryAlignedSegment> refToTargetAlmtSegs = refSeqMemberInTargetAlmt.getAlignedSegments().stream()
-						.map(AlignedSegment::asQueryAlignedSegment)
-						.collect(Collectors.toList());
+				List<QueryAlignedSegment> refToTargetAlmtSegs = refSeqMemberInTargetAlmt.segmentsAsQueryAlignedSegments();
 				memberToTargetAlmtSegs = QueryAlignedSegment.translateSegments(memberToRefSegs, refToTargetAlmtSegs);
-
 			}
 
 			List<QueryAlignedSegment> qaSegsToAdd = null;
@@ -374,7 +423,7 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 	private void updateMembersForBatch(
 			CommandContext cmdContext,
 			String targetAlignmentName,
-			Map<String, String> refMemberPkMap,
+			Map<String, String> sourceRefMemberPkMap,
 			Alignment targetAlmtForCtx,
 			List<AlignmentMember> selectedAlmtMembers,
 			Map<Map<String, String>, List<QueryAlignedSegment>> targetMemberPkMapToExistingQaSegs,
@@ -401,8 +450,8 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 
 		for(AlignmentMember sourceAlmtMember: selectedAlmtMembers) {
 
-			if(!targetAlmtForCtx.isConstrained() && sourceAlmtMember.pkMap().equals(refMemberPkMap)) {
-				throw new CommandException(Code.COMMAND_FAILED_ERROR, "Linking reference must not be one of the selected source members.");
+			if(sourceRefMemberPkMap != null && sourceAlmtMember.pkMap().equals(sourceRefMemberPkMap)) {
+				throw new CommandException(Code.COMMAND_FAILED_ERROR, "Linking / constraining reference must not be one of the selected source members.");
 			}
 
 			Sequence memberSeq = sourceAlmtMember.getSequence();
@@ -473,7 +522,6 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 						String prefix) {
 					return GlueDataObject.query(cmdContext, Alignment.class, new SelectQuery(Alignment.class))
 							.stream()
-							.filter(almt -> !almt.isConstrained())
 							.map(almt -> new CompletionSuggestion(almt.getName(), true))
 							.collect(Collectors.toList());
 				}
