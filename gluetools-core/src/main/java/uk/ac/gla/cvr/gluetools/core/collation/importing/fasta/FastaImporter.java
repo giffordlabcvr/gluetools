@@ -62,6 +62,7 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Va
 	private static final String SKIP_EXISTING_SEQUENCES = "skipExistingSequences";
 	private static final String REMOVE_LEADING_NS = "removeLeadingNs";
 	private static final String REMOVE_TRAILING_NS = "removeTrailingNs";
+	private static final String CONVERT_HYPHENS_TO_NS = "convertHyphensToNs";
 	private static final String SOURCE_NAME = "sourceName";
 
 	private Pattern nullRegex = null;
@@ -72,6 +73,7 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Va
 	private boolean skipExistingSequences = false;
 	private boolean removeLeadingNs = false;
 	private boolean removeTrailingNs = false;
+	private boolean convertHyphensToNs = false;
 
 	public FastaImporter() {
 		super();
@@ -80,6 +82,7 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Va
 		addSimplePropertyName(SOURCE_NAME);
 		addSimplePropertyName(REMOVE_LEADING_NS);
 		addSimplePropertyName(REMOVE_TRAILING_NS);
+		addSimplePropertyName(CONVERT_HYPHENS_TO_NS);
 	}
 
 	@Override
@@ -94,6 +97,8 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Va
 				configureBooleanProperty(configElem, REMOVE_LEADING_NS, false)).orElse(false);
 		removeTrailingNs = Optional.ofNullable(PluginUtils.
 				configureBooleanProperty(configElem, REMOVE_TRAILING_NS, false)).orElse(false);
+		convertHyphensToNs = Optional.ofNullable(PluginUtils.
+				configureBooleanProperty(configElem, CONVERT_HYPHENS_TO_NS, false)).orElse(false);
 		List<Element> idParserElems = PluginUtils.findConfigElements(configElem, "idParser", 0, 1);
 		if(!idParserElems.isEmpty()) {
 			Element idParserElem  = idParserElems.get(0);
@@ -123,7 +128,13 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Va
 			if(skipExistingSequences && sequenceExists(cmdContext, sourceName, id)) {
 				return;
 			}
-			String sequenceAsString = seq.getSequenceAsString().replaceAll("-", "");
+			
+			String sequenceAsString = seq.getSequenceAsString();
+			if(convertHyphensToNs) {
+				sequenceAsString = sequenceAsString.replaceAll("-", "N");
+			} else {
+				sequenceAsString = sequenceAsString.replaceAll("-", "");
+			}
 			if(removeLeadingNs) {
 				int firstNonNIndex = 0;
 				while(firstNonNIndex < sequenceAsString.length() && sequenceAsString.charAt(firstNonNIndex) == 'N') {
