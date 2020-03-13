@@ -1,7 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.replacementDistance;
 
-import java.util.Arrays;
-
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.AdvancedCmdCompleter;
@@ -14,7 +12,6 @@ import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 import uk.ac.gla.cvr.gluetools.core.translation.GranthamDistanceCalculator;
-import uk.ac.gla.cvr.gluetools.core.translation.Hanada2006Classification;
 
 @CommandClass(
 		commandWords={"distance"}, 
