@@ -542,6 +542,10 @@
 				<regex>.*/module/covHanada2006ReplacementClassifier$</regex>
 				<simpleCommandFilter words="classify replacement"/>
 			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/custom-table-row/cov_project_properties/gisaidTimeStamp$</regex>
+				<simpleCommandFilter words="show property"/>
+			</modePathRegexFilter>
 		</modePathRegexFilter>
 
 
