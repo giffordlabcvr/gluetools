@@ -100,8 +100,8 @@ public class MemberCommand extends AlignmentModeCommand<OkResult>  {
 	public OkResult execute(CommandContext cmdContext) {
 		Sequence sequence;
 		if(whereClause == null) {
-			sequence = GlueDataObject.lookup(cmdContext, Sequence.class, 
-					Sequence.pkMap(sourceName, sequenceID));
+			sequence = GlueDataObject.lookup(cmdContext, AlignmentMember.class, 
+					AlignmentMember.pkMap(getAlignmentName(), sourceName, sequenceID)).getSequence();
 		} else {
 			Expression exp = whereClause.andExp(ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, getAlignmentName()));
 			SelectQuery selectQuery = new SelectQuery(AlignmentMember.class, exp);
