@@ -70,6 +70,7 @@ public class PhyloUtility extends ModulePlugin<PhyloUtility> {
 		registerModulePluginCmdClass(UpdateAncestorBranchesCommand.class);
 		registerModulePluginCmdClass(UpdateAncestorSubtreesCommand.class);
 		registerModulePluginCmdClass(UpdateLeavesCommand.class);
+		registerModulePluginCmdClass(AlignmentPhylogenyListNeighboursCommand.class);
 	}
 	
 	public PhyloTree rerootPhylogeny(PhyloBranch rerootBranch, BigDecimal rerootDistance) {

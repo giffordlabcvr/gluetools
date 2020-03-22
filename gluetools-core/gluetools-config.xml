@@ -483,6 +483,9 @@
 			<regex>^/project/cov</regex>
 			<!-- general -->
 			<simpleCommandFilter words="glue-engine show-version"/>
+			<simpleCommandFilter words="show setting">
+				<arg name="settingName">project-version</arg>
+			</simpleCommandFilter>
 			<!-- analysis -->
 			<simpleCommandFilter words="list feature"/>
 			<modePathRegexFilter>

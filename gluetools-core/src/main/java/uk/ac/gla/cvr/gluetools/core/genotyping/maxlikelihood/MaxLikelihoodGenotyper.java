@@ -54,6 +54,8 @@ import uk.ac.gla.cvr.gluetools.core.genotyping.QueryCladeCategoryResult;
 import uk.ac.gla.cvr.gluetools.core.genotyping.QueryCladeResult;
 import uk.ac.gla.cvr.gluetools.core.genotyping.QueryGenotypingResult;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
+import uk.ac.gla.cvr.gluetools.core.phyloUtility.PhyloNeighbour;
+import uk.ac.gla.cvr.gluetools.core.phyloUtility.PhyloNeighbourFinder;
 import uk.ac.gla.cvr.gluetools.core.phylogenyImporter.PhyloImporter;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
@@ -62,8 +64,6 @@ import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodPlacer;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodSinglePlacement;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodSingleQueryResult;
-import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.PlacementNeighbour;
-import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.PlacementNeighbourFinder;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
@@ -130,8 +130,8 @@ public class MaxLikelihoodGenotyper extends BaseGenotyper<MaxLikelihoodGenotyper
 						GlueDataObject.query(cmdContext, Alignment.class, cladeCategoryAlmtSelectQuery).stream()
 						.collect(Collectors.toMap(x -> x.getName(), x -> x));
 				
-				Map<String, List<PlacementNeighbour>> cladeToClosestNeighbours = new LinkedHashMap<String, List<PlacementNeighbour>>();
-				PlacementNeighbour closestTarget = null;
+				Map<String, List<PhyloNeighbour>> cladeToClosestNeighbours = new LinkedHashMap<String, List<PhyloNeighbour>>();
+				PhyloNeighbour closestTarget = null;
 
 				Map<String, Double> almtNameToScaledDistanceTotal = new LinkedHashMap<String, Double>();
 				// loop over all neighbours in order of increasing distance.
@@ -151,8 +151,8 @@ public class MaxLikelihoodGenotyper extends BaseGenotyper<MaxLikelihoodGenotyper
 						categoryCladeForWhichInternal = categoryCladesForWhichInternal.get(0);
 					}
 					
-					List<PlacementNeighbour> neighbours = PlacementNeighbourFinder.findNeighbours(placementLeaf, null, null);
-					for(PlacementNeighbour neighbour: neighbours) {
+					List<PhyloNeighbour> neighbours = PhyloNeighbourFinder.findNeighbours(placementLeaf, null, null);
+					for(PhyloNeighbour neighbour: neighbours) {
 						BigDecimal distance = neighbour.getDistance();
 						// update closest target to be this neighbour as necessary.
 						if((boolean) (neighbour.getPhyloLeaf().getUserData().get(MaxLikelihoodPlacer.PLACER_VALID_TARGET_USER_DATA_KEY))) {
@@ -182,9 +182,9 @@ public class MaxLikelihoodGenotyper extends BaseGenotyper<MaxLikelihoodGenotyper
 									neighbourCategoryClade.equals(categoryCladeForWhichInternal) &&
 									distance.compareTo(new BigDecimal(internalDistanceCutoff)) <= 0 )) {
 								Double scaledDistance = Math.pow(distance.doubleValue(), distanceScalingExponent) * placement.likeWeightRatio;
-								List<PlacementNeighbour> cladeClosestNeighbours = cladeToClosestNeighbours.get(neighbourCategoryClade);
+								List<PhyloNeighbour> cladeClosestNeighbours = cladeToClosestNeighbours.get(neighbourCategoryClade);
 								if(cladeClosestNeighbours == null) {
-									cladeClosestNeighbours = new ArrayList<PlacementNeighbour>();
+									cladeClosestNeighbours = new ArrayList<PhyloNeighbour>();
 									cladeToClosestNeighbours.put(neighbourCategoryClade, cladeClosestNeighbours);
 								}
 								if(cladeClosestNeighbours.size() == 0 || !useSingleReference) {
@@ -225,7 +225,7 @@ public class MaxLikelihoodGenotyper extends BaseGenotyper<MaxLikelihoodGenotyper
 					if(queryCladeResult.percentScore >= cladeCategory.getFinalCladeCutoff()) {
 						queryCladeCategoryResult.finalClade = almtName;
 						queryCladeCategoryResult.finalCladeRenderedName = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(almtName)).getRenderedName();
-						List<PlacementNeighbour> closestNeighboursWithinFinalClade = cladeToClosestNeighbours.get(almtName);
+						List<PhyloNeighbour> closestNeighboursWithinFinalClade = cladeToClosestNeighbours.get(almtName);
 						if(closestNeighboursWithinFinalClade != null && closestNeighboursWithinFinalClade.size() > 0) {
 							Map<String,String> closestMemberPkMap = 
 									Project.targetPathToPkMap(ConfigurableTable.alignment_member, 

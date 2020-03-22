@@ -23,25 +23,31 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood;
+package uk.ac.gla.cvr.gluetools.core.phyloUtility;
 
 import java.math.BigDecimal;
 
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
 
-public class PlacementNeighbour {
+public class PhyloNeighbour {
 
 	private PhyloLeaf phyloLeaf;
+	private int rank;
 	private BigDecimal distance;
 	
-	public PlacementNeighbour(PhyloLeaf phyloLeaf, BigDecimal distance) {
+	public PhyloNeighbour(PhyloLeaf phyloLeaf, int rank, BigDecimal distance) {
 		super();
 		this.phyloLeaf = phyloLeaf;
+		this.rank = rank;
 		this.distance = distance;
 	}
 
 	public PhyloLeaf getPhyloLeaf() {
 		return phyloLeaf;
+	}
+
+	public int getRank() {
+		return rank;
 	}
 
 	public BigDecimal getDistance() {

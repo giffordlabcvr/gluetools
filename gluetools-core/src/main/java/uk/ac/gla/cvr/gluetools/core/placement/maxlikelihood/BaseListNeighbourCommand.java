@@ -37,6 +37,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.builder.ConfigurableTable;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
+import uk.ac.gla.cvr.gluetools.core.phyloUtility.PhyloNeighbourFinder;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
@@ -71,7 +72,7 @@ public abstract class BaseListNeighbourCommand extends AbstractPlacementCommand<
 		if(maxDistance != null) {
 			maxDistanceBD = new BigDecimal(maxDistance);
 		}
-		List<ResultRow> resultRows = PlacementNeighbourFinder.findNeighbours(placementLeaf, maxDistanceBD, maxNeighbours)
+		List<ResultRow> resultRows = PhyloNeighbourFinder.findNeighbours(placementLeaf, maxDistanceBD, maxNeighbours)
 				.stream()
 				.map(plcmtNeighbour -> {
 					String leafName = plcmtNeighbour.getPhyloLeaf().getName();

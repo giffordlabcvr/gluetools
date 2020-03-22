@@ -23,7 +23,7 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood;
+package uk.ac.gla.cvr.gluetools.core.phyloUtility;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -39,13 +39,13 @@ import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTreeSearchNode;
 
 // best first search from a leaf, returning neighbour leaves in order of decreasing distance.
-public class PlacementNeighbourFinder {
+public class PhyloNeighbourFinder {
 
-	public static List<PlacementNeighbour> findNeighbours(PhyloLeaf startLeaf) {
+	public static List<PhyloNeighbour> findNeighbours(PhyloLeaf startLeaf) {
 		return findNeighbours(startLeaf, null, null);
 	}
 	
-	public static List<PlacementNeighbour> findNeighbours(PhyloLeaf startLeaf, BigDecimal distanceCutoff, Integer maxNeighbours) {
+	public static List<PhyloNeighbour> findNeighbours(PhyloLeaf startLeaf, BigDecimal distanceCutoff, Integer maxNeighbours) {
 		PriorityQueue<NeighborSearchNode> searchQueue = new PriorityQueue<NeighborSearchNode>(new Comparator<NeighborSearchNode>() {
 			@Override
 			public int compare(NeighborSearchNode o1, NeighborSearchNode o2) {
@@ -53,7 +53,7 @@ public class PlacementNeighbourFinder {
 			}
 		});
 
-		List<PlacementNeighbour> placementNeighbours = new ArrayList<PlacementNeighbour>();
+		List<PhyloNeighbour> placementNeighbours = new ArrayList<PhyloNeighbour>();
 		
 		NeighborSearchNode startNode = new NeighborSearchNode(new PhyloTreeSearchNode(startLeaf), new BigDecimal(0.0));
 		searchQueue.add(startNode);
@@ -64,7 +64,9 @@ public class PlacementNeighbourFinder {
 			PhyloTreeSearchNode currentPhyloTreeSearchNode = currentNode.phyloTreeSearchNode;
 			
 			if(currentNode != startNode && currentPhyloTreeSearchNode.getPhyloSubtree() instanceof PhyloLeaf) {
-				placementNeighbours.add(new PlacementNeighbour((PhyloLeaf) currentPhyloTreeSearchNode.getPhyloSubtree(), currentNode.distanceFromStart));
+				placementNeighbours.add(new PhyloNeighbour((PhyloLeaf) currentPhyloTreeSearchNode.getPhyloSubtree(),
+						placementNeighbours.size()+1,
+						currentNode.distanceFromStart));
 				if(maxNeighbours != null && maxNeighbours.equals(placementNeighbours.size())) {
 					break;
 				}
@@ -101,7 +103,7 @@ public class PlacementNeighbourFinder {
 	}
 
 	private static void test(String testName, PhyloLeaf startLeaf, String expectedResult) {
-		List<PlacementNeighbour> neighbours = PlacementNeighbourFinder.findNeighbours(startLeaf);
+		List<PhyloNeighbour> neighbours = PhyloNeighbourFinder.findNeighbours(startLeaf);
 		StringBuffer buf = new StringBuffer();
 		for(int i = 0; i < neighbours.size(); i++) {
 			if(i > 0) {

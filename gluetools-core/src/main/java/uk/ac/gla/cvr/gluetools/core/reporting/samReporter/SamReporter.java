@@ -42,6 +42,8 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
+import uk.ac.gla.cvr.gluetools.core.phyloUtility.PhyloNeighbour;
+import uk.ac.gla.cvr.gluetools.core.phyloUtility.PhyloNeighbourFinder;
 import uk.ac.gla.cvr.gluetools.core.phylogenyImporter.PhyloImporter;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
@@ -50,8 +52,6 @@ import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodPlacer;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodPlacer.PlacerResultInternal;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodSinglePlacement;
 import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.MaxLikelihoodSingleQueryResult;
-import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.PlacementNeighbour;
-import uk.ac.gla.cvr.gluetools.core.placement.maxlikelihood.PlacementNeighbourFinder;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
@@ -246,11 +246,11 @@ public class SamReporter extends ModulePlugin<SamReporter> {
 		PhyloLeaf placementLeaf = MaxLikelihoodPlacer.addPlacementToPhylogeny(glueProjectPhyloTree, edgeIndexToPhyloBranch, singleQueryResult, firstPlacement);
 		
 		BigDecimal distanceCutoff = new BigDecimal(maxLikelihoodPlacerDistanceCutoff); 
-		List<PlacementNeighbour> placementNeighbours = PlacementNeighbourFinder.findNeighbours(placementLeaf, distanceCutoff, 1);
+		List<PhyloNeighbour> placementNeighbours = PhyloNeighbourFinder.findNeighbours(placementLeaf, distanceCutoff, 1);
 		if(placementNeighbours.isEmpty()) {
 			throw new SamReporterCommandException(Code.NO_PLACEMENT_NEIGHBOURS_FOUND, Double.toString(maxLikelihoodPlacerDistanceCutoff));
 		}
-		PlacementNeighbour nearestNeighbour = placementNeighbours.get(0);
+		PhyloNeighbour nearestNeighbour = placementNeighbours.get(0);
 		String neighbourLeafName = nearestNeighbour.getPhyloLeaf().getName();
 		Map<String,String> neighbourMemberPkMap = PhyloImporter.memberLeafNodeNameToPkMap(neighbourLeafName);
 		return new MemberDistance(GlueDataObject.lookup(cmdContext, AlignmentMember.class, neighbourMemberPkMap), nearestNeighbour.getDistance().doubleValue());
