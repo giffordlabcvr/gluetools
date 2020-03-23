@@ -1,6 +1,7 @@
 FROM ubuntu:16.04
 ARG glueVersion
 
+RUN apt-get install -y apt-transport-https
 RUN apt-get update 
 # debconf-utils and python-software-properties manipulate package installer settings to allow non-interactive config
 # software-properties-common adds the add-apt-repository command.
