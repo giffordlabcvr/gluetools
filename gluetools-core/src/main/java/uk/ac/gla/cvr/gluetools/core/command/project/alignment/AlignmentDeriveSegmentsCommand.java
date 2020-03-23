@@ -450,9 +450,6 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 
 		for(AlignmentMember sourceAlmtMember: selectedAlmtMembers) {
 
-			if(sourceRefMemberPkMap != null && sourceAlmtMember.pkMap().equals(sourceRefMemberPkMap)) {
-				throw new CommandException(Code.COMMAND_FAILED_ERROR, "Linking / constraining reference must not be one of the selected source members.");
-			}
 
 			Sequence memberSeq = sourceAlmtMember.getSequence();
 			String memberSourceName = memberSeq.getSource().getName();
@@ -461,6 +458,8 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 			Map<String, String> targetMemberPkMap = AlignmentMember.pkMap(targetAlignmentName, memberSourceName, memberSeqID);
 
 			AlignmentMember targetAlmtMember = targetMemberPkMapToAlmtMember.get(targetMemberPkMap);
+
+
 			if(existingMembersOnly) {
 				if(targetAlmtMember == null) {
 					continue;
@@ -470,6 +469,11 @@ public class AlignmentDeriveSegmentsCommand extends AlignmentModeCommand<Alignme
 					targetAlmtMember = AlignmentAddMemberCommand.addMember(cmdContext, targetAlmtForCtx, memberSeq, false);
 					targetMemberPkMapToAlmtMember.put(targetMemberPkMap, targetAlmtMember);
 				}
+			}
+
+			if( targetAlmtMember != null && (!targetAlmtMember.getAlignment().isConstrained()) &&
+					sourceRefMemberPkMap != null && sourceAlmtMember.pkMap().equals(sourceRefMemberPkMap)) {
+				throw new CommandException(Code.COMMAND_FAILED_ERROR, "Linking / constraining reference must not be one of the selected source members.");
 			}
 
 			List<AlignedSegment> targetMemberExistingSegs = new ArrayList<AlignedSegment>(targetAlmtMember.getAlignedSegments());
