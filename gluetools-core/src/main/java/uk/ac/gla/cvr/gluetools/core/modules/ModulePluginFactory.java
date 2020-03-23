@@ -81,6 +81,7 @@ import uk.ac.gla.cvr.gluetools.core.treerenderer.PhyloExporter;
 import uk.ac.gla.cvr.gluetools.core.treetransformer.TreeTransformer;
 import uk.ac.gla.cvr.gluetools.core.variationFrequencies.VariationFrequenciesGenerator;
 import uk.ac.gla.cvr.gluetools.core.webVisualisationUtils.VisualisationUtility;
+import uk.ac.gla.cvr.gluetools.programs.cdhit.CdHitEstRunner;
 import uk.ac.gla.cvr.gluetools.utils.Multiton;
 
 public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
@@ -127,7 +128,7 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(NucleotideConsensusGenerator.class);
 		registerPluginClass(AminoAcidConsensusGenerator.class);
 
-		setModulePluginGroup(new ModulePluginGroup("phylogenetics", "Module types for working with phylogenetic trees", 86));
+		setModulePluginGroup(new ModulePluginGroup("phylogenetics", "Module types for working with phylogenetics", 86));
 		registerPluginClass(RaxmlPhylogenyGenerator.class);
 		registerPluginClass(PhyloImporter.class);
 		registerPluginClass(PhyloUtility.class);
@@ -140,6 +141,7 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(MaxLikelihoodGenotyper.class);
 		registerPluginClass(FigTreeAnnotationExporter.class);
 		registerPluginClass(ClusterPickerRunner.class);
+		registerPluginClass(CdHitEstRunner.class);
 		
 		setModulePluginGroup(new ModulePluginGroup("scripting", "Module types for general-purpose scripting", 87));
 		registerPluginClass(EcmaFunctionInvoker.class);

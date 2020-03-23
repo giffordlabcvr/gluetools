@@ -685,6 +685,21 @@
 			<name>gluetools.core.sam.cpus</name>
 			<value>4</value>
 		</property>
+		
+		<!-- CD-HIT -->
+		<property>
+			<name>gluetools.core.programs.cdhit.cdhitest.executable</name>
+			<value>/Users/joshsinger/gitrepos_ssh/cdhit/cd-hit-est</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.cdhit.cdhitest.cpus</name>
+			<value>4</value>
+		</property>
+		<property>
+			<name>gluetools.core.programs.cdhit.cdhitest.temp.dir</name>
+			<value>/Users/joshsinger/tmp/cdhitestfiles</value>
+		</property>
+		
 		<!-- Cayenne -->
 		<property>
 			<name>cayenne.querycache.size</name>
