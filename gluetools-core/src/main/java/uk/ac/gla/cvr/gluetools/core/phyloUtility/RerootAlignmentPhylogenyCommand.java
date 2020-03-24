@@ -107,9 +107,6 @@ public class RerootAlignmentPhylogenyCommand extends BaseRerootCommand {
 	@Override
 	protected OkResult execute(CommandContext cmdContext, PhyloUtility phyloUtility) {
 		Alignment alignment = GlueDataObject.lookup(cmdContext, Alignment.class, Alignment.pkMap(alignmentName));
-		if(alignment.isConstrained()) {
-			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Command only supports unconstrained alignments at the moment.");
-		}
 		Project project = ((InsideProjectMode) cmdContext.peekCommandMode()).getProject();
 		project.checkProperty(ConfigurableTable.alignment.name(), fieldName, EnumSet.of(FieldType.VARCHAR, FieldType.CLOB), false);
 		PhyloTree phyloTree = 
