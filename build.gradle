@@ -31,13 +31,14 @@ project('gluetoolsApp') {
 	apply plugin: 'war'
 }
 
+// docker dependencies commented out for the minute as these don't work within the VPN.
 
 task deployAll(dependsOn: [
 	':gluetools-core:install', 
 	':gluetools-web:install', 
 	':gluetools-ws:install', 
 	':gluetoolsApp:cargoRedeployRemote',
-	':gluetools-mysql-docker:docker', 
+/*	':gluetools-mysql-docker:docker', 
 	':gluetools-mysql-docker:dockerTag', 
 	':gluetools-mysql-docker:dockerPush', 
 	':gluetools-mysql-docker:dockerTagLatest', 
@@ -45,7 +46,7 @@ task deployAll(dependsOn: [
 	':gluetools-core:dockerTag', 
 	':gluetools-core:dockerPush', 
 	':gluetools-core:dockerTagLatest', 
-	':gluetools-core:dockerPushLatest', 
+	':gluetools-core:dockerPushLatest', */
 	]) {
 }
 
