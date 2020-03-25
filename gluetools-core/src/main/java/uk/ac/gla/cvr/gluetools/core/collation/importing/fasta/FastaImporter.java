@@ -121,7 +121,14 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Va
 	public CreateResult doImport(ConsoleCommandContext cmdContext, String fileName) {
 		byte[] fastaBytes = cmdContext.loadBytes(fileName);
 		Map<String, ImporterDNASequence> idToSequence = FastaUtils.parseFasta(fastaBytes, 
-				s -> new ImporterDNASequence(s), 
+				s -> {
+					String seqString = s;
+					if(deleteSpaces) {
+						seqString = seqString.replaceAll(" ", "");
+					}
+					return new ImporterDNASequence(seqString);
+					
+				},
 				new HeaderParser(), false);
 		ensureSourceExists(cmdContext, sourceName);
 		
@@ -139,9 +146,6 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Va
 				sequenceAsString = sequenceAsString.replaceAll("-", "N");
 			} else {
 				sequenceAsString = sequenceAsString.replaceAll("-", "");
-			}
-			if(deleteSpaces) {
-				sequenceAsString = sequenceAsString.replaceAll(" ", "");
 			}
 			if(removeLeadingNs) {
 				int firstNonNIndex = 0;
