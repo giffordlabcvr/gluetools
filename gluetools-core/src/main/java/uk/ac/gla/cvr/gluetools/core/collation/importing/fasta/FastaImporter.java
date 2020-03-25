@@ -63,6 +63,7 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Va
 	private static final String REMOVE_LEADING_NS = "removeLeadingNs";
 	private static final String REMOVE_TRAILING_NS = "removeTrailingNs";
 	private static final String CONVERT_HYPHENS_TO_NS = "convertHyphensToNs";
+	private static final String CONVERT_XS_TO_NS = "convertXsToNs";
 	private static final String DELETE_SPACES = "deleteSpaces";
 	private static final String SOURCE_NAME = "sourceName";
 
@@ -75,6 +76,7 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Va
 	private boolean removeLeadingNs = false;
 	private boolean removeTrailingNs = false;
 	private boolean convertHyphensToNs = false;
+	private boolean convertXsToNs = false;
 	private boolean deleteSpaces = false;
 
 	public FastaImporter() {
@@ -85,6 +87,7 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Va
 		addSimplePropertyName(REMOVE_LEADING_NS);
 		addSimplePropertyName(REMOVE_TRAILING_NS);
 		addSimplePropertyName(CONVERT_HYPHENS_TO_NS);
+		addSimplePropertyName(CONVERT_XS_TO_NS);
 		addSimplePropertyName(DELETE_SPACES);
 	}
 
@@ -102,6 +105,8 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Va
 				configureBooleanProperty(configElem, REMOVE_TRAILING_NS, false)).orElse(false);
 		convertHyphensToNs = Optional.ofNullable(PluginUtils.
 				configureBooleanProperty(configElem, CONVERT_HYPHENS_TO_NS, false)).orElse(false);
+		convertXsToNs = Optional.ofNullable(PluginUtils.
+				configureBooleanProperty(configElem, CONVERT_XS_TO_NS, false)).orElse(false);
 		deleteSpaces = Optional.ofNullable(PluginUtils.
 				configureBooleanProperty(configElem, DELETE_SPACES, false)).orElse(false);
 		List<Element> idParserElems = PluginUtils.findConfigElements(configElem, "idParser", 0, 1);
@@ -125,6 +130,9 @@ public class FastaImporter extends SequenceImporter<FastaImporter> implements Va
 					String seqString = s;
 					if(deleteSpaces) {
 						seqString = seqString.replaceAll(" ", "");
+					}
+					if(convertXsToNs) {
+						seqString = seqString.replaceAll("X", "N");
 					}
 					return new ImporterDNASequence(seqString);
 					
