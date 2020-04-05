@@ -63,14 +63,17 @@ import uk.ac.gla.cvr.gluetools.core.treerenderer.PhyloExporter;
 @CommandClass(
 		commandWords={"reroot-alignment-phylogeny"}, 
 		description = "Reroot a phylogenetic tree associated with an alignment.", 
-		docoptUsages = { "<alignmentName> <fieldName> (-w <whereClause> [-r] | -m) -o <outputFile> <outputFormat>"},
+		docoptUsages = { "<alignmentName> <fieldName> (-w <whereClause> [-r | -x <exWhereClause>] | -m) -o <outputFile> <outputFormat>"},
 		docoptOptions = { 
-				"-w <whereClause>, --whereClause <whereClause>  Specify outgroup alignment members",
-				"-r, --removeOutgroup                           Remove outgroup subtree in output",
-				"-m, --midpoint                                 Use midpoint rooting",
-				"-o <outputFile>, --outputFile <outputFile>     Output file",
+				"-w <whereClause>, --whereClause <whereClause>        Specify outgroup alignment members",
+				"-r, --removeOutgroup                                 Remove outgroup subtree in output",
+				"-x <exWhereClause>, --exWhereClause <exWhereClause>  Specify non-outgroup alignment members",
+				"-m, --midpoint                                       Use midpoint rooting",
+				"-o <outputFile>, --outputFile <outputFile>           Output file",
 		},
-		furtherHelp = "",
+		furtherHelp = "If <exWhereClause> is used, algorithm selects as the outgroup branch the branch which maximises "+
+		"the split between <whereClause> and <exWhereClause>, either way round. Ties are broken by selecting the longest branch, "+
+		"beyond that ties are broken arbitrarily.",
 		metaTags = {CmdMeta.consoleOnly}	
 )
 public class RerootAlignmentPhylogenyCommand extends BaseRerootCommand {
@@ -79,9 +82,11 @@ public class RerootAlignmentPhylogenyCommand extends BaseRerootCommand {
 	public static final String FIELD_NAME = "fieldName";
 	public static final String OUTGROUP_WHERE_CLAUSE = "whereClause";
 	public static final String REMOVE_OUTGROUP = "removeOutgroup";
+	public static final String EX_WHERE_CLAUSE = "exWhereClause";
 	public static final String MIDPOINT = "midpoint";
 	
 	private Expression outgroupWhereClause;
+	private Expression exWhereClause;
 	private String alignmentName;
 	private String fieldName;
 	private Boolean removeOutgroup;
@@ -94,6 +99,7 @@ public class RerootAlignmentPhylogenyCommand extends BaseRerootCommand {
 		this.fieldName = PluginUtils.configureStringProperty(configElem, FIELD_NAME, true);
 		this.outgroupWhereClause = PluginUtils.configureCayenneExpressionProperty(configElem, OUTGROUP_WHERE_CLAUSE, false);
 		this.removeOutgroup = PluginUtils.configureBooleanProperty(configElem, REMOVE_OUTGROUP, false);
+		this.exWhereClause = PluginUtils.configureCayenneExpressionProperty(configElem, EX_WHERE_CLAUSE, false);
 		this.midpoint = PluginUtils.configureBooleanProperty(configElem, MIDPOINT, false);
 		if( (outgroupWhereClause == null && (midpoint == null || !midpoint)) ||
 				(outgroupWhereClause != null && (midpoint != null && midpoint))) {
@@ -101,6 +107,12 @@ public class RerootAlignmentPhylogenyCommand extends BaseRerootCommand {
 		}
 		if(outgroupWhereClause == null && (removeOutgroup != null && removeOutgroup)) {
 			throw new CommandException(Code.COMMAND_USAGE_ERROR, "The --removeOutgroup option may only be used if <whereClause> is specified");
+		}
+		if(outgroupWhereClause == null && (exWhereClause != null)) {
+			throw new CommandException(Code.COMMAND_USAGE_ERROR, "The <exWhereClause> option may only be used if <whereClause> is specified");
+		}
+		if(removeOutgroup != null && removeOutgroup && (exWhereClause != null)) {
+			throw new CommandException(Code.COMMAND_USAGE_ERROR, "The <exWhereClause> option cannot be used with --removeOutgroup");
 		}
 	}
 
@@ -115,12 +127,12 @@ public class RerootAlignmentPhylogenyCommand extends BaseRerootCommand {
 		BigDecimal rerootDistance = null;
 		PhyloTree rerootedTree;
 		if(outgroupWhereClause != null) {
-			rerootBranch = phyloUtility.findOutgroupBranch(cmdContext, alignment, outgroupWhereClause, phyloTree);
+			rerootBranch = phyloUtility.findOutgroupBranch(cmdContext, alignment, outgroupWhereClause, exWhereClause, phyloTree);
 			rerootDistance = rerootBranch.getLength().divide(new BigDecimal(2.0));
 			rerootedTree = phyloUtility.rerootPhylogeny(rerootBranch, rerootDistance);
 			if(removeOutgroup) {
 				// find the same branch again, but this time in the rerooted tree (which is a clone)
-				PhyloBranch rerootBranch2 = phyloUtility.findOutgroupBranch(cmdContext, alignment, outgroupWhereClause, rerootedTree);
+				PhyloBranch rerootBranch2 = phyloUtility.findOutgroupBranch(cmdContext, alignment, outgroupWhereClause, exWhereClause, rerootedTree);
 				removeOutgroupSubtree(rerootedTree, rerootBranch2.getSubtree());
 			}
 		} else {

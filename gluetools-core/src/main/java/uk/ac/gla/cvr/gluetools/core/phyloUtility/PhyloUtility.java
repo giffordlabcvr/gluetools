@@ -27,6 +27,7 @@ package uk.ac.gla.cvr.gluetools.core.phyloUtility;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -51,6 +52,7 @@ import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloSubtree;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
@@ -79,8 +81,53 @@ public class PhyloUtility extends ModulePlugin<PhyloUtility> {
 
 	public PhyloBranch findOutgroupBranch(CommandContext cmdContext,
 			Alignment alignment, Expression outgroupWhereClause,
-			PhyloTree phyloTree) {
-		Expression memberExp = ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, alignment.getName()).andExp(outgroupWhereClause);
+			Expression exWhereClause, PhyloTree phyloTree) {
+		Collection<PhyloLeaf> outgroupLeaves = whereClauseToLeaves(cmdContext, alignment, phyloTree, outgroupWhereClause);
+
+		
+		if(exWhereClause != null) {
+			Collection<PhyloLeaf> nonOutgroupLeaves = whereClauseToLeaves(cmdContext, alignment, phyloTree, exWhereClause);
+
+			Set<PhyloLeaf> outgroupLeafSet = new LinkedHashSet<PhyloLeaf>(outgroupLeaves);
+			if(outgroupLeafSet.isEmpty()) {
+				throw new CommandException(Code.COMMAND_FAILED_ERROR, "Leaf set specified by outgroupWhereClause is empty.");
+			}
+			Set<PhyloLeaf> nonOutgroupLeafSet = new LinkedHashSet<PhyloLeaf>(nonOutgroupLeaves);
+			if(nonOutgroupLeafSet.isEmpty()) {
+				throw new CommandException(Code.COMMAND_FAILED_ERROR, "Leaf set specified by exWhereClause is empty.");
+			}
+			Set<PhyloLeaf> overlaps = new LinkedHashSet<PhyloLeaf>();
+			outgroupLeafSet.forEach(pl -> {
+				if(nonOutgroupLeafSet.contains(pl)) { overlaps.add(pl); }
+			} );
+			nonOutgroupLeafSet.forEach(pl -> {
+				if(outgroupLeafSet.contains(pl)) { overlaps.add(pl); }
+			} );
+			if(!overlaps.isEmpty()) {
+				throw new CommandException(Code.COMMAND_FAILED_ERROR, "Leaf sets specified by outgroupWhereClause and exWhereClause overlap.");
+			}
+			
+			List<PhyloBranch> maximallyDominatingBranches = 
+					findMaximallyDominatingBranches(phyloTree, outgroupLeafSet, nonOutgroupLeafSet);
+			if(maximallyDominatingBranches.size() == 0) {
+				throw new CommandException(Code.COMMAND_FAILED_ERROR, "There were zero maximally dominating branches.");
+			}
+			PhyloBranch longestBranch = null;
+			for(PhyloBranch phyloBranch: maximallyDominatingBranches) {
+				if(longestBranch == null || phyloBranch.getLength().compareTo(longestBranch.getLength()) > 0) {
+					longestBranch = phyloBranch;
+				}
+			}
+			return longestBranch;
+		} else {
+			return findStrictlyDominatingBranch(outgroupLeaves);
+		}
+		
+	}
+
+	private Collection<PhyloLeaf> whereClauseToLeaves(CommandContext cmdContext, Alignment alignment,
+			PhyloTree phyloTree, Expression whereClause) {
+		Expression memberExp = ExpressionFactory.matchExp(AlignmentMember.ALIGNMENT_NAME_PATH, alignment.getName()).andExp(whereClause);
 		List<AlignmentMember> almtMembers = GlueDataObject.query(cmdContext, AlignmentMember.class, new SelectQuery(AlignmentMember.class, memberExp));
 		Set<Map<String, String>> almtMemberPkMaps = new LinkedHashSet<Map<String, String>>();
 		almtMembers.forEach(memb -> almtMemberPkMaps.add(memb.pkMap()));
@@ -102,9 +149,102 @@ public class PhyloUtility extends ModulePlugin<PhyloUtility> {
 			});
 			throw new CommandException(Code.COMMAND_FAILED_ERROR, "Leaves representing "+almtMemberPkMaps.size()+" outgroup alignment member(s) were not found in the tree. See log for details.");
 		}
-		
+		Collection<PhyloLeaf> matchingLeaves = memberPkMapToLeaf.values();
+		return matchingLeaves;
+	}
+
+	
+	private List<PhyloBranch> findMaximallyDominatingBranches(PhyloTree phyloTree,
+			Set<PhyloLeaf> outgroupLeafSet, Set<PhyloLeaf> nonOutgroupLeafSet) {
 		/**
-		 * Algorithm for inferring the single dominating internal node from the leaf set.
+		 * Algorithm for finding the maximally dominating branch.
+		 * Each branch with a parent has 4 values to be calculated:
+		 * -- p_yes: number of leaves on the parent side which match outgroup
+		 * -- p_no:  number of leaves on the parent side which match nonOutgroup
+		 * -- c_yes: number of leaves on the child side which match outgroup
+		 * -- c_no:  number of leaves on the child side which match nonOutgroup
+		 * 
+		 * The algorithm returns the list of branches for which max(p_no + c_yes, p_yes + c_no) is maximised.
+		 * -- c_yes / c_no are calculated by a simple depth first traversal.
+		 * -- we then do a breadth first traversal:
+		 *   -- at each branch, p_yes / p_no is the sum of c_yes / c_no of sibling branches
+		 *      plus the p_yes / p_no of the parent branch (if any). 
+		 */
+
+
+		phyloTree.accept(new PhyloTreeVisitor() {
+			@Override
+			public void postVisitBranch(int branchIndex, PhyloBranch phyloBranch) {
+				PhyloSubtree<?> subtree = phyloBranch.getSubtree();
+				int c_yes = 0, c_no = 0;
+				if(subtree instanceof PhyloLeaf) {
+					PhyloLeaf subLeaf = (PhyloLeaf) subtree;
+					if(outgroupLeafSet.contains(subLeaf)) {
+						c_yes = 1;
+					} else if(nonOutgroupLeafSet.contains(subLeaf)) {
+						c_no = 1;
+					}
+				} else {
+					PhyloInternal subInternal = (PhyloInternal) subtree;
+					for(PhyloBranch subBranch: subInternal.getBranches()) {
+						c_yes += (Integer) subBranch.getUserData().get("c_yes");
+						c_no += (Integer) subBranch.getUserData().get("c_no");
+					}
+				}
+				phyloBranch.ensureUserData().put("c_yes", c_yes);
+				phyloBranch.ensureUserData().put("c_no", c_no);
+			}
+		});
+
+		phyloTree.accept(new PhyloTreeVisitor() {
+			@Override
+			public void preVisitBranch(int branchIndex, PhyloBranch phyloBranch) {
+				int p_yes = 0, p_no = 0;
+				PhyloInternal parentInternal = phyloBranch.getParentPhyloInternal();
+				PhyloBranch parentBranch = parentInternal.getParentPhyloBranch();
+				if(parentBranch != null) {
+					p_yes += (Integer) parentBranch.getUserData().get("p_yes");
+					p_no += (Integer) parentBranch.getUserData().get("p_no");
+				}
+				for(PhyloBranch siblingBranch: parentInternal.getBranches()) {
+					if(siblingBranch.getChildBranchIndex() != branchIndex) {
+						p_yes += (Integer) siblingBranch.getUserData().get("c_yes");
+						p_no += (Integer) siblingBranch.getUserData().get("c_no");
+					}
+				}
+				phyloBranch.getUserData().put("p_yes", p_yes);
+				phyloBranch.getUserData().put("p_no", p_no);
+			}
+		});
+
+		List<PhyloBranch> maximallyDominatingBranches = new ArrayList<PhyloBranch>();
+		
+		phyloTree.accept(new PhyloTreeVisitor() {
+			int bestScore = Integer.MIN_VALUE;
+			@Override
+			public void postVisitBranch(int branchIndex, PhyloBranch phyloBranch) {
+				Map<String, Object> userData = phyloBranch.getUserData();
+				int p_yes = (Integer) userData.remove("p_yes");
+				int p_no = (Integer) userData.remove("p_no");
+				int c_yes = (Integer) userData.remove("c_yes");
+				int c_no = (Integer) userData.remove("c_no");
+				
+				int score = Math.max(p_no + c_yes, p_yes + c_no);
+				if(score >= bestScore) {
+					if(score > bestScore) {
+						bestScore = score;
+						maximallyDominatingBranches.clear();
+					}
+					maximallyDominatingBranches.add(phyloBranch);
+				}
+			}
+		});
+		return maximallyDominatingBranches;
+	}
+	
+	private PhyloBranch findStrictlyDominatingBranch(Collection<PhyloLeaf> matchingLeaves) {
+		/**
+		 * Algorithm for inferring the single dominating branch from the leaf set.
 		 * Visited means the node has been in the frontier but now is not.
 		 * 
 		 * 
@@ -129,7 +269,7 @@ public class PhyloUtility extends ModulePlugin<PhyloUtility> {
 		 */
 		
 		LinkedHashSet<PhyloSubtree<?>> frontier = new LinkedHashSet<PhyloSubtree<?>>();
-		frontier.addAll(memberPkMapToLeaf.values());
+		frontier.addAll(matchingLeaves);
 		
 		Set<PhyloSubtree<?>> visited = new LinkedHashSet<PhyloSubtree<?>>();
 		
