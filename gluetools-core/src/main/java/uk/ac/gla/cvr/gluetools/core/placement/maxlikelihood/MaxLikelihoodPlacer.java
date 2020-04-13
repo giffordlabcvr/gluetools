@@ -138,6 +138,9 @@ public class MaxLikelihoodPlacer extends ModulePlugin<MaxLikelihoodPlacer> {
 		addSimplePropertyName(ALIGNMENT_ALIGNMENT_NAME);
 		addSimplePropertyName(ALIGNMENT_RELATED_REF_NAME);
 		addSimplePropertyName(ALIGNMENT_FEATURE_NAME);
+		addSimplePropertyName(SELECTOR_NAME);
+		addSimplePropertyName(PLACER_VALID_TARGET_USER_DATA_KEY);
+		addSimplePropertyName(VALID_TARGET_WHERE_CLAUSE);
 	}
 
 	@Override
