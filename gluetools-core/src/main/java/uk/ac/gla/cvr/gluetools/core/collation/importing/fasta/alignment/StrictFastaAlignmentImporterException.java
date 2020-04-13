@@ -23,19 +23,15 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.curation.aligners;
+package uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.alignment;
 
 import uk.ac.gla.cvr.gluetools.core.GlueException;
 
-public class AlignerException extends GlueException {
-
+public class StrictFastaAlignmentImporterException extends GlueException {
+	
 	public enum Code implements GlueErrorCode {
+		STRICT_IMPORT_ERROR("errorTxt");
 		
-		CANNOT_ALIGN_AGAINST_DISCONTIGUOUS_FEATURE_LOCATION("refName", "featureName"),
-		MISSING_FEATURE_LOCATION("refName", "featureName"),
-		FEATURE_NAME_REQUIRED(),
-		REIMPORT_ERROR("errorTxt");
-
 		private String[] argNames;
 		private Code(String... argNames) {
 			this.argNames = argNames;
@@ -44,14 +40,13 @@ public class AlignerException extends GlueException {
 		public String[] getArgNames() {
 			return argNames;
 		}
-
 	}
-	
-	public AlignerException(Code code, Object... errorArgs) {
+
+	public StrictFastaAlignmentImporterException(Code code, Object... errorArgs) {
 		super(code, errorArgs);
 	}
 
-	public AlignerException(Throwable cause, Code code,
+	public StrictFastaAlignmentImporterException(Throwable cause, Code code,
 			Object... errorArgs) {
 		super(cause, code, errorArgs);
 	}

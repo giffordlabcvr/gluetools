@@ -54,6 +54,7 @@ import uk.ac.gla.cvr.gluetools.core.modules.ModulePlugin;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginFactory;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
+import uk.ac.gla.cvr.gluetools.core.segments.QueryAlignedSegment;
 import uk.ac.gla.cvr.gluetools.utils.CayenneUtils;
 
 public abstract class BaseFastaAlignmentImporter<I extends BaseFastaAlignmentImporter<I>> extends ModulePlugin<I> {
@@ -205,4 +206,6 @@ public abstract class BaseFastaAlignmentImporter<I extends BaseFastaAlignmentImp
 		}
 	}
 
+	public abstract List<QueryAlignedSegment> alignmentRowImport(CommandContext cmdContext, String queryId, String queryNucleotides, String alignmentRow);
+	
 }

@@ -90,14 +90,11 @@ public class FastaAlignmentImporter extends FastaNtAlignmentImporter<FastaAlignm
 
 
 	@Override
-	public List<QueryAlignedSegment> findAlignedSegs(CommandContext cmdContext, Sequence foundSequence, 
+	public List<QueryAlignedSegment> findAlignedSegs(CommandContext cmdContext, 
+			String queryId, String queryNucleotides, 
 			List<QueryAlignedSegment> existingSegs, String fastaAlignmentNTs, 
 			List<ReferenceSegment> navigationRegion) {
 
-		String exceptionReportingID = foundSequence.getSource().getName()+"/"+foundSequence.getSequenceID();
-		
-		String foundSequenceNTs = foundSequence.getSequenceObject().getNucleotides(cmdContext);
-		
 		List<QueryAlignedSegment> queryAlignedSegs = new ArrayList<QueryAlignedSegment>();
     	
     	int alignmentNtIndex = 1;
@@ -109,8 +106,8 @@ public class FastaAlignmentImporter extends FastaNtAlignmentImporter<FastaAlignm
     		if(isGapChar(fastaAlignmentNT)) {
     			if(queryAlignedSeg != null) {
     				foundSequenceNtIndex = completeQueryAlignedSeg(existingSegs,
-    						fastaAlignmentNTs, exceptionReportingID, foundSequence.pkMap().toString(),
-    						foundSequenceNTs, queryAlignedSegs,
+    						fastaAlignmentNTs, queryId, queryId,
+    						queryNucleotides, queryAlignedSegs,
     						foundSequenceNtIndex, queryAlignedSeg);
     				queryAlignedSeg = null;
     				if(foundSequenceNtIndex == -1) {
@@ -127,12 +124,12 @@ public class FastaAlignmentImporter extends FastaNtAlignmentImporter<FastaAlignm
     	}
 		if(queryAlignedSeg != null) {
 			foundSequenceNtIndex = completeQueryAlignedSeg(existingSegs,
-					fastaAlignmentNTs, exceptionReportingID, foundSequence.pkMap().toString(),
-					foundSequenceNTs, queryAlignedSegs,
+					fastaAlignmentNTs, queryId, queryId,
+					queryNucleotides, queryAlignedSegs,
 					foundSequenceNtIndex, queryAlignedSeg);
 		}
-		if(requireTotalCoverage && foundSequenceNtIndex != foundSequenceNTs.length()+1) {
-			throw new FastaAlignmentImporterException(Code.MISSING_COVERAGE, foundSequenceNtIndex, foundSequenceNTs.length(), exceptionReportingID, foundSequence.pkMap().toString());
+		if(requireTotalCoverage && foundSequenceNtIndex != queryNucleotides.length()+1) {
+			throw new FastaAlignmentImporterException(Code.MISSING_COVERAGE, foundSequenceNtIndex, queryNucleotides.length(), queryId, queryId);
 		}
 		return queryAlignedSegs;
 	}
@@ -190,6 +187,11 @@ public class FastaAlignmentImporter extends FastaNtAlignmentImporter<FastaAlignm
 	
 	private boolean isGapChar(char seqChar) {
 		return sequenceGapRegex.matcher(new String(new char[]{seqChar})).find();
+	}
+
+	@Override
+	public List<QueryAlignedSegment> alignmentRowImport(CommandContext cmdContext, String queryId, String queryNucleotides, String alignmentRow) {
+		return findAlignedSegs(cmdContext, queryId, queryNucleotides, new ArrayList<QueryAlignedSegment>(), alignmentRow);
 	}
 
 	

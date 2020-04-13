@@ -40,6 +40,7 @@ public class NucleotideDeletionScanner extends BaseNucleotideVariationScanner<Nu
 
 	private static final List<VariationMetatagType> allowedMetatagTypes = Arrays.asList(
 			VariationMetatagType.FLANKING_NTS, 
+			VariationMetatagType.ALLOW_PARTIAL_COVERAGE,
 			VariationMetatagType.MIN_DELETION_LENGTH_NTS,
 			VariationMetatagType.MAX_DELETION_LENGTH_NTS);
 	private static final List<VariationMetatagType> requiredMetatagTypes = Arrays.asList();
@@ -48,6 +49,7 @@ public class NucleotideDeletionScanner extends BaseNucleotideVariationScanner<Nu
 	private String referenceNucleotides;
 	private Integer minDeletionLengthNts;
 	private Integer maxDeletionLengthNts;
+	private Boolean allowPartialCoverage;
 	
 	public NucleotideDeletionScanner() {
 		super(allowedMetatagTypes, requiredMetatagTypes);
@@ -77,6 +79,12 @@ public class NucleotideDeletionScanner extends BaseNucleotideVariationScanner<Nu
 		} else {
 			this.maxDeletionLengthNts = null;
 		}
+		Boolean configuredAllowPartialCoverage = getBooleanMetatagValue(VariationMetatagType.ALLOW_PARTIAL_COVERAGE);
+		if(configuredAllowPartialCoverage != null) {
+			this.allowPartialCoverage = configuredAllowPartialCoverage;
+		} else {
+			this.allowPartialCoverage = null;
+		}
 	}
 	
 	@Override
@@ -93,11 +101,19 @@ public class NucleotideDeletionScanner extends BaseNucleotideVariationScanner<Nu
 		return Math.max(getVariation().getRefStart()-this.flankingNTs, 1);
 	}
 	private Integer computeFlankingEnd() {
-		return Math.min(getVariation().getRefEnd(), this.referenceNucleotides.length());
+		return Math.min(getVariation().getRefEnd()+this.flankingNTs, this.referenceNucleotides.length());
 	}
 
 
 	
+	@Override
+	protected boolean computeSufficientCoverage(List<QueryAlignedSegment> queryToRefSegs) {
+		if(this.allowPartialCoverage) {
+			return true;
+		}
+		return super.computeSufficientCoverage(queryToRefSegs);
+	}
+
 	@Override
 	protected VariationScanResult<NucleotideDeletionMatchResult> scanInternal(
 			CommandContext cmdContext, 

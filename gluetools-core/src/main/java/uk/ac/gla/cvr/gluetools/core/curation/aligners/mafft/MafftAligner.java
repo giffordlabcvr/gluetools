@@ -23,7 +23,7 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.curation.aligners;
+package uk.ac.gla.cvr.gluetools.core.curation.aligners.mafft;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -37,13 +37,25 @@ import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.ExplicitMemberSupplier;
+import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.alignment.BaseFastaAlignmentImporter;
 import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.alignment.FastaNtAlignmentImporter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMemberCommand;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.SupportsComputeConstrained;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.SupportsComputeUnconstrained;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.SupportsExtendUnconstrained;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignCommand;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.AlignerException.Code;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.AlignerException;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.BlastAlignerAlignCommand;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.BlastAlignerFileAlignCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
+import uk.ac.gla.cvr.gluetools.core.datamodel.refSequence.ReferenceSequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
@@ -60,7 +72,7 @@ import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 @PluginClass(elemName="mafftAligner",
 		description="Runs external MAFFT program to populate or extend an unconstrained Alignment")
 public class MafftAligner extends Aligner<MafftAligner.MafftAlignerResult, MafftAligner> 
-	implements SupportsExtendUnconstrained<MafftAligner.MafftAlignerResult>, SupportsComputeUnconstrained {
+	implements SupportsExtendUnconstrained<MafftAligner.MafftAlignerResult>, SupportsComputeUnconstrained, SupportsComputeConstrained {
 
 	public static final String ALIGNMENT_REIMPORTER_MODULE_NAME = "alignmentReimporterModuleName";
 	
@@ -72,6 +84,9 @@ public class MafftAligner extends Aligner<MafftAligner.MafftAlignerResult, Mafft
 	public MafftAligner() {
 		super();
 		addSimplePropertyName(ALIGNMENT_REIMPORTER_MODULE_NAME);
+		registerModulePluginCmdClass(MafftAlignerAlignCommand.class);
+		registerModulePluginCmdClass(MafftAlignerFileAlignCommand.class);
+
 	}
 
 	@Override
@@ -95,14 +110,14 @@ public class MafftAligner extends Aligner<MafftAligner.MafftAlignerResult, Mafft
 	@Override
 	public void validate(CommandContext cmdContext) {
 		super.validate(cmdContext);
-		FastaNtAlignmentImporter<?> alignmentReimporter = resolveReimporter(cmdContext);
+		BaseFastaAlignmentImporter<?> alignmentReimporter = resolveReimporter(cmdContext);
 		alignmentReimporter.validate(cmdContext);
 	}
 
-	private FastaNtAlignmentImporter<?> resolveReimporter(
+	private BaseFastaAlignmentImporter<?> resolveReimporter(
 			CommandContext cmdContext) {
-		FastaNtAlignmentImporter<?> alignmentReimporter = 
-				Module.resolveModulePlugin(cmdContext, FastaNtAlignmentImporter.class, alignmentReimporterModuleName);
+		BaseFastaAlignmentImporter<?> alignmentReimporter = 
+				Module.resolveModulePlugin(cmdContext, BaseFastaAlignmentImporter.class, alignmentReimporterModuleName);
 		return alignmentReimporter;
 	}
 
@@ -113,7 +128,7 @@ public class MafftAligner extends Aligner<MafftAligner.MafftAlignerResult, Mafft
 			List<Map<String, String>> existingMembersPkMaps,
 			List<Map<String, String>> recomputedMembersPkMaps, 
 			File dataDir) {
-		FastaNtAlignmentImporter<?> alignmentReimporter = resolveReimporter(cmdContext);
+		BaseFastaAlignmentImporter<?> alignmentReimporter = resolveReimporter(cmdContext);
 		int existingIdx = 0;
 		Map<String, Map<String,String>> existingTempIdToPkMap = new LinkedHashMap<String, Map<String,String>>();
 		Map<String, DNASequence> existingTempIdToSequence = new LinkedHashMap<String, DNASequence>();
@@ -152,8 +167,10 @@ public class MafftAligner extends Aligner<MafftAligner.MafftAlignerResult, Mafft
 			}
 			AlignmentMember almtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, pkMap);
 			Sequence foundSequence = almtMember.getSequence();
-			List<QueryAlignedSegment> existingSegs = new ArrayList<QueryAlignedSegment>();
-			List<QueryAlignedSegment> newSegs = alignmentReimporter.findAlignedSegs(cmdContext, foundSequence, existingSegs, dnaSequence.getSequenceAsString());
+			String queryId = foundSequence.getSource().getName()+"/"+foundSequence.getSequenceID();
+			String queryNucleotides = foundSequence.getSequenceObject().getNucleotides(cmdContext);
+			List<QueryAlignedSegment> newSegs = 
+					alignmentReimporter.alignmentRowImport(cmdContext, queryId, queryNucleotides, dnaSequence.getSequenceAsString());
 			pkMapToSegs.put(pkMap, newSegs);
 		});
 		return pkMapToSegs;
@@ -166,7 +183,7 @@ public class MafftAligner extends Aligner<MafftAligner.MafftAlignerResult, Mafft
 		List<AlignmentMember> members = AlignmentListMemberCommand.listMembers(cmdContext, alignment, false, Optional.empty());
 		List<Map<String,String>> memberPkMaps = members.stream().map(memb -> memb.pkMap()).collect(Collectors.toList());
 
-		FastaNtAlignmentImporter<?> alignmentReimporter = resolveReimporter(cmdContext);
+		BaseFastaAlignmentImporter<?> alignmentReimporter = resolveReimporter(cmdContext);
 
 		int memberIdx = 0;
 		Map<String, Map<String,String>> memberTempIdToPkMap = new LinkedHashMap<String, Map<String,String>>();
@@ -192,12 +209,62 @@ public class MafftAligner extends Aligner<MafftAligner.MafftAlignerResult, Mafft
 			Map<String, String> pkMap = memberTempIdToPkMap.get(tempID);
 			AlignmentMember almtMember = GlueDataObject.lookup(cmdContext, AlignmentMember.class, pkMap);
 			Sequence foundSequence = almtMember.getSequence();
-			List<QueryAlignedSegment> existingSegs = new ArrayList<QueryAlignedSegment>();
-			List<QueryAlignedSegment> newSegs = alignmentReimporter.findAlignedSegs(cmdContext, foundSequence, existingSegs, dnaSequence.getSequenceAsString());
+			String queryId = foundSequence.getSource().getName()+"/"+foundSequence.getSequenceID();
+			String queryNucleotides = foundSequence.getSequenceObject().getNucleotides(cmdContext);
+			List<QueryAlignedSegment> newSegs = 
+					alignmentReimporter.alignmentRowImport(cmdContext, queryId, queryNucleotides, dnaSequence.getSequenceAsString());
 			pkMapToSegs.put(pkMap, newSegs);
 		});
 		return pkMapToSegs;
 	}
 
-	
+	@SuppressWarnings("rawtypes")
+	@Override
+	public Class<? extends AlignCommand> getComputeConstrainedCommandClass() {
+		return MafftAlignerAlignCommand.class;
+	}
+
+	@Override
+	public MafftAlignerResult computeConstrained(CommandContext cmdContext, String refName,
+			Map<String, DNASequence> queryIdToNucleotides) {
+		
+		Map<String, List<QueryAlignedSegment>> constrainedQueryIdToAlignedSegments = 
+				new LinkedHashMap<String, List<QueryAlignedSegment>>();
+
+		ReferenceSequence refSeq = GlueDataObject.lookup(cmdContext, ReferenceSequence.class, ReferenceSequence.pkMap(refName));
+		String refNucleotides = refSeq.getSequence().getSequenceObject().getNucleotides(cmdContext);
+
+		queryIdToNucleotides.forEach( (queryId, queryDnaSequence) -> {
+
+			Map<String, DNASequence> mafftInput = new LinkedHashMap<String, DNASequence>();
+			DNASequence referenceDnaSequence = new DNASequence(refNucleotides);
+			mafftInput.put("R", referenceDnaSequence);
+			mafftInput.put("Q", queryDnaSequence);
+
+			MafftResult mafftResult = mafftRunner.executeMafft(cmdContext, Task.COMPUTE, false, mafftInput, null, null);
+			Map<String, DNASequence> resultAlignment = mafftResult.getResultAlignment();
+			
+			BaseFastaAlignmentImporter<?> alignmentReimporter = resolveReimporter(cmdContext);
+
+			List<QueryAlignedSegment> queryToUQaSegs = alignmentReimporter
+					  .alignmentRowImport(cmdContext, queryId, queryDnaSequence.getSequenceAsString(), 
+							  resultAlignment.get("Q").getSequenceAsString());
+			List<QueryAlignedSegment> referenceToUQaSegs = alignmentReimporter
+					  .alignmentRowImport(cmdContext, refName, referenceDnaSequence.getSequenceAsString(), 
+							  resultAlignment.get("R").getSequenceAsString());
+
+			// because Task.COMPUTE was used, this result alignment will be unconstrained.
+			// we now just need to convert it into a constrained alignment
+			List<QueryAlignedSegment> uToReferenceQaSegs = QueryAlignedSegment.invertList(referenceToUQaSegs);
+			List<QueryAlignedSegment> queryToRefQaSegs = QueryAlignedSegment.translateSegments(queryToUQaSegs, uToReferenceQaSegs);
+			
+			constrainedQueryIdToAlignedSegments.put(queryId, queryToRefQaSegs);
+		});
+
+		
+		return new MafftAlignerResult(constrainedQueryIdToAlignedSegments);
+
+		
+	}
+
 }

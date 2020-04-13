@@ -174,7 +174,9 @@ public abstract class FastaNtAlignmentImporter<I extends FastaNtAlignmentImporte
 
 			DNASequence alignmentRowDnaSequence = entry.getValue();
 			String alignmentRowAsString = alignmentRowDnaSequence.getSequenceAsString();
-			queryAlignedSegs = findAlignedSegs(cmdContext, foundSequence, existingSegs, alignmentRowAsString, foundSequenceNavigationRegion);
+			String queryId = foundSequence.getSource().getName()+"/"+foundSequence.getSequenceID();
+			String queryNucleotides = foundSequence.getSequenceObject().getNucleotides(cmdContext);
+			queryAlignedSegs = findAlignedSegs(cmdContext, queryId, queryNucleotides, existingSegs, alignmentRowAsString, foundSequenceNavigationRegion);
 			if(queryAlignedSegs == null) {
 				// null return value means skip this alignment row. A warning should log the reason.
 				this.log(Level.FINEST, "Alignment row skipped for fasta ID "+fastaID);
@@ -310,16 +312,16 @@ public abstract class FastaNtAlignmentImporter<I extends FastaNtAlignmentImporte
 		return navigationRegion;
 	}
 
-	public abstract List<QueryAlignedSegment> findAlignedSegs(CommandContext cmdContext, Sequence foundSequence, 
+	public abstract List<QueryAlignedSegment> findAlignedSegs(CommandContext cmdContext, String queryID, String queryNucleotides, 
 			List<QueryAlignedSegment> existingSegs, String fastaAlignmentNTs, 
 			List<ReferenceSegment> foundSequenceNavigationRegion);
 
 	public List<QueryAlignedSegment> findAlignedSegs(CommandContext cmdContext,
-			Sequence foundSequence, List<QueryAlignedSegment> existingSegs,
+			String queryID, String queryNucleotides, List<QueryAlignedSegment> existingSegs,
 			String fastaAlignmentNTs) {
-		int foundSeqLength = foundSequence.getSequenceObject().getNucleotides(cmdContext).length();
+		int foundSeqLength = queryNucleotides.length();
 		List<ReferenceSegment> navigationRegion = new ArrayList<ReferenceSegment>(Arrays.asList(new ReferenceSegment(1, foundSeqLength)));
-		return findAlignedSegs(cmdContext, foundSequence, existingSegs, fastaAlignmentNTs, navigationRegion);
+		return findAlignedSegs(cmdContext, queryID, queryNucleotides, existingSegs, fastaAlignmentNTs, navigationRegion);
 	}
 
 

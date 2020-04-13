@@ -37,6 +37,7 @@ import java.util.stream.Collectors;
 
 import org.w3c.dom.Element;
 
+import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.alignment.FastaAlignmentImporterException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableResult;
@@ -221,6 +222,11 @@ public class BlastFastaProteinAlignmentImporter extends BaseFastaAlignmentImport
 			blastDbManager.removeTempSingleSeqBlastDB(cmdContext, tempDbID);
 		}
 		return blastResults;
+	}
+
+	@Override
+	public List<QueryAlignedSegment> alignmentRowImport(CommandContext cmdContext, String queryId, String queryNucleotides, String alignmentRow) {
+		throw new FastaAlignmentImporterException(Code.UNIMPLEMENTED, "alignmentRowImport unimplemented for "+this.getClass().getSimpleName());
 	}
 	
 

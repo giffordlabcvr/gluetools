@@ -73,7 +73,7 @@ public class BlastFastaAlignmentImporter extends FastaNtAlignmentImporter<BlastF
 	}
 
 	@Override
-	public List<QueryAlignedSegment> findAlignedSegs(CommandContext cmdContext, Sequence foundSequence, 
+	public List<QueryAlignedSegment> findAlignedSegs(CommandContext cmdContext, String queryId, String queryNucleotides, 
 			List<QueryAlignedSegment> existingSegs, String alignmentRowNTs, 
 			List<ReferenceSegment> navigationRegion) {
 		if(navigationRegion.isEmpty()) {
@@ -114,7 +114,7 @@ public class BlastFastaAlignmentImporter extends FastaNtAlignmentImporter<BlastF
 		Integer navRegionStart = ReferenceSegment.minRefStart(navigationRegion);
 		Integer navRegionEnd = ReferenceSegment.maxRefEnd(navigationRegion);
 		
-		CharSequence foundSequenceNTs = foundSequence.getSequenceObject().getNucleotides(cmdContext, navRegionStart, navRegionEnd);
+		CharSequence foundSequenceNTs = FastaUtils.subSequence(queryNucleotides, navRegionStart, navRegionEnd);
 		BlastDbManager blastDbManager = BlastDbManager.getInstance();
 
 		String uuid = UUID.randomUUID().toString();
@@ -147,7 +147,11 @@ public class BlastFastaAlignmentImporter extends FastaNtAlignmentImporter<BlastF
 		return foundSeqToIncomingRow;
 	}
 
-	
+	@Override
+	public List<QueryAlignedSegment> alignmentRowImport(CommandContext cmdContext, String queryId, String queryNucleotides, String alignmentRow) {
+		return findAlignedSegs(cmdContext, queryId, queryNucleotides, new ArrayList<QueryAlignedSegment>(), alignmentRow);
+	}
+
 	
 	
 	

@@ -32,6 +32,7 @@ public class FastaAlignmentImporterException extends GlueException {
 	public enum Code implements GlueErrorCode {
 		ALIGNMENT_IS_CONSTRAINED("alignmentName", "referenceName"),
 		NO_FASTA_ID_REGEX_MATCH("fastaId"),
+		UNIMPLEMENTED("errorTxt"),
 		INVALID_WHERE_CLAUSE("fastaId", "whereClause"),
 		NO_SEQUENCE_FOUND("fastaId", "whereClause"),
 		MULTIPLE_SEQUENCES_FOUND("fastaId", "whereClause"),

@@ -23,36 +23,25 @@
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
-package uk.ac.gla.cvr.gluetools.core.curation.aligners;
+package uk.ac.gla.cvr.gluetools.core.curation.aligners.mafft;
 
-import uk.ac.gla.cvr.gluetools.core.GlueException;
+import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
+import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
+import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.mafft.MafftAligner.MafftAlignerResult;
 
-public class AlignerException extends GlueException {
+@CommandClass(
+		commandWords = { Aligner.ALIGN_COMMAND_WORD }, 
+		description = "Align sequence data to a reference using MAFFT", 
+		docoptUsages = {}, 
+		metaTags={  CmdMeta.inputIsComplex },
+		furtherHelp = Aligner.ALIGN_COMMAND_FURTHER_HELP
+		)
+public class MafftAlignerAlignCommand extends Aligner.AlignCommand<MafftAligner.MafftAlignerResult, MafftAligner> {
 
-	public enum Code implements GlueErrorCode {
-		
-		CANNOT_ALIGN_AGAINST_DISCONTIGUOUS_FEATURE_LOCATION("refName", "featureName"),
-		MISSING_FEATURE_LOCATION("refName", "featureName"),
-		FEATURE_NAME_REQUIRED(),
-		REIMPORT_ERROR("errorTxt");
-
-		private String[] argNames;
-		private Code(String... argNames) {
-			this.argNames = argNames;
-		}
-		@Override
-		public String[] getArgNames() {
-			return argNames;
-		}
-
-	}
-	
-	public AlignerException(Code code, Object... errorArgs) {
-		super(code, errorArgs);
-	}
-
-	public AlignerException(Throwable cause, Code code,
-			Object... errorArgs) {
-		super(cause, code, errorArgs);
+	@Override
+	protected MafftAlignerResult execute(CommandContext cmdContext, MafftAligner modulePlugin) {
+		return modulePlugin.computeConstrained(cmdContext, getReferenceName(), getQueryIdToNucleotides());
 	}
 }

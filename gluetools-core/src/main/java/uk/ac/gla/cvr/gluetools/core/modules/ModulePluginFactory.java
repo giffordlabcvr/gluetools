@@ -40,14 +40,15 @@ import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.FastaImporter;
 import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.alignment.BlastFastaAlignmentImporter;
 import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.alignment.BlastFastaProteinAlignmentImporter;
 import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.alignment.FastaAlignmentImporter;
+import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.alignment.StrictFastaAlignmentImporter;
 import uk.ac.gla.cvr.gluetools.core.collation.importing.ncbi.NcbiImporter;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.genbank.GenbankXmlPopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.textfile.TextFilePopulator;
 import uk.ac.gla.cvr.gluetools.core.collation.referenceBuilder.GbRefBuilder;
-import uk.ac.gla.cvr.gluetools.core.curation.aligners.MafftAligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.BlastAligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.codonAwareBlast.CodonAwareBlastAligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.compound.CompoundAligner;
+import uk.ac.gla.cvr.gluetools.core.curation.aligners.mafft.MafftAligner;
 import uk.ac.gla.cvr.gluetools.core.curation.phylogeny.raxml.RaxmlPhylogenyGenerator;
 import uk.ac.gla.cvr.gluetools.core.curation.sequenceMergers.AlignmentBasedSequenceMerger;
 import uk.ac.gla.cvr.gluetools.core.digs.importer.DigsImporter;
@@ -118,6 +119,7 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		
 		setModulePluginGroup(new ModulePluginGroup("alignmentFasta", "Module types for importing/exporting alignments", 84));
 		registerPluginClass(FastaAlignmentImporter.class);
+		registerPluginClass(StrictFastaAlignmentImporter.class);
 		registerPluginClass(BlastFastaAlignmentImporter.class);
 		registerPluginClass(BlastFastaProteinAlignmentImporter.class);
 		registerPluginClass(FastaAlignmentExporter.class);

@@ -40,6 +40,7 @@ public class NucleotideInsertionScanner extends BaseNucleotideVariationScanner<N
 
 	private static final List<VariationMetatagType> allowedMetatagTypes = Arrays.asList(
 			VariationMetatagType.FLANKING_NTS, 
+			VariationMetatagType.ALLOW_PARTIAL_COVERAGE,
 			VariationMetatagType.MIN_INSERTION_LENGTH_NTS,
 			VariationMetatagType.MAX_INSERTION_LENGTH_NTS);
 
@@ -49,6 +50,7 @@ public class NucleotideInsertionScanner extends BaseNucleotideVariationScanner<N
 	private String referenceNucleotides;
 	private Integer minInsertionLengthNts;
 	private Integer maxInsertionLengthNts;
+	private Boolean allowPartialCoverage;
 	
 	public NucleotideInsertionScanner() {
 		super(allowedMetatagTypes, requiredMetatagTypes);
@@ -78,6 +80,13 @@ public class NucleotideInsertionScanner extends BaseNucleotideVariationScanner<N
 		} else {
 			this.maxInsertionLengthNts = null;
 		}
+		Boolean configuredAllowPartialCoverage = getBooleanMetatagValue(VariationMetatagType.ALLOW_PARTIAL_COVERAGE);
+		if(configuredAllowPartialCoverage != null) {
+			this.allowPartialCoverage = configuredAllowPartialCoverage;
+		} else {
+			this.allowPartialCoverage = null;
+		}
+
 	}
 	@Override
 	public List<ReferenceSegment> getSegmentsToCover() {
@@ -96,6 +105,14 @@ public class NucleotideInsertionScanner extends BaseNucleotideVariationScanner<N
 	private Integer computeFlankingEnd() {
 		Integer refEnd = getVariation().getRefEnd();
 		return Math.min((refEnd-1)+(this.flankingNTs), this.referenceNucleotides.length());
+	}
+	
+	@Override
+	protected boolean computeSufficientCoverage(List<QueryAlignedSegment> queryToRefSegs) {
+		if(this.allowPartialCoverage) {
+			return true;
+		}
+		return super.computeSufficientCoverage(queryToRefSegs);
 	}
 
 	

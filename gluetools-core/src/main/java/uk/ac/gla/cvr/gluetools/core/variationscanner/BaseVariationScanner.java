@@ -130,7 +130,7 @@ public abstract class BaseVariationScanner<M extends VariationScannerMatchResult
 		}
 	}
 
-	protected final boolean computeSufficientCoverage(List<QueryAlignedSegment> queryToRefSegs) {
+	protected boolean computeSufficientCoverage(List<QueryAlignedSegment> queryToRefSegs) {
 		List<ReferenceSegment> coverageSegments = getSegmentsToCover();
 		List<ReferenceSegment> segmentsToCover = coverageSegments;
 		return ReferenceSegment.covers(queryToRefSegs, segmentsToCover);
@@ -146,6 +146,14 @@ public abstract class BaseVariationScanner<M extends VariationScannerMatchResult
 			} catch(NumberFormatException nfe) {
 				throwScannerException("Expected integer value for metatag: "+type.name());
 			}
+		}
+		return null;
+	}
+
+	protected Boolean getBooleanMetatagValue(VariationMetatagType type) {
+		String stringValue = getStringMetatagValue(type);
+		if(stringValue != null) {
+			return Boolean.parseBoolean(stringValue);
 		}
 		return null;
 	}
