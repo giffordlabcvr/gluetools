@@ -35,6 +35,8 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.fastaExporter.FastaExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.sequenceSupplier.AbstractSequenceSupplier;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException;
+import uk.ac.gla.cvr.gluetools.core.command.CommandException.Code;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ModulePluginCommand;
 import uk.ac.gla.cvr.gluetools.core.command.project.module.ProvidedProjectModeCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
@@ -50,10 +52,15 @@ public abstract class BaseExportCommand<R extends CommandResult> extends ModuleP
 	public static final String LINE_FEED_STYLE = "lineFeedStyle";
 	public static final String SUPPRESS_REVERSE_COMPLEMENT = "suppressReverseComplement";
 	public static final String SUPPRESS_ROTATION = "suppressRotation";
+	public static final String OFFSET = "offset";
+	public static final String BATCH_SIZE = "batchSize";
 
 	private LineFeedStyle lineFeedStyle;
 	private Boolean suppressReverseComplement;
 	private Boolean suppressRotation;
+	private Integer offset;
+	private Integer batchSize;
+
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
@@ -61,6 +68,12 @@ public abstract class BaseExportCommand<R extends CommandResult> extends ModuleP
 		lineFeedStyle = Optional.ofNullable(PluginUtils.configureEnumProperty(LineFeedStyle.class, configElem, LINE_FEED_STYLE, false)).orElse(LineFeedStyle.LF);
 		this.suppressReverseComplement = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, SUPPRESS_REVERSE_COMPLEMENT, false)).orElse(false);
 		this.suppressRotation = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, SUPPRESS_ROTATION, false)).orElse(false);
+		this.offset = PluginUtils.configureIntProperty(configElem, OFFSET, 1, true, null, false, false);
+		this.batchSize = PluginUtils.configureIntProperty(configElem, BATCH_SIZE, 1, true, null, false, false);
+		if( (this.offset == null && this.batchSize != null) || 
+				(this.offset != null && this.batchSize == null) ) {
+			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either both <offset> and <batchSize> are to be specified, or neither");
+		}
 	}
 
 	protected void export(CommandContext cmdContext, AbstractSequenceSupplier sequenceSupplier, 
@@ -74,7 +87,16 @@ public abstract class BaseExportCommand<R extends CommandResult> extends ModuleP
 				printWriter.flush();
 			}
 		};
-		FastaExporter.doExport(cmdContext, sequenceSupplier, sequenceConsumer);
+		possiblyBatchedExport(cmdContext, sequenceSupplier, sequenceConsumer);
+	}
+
+	private void possiblyBatchedExport(CommandContext cmdContext, AbstractSequenceSupplier sequenceSupplier,
+			AbstractSequenceConsumer sequenceConsumer) {
+		if(this.offset == null) {
+			FastaExporter.doExport(cmdContext, sequenceSupplier, sequenceConsumer);
+		} else {
+			FastaExporter.doExportSingleBatch(cmdContext, sequenceSupplier, sequenceConsumer, offset, batchSize);
+		}
 	}
 	
 	protected Map<String, DNASequence> export(CommandContext cmdContext, AbstractSequenceSupplier sequenceSupplier, 
@@ -88,7 +110,7 @@ public abstract class BaseExportCommand<R extends CommandResult> extends ModuleP
 				ntFastaMap.put(fastaId, ntSequence);
 			}
 		};
-		FastaExporter.doExport(cmdContext, sequenceSupplier, sequenceConsumer);
+		possiblyBatchedExport(cmdContext, sequenceSupplier, sequenceConsumer);
 		return ntFastaMap;
 	}
 	

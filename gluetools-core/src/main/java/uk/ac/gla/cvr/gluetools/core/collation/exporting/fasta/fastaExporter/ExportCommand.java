@@ -56,11 +56,13 @@ import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 
 @CommandClass( 
 		commandWords={"export"}, 
-		docoptUsages={"(-w <whereClause> | -a) [-y <lineFeedStyle>] [-r] [-t] (-p | -f <fileName>)"},
+		docoptUsages={"(-w <whereClause> | -a) [-o <offset> -b <batchSize>] [-y <lineFeedStyle>] [-r] [-t] (-p | -f <fileName>)"},
 		docoptOptions={
 				"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>  LF or CRLF",
 				"-f <fileName>, --fileName <fileName>                 FASTA file",
 				"-w <whereClause>, --whereClause <whereClause>        Qualify exported sequences",
+				"-o <offset>, --offset <offset>                       Paged query offset", 
+				"-b <batchSize>, --batchSize <batchSize>              Paged query batch size", 
 			    "-a, --allSequences                                   Export all project sequences",
 				"-r, --suppressReverseComplement                      Suppress reverse complement",
 				"-t, --suppressRotation                               Suppress rotation",

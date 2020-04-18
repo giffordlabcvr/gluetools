@@ -57,10 +57,12 @@ import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
 
 @CommandClass( 
 		commandWords={"export-member"}, 
-		docoptUsages={"<alignmentName> [-c] [-w <whereClause>] [-y <lineFeedStyle>] [-r] [-t] (-p | -f <fileName>)"},
+		docoptUsages={"<alignmentName> [-c] [-w <whereClause>] [-o <offset> -b <batchSize>] [-y <lineFeedStyle>] [-r] [-t] (-p | -f <fileName>)"},
 		docoptOptions={
 				"-c, --recursive                                      Include members of descendent alignments",
 				"-w <whereClause>, --whereClause <whereClause>        Qualify exported members",
+				"-o <offset>, --offset <offset>                       Paged query offset", 
+				"-b <batchSize>, --batchSize <batchSize>              Paged query batch size", 
 				"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>  LF or CRLF",
 				"-r, --suppressReverseComplement                      Suppress reverse complement",
 				"-t, --suppressRotation                               Suppress rotation",

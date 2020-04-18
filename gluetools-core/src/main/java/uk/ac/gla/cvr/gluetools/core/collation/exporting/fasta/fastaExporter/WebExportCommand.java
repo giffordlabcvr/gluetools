@@ -49,10 +49,12 @@ import uk.ac.gla.cvr.gluetools.core.webfiles.WebFilesManager.WebFileType;
 
 @CommandClass( 
 		commandWords={"web-export"}, 
-		docoptUsages={"(-w <whereClause> | -a) [-r] [-t] -f <fileName>"},
+		docoptUsages={"(-w <whereClause> | -a) [-o <offset> -b <batchSize>] [-r] [-t] -f <fileName>"},
 		docoptOptions={
 			"-y <lineFeedStyle>, --lineFeedStyle <lineFeedStyle>  LF or CRLF",
 			"-w <whereClause>, --whereClause <whereClause>        Qualify exported sequences",
+			"-o <offset>, --offset <offset>                       Paged query offset", 
+			"-b <batchSize>, --batchSize <batchSize>              Paged query batch size", 
 		    "-a, --allSequences                                   Export all project sequences",
 			"-r, --suppressReverseComplement                      Suppress reverse complement",
 			"-t, --suppressRotation                               Suppress rotation",

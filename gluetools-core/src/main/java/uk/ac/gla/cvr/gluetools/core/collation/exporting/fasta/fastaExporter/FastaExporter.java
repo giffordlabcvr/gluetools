@@ -69,4 +69,17 @@ public class FastaExporter extends AbstractFastaExporter<FastaExporter> {
 		}
 	}
 	
+	public static void doExportSingleBatch(CommandContext cmdContext, 
+			AbstractSequenceSupplier sequenceSupplier, 
+			AbstractSequenceConsumer sequenceConsumer, 
+			int offset,
+			int batchSize) {
+
+		List<Sequence> sequences = sequenceSupplier.supplySequences(cmdContext, offset, batchSize);
+		sequences.forEach(seq -> {
+			sequenceConsumer.consumeSequence(cmdContext, seq);
+		});
+		cmdContext.newObjectContext();
+	}
+	
 }
