@@ -86,13 +86,20 @@ public class MafftRunner implements Plugin {
 	
 	public MafftResult executeMafft(CommandContext cmdContext, Task task, boolean independentQueries,
 			Map<String, DNASequence> alignment, Map<String, DNASequence> query, File dataDirFile) {
-
 		if(independentQueries && !task.equals(Task.ADD_KEEPLENGTH)) {
 			throw new MafftException(Code.MAFFT_CONFIG_EXCEPTION, "MAFFT runner independentQueries option can only be used with ADD_KEEPLENGTH task");
 		}
 		
 		if(query != null && !EnumSet.of(Task.ADD, Task.ADD_KEEPLENGTH).contains(task)) {
 			throw new MafftException(Code.MAFFT_CONFIG_EXCEPTION, "MAFFT runner query can only be passed to ADD or ADD_KEEPLENGTH task");
+		}
+
+		// deals with some cases of empty input
+		if(task.equals(Task.COMPUTE) && alignment.isEmpty()) {
+			return MafftResult.emptyResult();
+		}
+		if(EnumSet.of(Task.ADD, Task.ADD_KEEPLENGTH).contains(task) && query.isEmpty()) {
+			return MafftResult.fixedResult(alignment);
 		}
 		
 		String mafftTempDir = cmdContext.getGluetoolsEngine().getPropertiesConfiguration().getPropertyValue(MafftUtils.MAFFT_TEMP_DIR_PROPERTY);

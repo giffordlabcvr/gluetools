@@ -25,6 +25,7 @@
 */
 package uk.ac.gla.cvr.gluetools.programs.mafft.add;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 import uk.ac.gla.cvr.gluetools.utils.fasta.DNASequence;
@@ -38,5 +39,17 @@ public class MafftResult {
 
 	public void setResultAlignment(Map<String, DNASequence> resultAlignment) {
 		this.resultAlignment = resultAlignment;
+	}
+	
+	public static MafftResult emptyResult() {
+		MafftResult mafftResult = new MafftResult();
+		mafftResult.setResultAlignment(new LinkedHashMap<String, DNASequence>());
+		return mafftResult;
+	}
+
+	public static MafftResult fixedResult(Map<String, DNASequence> resultAlignment) {
+		MafftResult mafftResult = new MafftResult();
+		mafftResult.setResultAlignment(new LinkedHashMap<String, DNASequence>(resultAlignment));
+		return mafftResult;
 	}
 }
