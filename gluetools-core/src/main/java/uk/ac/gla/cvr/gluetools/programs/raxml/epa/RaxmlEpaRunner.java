@@ -30,9 +30,12 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 
 import javax.json.JsonObject;
@@ -44,7 +47,10 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.jplace.JPlaceResult;
 import uk.ac.gla.cvr.gluetools.core.modules.PropertyGroup;
 import uk.ac.gla.cvr.gluetools.core.newick.NewickGenerator;
+import uk.ac.gla.cvr.gluetools.core.newick.NewickJPlaceToPhyloTreeParser;
 import uk.ac.gla.cvr.gluetools.core.newick.PhyloTreeToNewickGenerator;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloBranch;
+import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloFormat;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloInternal;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloLeaf;
 import uk.ac.gla.cvr.gluetools.core.phylotree.PhyloTree;
@@ -98,6 +104,40 @@ public class RaxmlEpaRunner extends RaxmlRunner {
 		
 		checkPhyloTree(phyloTree);
 		checkAlignment(alignment);
+		
+		// figure out the query rows by deleting each leaf name from the tree.
+		Set<String> queryRows = new LinkedHashSet<String>(alignment.keySet());
+		phyloTree.accept(new PhyloTreeVisitor() {
+			@Override
+			public void visitLeaf(PhyloLeaf phyloLeaf) {
+				String taxonName = (String) phyloLeaf.ensureUserData().get(EPA_LEAF_NAME_USER_DATA_KEY);
+				queryRows.remove(taxonName);
+			}
+		});
+		if(queryRows.isEmpty()) {
+			// no query rows. 
+			// Rather than running raxml epa and getting an error (it doesn't like zero inputs), 
+			// form up an empty JPlaceResult.
+			// The only snag here is make sure the contained tree has integer branch labels.
+			JPlaceResult jplaceResult = new JPlaceResult();
+			// slightly hacky way to clone the tree.
+			String newick = phyloTreeToRaxmlInputNewick(phyloTree);
+			PhyloTree jplacePhyloTree = PhyloFormat.NEWICK.parse(newick.getBytes());
+			jplacePhyloTree.accept(new PhyloTreeVisitor() {
+				int edgeIndex = 0;
+				@Override
+				public void preVisitBranch(int branchIndex, PhyloBranch phyloBranch) {
+					phyloBranch.ensureUserData().put(NewickJPlaceToPhyloTreeParser.J_PLACE_BRANCH_LABEL, new Integer(edgeIndex));
+					edgeIndex++;
+				}
+			});
+			jplaceResult.setTree(jplacePhyloTree);
+			jplaceResult.setFields(Arrays.asList("edge_num", "likelihood", "like_weight_ratio", "distal_length", "pendant_length"));
+			RaxmlEpaResult raxmlEpaResult = new RaxmlEpaResult();
+			raxmlEpaResult.setjPlaceResult(jplaceResult);
+			return raxmlEpaResult;
+		}
+		
 		byte[] alignmentFastaBytes = FastaUtils.mapToFasta(alignment, LineFeedStyle.LF);
 
 		
@@ -186,6 +226,15 @@ public class RaxmlEpaRunner extends RaxmlRunner {
 
 
 	private void writePhyloTreeFile(File tempDir, File phyloTreeFile, PhyloTree phyloTree) {
+		String newickString = phyloTreeToRaxmlInputNewick(phyloTree);
+		try(FileOutputStream fileOutputStream = new FileOutputStream(phyloTreeFile)) {
+			IOUtils.write(newickString.getBytes(), fileOutputStream);
+		} catch (IOException e) {
+			throw new RaxmlException(e, Code.RAXML_FILE_EXCEPTION, "Failed to write "+phyloTreeFile.getAbsolutePath()+": "+e.getLocalizedMessage());
+		}
+	}
+
+	private String phyloTreeToRaxmlInputNewick(PhyloTree phyloTree) {
 		PhyloTreeToNewickGenerator newickPhyloTreeVisitor = new PhyloTreeToNewickGenerator(new NewickGenerator() {
 			@Override
 			public String generateLeafName(PhyloLeaf phyloLeaf) {
@@ -195,11 +244,7 @@ public class RaxmlEpaRunner extends RaxmlRunner {
 		});
 		phyloTree.accept(newickPhyloTreeVisitor);
 		String newickString = newickPhyloTreeVisitor.getNewickString();
-		try(FileOutputStream fileOutputStream = new FileOutputStream(phyloTreeFile)) {
-			IOUtils.write(newickString.getBytes(), fileOutputStream);
-		} catch (IOException e) {
-			throw new RaxmlException(e, Code.RAXML_FILE_EXCEPTION, "Failed to write "+phyloTreeFile.getAbsolutePath()+": "+e.getLocalizedMessage());
-		}
+		return newickString;
 	}
 
 

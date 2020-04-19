@@ -48,7 +48,7 @@ public class JPlaceResult {
 	
 	private Map<String, Object> metadata = new LinkedHashMap<String, Object>();
 	
-	private Integer version;
+	private Integer version = 0;
 	
 	private List<String> fields = new ArrayList<String>();
 
