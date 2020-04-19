@@ -279,7 +279,7 @@ public class FastaUtils {
 		}
 		Map<String, S> fastaMap = new LinkedHashMap<String, S>();
 		CommandArray sequenceArray = Optional.ofNullable(commandDocument.getArray("sequences"))
-				.orElseThrow(() -> new FastaUtilsException(FastaUtilsException.Code.FASTA_DOCUMENT_PARSE_ERROR, "Missing 'sequences' array field"));
+				.orElse(new CommandArray());
 		sequenceArray.getItems().forEach(cmdArrayItem -> {
 			if(!(cmdArrayItem instanceof CommandObject)) {
 				throw new FastaUtilsException(FastaUtilsException.Code.FASTA_DOCUMENT_PARSE_ERROR, "The 'sequences' array should contain only objects");
