@@ -68,7 +68,7 @@ public abstract class BaseExportCommand<R extends CommandResult> extends ModuleP
 		lineFeedStyle = Optional.ofNullable(PluginUtils.configureEnumProperty(LineFeedStyle.class, configElem, LINE_FEED_STYLE, false)).orElse(LineFeedStyle.LF);
 		this.suppressReverseComplement = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, SUPPRESS_REVERSE_COMPLEMENT, false)).orElse(false);
 		this.suppressRotation = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, SUPPRESS_ROTATION, false)).orElse(false);
-		this.offset = PluginUtils.configureIntProperty(configElem, OFFSET, 1, true, null, false, false);
+		this.offset = PluginUtils.configureIntProperty(configElem, OFFSET, 0, true, null, false, false);
 		this.batchSize = PluginUtils.configureIntProperty(configElem, BATCH_SIZE, 1, true, null, false, false);
 		if( (this.offset == null && this.batchSize != null) || 
 				(this.offset != null && this.batchSize == null) ) {
