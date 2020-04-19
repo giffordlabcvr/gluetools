@@ -57,8 +57,10 @@ public class DetailedMaxLikelihoodPlacerResult implements IMaxLikelihoodPlacerRe
 	public static DetailedMaxLikelihoodPlacerResult fromCommandDocument(CommandDocument cmdDocument) {
 		CommandArray queryResultArray = cmdDocument.getArray("queryResults");
 		List<MaxLikelihoodSingleQueryResult> queryResults = new ArrayList<MaxLikelihoodSingleQueryResult>();
-		for(int i = 0; i < queryResultArray.size(); i++) {
-			queryResults.add(PojoDocumentUtils.commandObjectToPojo(queryResultArray.getObject(i), MaxLikelihoodSingleQueryResult.class));
+		if(queryResultArray != null) {
+			for(int i = 0; i < queryResultArray.size(); i++) {
+				queryResults.add(PojoDocumentUtils.commandObjectToPojo(queryResultArray.getObject(i), MaxLikelihoodSingleQueryResult.class));
+			}
 		}
 		CommandObject phyloTreeCmdObject = cmdDocument.getObject("labelledPhyloTree");
 		CommandDocument phyloTreeCmdDocument = new CommandDocument("phyloTree");
