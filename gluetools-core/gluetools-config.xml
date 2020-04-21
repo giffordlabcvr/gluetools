@@ -562,6 +562,11 @@
 				<regex>.*/custom-table-row/cov_project_properties/gisaidTimeStamp$</regex>
 				<simpleCommandFilter words="show property"/>
 			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/module/covPrimerProbeReportTransformer$</regex>
+				<simpleCommandFilter words="transform-to-web-file"/>
+			</modePathRegexFilter>
+			
 		</modePathRegexFilter>
 
 
