@@ -177,13 +177,13 @@ public class RaxmlEpaRunner extends RaxmlRunner {
 			
 			// various EPA settings
 			if(this.keepPlacements != null) {
-				commandWords.add("--­­epa­-keep-­placements="+Integer.toString(this.keepPlacements));
+				commandWords.add("--epa-keep-placements="+Integer.toString(this.keepPlacements));
 			}
 			if(this.probThreshold != null) {
-				commandWords.add("­­--epa-probthreshold="+Double.toString(this.probThreshold));
+				commandWords.add("--epa-prob-threshold="+Double.toString(this.probThreshold));
 			}
 			if(this.accumulatedThreshold != null) {
-				commandWords.add("­­--epa-accumulated-threshold="+Double.toString(this.accumulatedThreshold));
+				commandWords.add("--epa-accumulated-threshold="+Double.toString(this.accumulatedThreshold));
 			}
 			
 			// threshold insertions
