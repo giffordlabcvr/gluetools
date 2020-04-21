@@ -75,12 +75,25 @@ public class RaxmlEpaRunner extends RaxmlRunner {
 	
 	public static final String THOROUGH_INSERTION_FRACTION = "thoroughInsertionFraction";
 	
+	public static final String KEEP_PLACEMENTS = "keepPlacements";
+	public static final String PROB_THRESHOLD = "probThreshold";
+	public static final String ACCUMULATED_THRESHOLD = "accumulatedThreshold";
+	
 	private Double thoroughInsertionFraction = 0.1;
+	private Integer keepPlacements = null;
+	private Double probThreshold = null;
+	private Double accumulatedThreshold = null;
 
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext, Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		thoroughInsertionFraction = Optional.ofNullable(PluginUtils.configureDoubleProperty(configElem, THOROUGH_INSERTION_FRACTION, false)).orElse(thoroughInsertionFraction);
+		keepPlacements = PluginUtils.configureIntProperty(configElem, KEEP_PLACEMENTS, 1, true, null, false, false);
+		probThreshold = PluginUtils.configureDoubleProperty(configElem, PROB_THRESHOLD, 0.0, false, 1.0, true, false);
+		accumulatedThreshold = PluginUtils.configureDoubleProperty(configElem, ACCUMULATED_THRESHOLD, 0.0, false, 1.0, true, false);
+		if(accumulatedThreshold != null && (keepPlacements != null || probThreshold != null)) {
+			throw new RaxmlException(Code.RAXML_CONFIG_EXCEPTION, "If raxmlEpaRunner accumulatedThreshold is used, neither keepPlacements nor probThreshold may be used.");
+		}
 	}
 	
 	@Override
@@ -161,6 +174,18 @@ public class RaxmlEpaRunner extends RaxmlRunner {
 			// activate EPA
 			commandWords.add("-f");
 			commandWords.add("v");
+			
+			// various EPA settings
+			if(this.keepPlacements != null) {
+				commandWords.add("--­­epa­-keep-­placements="+Integer.toString(this.keepPlacements));
+			}
+			if(this.probThreshold != null) {
+				commandWords.add("­­--epa-probthreshold="+Double.toString(this.probThreshold));
+			}
+			if(this.accumulatedThreshold != null) {
+				commandWords.add("­­--epa-accumulated-threshold="+Double.toString(this.accumulatedThreshold));
+			}
+			
 			// threshold insertions
 			if(this.thoroughInsertionFraction != null) {
 				commandWords.add("-G");
