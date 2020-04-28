@@ -486,6 +486,8 @@
 			<simpleCommandFilter words="show setting">
 				<arg name="settingName">project-version</arg>
 			</simpleCommandFilter>
+			<simpleCommandFilter words="count sequence"/>
+			<simpleCommandFilter words="list sequence"/>
 			<!-- analysis -->
 			<simpleCommandFilter words="list feature"/>
 			<modePathRegexFilter>
@@ -511,31 +513,28 @@
 					<arg name="functionName">visualisePhyloAsSvg</arg>
 				</simpleCommandFilter>
 			</modePathRegexFilter>
-			<!-- replacements and deletions pages -->
+			<!-- replacement, deletion and insertion pages -->
 			<simpleCommandFilter words="count custom-table-row">
 				<arg name="tableName">cov_replacement</arg>
 			</simpleCommandFilter>
 			<simpleCommandFilter words="count custom-table-row">
-				<arg name="tableName">cov_deletion</arg>
+				<arg name="tableName">cov_nt_deletion</arg>
 			</simpleCommandFilter>
 			<simpleCommandFilter words="count custom-table-row">
-				<arg name="tableName">cov_insertion</arg>
+				<arg name="tableName">cov_nt_insertion</arg>
 			</simpleCommandFilter>
 			<simpleCommandFilter words="multi-render">
 				<arg name="tableName">cov_replacement</arg>
 				<arg name="rendererModuleName">covListReplacementsRenderer</arg>
 			</simpleCommandFilter>
 			<simpleCommandFilter words="multi-render">
-				<arg name="tableName">cov_deletion</arg>
+				<arg name="tableName">cov_nt_deletion</arg>
 				<arg name="rendererModuleName">covListDeletionsRenderer</arg>
 			</simpleCommandFilter>
 			<simpleCommandFilter words="multi-render">
-				<arg name="tableName">cov_insertion</arg>
+				<arg name="tableName">cov_nt_insertion</arg>
 				<arg name="rendererModuleName">covListInsertionsRenderer</arg>
 			</simpleCommandFilter>
-			<!-- replacement and deletion page -->
-			<simpleCommandFilter words="count sequence"/>
-			<simpleCommandFilter words="list sequence"/>
 			<modePathRegexFilter>
 				<regex>.*/custom-table-row/cov_replacement/.*$</regex>
 				<simpleCommandFilter words="render-object">
@@ -543,13 +542,13 @@
 				</simpleCommandFilter>
 			</modePathRegexFilter>
 			<modePathRegexFilter>
-				<regex>.*/custom-table-row/cov_deletion/.*$</regex>
+				<regex>.*/custom-table-row/cov_nt_deletion/.*$</regex>
 				<simpleCommandFilter words="render-object">
 					<arg name="rendererModuleName">covDeletionRenderer</arg>
 				</simpleCommandFilter>
 			</modePathRegexFilter>
 			<modePathRegexFilter>
-				<regex>.*/custom-table-row/cov_insertion/.*$</regex>
+				<regex>.*/custom-table-row/cov_nt_insertion/.*$</regex>
 				<simpleCommandFilter words="render-object">
 					<arg name="rendererModuleName">covInsertionRenderer</arg>
 				</simpleCommandFilter>
@@ -566,6 +565,11 @@
 				<regex>.*/module/covPrimerProbeReportTransformer$</regex>
 				<simpleCommandFilter words="transform-to-web-file"/>
 			</modePathRegexFilter>
+			<!-- sequence acknowledgements page -->
+			<simpleCommandFilter words="multi-render">
+				<arg name="tableName">m49_region</arg>
+				<arg name="rendererModuleName">m49RegionTreeRenderer</arg>
+			</simpleCommandFilter>
 			
 		</modePathRegexFilter>
 
