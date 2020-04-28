@@ -40,6 +40,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang.StringUtils;
@@ -412,7 +413,16 @@ public class Console implements InteractiveCommandResultRenderingContext
 				});
 			}
 		} finally {
-			console.shutdown();
+			try {
+				console.shutdown();
+			} catch(Throwable th) {
+				GlueLogger.getGlueLogger().log(Level.WARNING, 
+						"Exception during shutdown: "+th.getLocalizedMessage(), th);
+				GlueLogger.getGlueLogger().warning("Will sleep for ten seconds then exit");
+				try { Thread.sleep(10000); } catch (InterruptedException e) {}
+				// not ideal but otherwise threads might be preventing shutdown.
+				System.exit(0);
+			}
 		}
 	}
 

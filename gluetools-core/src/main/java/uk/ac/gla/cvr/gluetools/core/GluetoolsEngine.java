@@ -238,9 +238,6 @@ public class GluetoolsEngine implements Plugin {
 	}
 	
 	private void dispose() {
-		if(rootServerRuntime != null) {
-			rootServerRuntime.shutdown();
-		}
 		if(mafftExecutorService != null) {
 			mafftExecutorService.shutdown();
 		}
@@ -252,6 +249,9 @@ public class GluetoolsEngine implements Plugin {
 		}
 		if(requestQueueManager != null) {
 			requestQueueManager.dispose();
+		}
+		if(rootServerRuntime != null) {
+			rootServerRuntime.shutdown();
 		}
 	}
 
