@@ -32,9 +32,11 @@ import org.apache.cayenne.query.Ordering;
 import org.apache.cayenne.query.SelectQuery;
 
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
+import uk.ac.gla.cvr.gluetools.core.command.project.InsideProjectMode;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
+import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.document.CommandArray;
 import uk.ac.gla.cvr.gluetools.core.document.CommandObject;
 import uk.ac.gla.cvr.gluetools.utils.CayenneUtils;
@@ -45,9 +47,9 @@ public class AlignmentDescendentTreeResult extends CommandResult {
 	
 	public AlignmentDescendentTreeResult(CommandContext cmdContext, Alignment alignment, String sortProperties) {
 		super("alignmentDescendentTreeResult");
-		if(sortProperties != null) {
-			orderings = CayenneUtils.sortPropertiesToOrderings(sortProperties);
-		}
+		InsideProjectMode insideProjectMode = (InsideProjectMode) cmdContext.peekCommandMode();
+		Project project = insideProjectMode.getProject();
+		orderings = CayenneUtils.sortPropertiesToOrderings(project, "alignment", sortProperties);
 		addNode(cmdContext, getCommandDocument(), alignment);
 	}
 

@@ -140,6 +140,24 @@ public class Project extends _Project {
 		}
 	}
 
+	public List<String> getTablePkProperties(String tableName) {
+		if(getCustomTable(tableName) != null) {
+			return Arrays.asList("id");
+		}
+		ConfigurableTable cTable;
+		try {
+			cTable = Enum.valueOf(ConfigurableTable.class, tableName);
+		} catch(IllegalArgumentException iae) {
+			throw new ProjectModeCommandException(Code.NO_SUCH_TABLE, tableName);
+		}
+		List<String> pkProperties = new ArrayList<String>();
+		for(ModePathElement mpe : cTable.getModePath()) {
+			if(mpe instanceof PkPath) {
+				pkProperties.add(((PkPath) mpe).getPkPath());
+			}
+		}
+		return pkProperties;
+	}
 	
 	public List<String> getTableNames() {
 		List<String> tableNames = new ArrayList<String>();

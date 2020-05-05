@@ -136,9 +136,7 @@ public class MultiRenderCommand extends ProjectModeCommand<MultiRenderResult> {
 		finalSelectQuery.setPageSize(pageSize);
 		fetchLimit.ifPresent(limit -> finalSelectQuery.setFetchLimit(limit));
 		fetchOffset.ifPresent(offset -> finalSelectQuery.setFetchOffset(offset));
-		if(sortProperties != null) {
-			selectQuery.addOrderings(CayenneUtils.sortPropertiesToOrderings(sortProperties));
-		}
+			selectQuery.addOrderings(CayenneUtils.sortPropertiesToOrderings(project, tableName, sortProperties));
 
 		String objectWord = dataObjectClass.getSimpleName()+"s";
 		GlueLogger.getGlueLogger().fine("Finding "+objectWord+" to render");

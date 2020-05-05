@@ -159,9 +159,7 @@ public abstract class AbstractListCTableCommand extends ProjectModeCommand<ListR
 			selectQuery.setPageSize(pageSize);
 			fetchLimit.ifPresent(limit -> selectQuery.setFetchLimit(limit));
 			fetchOffset.ifPresent(offset -> selectQuery.setFetchOffset(offset));
-			if(sortProperties != null) {
-				selectQuery.addOrderings(CayenneUtils.sortPropertiesToOrderings(sortProperties));
-			}
+			selectQuery.addOrderings(CayenneUtils.sortPropertiesToOrderings(project, tableName, sortProperties));
 			List<D> resultDataObjects = GlueDataObject.query(cmdContext, dataObjectClass, selectQuery);
 			if(sortComparator != null) {
 				Collections.sort(resultDataObjects, (Comparator<D>) sortComparator);

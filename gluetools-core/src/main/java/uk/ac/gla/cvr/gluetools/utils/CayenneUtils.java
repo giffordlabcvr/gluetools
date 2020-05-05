@@ -26,6 +26,7 @@
 package uk.ac.gla.cvr.gluetools.utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -44,6 +45,8 @@ import org.apache.cayenne.exp.ExpressionException;
 import org.apache.cayenne.query.Ordering;
 import org.apache.cayenne.query.SortOrder;
 
+import uk.ac.gla.cvr.gluetools.core.datamodel.project.PkField;
+import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 
 public class CayenneUtils {
@@ -105,8 +108,23 @@ public class CayenneUtils {
 		}
 	}
 
-	public static List<Ordering> sortPropertiesToOrderings(String sortProperties) {
-		String[] orderingTerms = sortProperties.split(",");
+	public static List<Ordering> sortPropertiesToOrderings(Project project, String tableName, String sortProperties) {
+		List<String> orderingTerms = new ArrayList<String>();
+		if(sortProperties != null) {
+			orderingTerms.addAll(Arrays.asList(sortProperties.split(",")));
+		}
+		// add primary key property paths to the end of the ordering terms if they are not already mentioned.
+		// this will provide consistent paging when the provided sort term gives equal values.
+		List<String> tablePkProperties = project.getTablePkProperties(tableName);
+		for(String tablePkProperty: tablePkProperties) {
+			if(orderingTerms.contains("-"+tablePkProperty)) {
+				continue;
+			}
+			if(orderingTerms.contains("+"+tablePkProperty)) {
+				continue;
+			}
+			orderingTerms.add("+"+tablePkProperty);
+		}
 		List<Ordering> orderings = new ArrayList<Ordering>();
 		for(String orderingTerm: orderingTerms) {
 			String pathSpec = orderingTerm;
