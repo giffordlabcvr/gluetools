@@ -33,7 +33,6 @@ import javax.xml.xpath.XPathExpression;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
-import uk.ac.gla.cvr.gluetools.core.collation.populating.genbank.GenbankReferenceRule;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;

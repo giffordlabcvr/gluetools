@@ -33,8 +33,6 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 
 import uk.ac.gla.cvr.gluetools.core.collation.populating.ValueExtractor;
-import uk.ac.gla.cvr.gluetools.core.collation.populating.customRowCreator.CustomRowCreator;
-import uk.ac.gla.cvr.gluetools.core.collation.populating.customRowCreator.CustomTableUpdate;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.joinTableLinkUpdater.JoinTableLinkException;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.joinTableLinkUpdater.JoinTableLinkException.Code;
 import uk.ac.gla.cvr.gluetools.core.collation.populating.joinTableLinkUpdater.JoinTableLinkUpdate;

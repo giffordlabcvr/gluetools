@@ -26,7 +26,6 @@
 package uk.ac.gla.cvr.gluetools.core.curation.aligners.mafft;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,19 +37,12 @@ import org.w3c.dom.Element;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.alignment.FastaAlignmentExporter;
 import uk.ac.gla.cvr.gluetools.core.collation.exporting.fasta.memberSupplier.ExplicitMemberSupplier;
 import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.alignment.BaseFastaAlignmentImporter;
-import uk.ac.gla.cvr.gluetools.core.collation.importing.fasta.alignment.FastaNtAlignmentImporter;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.project.alignment.AlignmentListMemberCommand;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.SupportsComputeConstrained;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.SupportsComputeUnconstrained;
 import uk.ac.gla.cvr.gluetools.core.curation.aligners.SupportsExtendUnconstrained;
-import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignCommand;
-import uk.ac.gla.cvr.gluetools.core.curation.aligners.Aligner.AlignerResult;
-import uk.ac.gla.cvr.gluetools.core.curation.aligners.AlignerException.Code;
-import uk.ac.gla.cvr.gluetools.core.curation.aligners.AlignerException;
-import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.BlastAlignerAlignCommand;
-import uk.ac.gla.cvr.gluetools.core.curation.aligners.blast.BlastAlignerFileAlignCommand;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignment.Alignment;
 import uk.ac.gla.cvr.gluetools.core.datamodel.alignmentMember.AlignmentMember;
