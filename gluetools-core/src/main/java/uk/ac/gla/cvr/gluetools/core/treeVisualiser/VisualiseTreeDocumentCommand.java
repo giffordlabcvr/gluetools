@@ -91,6 +91,7 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 	private static final String LEAF_SOURCE_NAME = "leafSourceName";
 	private static final String LEAF_SEQUENCE_ID = "leafSequenceID";
 	private static final String LEAF_TEXT_WIDTH_PX = "leafTextWidthPx";
+	private static final String LEAF_POPUP_TEXT_WIDTH_PX = "leafPopupTextWidthPx";
 	private static final String COLLAPSED_TEXT = "collapsedText";
 	private static final String COLLAPSED_ALIGNMENT = "collapsedAlignment";
 	private static final String COLLAPSED_TEXT_WIDTH_PX = "collapsedTextWidthPx";
@@ -397,6 +398,15 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 						if(leafSequenceID != null) {
 							leafUserData.put(LEAF_SEQUENCE_ID, leafSequenceID);
 						}
+						@SuppressWarnings("unchecked")
+						List<String> leafPopupLines = (List<String>) leafUserData.get("treevisualiser-leafPopupLines");
+						if(leafPopupLines != null) {
+							double leafPopupTextPx = 0.0;
+							for(String popupLine: leafPopupLines) {
+								leafPopupTextPx = Math.max(leafPopupTextPx, getTextWidthPx(fontRenderContext, font, leafTextFontSize, popupLine));  
+							}
+							leafUserData.put(LEAF_POPUP_TEXT_WIDTH_PX, leafPopupTextPx);
+						}
 
 						double leafTextWidthPx = getTextWidthPx(fontRenderContext, font, leafTextFontSize, leafText);  
 						leafUserData.put(LEAF_TEXT_WIDTH_PX, leafTextWidthPx);
@@ -574,6 +584,10 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 						leafPropertiesObj.set(LEAF_TEXT_WIDTH_PX, (Double) leafUserData.get(LEAF_TEXT_WIDTH_PX));
 						leafPropertiesObj.set(LEAF_SOURCE_NAME, (String) leafUserData.get(LEAF_SOURCE_NAME));
 						leafPropertiesObj.set(LEAF_SEQUENCE_ID, (String) leafUserData.get(LEAF_SEQUENCE_ID));
+						Double leafPopupTextWidthPx = (Double) leafUserData.get(LEAF_POPUP_TEXT_WIDTH_PX);
+						if(leafPopupTextWidthPx != null) {
+							leafPropertiesObj.set(LEAF_POPUP_TEXT_WIDTH_PX, leafPopupTextWidthPx);
+						}
 					}
 				}
 			}
