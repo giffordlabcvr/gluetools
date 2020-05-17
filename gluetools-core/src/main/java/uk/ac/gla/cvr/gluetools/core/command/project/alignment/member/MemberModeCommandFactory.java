@@ -48,6 +48,7 @@ public class MemberModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(MemberAddSegmentCommand.class);
 		registerCommandClass(MemberRemoveSegmentCommand.class);
 		registerCommandClass(MemberListSegmentCommand.class);
+		registerCommandClass(MemberMaskPositionCommand.class);
 		registerCommandClass(MemberTranslateSegmentCommand.class);
 		registerCommandClass(MemberShowFeatureSegmentsCommand.class);
 		registerCommandClass(MemberShowFeatureCoverageCommand.class);

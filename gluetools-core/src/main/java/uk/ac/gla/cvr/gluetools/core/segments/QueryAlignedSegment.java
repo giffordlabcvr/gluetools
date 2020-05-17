@@ -154,7 +154,12 @@ public class QueryAlignedSegment extends ReferenceSegment implements Plugin, IQu
 	public static List<QueryAlignedSegment> invertList(List<QueryAlignedSegment> queryAlignedSegs) {
 		return queryAlignedSegs.stream().map(seg -> seg.invert()).collect(Collectors.toList());
 	}
-	
+
+	public static List<ReferenceSegment> asReferenceSegments(List<QueryAlignedSegment> queryAlignedSegs) {
+		return queryAlignedSegs.stream().map(seg -> 
+			new ReferenceSegment(seg.getRefStart(), seg.getRefEnd())).collect(Collectors.toList());
+	}
+
 	public static <SA extends QueryAlignedSegment,
 	   				SB extends QueryAlignedSegment> List<SA> 
 	translateSegments(List<SA> queryToRef1Segments0, List<SB> ref1ToRef2Segments0) {
