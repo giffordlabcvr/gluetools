@@ -42,7 +42,7 @@ public class AmbigNtTripletInfo {
 		this.definiteAasString = charListToString(definiteAminoAcids);
 		this.possibleAminoAcids = possibleAminoAcids;
 		this.possibleAasString = charListToString(possibleAminoAcids);
-		if(definiteAminoAcids.size() == 1) {
+		if(definiteAminoAcids.size() == 1 && possibleAminoAcids.size() == 1) {
 			this.singleCharTranslation = definiteAminoAcids.get(0);
 		} else {
 			this.singleCharTranslation = 'X';
