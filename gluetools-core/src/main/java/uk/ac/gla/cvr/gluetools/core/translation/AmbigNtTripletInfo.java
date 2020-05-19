@@ -141,14 +141,20 @@ public class AmbigNtTripletInfo {
 		//    - if the set is now empty then the AA is "definitely present".
 		//      otherwise
 		//    - recompute the ambiguous triplet for the remaining concrete triplets.
-		//    - if this is different from the original ambiguous triplet, then the AA is "definitely present", 
+		//    - if this is different from the original ambiguous triplet, 
+		//            have a look at the position(s) where the recomputed triplet differs from the original triplet
+		//            If there is an N in the original triplet at any of these positions, but a non-N in the recomputed triplet
+		//            then the AA is not "definitely present".
+		//            otherwise it is "definitely present", 
 		//      otherwise it is merely "possibly present".
+		//
 		// Example 1
 		// ambiguous NT triplet: YAY (Y = C/T)
 		// concrete triplets set: CAC, CAT, TAC, TAT
 		// AAs: Y (CAC, CAT), H (TAC, TAT)
 		// Deleting CAC, CAT from the set gives TAC, TAT, equivalent to ambiguous triplet TAY, != YAY so Y is definite.
 		// Deleting TAC, TAT from the set gives CAC, CAT, equivalent to ambiguous triplet CAY, != YAY so H is definite.
+		//
 		// Example 2
 		// ambiguous NT triplet: TSR (S = C/G, R = A/G)
 		// concrete triplets set: TCA, TCG, TGA, TGG
@@ -156,6 +162,23 @@ public class AmbigNtTripletInfo {
 		// Deleting TCA, TCG from the set gives TGA, TGG, equivalent to ambiguous triplet TGR, != TSR so S is definite.
 		// Deleting TGA from the set gives TCA, TCG, TGG, equivalent to ambiguous triplet TSR so * is merely possible.
 		// Deleting TGG from the set gives TCA, TCG, TGA, equivalent to ambiguous triplet TSR so W is merely possible.
+		//
+		// Example 3
+		// ambiguous NT triplet: ACN
+		// concrete triplets: ACA, ACC, ACG, ACT
+		// AAs: T (ACA, ACC, ACG, ACT)
+		// deleting these is empty so T is definite.
+        //
+		// Example 4
+		// ambiguous NT triplet: ANN
+		// concrete triplets: AAA, AAC, AAG, AAT,   ACA, ACC, ACG, ACT,  AGA, ACC, AGG, AGT,   ATA, ATC, ATG, ATT
+		// AAs: KNTRSIM
+		// Looking at T (ACA, ACC, ACG, ACT), deleting these leaves a set equivalent to ADN (D=A/G/T),
+		// This is different from ANN at position 2 however there is an N in the original so T is not definite.
+		// T was "relying" on the N to provide its C at position 2.
+		
+		
+		
 		boolean log = false;
 		LinkedHashSet<Integer> possibleAas = new LinkedHashSet<Integer>();
 		LinkedHashSet<Integer> triplets = new LinkedHashSet<Integer>();
@@ -229,7 +252,9 @@ public class AmbigNtTripletInfo {
 					System.out.println("pos2AmbigNt: "+ResidueUtils.intToAmbigNt(pos2AmbigNt));
 					System.out.println("pos3AmbigNt: "+ResidueUtils.intToAmbigNt(pos3AmbigNt));
 				}
-				if(pos1AmbigNt != ambigNt1 || pos2AmbigNt != ambigNt2 || pos3AmbigNt != ambigNt3) {
+				if( ( pos1AmbigNt != ambigNt1 && ambigNt1 != ResidueUtils.AMBIG_NT_N) || 
+					( pos2AmbigNt != ambigNt2 && ambigNt2 != ResidueUtils.AMBIG_NT_N ) || 
+					( pos3AmbigNt != ambigNt3 && ambigNt3 != ResidueUtils.AMBIG_NT_N) ) {
 					definiteAas.add(possibleAa);
 				}
 			}
@@ -307,7 +332,10 @@ public class AmbigNtTripletInfo {
 		System.out.println("YAC: "+getTranslationInfo("YAC".toCharArray()));
 		System.out.println("TAY: "+getTranslationInfo("YAY".toCharArray()));
 		System.out.println("TSR: "+getTranslationInfo("TSR".toCharArray()));
-		System.out.println("NNN: "+getTranslationInfo("NNN".toCharArray()));
+		System.out.println("NNN: "+getTranslationInfo("NNN".toCharArray())); 
+		System.out.println("ANN: "+getTranslationInfo("ANN".toCharArray())); // no definite AAs
+		System.out.println("ACN: "+getTranslationInfo("ACN".toCharArray())); // definite AA T
+		System.out.println("RCN: "+getTranslationInfo("RCN".toCharArray())); // definite AAs A and T
 	}
 
 
