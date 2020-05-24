@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import org.apache.commons.lang3.SystemUtils;
 import org.w3c.dom.Element;
 
 import uk.ac.gla.cvr.gluetools.core.command.CmdMeta;
@@ -300,7 +301,6 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 		// We use the code below to predict font widths from text. 
 		// The following system propety is set in the GLUE engine to prevent a desktop icon popping up
 		// when using AWT classes.
-		// System.setProperty("java.awt.headless", "true"); 
 		AffineTransform affineTransform = new AffineTransform();     
 		FontRenderContext fontRenderContext = new FontRenderContext(affineTransform, true, true);  
 		// fonts must use integer sizes
@@ -425,7 +425,11 @@ public class VisualiseTreeDocumentCommand extends ModulePluginCommand<VisualiseT
 			
 			private double getTextWidthPx(FontRenderContext fontRenderContext, Font font, double textFontSize,
 					String text) {
-				return (font.getStringBounds(text, fontRenderContext).getWidth() / 100) * textFontSize;
+				double result = (font.getStringBounds(text, fontRenderContext).getWidth() / 100) * textFontSize;
+				if(SystemUtils.IS_OS_LINUX) {
+					result = result * 0.96; // HACK!
+				}
+				return result;
 			}
 		});
 	}
