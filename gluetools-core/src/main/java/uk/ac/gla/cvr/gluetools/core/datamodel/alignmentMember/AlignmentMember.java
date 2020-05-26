@@ -150,7 +150,9 @@ public class AlignmentMember extends _AlignmentMember {
 		int referenceLength = refSequence.
 				getSequence().getSequenceObject().getNucleotides(cmdContext).length();
 		List<AlignedSegment> alignedSegments = getAlignedSegments();
-		return IQueryAlignedSegment.getReferenceNtCoveragePercent(alignedSegments, referenceLength);
+		//String memberNucleotides = getSequence().getSequenceObject().getNucleotides(cmdContext);
+		String memberNucleotides = null;
+		return IQueryAlignedSegment.getReferenceNtCoveragePercent(alignedSegments, referenceLength, memberNucleotides, false);
 	}
 	
 	public List<QueryAlignedSegment> segmentsAsQueryAlignedSegments() {

@@ -30,6 +30,8 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.function.Supplier;
 
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils;
+
 public interface IQueryAlignedSegment extends IReferenceSegment {
 
 	public Integer getQueryStart();
@@ -49,10 +51,19 @@ public interface IQueryAlignedSegment extends IReferenceSegment {
 	
 	}
 
-	public static double getReferenceNtCoveragePercent(List<? extends IQueryAlignedSegment> alignedSegments, int referenceLength) {
+	public static double getReferenceNtCoveragePercent(List<? extends IQueryAlignedSegment> alignedSegments, 
+			int referenceLength, String memberNucleotides, boolean excludeNs) {
 		int referenceNTs = 0;
 		for(IQueryAlignedSegment segment: alignedSegments) {
 			referenceNTs += 1 + Math.abs(segment.getRefStart() - segment.getRefEnd());
+			if(excludeNs) {
+				for(int queryCoord = segment.getQueryStart(); queryCoord <= segment.getQueryEnd(); queryCoord++) {
+					char nt = FastaUtils.nt(memberNucleotides, queryCoord);
+					if(nt == 'N' || nt == 'n') {
+						referenceNTs--;
+					}
+				}
+			}
 		}
 		return 100.0 * referenceNTs / referenceLength;
 	}

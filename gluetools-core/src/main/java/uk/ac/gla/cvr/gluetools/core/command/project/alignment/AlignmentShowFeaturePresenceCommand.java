@@ -150,8 +150,9 @@ public class AlignmentShowFeaturePresenceCommand extends AlignmentModeCommand<Al
 
 		List<QueryAlignedSegment> memberToFeatureLocRefSegs = ReferenceSegment.intersection(memberToAncConstrRefSegsFull, featureLocRefSegs,
 				ReferenceSegment.cloneLeftSegMerger());
-
-		Double refNtCvrgPct = IQueryAlignedSegment.getReferenceNtCoveragePercent(memberToFeatureLocRefSegs, featureLength);
+		//String memberNucleotides = almtMember.getSequence().getSequenceObject().getNucleotides(cmdContext);
+		String memberNucleotides = null;
+		Double refNtCvrgPct = IQueryAlignedSegment.getReferenceNtCoveragePercent(memberToFeatureLocRefSegs, featureLength, memberNucleotides, false);
 		return new MemberFeatureCoverage(almtMember, refNtCvrgPct);
 	}
 

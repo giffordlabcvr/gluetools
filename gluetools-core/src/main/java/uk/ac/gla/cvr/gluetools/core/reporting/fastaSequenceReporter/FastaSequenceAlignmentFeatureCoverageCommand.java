@@ -97,7 +97,7 @@ public class FastaSequenceAlignmentFeatureCoverageCommand extends FastaSequenceR
 		List<QueryAlignedSegment> queryToFeatureLocRefSegs = ReferenceSegment.intersection(queryToRelatedRefSegs, featureLocRefSegs,
 				ReferenceSegment.cloneLeftSegMerger());
 
-		Double refNtCvrgPct = IQueryAlignedSegment.getReferenceNtCoveragePercent(queryToFeatureLocRefSegs, featureLength);
+		Double refNtCvrgPct = IQueryAlignedSegment.getReferenceNtCoveragePercent(queryToFeatureLocRefSegs, featureLength, null, false);
 		
 		return new FastaSequenceAlignmentFeatureCoverageResult(getRelRefName(), getFeatureName(), refNtCvrgPct);
 	}

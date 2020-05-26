@@ -27,6 +27,7 @@ package uk.ac.gla.cvr.gluetools.core.command.project.alignment.member;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.w3c.dom.Element;
 
@@ -49,11 +50,12 @@ import uk.ac.gla.cvr.gluetools.core.segments.ReferenceSegment;
 @CommandClass(
 		commandWords={"show", "feature-coverage"}, 
 		description = "Show the coverage percentage for a specific feature", 
-		docoptUsages = { "-r <relRefName> -f <featureName> [-d]"},
+		docoptUsages = { "-r <relRefName> -f <featureName> [-d] [-n]"},
 		docoptOptions={
 				"-r <relRefName>, --relRefName <relRefName>     Related reference",
-				"-f <featureName>, --featureName <featureName>  Feature to translate",
+				"-f <featureName>, --featureName <featureName>  Feature to analyse",
 				"-d, --descendentFeatures                       Include descendent features",
+				"-n, --excludeNs                                Ns count as no coverage",
 		},
 		furtherHelp = 
 		"If this member is in a constrained alignment, the <relRefName> argument names a reference "+
@@ -71,10 +73,12 @@ public class MemberShowFeatureCoverageCommand extends MemberModeCommand<MemberSh
 	public static final String REL_REF_NAME = "relRefName";
 	public static final String FEATURE_NAME = "featureName";
 	private static final String DESCENDENT_FEATURES = "descendentFeatures";
+	private static final String EXCLUDE_Ns = "excludeNs";
 	
 	private String relRefName;
 	private String featureName;
 	private boolean descendentFeatures;
+	private boolean excludeNs;
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
@@ -83,12 +87,14 @@ public class MemberShowFeatureCoverageCommand extends MemberModeCommand<MemberSh
 		this.relRefName = PluginUtils.configureStringProperty(configElem, REL_REF_NAME, true);
 		this.featureName = PluginUtils.configureStringProperty(configElem, FEATURE_NAME, true);
 		this.descendentFeatures = PluginUtils.configureBooleanProperty(configElem, DESCENDENT_FEATURES, true);
+		this.excludeNs = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, EXCLUDE_Ns, false)).orElse(false);
 	}
 	
 	@Override
 	public MemberShowFeatureCoverageResult execute(CommandContext cmdContext) {
 		AlignmentMember almtMember = lookupMember(cmdContext);
 		Alignment alignment = almtMember.getAlignment();
+		String memberNucleotides = almtMember.getSequence().getSequenceObject().getNucleotides(cmdContext);
 		ReferenceSequence relatedRef = alignment.getRelatedRef(cmdContext, relRefName);
 		List<QueryAlignedSegment> memberToAlmtSegs = almtMember.segmentsAsQueryAlignedSegments();
 		List<QueryAlignedSegment> memberToRelatedRefSegs = alignment.translateToRelatedRef(cmdContext, memberToAlmtSegs, relatedRef);
@@ -119,7 +125,7 @@ public class MemberShowFeatureCoverageCommand extends MemberModeCommand<MemberSh
 				List<QueryAlignedSegment> memberToFeatureLocRefSegs = ReferenceSegment.intersection(memberToRelatedRefSegs, featureLocRefSegs,
 						ReferenceSegment.cloneLeftSegMerger());
 				
-				coverage = IQueryAlignedSegment.getReferenceNtCoveragePercent(memberToFeatureLocRefSegs, featureLength);
+				coverage = IQueryAlignedSegment.getReferenceNtCoveragePercent(memberToFeatureLocRefSegs, featureLength, memberNucleotides, excludeNs);
 			}
 			featureCoverages.add(new FeatureCoverage(relatedRef.getName(), feature.getName(), coverage));
 		}
