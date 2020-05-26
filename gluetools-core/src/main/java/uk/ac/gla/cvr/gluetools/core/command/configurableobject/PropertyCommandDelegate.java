@@ -201,7 +201,7 @@ public class PropertyCommandDelegate {
 		if(value == null) {
 			return new PropertyValueResult(property, null);
 		} else {
-			return new PropertyValueResult(property, value.toString());
+			return new PropertyValueResult(property, value);
 		}
 	}
 

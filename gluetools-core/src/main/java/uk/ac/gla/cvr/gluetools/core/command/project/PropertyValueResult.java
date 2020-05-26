@@ -29,7 +29,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.MapResult;
 
 public class PropertyValueResult extends MapResult {
 
-	public PropertyValueResult(String property, String value) {
+	public PropertyValueResult(String property, Object value) {
 		super("propertyValueResult", mapBuilder()
 				.put("property", property)
 				.put("value", value));

@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.function.BiFunction;
 
 import uk.ac.gla.cvr.gluetools.core.document.CommandDocument;
+import uk.ac.gla.cvr.gluetools.utils.RenderUtils;
 
 public class MapResult extends CommandResult {
 
@@ -52,11 +53,7 @@ public class MapResult extends CommandResult {
 		renderCtx.output(commandDocument.getRootName());
 		for(String fieldName: commandDocument.getFieldNames()) {
 			Object value = commandDocument.getSimpleValue(fieldName);
-			if(value == null) {
-				renderCtx.output("  "+fieldName+": -");
-			} else {
-				renderCtx.output("  "+fieldName+": "+value);
-			}
+			renderCtx.output("  "+fieldName+": "+RenderUtils.render(value, renderCtx));
 		}
 	}
 	
