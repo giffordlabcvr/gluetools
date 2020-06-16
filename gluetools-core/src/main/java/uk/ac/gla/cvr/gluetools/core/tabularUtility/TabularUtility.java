@@ -44,9 +44,13 @@ public class TabularUtility extends ModulePlugin<TabularUtility>{
 
 	public static final String COLUMN_DELIMITER_REGEX = "columnDelimiterRegex";
 	public static final String OUTPUT_FORMAT = "outputFormat";
+	public static final String NULL_RENDERING_STRING = "nullRenderingString";
+	public static final String TRIM_NULL_VALUES = "trimNullValues";
 
 	private Pattern columnDelimiterRegex;
 	private ResultOutputFormat outputFormat;
+	private String nullRenderingString;
+	private Boolean trimNullValues;
 	
 
 	public TabularUtility() {
@@ -56,6 +60,8 @@ public class TabularUtility extends ModulePlugin<TabularUtility>{
 		registerModulePluginCmdClass(SaveTabularWebCommand.class);
 		addSimplePropertyName(COLUMN_DELIMITER_REGEX);
 		addSimplePropertyName(OUTPUT_FORMAT);
+		addSimplePropertyName(NULL_RENDERING_STRING);
+		addSimplePropertyName(TRIM_NULL_VALUES);
 	}
 
 	@Override
@@ -66,6 +72,8 @@ public class TabularUtility extends ModulePlugin<TabularUtility>{
 				PluginUtils.configureRegexPatternProperty(configElem, COLUMN_DELIMITER_REGEX, false)).orElse(Pattern.compile("\\t"));
 		outputFormat = Optional.ofNullable(PluginUtils.configureEnumProperty(ResultOutputFormat.class, configElem, OUTPUT_FORMAT, false))
 				.orElse(ResultOutputFormat.TAB);
+		nullRenderingString = Optional.ofNullable(PluginUtils.configureStringProperty(configElem, NULL_RENDERING_STRING, false)).orElse("-");
+		trimNullValues = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, TRIM_NULL_VALUES, false)).orElse(false);
 	}
 	
 	public static class TabularData {
@@ -93,6 +101,14 @@ public class TabularUtility extends ModulePlugin<TabularUtility>{
 
 	public Pattern getColumnDelimiterRegex() {
 		return columnDelimiterRegex;
+	}
+
+	public String getNullRenderingString() {
+		return nullRenderingString;
+	}
+
+	public Boolean getTrimNullValues() {
+		return trimNullValues;
 	}
 
 	public static TabularData tabularDataFromBytes(byte[] bytes, Pattern columnDelimiterRegex) {

@@ -92,11 +92,11 @@ public abstract class BaseSaveTabularCommand<R extends CommandResult> extends Mo
 			rows = rowArray.getItems();
 		}
 		ElementTableResult elementTableResult = new ElementTableResult(rootTableName, rows, columns);
-		return saveData(cmdContext, tabularUtility.getOutputFormat(), fileName, elementTableResult);
+		return saveData(cmdContext, tabularUtility, fileName, elementTableResult);
 	}
 
 	
-	protected abstract R saveData(CommandContext cmdContext, ResultOutputFormat outputFormat, String fileName, ElementTableResult elementTableResult);
+	protected abstract R saveData(CommandContext cmdContext, TabularUtility tabularUtility, String fileName, ElementTableResult elementTableResult);
 	
 	protected static class ElementTableResult extends BaseTableResult<CommandArrayItem> {
 		public ElementTableResult(String rootObjectName, List<CommandArrayItem> rows, List<CommandArrayItem> columns) {
@@ -129,6 +129,9 @@ public abstract class BaseSaveTabularCommand<R extends CommandResult> extends Mo
 					CommandArray valueArray = ((CommandObject) cmdAryItm).getArray(BaseTableResult.VALUE);
 					if(valueArray == null) {
 						throw new CommandException(Code.COMMAND_FAILED_ERROR, "Row object has no 'value' array");
+					}
+					if(index >= valueArray.size()) {
+						return null; // allow rows to have fewer cells than the columns specify.
 					}
 					CommandArrayItem item = valueArray.getItem(index);
 					if(!(item instanceof SimpleCommandValue)) {

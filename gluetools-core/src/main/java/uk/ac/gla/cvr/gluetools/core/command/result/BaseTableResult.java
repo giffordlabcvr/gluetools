@@ -364,11 +364,20 @@ public class BaseTableResult<D> extends CommandResult {
 		}
 		for(Map<String, Object> rowData: listOfMaps) {
 			buf = new StringBuffer();
-			for(int i = 0; i < columnHeaders.size(); i++) {
+			int numColumnsInRow = columnHeaders.size();
+			if(renderCtx.trimNullValues()) {
+				numColumnsInRow = 0;
+				for(int i = 0; i < columnHeaders.size(); i++) {
+					String header = columnHeaders.get(i);
+					if(rowData.get(header) != null) {
+						numColumnsInRow = i+1;
+					}
+				}
+			}
+			for(int i = 0; i < numColumnsInRow; i++) {
 				String header = columnHeaders.get(i);
-				// use default render context for row data, avoiding e.g. double rounding.
-				buf.append(RenderUtils.render(rowData.get(header)));
-				if(i < columnHeaders.size() - 1) {
+				buf.append(RenderUtils.render(rowData.get(header), renderCtx));
+				if(i < numColumnsInRow - 1) {
 					buf.append(delimiter);
 				}
 			}

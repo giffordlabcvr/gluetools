@@ -42,6 +42,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
@@ -361,14 +362,9 @@ public class ConsoleCommandContext extends CommandContext {
 		console.runScript(filePath, scriptContent);
 	}
 
-	public void saveCommandResult(ResultOutputFormat cmdOutputFileFormat, String filePath, CommandResult commandResult) {
+	public void saveCommandResult(Function<OutputStream, OutputStreamCommandResultRenderingContext> renderingContextGenerator, String filePath, CommandResult commandResult) {
 			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-
-			LineFeedStyle lineFeedStyle = LineFeedStyle.LF;
-			if(System.getProperty("os.name").toLowerCase().contains("windows")) {
-				lineFeedStyle = LineFeedStyle.CRLF;
-			}
-			OutputStreamCommandResultRenderingContext fileRenderingContext = new OutputStreamCommandResultRenderingContext(baos, cmdOutputFileFormat, lineFeedStyle, true);
+			OutputStreamCommandResultRenderingContext fileRenderingContext = renderingContextGenerator.apply(baos);
 			commandResult.renderResult(fileRenderingContext);
 			byte[] byteArray = baos.toByteArray();
 			saveBytes(filePath, byteArray);

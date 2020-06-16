@@ -513,6 +513,12 @@
 					<arg name="functionName">visualisePhyloAsSvg</arg>
 				</simpleCommandFilter>
 			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/module/covDownloadAnalysis$</regex>
+				<simpleCommandFilter words="invoke-function">
+					<arg name="functionName">downloadAnalysis</arg>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
 			<!-- replacement, deletion and insertion pages -->
 			<simpleCommandFilter words="count custom-table-row">
 				<arg name="tableName">cov_replacement</arg>

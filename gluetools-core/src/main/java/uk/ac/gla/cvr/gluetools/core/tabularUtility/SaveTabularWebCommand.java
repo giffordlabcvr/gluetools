@@ -63,14 +63,17 @@ public class SaveTabularWebCommand extends BaseSaveTabularCommand<CommandWebFile
 	}
 
 	@Override
-	protected CommandWebFileResult saveData(CommandContext cmdContext, ResultOutputFormat outputFormat, String fileName,
+	protected CommandWebFileResult saveData(CommandContext cmdContext, TabularUtility tabularUtility, String fileName,
 			ElementTableResult elementTableResult) {
 		WebFilesManager webFilesManager = cmdContext.getGluetoolsEngine().getWebFilesManager();
 		String subDirUuid = webFilesManager.createSubDir(WebFileType.DOWNLOAD);
 		webFilesManager.createWebFileResource(WebFileType.DOWNLOAD, subDirUuid, fileName);
 
 		try(OutputStream outputStream = webFilesManager.appendToWebFileResource(WebFileType.DOWNLOAD, subDirUuid, fileName)) {
-			OutputStreamCommandResultRenderingContext fileRenderingContext = new OutputStreamCommandResultRenderingContext(outputStream, outputFormat, lineFeedStyle, true);
+			OutputStreamCommandResultRenderingContext fileRenderingContext = 
+					new OutputStreamCommandResultRenderingContext(outputStream, tabularUtility.getOutputFormat(), lineFeedStyle, true);
+			fileRenderingContext.setNullRenderingString(tabularUtility.getNullRenderingString());
+			fileRenderingContext.setTrimNullValues(tabularUtility.getTrimNullValues());
 			elementTableResult.renderResult(fileRenderingContext);
 		} catch(Exception e) {
 			throw new CommandException(e, Code.COMMAND_FAILED_ERROR, "Write to web file resource "+subDirUuid+"/"+fileName+" failed: "+e.getMessage());

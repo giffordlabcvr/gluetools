@@ -30,7 +30,9 @@ import uk.ac.gla.cvr.gluetools.core.command.CommandClass;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
+import uk.ac.gla.cvr.gluetools.core.command.result.OutputStreamCommandResultRenderingContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.ResultOutputFormat;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 @CommandClass(
 		commandWords={"save-tabular"}, 
@@ -41,9 +43,20 @@ import uk.ac.gla.cvr.gluetools.core.command.result.ResultOutputFormat;
 public class SaveTabularCommand extends BaseSaveTabularCommand<OkResult>{
 
 	@Override
-	protected OkResult saveData(CommandContext cmdContext, ResultOutputFormat outputFormat, String fileName,
+	protected OkResult saveData(CommandContext cmdContext, TabularUtility tabularUtility, String fileName,
 			ElementTableResult elementTableResult) {
-		((ConsoleCommandContext) cmdContext).saveCommandResult(outputFormat, fileName, elementTableResult);
+		((ConsoleCommandContext) cmdContext).saveCommandResult(outputStream -> {
+			LineFeedStyle lineFeedStyle = LineFeedStyle.LF;
+			if(System.getProperty("os.name").toLowerCase().contains("windows")) {
+				lineFeedStyle = LineFeedStyle.CRLF;
+			}
+			OutputStreamCommandResultRenderingContext renderContext = 
+					new OutputStreamCommandResultRenderingContext(outputStream, tabularUtility.getOutputFormat(), lineFeedStyle, true);
+			renderContext.setNullRenderingString(tabularUtility.getNullRenderingString());
+			renderContext.setTrimNullValues(tabularUtility.getTrimNullValues());
+			return renderContext;
+
+		}, fileName, elementTableResult);
 		return new OkResult();
 	}
 

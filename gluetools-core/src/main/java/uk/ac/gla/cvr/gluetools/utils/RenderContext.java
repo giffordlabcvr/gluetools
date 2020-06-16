@@ -35,4 +35,7 @@ public interface RenderContext {
 		return "-";
 	}
 	
+	public default boolean trimNullValues() {
+		return false;
+	}
 }

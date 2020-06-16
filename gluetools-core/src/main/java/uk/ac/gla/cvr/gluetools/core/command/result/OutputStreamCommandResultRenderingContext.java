@@ -39,6 +39,8 @@ public class OutputStreamCommandResultRenderingContext implements CommandResultR
 	private ResultOutputFormat consoleOutputFormat;
 	private LineFeedStyle lineFeedStyle;
 	private boolean renderTableHeaders;
+	private String nullRenderingString = "-";
+	private boolean trimNullValues = false;
 
 	
 	public OutputStreamCommandResultRenderingContext(OutputStream outputStream, ResultOutputFormat consoleOutputFormat,
@@ -80,6 +82,24 @@ public class OutputStreamCommandResultRenderingContext implements CommandResultR
 	@Override
 	public boolean renderTableHeaders() {
 		return renderTableHeaders;
+	}
+
+	public void setNullRenderingString(String nullRenderingString) {
+		this.nullRenderingString = nullRenderingString;
+	}
+
+	public void setTrimNullValues(boolean trimNullValues) {
+		this.trimNullValues = trimNullValues;
+	}
+
+	@Override
+	public String renderNull() {
+		return nullRenderingString;
+	}
+
+	@Override
+	public boolean trimNullValues() {
+		return trimNullValues;
 	}
 
 	

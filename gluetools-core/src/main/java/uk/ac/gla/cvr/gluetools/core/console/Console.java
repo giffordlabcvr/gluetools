@@ -68,6 +68,7 @@ import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleOptionCommand;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.InteractiveCommandResultRenderingContext;
+import uk.ac.gla.cvr.gluetools.core.command.result.OutputStreamCommandResultRenderingContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.ResultOutputFormat;
 import uk.ac.gla.cvr.gluetools.core.command.root.RootCommandMode;
 import uk.ac.gla.cvr.gluetools.core.command.scripting.NashornScriptingException;
@@ -81,6 +82,7 @@ import uk.ac.gla.cvr.gluetools.core.logging.GlueLoggingFormatter;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigException;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentJsonUtils;
 import uk.ac.gla.cvr.gluetools.utils.CommandDocumentXmlUtils;
+import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 import uk.ac.gla.cvr.gluetools.utils.JsonUtils;
 
@@ -272,7 +274,15 @@ public class Console implements InteractiveCommandResultRenderingContext
 
 			if(nextCmdOutputFile != null && commandResult != null) {
 				try {
-					commandContext.saveCommandResult(cmdOutputFileFormat, nextCmdOutputFile, commandResult);
+					commandContext.saveCommandResult(
+							outputStream -> {
+								LineFeedStyle lineFeedStyle = LineFeedStyle.LF;
+								if(System.getProperty("os.name").toLowerCase().contains("windows")) {
+									lineFeedStyle = LineFeedStyle.CRLF;
+								}
+								return new OutputStreamCommandResultRenderingContext(outputStream, cmdOutputFileFormat, lineFeedStyle, true);
+
+							}, nextCmdOutputFile, commandResult);
 					GlueLogger.getGlueLogger().finest("Wrote command output to file "+nextCmdOutputFile);
 				} catch(Exception e) {
 					GlueLogger.getGlueLogger().warning("Unable to save command results to file: "+e.getMessage());
