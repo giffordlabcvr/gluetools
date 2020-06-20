@@ -43,6 +43,7 @@ import org.apache.cayenne.query.SelectQuery;
 import uk.ac.gla.cvr.gluetools.core.command.CommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.DataModelException.Code;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.utils.RenderUtils;
 
 public abstract class GlueDataObject extends CayenneDataObject {
@@ -123,7 +124,9 @@ public abstract class GlueDataObject extends CayenneDataObject {
 			try {
 				long startTime = System.currentTimeMillis();
 				cmdContext.getObjectContext().deleteObject(object);
-				timeSpentInDbOperations += System.currentTimeMillis() - startTime;
+				long deletionTime = System.currentTimeMillis() - startTime;
+				// GlueLogger.getGlueLogger().finest("Object deletion time: "+deletionTime+"ms");
+				timeSpentInDbOperations += deletionTime;
 			} catch(DeleteDenyException dde) {
 				String relationship = dde.getRelationship();
 				throw new DataModelException(dde, Code.DELETE_DENIED, objClass.getSimpleName(), pkMap, relationship);

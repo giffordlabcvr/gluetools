@@ -44,6 +44,7 @@ import uk.ac.gla.cvr.gluetools.core.command.result.DeleteResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.GlueDataObject;
 import uk.ac.gla.cvr.gluetools.core.datamodel.sequence.Sequence;
 import uk.ac.gla.cvr.gluetools.core.datamodel.source.Source;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -93,6 +94,7 @@ public class DeleteSequenceCommand extends ProjectModeCommand<DeleteResult> {
 			cmdContext.commit();
 			return result; 
 		} else {
+			GlueLogger.getGlueLogger().finest("Deleting sequences based on where clause.");
 			SelectQuery selectQuery = null;
 			if(whereClause.isPresent()) {
 				selectQuery = new SelectQuery(Sequence.class, whereClause.get());
@@ -107,16 +109,21 @@ public class DeleteSequenceCommand extends ProjectModeCommand<DeleteResult> {
 	}
 
 	public static int deleteSequences(CommandContext cmdContext,List<Sequence> sequencesToDelete) {
+		GlueLogger.getGlueLogger().finest(sequencesToDelete.size()+" sequences match the where clause.");
 		// filter out reference sequences
 		sequencesToDelete = sequencesToDelete.stream()
 				.filter(seq -> seq.getReferenceSequences().isEmpty())
 				.collect(Collectors.toList());
+		GlueLogger.getGlueLogger().finest("Of these, "+sequencesToDelete.size()+" are non-reference sequences.");
 		int numDeleted = 0;
 		for(Sequence seqToDelete: sequencesToDelete) {
 			DeleteResult result = GlueDataObject.delete(cmdContext, Sequence.class, seqToDelete.pkMap(), true);
 			numDeleted = numDeleted+result.getNumber();
+			GlueLogger.getGlueLogger().finest("Deleted "+numDeleted+" sequences");
 		}
+		GlueLogger.getGlueLogger().finest("Committing context");
 		cmdContext.commit();
+		GlueLogger.getGlueLogger().finest("Deleted "+numDeleted+" sequences");
 		return numDeleted;
 	}
 
