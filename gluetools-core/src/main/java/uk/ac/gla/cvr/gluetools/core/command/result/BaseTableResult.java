@@ -37,6 +37,8 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.StringEscapeUtils;
+
 import com.brsanthu.dataexporter.model.AlignType;
 import com.brsanthu.dataexporter.model.Row;
 import com.brsanthu.dataexporter.model.StringColumn;
@@ -340,22 +342,31 @@ public class BaseTableResult<D> extends CommandResult {
 
 	@Override
 	protected void renderResultAsTab(CommandResultRenderingContext renderCtx) {
-		renderDelimitedTable(renderCtx, "\t");
+		renderDelimitedTable(renderCtx, "\t", null);
 	}
 	@Override
 	protected void renderResultAsCsv(CommandResultRenderingContext renderCtx) {
-		renderDelimitedTable(renderCtx, ",");
+		renderDelimitedTable(renderCtx, ",", new Function<String, String>() {
+			@Override
+			public String apply(String t) {
+				return StringEscapeUtils.escapeCsv(t);
+			}
+		});
 	}
 
 	private void renderDelimitedTable(CommandResultRenderingContext renderCtx,
-			String delimiter) {
+			String delimiter, Function<String,String> escapeFunction) {
 		StringBuffer buf;
 		List<String> columnHeaders = getColumnHeaders();
 		List<Map<String, Object>> listOfMaps = asListOfMaps(columnHeaders);
 		if(renderCtx.renderTableHeaders()) {
 			buf = new StringBuffer();
 			for(int i = 0; i < columnHeaders.size(); i++) {
-				buf.append(columnHeaders.get(i));
+				String columnHeader = columnHeaders.get(i);
+				if(escapeFunction != null) {
+					columnHeader = escapeFunction.apply(columnHeader);
+				}
+				buf.append(columnHeader);
 				if(i < columnHeaders.size() - 1) {
 					buf.append(delimiter);
 				}
@@ -376,7 +387,11 @@ public class BaseTableResult<D> extends CommandResult {
 			}
 			for(int i = 0; i < numColumnsInRow; i++) {
 				String header = columnHeaders.get(i);
-				buf.append(RenderUtils.render(rowData.get(header), renderCtx));
+				String value = RenderUtils.render(rowData.get(header), renderCtx);
+				if(escapeFunction != null) {
+					value = escapeFunction.apply(value);
+				}
+				buf.append(value);
 				if(i < numColumnsInRow - 1) {
 					buf.append(delimiter);
 				}
