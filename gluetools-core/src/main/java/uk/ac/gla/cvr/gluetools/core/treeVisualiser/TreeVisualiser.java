@@ -89,6 +89,7 @@ public class TreeVisualiser extends ModulePlugin<TreeVisualiser> {
 	public TreeVisualiser() {
 		super();
 		registerModulePluginCmdClass(VisualiseTreeDocumentCommand.class);
+		registerModulePluginCmdClass(TreeDocumentToNewickCommand.class);
 	}
 
 	public double getRootPct() {
