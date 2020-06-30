@@ -512,6 +512,9 @@
 				<simpleCommandFilter words="invoke-function">
 					<arg name="functionName">visualisePhyloAsSvg</arg>
 				</simpleCommandFilter>
+				<simpleCommandFilter words="invoke-function">
+					<arg name="functionName">visualisePhyloAsNewick</arg>
+				</simpleCommandFilter>
 			</modePathRegexFilter>
 			<modePathRegexFilter>
 				<regex>.*/module/covDownloadAnalysis$</regex>
