@@ -46,6 +46,7 @@ import uk.ac.gla.cvr.gluetools.core.command.fileUtils.FileUtilListFilesCommand;
 import uk.ac.gla.cvr.gluetools.core.command.fileUtils.FileUtilLoadStringCommand;
 import uk.ac.gla.cvr.gluetools.core.command.fileUtils.FileUtilMakeDirectoriesCommand;
 import uk.ac.gla.cvr.gluetools.core.command.fileUtils.FileUtilSaveStringCommand;
+import uk.ac.gla.cvr.gluetools.core.command.fileUtils.FileUtilSaveStringWebFileCommand;
 
 public abstract class BaseCommandFactory extends CommandFactory {
 
@@ -70,6 +71,7 @@ public abstract class BaseCommandFactory extends CommandFactory {
 		registerCommandClass(FileUtilListFilesCommand.class);
 		registerCommandClass(FileUtilDeleteFileCommand.class);
 		registerCommandClass(FileUtilSaveStringCommand.class);
+		registerCommandClass(FileUtilSaveStringWebFileCommand.class);
 		registerCommandClass(FileUtilLoadStringCommand.class);
 		registerCommandClass(FileUtilMakeDirectoriesCommand.class);
 
