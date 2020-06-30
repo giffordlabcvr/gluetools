@@ -62,4 +62,17 @@ public interface NewickGenerator extends Plugin {
 		return (String) phyloBranch.ensureUserData().get("label");
 	}
 
+	public static String escapeNewickString(String input) {
+		// https://en.wikipedia.org/wiki/Newick_format#The_grammar_rules
+		// An unquoted string may not contain blanks, parentheses, square brackets, single_quotes, colons, semicolons, or commas. Underscore characters in unquoted strings are converted to blanks.[2]
+		// A string may also be quoted by enclosing it in single quotes. Single quotes in the original string are represented as two consecutive single quote characters.[2]
+		// Whitespace may appear anywhere except within an unquoted string or a Length
+		// Newlines may appear anywhere except within a string or a Length.
+		String escaped = input;
+		if(input.matches("^.*[\\s()\\[\\]':;,].*$")) {
+			escaped = "'"+input.replaceAll("\\s", " ").replaceAll("'", "''")+"'";
+		};
+		return escaped;
+	}
+	
 }
