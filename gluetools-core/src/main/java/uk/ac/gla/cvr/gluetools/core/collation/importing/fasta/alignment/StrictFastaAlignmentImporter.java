@@ -151,7 +151,7 @@ public class StrictFastaAlignmentImporter extends BaseFastaAlignmentImporter<Str
 			} else {
 				if(queryExhausted) {
 					throw new StrictFastaAlignmentImporterException(Code.STRICT_IMPORT_ERROR, 
-							"query "+queryId+" is exhausted but alignment row still has non-gap character at position "+uLoc);
+							"query '"+queryId+"' is exhausted but alignment row still has non-gap character at position "+uLoc);
 				}
 				if(uNt == queryNt) {
 					if(currentQaSeg == null) {
@@ -168,7 +168,7 @@ public class StrictFastaAlignmentImporter extends BaseFastaAlignmentImporter<Str
 					}
 				} else {
 					throw new StrictFastaAlignmentImporterException(Code.STRICT_IMPORT_ERROR, 
-							"mismatch between query "+queryId+" char "+queryNt+" at location "+queryLoc+" and alignment row char "+uNt+" at position "+uLoc);
+							"mismatch between query '"+queryId+"' char "+queryNt+" at location "+queryLoc+" and alignment row char "+uNt+" at position "+uLoc);
 				}
 			}
 		}
@@ -177,7 +177,7 @@ public class StrictFastaAlignmentImporter extends BaseFastaAlignmentImporter<Str
 		}
 		if(!queryExhausted) {
 			throw new StrictFastaAlignmentImporterException(Code.STRICT_IMPORT_ERROR, 
-					"query "+queryId+" is not exhausted at end of alignment row");
+					"query '"+queryId+"' is not exhausted at end of alignment row");
 		}
 		return qaSegs;
 	}
