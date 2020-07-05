@@ -523,6 +523,30 @@
 				</simpleCommandFilter>
 			</modePathRegexFilter>
 			<!-- replacement, deletion and insertion pages -->
+			<modePathRegexFilter>
+				<regex>.*/module/covReplacementWebExporter$</regex>
+				<simpleCommandFilter words="invoke-function">
+					<arg name="functionName">exportReplacements</arg>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/module/covInsertionWebExporter$</regex>
+				<simpleCommandFilter words="invoke-function">
+					<arg name="functionName">exportInsertions</arg>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/module/covDeletionWebExporter$</regex>
+				<simpleCommandFilter words="invoke-function">
+					<arg name="functionName">exportDeletions</arg>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
+			<modePathRegexFilter>
+				<regex>.*/module/covSequenceMetadataWebExporter$</regex>
+				<simpleCommandFilter words="invoke-function">
+					<arg name="functionName">exportSequenceMetadata</arg>
+				</simpleCommandFilter>
+			</modePathRegexFilter>
 			<simpleCommandFilter words="count custom-table-row">
 				<arg name="tableName">cov_replacement</arg>
 			</simpleCommandFilter>
