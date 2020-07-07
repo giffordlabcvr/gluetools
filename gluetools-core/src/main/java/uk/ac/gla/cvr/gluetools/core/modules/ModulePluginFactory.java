@@ -57,6 +57,7 @@ import uk.ac.gla.cvr.gluetools.core.fastaUtility.FastaUtility;
 import uk.ac.gla.cvr.gluetools.core.featurePresenceRecorder.FeaturePresenceRecorder;
 import uk.ac.gla.cvr.gluetools.core.gbSubmissionGenerator.GbSubmisisonGenerator;
 import uk.ac.gla.cvr.gluetools.core.genotyping.maxlikelihood.MaxLikelihoodGenotyper;
+import uk.ac.gla.cvr.gluetools.core.http.HttpRunner;
 import uk.ac.gla.cvr.gluetools.core.modeltest.ModelTester;
 import uk.ac.gla.cvr.gluetools.core.phyloUtility.PhyloUtility;
 import uk.ac.gla.cvr.gluetools.core.phylogenyImporter.PhyloImporter;
@@ -186,6 +187,9 @@ public class ModulePluginFactory extends PluginFactory<ModulePlugin<?>>{
 		registerPluginClass(Hanada2006ReplacementClassifier.class);
 		registerPluginClass(Grantham1974DistanceCalculator.class);
 		registerPluginClass(Miyata1979DistanceCalculator.class);
+		
+		setModulePluginGroup(new ModulePluginGroup("remoteAccess", "Module types for remote system access", 94));
+		registerPluginClass(HttpRunner.class);
 	}
 
 	
