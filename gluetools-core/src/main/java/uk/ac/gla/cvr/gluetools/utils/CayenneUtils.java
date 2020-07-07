@@ -45,7 +45,6 @@ import org.apache.cayenne.exp.ExpressionException;
 import org.apache.cayenne.query.Ordering;
 import org.apache.cayenne.query.SortOrder;
 
-import uk.ac.gla.cvr.gluetools.core.datamodel.project.PkField;
 import uk.ac.gla.cvr.gluetools.core.datamodel.project.Project;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 

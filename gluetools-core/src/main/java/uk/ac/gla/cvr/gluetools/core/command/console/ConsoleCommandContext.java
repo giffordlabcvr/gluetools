@@ -57,11 +57,9 @@ import uk.ac.gla.cvr.gluetools.core.command.ConsoleOption;
 import uk.ac.gla.cvr.gluetools.core.command.ParallelWorkerException;
 import uk.ac.gla.cvr.gluetools.core.command.result.CommandResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.OutputStreamCommandResultRenderingContext;
-import uk.ac.gla.cvr.gluetools.core.command.result.ResultOutputFormat;
 import uk.ac.gla.cvr.gluetools.core.console.Console;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException;
 import uk.ac.gla.cvr.gluetools.core.console.ConsoleException.Code;
-import uk.ac.gla.cvr.gluetools.utils.FastaUtils.LineFeedStyle;
 
 public class ConsoleCommandContext extends CommandContext {
 
