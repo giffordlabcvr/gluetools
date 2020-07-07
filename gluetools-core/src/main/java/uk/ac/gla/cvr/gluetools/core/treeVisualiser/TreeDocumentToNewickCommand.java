@@ -1,8 +1,5 @@
 package uk.ac.gla.cvr.gluetools.core.treeVisualiser;
 
-import java.math.BigDecimal;
-import java.math.MathContext;
-import java.math.RoundingMode;
 import java.util.List;
 import java.util.Map;
 
