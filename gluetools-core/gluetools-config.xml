@@ -527,24 +527,54 @@
 				<regex>.*/module/covReplacementWebExporter$</regex>
 				<simpleCommandFilter words="invoke-function">
 					<arg name="functionName">exportReplacements</arg>
+					<queueAssignmentFilter>
+						<queueName>download</queueName>						
+					</queueAssignmentFilter>
+				</simpleCommandFilter>
+				<simpleCommandFilter words="invoke-function">
+					<arg name="functionName">allReplacementsAsObjects</arg>
+					<queueAssignmentFilter>
+						<queueName>download</queueName>						
+					</queueAssignmentFilter>
 				</simpleCommandFilter>
 			</modePathRegexFilter>
 			<modePathRegexFilter>
 				<regex>.*/module/covInsertionWebExporter$</regex>
 				<simpleCommandFilter words="invoke-function">
 					<arg name="functionName">exportInsertions</arg>
+					<queueAssignmentFilter>
+						<queueName>download</queueName>						
+					</queueAssignmentFilter>
+				</simpleCommandFilter>
+				<simpleCommandFilter words="invoke-function">
+					<arg name="functionName">allInsertionsAsObjects</arg>
+					<queueAssignmentFilter>
+						<queueName>download</queueName>						
+					</queueAssignmentFilter>
 				</simpleCommandFilter>
 			</modePathRegexFilter>
 			<modePathRegexFilter>
 				<regex>.*/module/covDeletionWebExporter$</regex>
 				<simpleCommandFilter words="invoke-function">
 					<arg name="functionName">exportDeletions</arg>
+					<queueAssignmentFilter>
+						<queueName>download</queueName>						
+					</queueAssignmentFilter>
+				</simpleCommandFilter>
+				<simpleCommandFilter words="invoke-function">
+					<arg name="functionName">allDeletionsAsObjects</arg>
+					<queueAssignmentFilter>
+						<queueName>download</queueName>						
+					</queueAssignmentFilter>
 				</simpleCommandFilter>
 			</modePathRegexFilter>
 			<modePathRegexFilter>
 				<regex>.*/module/covSequenceMetadataWebExporter$</regex>
 				<simpleCommandFilter words="invoke-function">
 					<arg name="functionName">exportSequenceMetadata</arg>
+					<queueAssignmentFilter>
+						<queueName>download</queueName>						
+					</queueAssignmentFilter>
 				</simpleCommandFilter>
 			</modePathRegexFilter>
 			<simpleCommandFilter words="count custom-table-row">
