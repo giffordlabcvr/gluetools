@@ -625,6 +625,10 @@
 				<simpleCommandFilter words="show property"/>
 			</modePathRegexFilter>
 			<modePathRegexFilter>
+				<regex>.*/custom-table-row/cov_project_properties/lineageVersion$</regex>
+				<simpleCommandFilter words="show property"/>
+			</modePathRegexFilter>
+			<modePathRegexFilter>
 				<regex>.*/custom-table-row/cov_project_properties/sequencesRetrieved$</regex>
 				<simpleCommandFilter words="show property"/>
 			</modePathRegexFilter>
