@@ -187,6 +187,11 @@ public class ConsoleCommandContext extends CommandContext {
 		return file.isFile();
 	}
 
+	public boolean exists(String pathString) {
+		File file = fileStringToFile(pathString);
+		return file.exists();
+	}
+
 	public boolean delete(String pathString) {
 		File file = fileStringToFile(pathString);
 		return file.delete();

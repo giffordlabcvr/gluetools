@@ -27,10 +27,14 @@ package uk.ac.gla.cvr.gluetools.core.command.fileUtils;
 
 import uk.ac.gla.cvr.gluetools.core.command.result.MapResult;
 
-public class FileUtilDeleteFileResult extends MapResult {
+public class FileUtilFileExistsResult extends MapResult {
 
-	public FileUtilDeleteFileResult(int numFilesDeleted) {
-		super("fileUtilDeleteFilesResult",  mapBuilder().put("numFilesDeleted", numFilesDeleted));
+	public FileUtilFileExistsResult(boolean exists, boolean isFile, boolean isDirectory) {
+		super("fileUtilFileExistsResult", 
+				mapBuilder()
+				.put("exists", exists)
+				.put("isFile", isFile)
+				.put("isDirectory", isDirectory));
 	}
 
 }

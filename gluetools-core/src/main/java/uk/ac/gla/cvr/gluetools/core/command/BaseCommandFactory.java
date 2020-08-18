@@ -42,6 +42,7 @@ import uk.ac.gla.cvr.gluetools.core.command.console.config.ConsoleUnsetOptionCom
 import uk.ac.gla.cvr.gluetools.core.command.console.help.HelpCommand;
 import uk.ac.gla.cvr.gluetools.core.command.dataUtils.DataUtilParseCountryCommand;
 import uk.ac.gla.cvr.gluetools.core.command.fileUtils.FileUtilDeleteFileCommand;
+import uk.ac.gla.cvr.gluetools.core.command.fileUtils.FileUtilFileExistsCommand;
 import uk.ac.gla.cvr.gluetools.core.command.fileUtils.FileUtilListFilesCommand;
 import uk.ac.gla.cvr.gluetools.core.command.fileUtils.FileUtilLoadStringCommand;
 import uk.ac.gla.cvr.gluetools.core.command.fileUtils.FileUtilMakeDirectoriesCommand;
@@ -70,6 +71,7 @@ public abstract class BaseCommandFactory extends CommandFactory {
 		setCmdGroup(new CommandGroup("file-utils", "File system utility commands", 94, true));
 		registerCommandClass(FileUtilListFilesCommand.class);
 		registerCommandClass(FileUtilDeleteFileCommand.class);
+		registerCommandClass(FileUtilFileExistsCommand.class);
 		registerCommandClass(FileUtilSaveStringCommand.class);
 		registerCommandClass(FileUtilSaveStringWebFileCommand.class);
 		registerCommandClass(FileUtilLoadStringCommand.class);
