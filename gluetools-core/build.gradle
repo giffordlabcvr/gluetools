@@ -32,8 +32,8 @@ sourceCompatibility = 1.8
 remotes {
   gluetools_cvr {
     host = 'glue-tools.cvr.gla.ac.uk'
-    user = 'sing01j'
-    identity = file('/Users/joshsinger/.ssh/glue-tools_id_rsa')
+    user = 'ok16n'
+    identity = file('/Users/evdoxiataka/.ssh/glue-tools_id_rsa')
   }  
 }
 

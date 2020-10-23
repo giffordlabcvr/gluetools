@@ -79,7 +79,7 @@ configure(subprojects.findAll {it.name != 'gluetools-web'}) {
 	}
 }
 
-def scmCustomKey = System.getProperty("user.name").equals('joshsinger') ? '/Users/joshsinger/.ssh/github_id_rsa' : '/opt/bitnami/apps/jenkins/jenkins_home/.ssh/github_id_rsa'
+def scmCustomKey = System.getProperty("user.name").equals('evdoxiataka') ? '/Users/evdoxiataka/.ssh/github_id_rsa' : '/opt/bitnami/apps/jenkins/jenkins_home/.ssh/github_id_rsa'
 
 scmVersion {
 	hooks {

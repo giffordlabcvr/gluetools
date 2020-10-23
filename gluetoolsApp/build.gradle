@@ -7,8 +7,8 @@ ssh.settings { knownHosts = allowAnyHosts }
 remotes {
   gluetools_cvr {
     host = 'glue-tools.cvr.gla.ac.uk'
-    user = 'sing01j'
-    identity = file('/Users/joshsinger/.ssh/glue-tools_id_rsa')
+    user = 'ok16n'
+    identity = file('/Users/evdoxiataka/.ssh/glue_tools_id_rsa')
   }  
 }
 
