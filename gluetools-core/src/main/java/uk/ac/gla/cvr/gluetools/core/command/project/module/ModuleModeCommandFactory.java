@@ -97,6 +97,7 @@ public class ModuleModeCommandFactory extends BaseCommandFactory {
 		registerCommandClass(ModuleSaveConfigurationCommand.class);
 		registerCommandClass(ModuleLoadConfigurationCommand.class);
 		registerCommandClass(ModuleShowConfigurationCommand.class);
+		registerCommandClass(ModuleListResourceCommand.class);
 
 		setCmdGroup(new CommandGroup("simple-properties", "Commands for managing simple properties within the configuration document", 51, false));
 		registerCommandClass(ModuleSetPropertyCommand.class);
