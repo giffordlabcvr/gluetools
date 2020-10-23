@@ -38,6 +38,7 @@ import uk.ac.gla.cvr.gluetools.core.command.CompleterClass;
 import uk.ac.gla.cvr.gluetools.core.command.console.ConsoleCommandContext;
 import uk.ac.gla.cvr.gluetools.core.command.result.UpdateResult;
 import uk.ac.gla.cvr.gluetools.core.datamodel.module.Module;
+import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginConfigContext;
 import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 
@@ -47,13 +48,14 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginUtils;
 		"-r, --loadResources  Also load dependent resources",
 	},
 	description = "Load module configuration from a file", 
+	furtherHelp="\nWARNING: The --loadResources (or -r) option is no longer necessary in "+ 
+			"version 1.1.105 and later. Resources will always be loaded when applicable.\n",
 	metaTags = { CmdMeta.consoleOnly} )
 public class ModuleLoadConfigurationCommand extends ModuleDocumentCommand<UpdateResult> {
 
 	private static final String FILE_NAME = "fileName";
 	private static final String LOAD_RESOURCES = "loadResources";
 	private String fileName;
-	private boolean loadResources;
 	
 	public ModuleLoadConfigurationCommand() {
 		super();
@@ -65,7 +67,11 @@ public class ModuleLoadConfigurationCommand extends ModuleDocumentCommand<Update
 			Element configElem) {
 		super.configure(pluginConfigContext, configElem);
 		this.fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, true);
-		this.loadResources = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, LOAD_RESOURCES, true)).orElse(false);
+		boolean loadResources = PluginUtils.configureBooleanProperty(configElem, LOAD_RESOURCES, true);
+		
+		if(loadResources) {
+			GlueLogger.getGlueLogger().warning("The --loadResources (or -r) option is no longer necessary in version 1.1.105. Resources will always be loaded when applicable.");
+		}
 	}
 
 	// do the commit here rather than implementing the ModuleUpdateDocumentCommand marker interface.
@@ -73,7 +79,7 @@ public class ModuleLoadConfigurationCommand extends ModuleDocumentCommand<Update
 	protected UpdateResult processDocument(CommandContext cmdContext,
 			Module module, Document modulePluginDoc) {
 		ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
-		module.loadConfig(consoleCmdContext, fileName, loadResources);
+		module.loadConfig(consoleCmdContext, fileName);
 		consoleCmdContext.commit();
 		return new UpdateResult(Module.class, 1);
 	}

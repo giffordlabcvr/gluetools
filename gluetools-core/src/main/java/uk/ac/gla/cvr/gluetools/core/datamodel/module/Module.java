@@ -209,19 +209,16 @@ public class Module extends _Module {
 
 	}
 
-	public void loadConfig(ConsoleCommandContext consoleCmdContext, String fileName, boolean loadResources) {
+	public void loadConfig(ConsoleCommandContext consoleCmdContext, String fileName) {
 		File file = consoleCmdContext.fileStringToFile(fileName);
 		byte[] config = ConsoleCommandContext.loadBytesFromFile(file);
-		if(loadResources) {
-			modulePlugin = null;
-			valid = false;
-		}
+		modulePlugin = null;
+		valid = false;
 		setConfig(config);
-		if(loadResources) {
-			ModulePlugin<?> modulePlugin = getModulePlugin(consoleCmdContext, true);
-			File resourceDir = file.getParentFile();
-			modulePlugin.loadResources(consoleCmdContext, resourceDir, this);
-		}
+
+		ModulePlugin<?> modulePlugin = getModulePlugin(consoleCmdContext, true);
+		File resourceDir = file.getParentFile();
+		modulePlugin.loadResources(consoleCmdContext, resourceDir, this);
 	}
 
 }

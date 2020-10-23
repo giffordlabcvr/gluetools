@@ -68,7 +68,8 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 				"or from an XML file, in which case the module type is specified by the document root element name."+
 				"\nIf no <moduleName> is specified, a name is auto-generated from the supplied <moduleType> or from the "+
 				"file part of <fileName> path, without the '.xml' extension. The module name is given a numeric suffix if "+
-				"necessary to ensure it is unique.",
+				"necessary to ensure it is unique. \nWARNING: The --loadResources (or -r) option is no longer necessary in "+ 
+				"version 1.1.105. Resources will always be loaded when applicable.\n",
 		metaTags={ CmdMeta.consoleOnly } ) 
 	
 public class CreateModuleCommand extends Command<CreateResult> {
@@ -81,8 +82,6 @@ public class CreateModuleCommand extends Command<CreateResult> {
 	private String moduleType;
 	private String moduleName;
 	private String fileName;
-	private boolean loadResources;
-
 	
 	@Override
 	public void configure(PluginConfigContext pluginConfigContext,
@@ -91,7 +90,8 @@ public class CreateModuleCommand extends Command<CreateResult> {
 		this.moduleType = PluginUtils.configureStringProperty(configElem, MODULE_TYPE, false);
 		this.fileName = PluginUtils.configureStringProperty(configElem, FILE_NAME, false);
 		this.moduleName = PluginUtils.configureStringProperty(configElem, MODULE_NAME, false);
-		this.loadResources = Optional.ofNullable(PluginUtils.configureBooleanProperty(configElem, LOAD_RESOURCES, false)).orElse(false);
+		boolean loadResources = PluginUtils.configureBooleanProperty(configElem, LOAD_RESOURCES, true);
+		
 		if(moduleType == null && fileName == null) {
 			throw new CommandException(Code.COMMAND_USAGE_ERROR, "Either <moduleType> or <fileName> must be specified.");
 		}
@@ -101,8 +101,8 @@ public class CreateModuleCommand extends Command<CreateResult> {
 		if(fileName != null && !fileName.endsWith(".xml")) {
 			throw new CommandException(Code.COMMAND_USAGE_ERROR, "The <fileName> must end with .xml");
 		}
-		if(fileName == null && loadResources) {
-			throw new CommandException(Code.COMMAND_USAGE_ERROR, "The --loadResources option may only be used if <fileName> is specified.");
+		if(loadResources) {
+			GlueLogger.getGlueLogger().warning("The --loadResources (or -r) option is no longer necessary in version 1.1.105 and later. Resources will always be loaded when applicable.");
 		}
 	}
 
@@ -151,7 +151,7 @@ public class CreateModuleCommand extends Command<CreateResult> {
 			module.setConfig(config);
 		} else {
 			ConsoleCommandContext consoleCmdContext = (ConsoleCommandContext) cmdContext;
-			module.loadConfig(consoleCmdContext, fileName, loadResources);
+			module.loadConfig(consoleCmdContext, fileName);
 		}
 		cmdContext.commit();
 		GlueLogger.log(Level.FINEST, "Created new module '"+nameToUse+"' of type "+module.getType());
