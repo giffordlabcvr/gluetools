@@ -47,17 +47,17 @@ import uk.ac.gla.cvr.gluetools.core.translation.Translator;
 public class AminoAcidRegexPolymorphismScanner extends BaseAminoAcidVariationScanner<AminoAcidRegexPolymorphismMatchResult> {
 
 	private static final List<VariationMetatagType> allowedMetatagTypes = 
-			Arrays.asList(VariationMetatagType.REGEX_AA_PATTERN);
+			Arrays.asList(VariationMetatagType.REGEX_AA_PATTERN,
+					VariationMetatagType.ALLOW_PARTIAL_COVERAGE);
 	private static final List<VariationMetatagType> requiredMetatagTypes = Arrays.asList(VariationMetatagType.REGEX_AA_PATTERN);
 
 	private Pattern regexAaPattern;
+	private Boolean allowPartialCoverage;
 	private Translator translator;
 
 	public AminoAcidRegexPolymorphismScanner() {
 		super(allowedMetatagTypes, requiredMetatagTypes);
 	}
-
-	
 	
 	@Override
 	protected void init(CommandContext cmdContext) {
@@ -66,7 +66,21 @@ public class AminoAcidRegexPolymorphismScanner extends BaseAminoAcidVariationSca
 		if(patternMetatagValue != null) {
 			this.regexAaPattern = parseRegex(patternMetatagValue);
 		}
+		Boolean configuredAllowPartialCoverage = getBooleanMetatagValue(VariationMetatagType.ALLOW_PARTIAL_COVERAGE);
+		if(configuredAllowPartialCoverage != null) {
+			this.allowPartialCoverage = configuredAllowPartialCoverage;
+		} else {
+			this.allowPartialCoverage = false;
+		}
 		this.translator = new CommandContextTranslator(cmdContext);
+	}
+	
+	@Override
+	protected boolean computeSufficientCoverage(List<QueryAlignedSegment> queryToRefSegs) {
+		if(this.allowPartialCoverage) {
+			return true;
+		}
+		return super.computeSufficientCoverage(queryToRefSegs);
 	}
 
 	@Override

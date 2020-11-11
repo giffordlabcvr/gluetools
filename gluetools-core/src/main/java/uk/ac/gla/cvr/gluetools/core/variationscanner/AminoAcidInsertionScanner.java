@@ -44,6 +44,7 @@ public class AminoAcidInsertionScanner extends BaseAminoAcidVariationScanner<Ami
 
 	private static final List<VariationMetatagType> allowedMetatagTypes = 
 			Arrays.asList(VariationMetatagType.FLANKING_AAS, 
+							VariationMetatagType.ALLOW_PARTIAL_COVERAGE,
 							VariationMetatagType.MIN_INSERTION_LENGTH_AAS,
 							VariationMetatagType.MAX_INSERTION_LENGTH_AAS);
 	private static final List<VariationMetatagType> requiredMetatagTypes = Arrays.asList();
@@ -51,6 +52,7 @@ public class AminoAcidInsertionScanner extends BaseAminoAcidVariationScanner<Ami
 	private int flankingAas;
 	private Integer minInsertionLengthAas;
 	private Integer maxInsertionLengthAas;
+	private Boolean allowPartialCoverage;
 	private String referenceNucleotides;
 	private TIntObjectMap<LabeledCodon> startNtToLabeledCodon;
 	private TIntObjectMap<LabeledCodon> endNtToLabeledCodon;
@@ -88,16 +90,19 @@ public class AminoAcidInsertionScanner extends BaseAminoAcidVariationScanner<Ami
 		} else {
 			this.maxInsertionLengthAas = null;
 		}
+		Boolean configuredAllowPartialCoverage = getBooleanMetatagValue(VariationMetatagType.ALLOW_PARTIAL_COVERAGE);
+		if(configuredAllowPartialCoverage != null) {
+			this.allowPartialCoverage = configuredAllowPartialCoverage;
+		} else {
+			this.allowPartialCoverage = false;
+		}
 	}
 	
 	@Override
 	public List<ReferenceSegment> getSegmentsToCover() {
 		Integer flankingStart = computeFlankingStart();
 		Integer flankingEnd = computeFlankingEnd();
-		Integer refStart = getVariation().getRefStart();
-		Integer refEnd = getVariation().getRefEnd();
-		return Arrays.asList(new ReferenceSegment(flankingStart, refStart),
-						new ReferenceSegment(refEnd, flankingEnd));
+		return Arrays.asList(new ReferenceSegment(flankingStart, flankingEnd));
 	}
 
 	private Integer computeFlankingStart() {
@@ -107,6 +112,14 @@ public class AminoAcidInsertionScanner extends BaseAminoAcidVariationScanner<Ami
 	private Integer computeFlankingEnd() {
 		Integer refEnd = getVariation().getRefEnd();
 		return Math.min((refEnd-1)+(this.flankingAas*3), this.referenceNucleotides.length());
+	}
+	
+	@Override
+	protected boolean computeSufficientCoverage(List<QueryAlignedSegment> queryToRefSegs) {
+		if(this.allowPartialCoverage) {
+			return true;
+		}
+		return super.computeSufficientCoverage(queryToRefSegs);
 	}
 
 	// this variation scanner picks up insertions strictly *between* the start and end NTs

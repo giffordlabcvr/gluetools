@@ -42,10 +42,12 @@ import uk.ac.gla.cvr.gluetools.core.segments.SegmentUtils;
 public class NucleotideRegexPolymorphismScanner extends BaseNucleotideVariationScanner<NucleotideRegexPolymorphismMatchResult> {
 
 	private static final List<VariationMetatagType> allowedMetatagTypes = 
-			Arrays.asList(VariationMetatagType.REGEX_NT_PATTERN);
+			Arrays.asList(VariationMetatagType.REGEX_NT_PATTERN,
+					VariationMetatagType.ALLOW_PARTIAL_COVERAGE);
 	private static final List<VariationMetatagType> requiredMetatagTypes = Arrays.asList(VariationMetatagType.REGEX_NT_PATTERN);
 
 	private String regexNtPattern;
+	private Boolean allowPartialCoverage;
 	
 	public NucleotideRegexPolymorphismScanner() {
 		super(allowedMetatagTypes, requiredMetatagTypes);
@@ -55,6 +57,20 @@ public class NucleotideRegexPolymorphismScanner extends BaseNucleotideVariationS
 	protected void init(CommandContext cmdContext) {
 		super.init(cmdContext);		
 		this.regexNtPattern = getStringMetatagValue(VariationMetatagType.REGEX_NT_PATTERN);
+		Boolean configuredAllowPartialCoverage = getBooleanMetatagValue(VariationMetatagType.ALLOW_PARTIAL_COVERAGE);
+		if(configuredAllowPartialCoverage != null) {
+			this.allowPartialCoverage = configuredAllowPartialCoverage;
+		} else {
+			this.allowPartialCoverage = false;
+		}
+	}
+	
+	@Override
+	protected boolean computeSufficientCoverage(List<QueryAlignedSegment> queryToRefSegs) {
+		if(this.allowPartialCoverage) {
+			return true;
+		}
+		return super.computeSufficientCoverage(queryToRefSegs);
 	}
 
 	@Override

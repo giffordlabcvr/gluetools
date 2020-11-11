@@ -83,7 +83,7 @@ public class NucleotideDeletionScanner extends BaseNucleotideVariationScanner<Nu
 		if(configuredAllowPartialCoverage != null) {
 			this.allowPartialCoverage = configuredAllowPartialCoverage;
 		} else {
-			this.allowPartialCoverage = null;
+			this.allowPartialCoverage = false;
 		}
 	}
 	

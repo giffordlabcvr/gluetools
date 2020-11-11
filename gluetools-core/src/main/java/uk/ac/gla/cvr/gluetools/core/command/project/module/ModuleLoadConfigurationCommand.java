@@ -25,8 +25,6 @@
 */
 package uk.ac.gla.cvr.gluetools.core.command.project.module;
 
-import java.util.Optional;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -70,7 +68,7 @@ public class ModuleLoadConfigurationCommand extends ModuleDocumentCommand<Update
 		boolean loadResources = PluginUtils.configureBooleanProperty(configElem, LOAD_RESOURCES, true);
 		
 		if(loadResources) {
-			GlueLogger.getGlueLogger().warning("The --loadResources (or -r) option is no longer necessary in version 1.1.105. Resources will always be loaded when applicable.");
+			GlueLogger.getGlueLogger().warning("The --loadResources (or -r) option is no longer necessary in version 1.1.105 and later. Resources will always be loaded when applicable.");
 		}
 	}
 
