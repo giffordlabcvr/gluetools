@@ -42,12 +42,14 @@ public class NucleotideSimplePolymorphismScanner extends BaseNucleotideVariation
 
 	private static final List<VariationMetatagType> allowedMetatagTypes = 
 			Arrays.asList(VariationMetatagType.SIMPLE_NT_PATTERN, 
+					VariationMetatagType.ALLOW_PARTIAL_COVERAGE,
 					VariationMetatagType.MIN_COMBINED_NT_FRACTION);
 	private static final List<VariationMetatagType> requiredMetatagTypes = 
 			Arrays.asList(VariationMetatagType.SIMPLE_NT_PATTERN);
 
 	private String simpleNtPattern;
 	private Double minCombinedNtFraction;
+	private Boolean allowPartialCoverage;
 	
 	public NucleotideSimplePolymorphismScanner() {
 		super(allowedMetatagTypes, requiredMetatagTypes);
@@ -61,6 +63,20 @@ public class NucleotideSimplePolymorphismScanner extends BaseNucleotideVariation
 		if(this.minCombinedNtFraction == null) {
 			this.minCombinedNtFraction = 1.0;
 		}
+		Boolean configuredAllowPartialCoverage = getBooleanMetatagValue(VariationMetatagType.ALLOW_PARTIAL_COVERAGE);
+		if(configuredAllowPartialCoverage != null) {
+			this.allowPartialCoverage = configuredAllowPartialCoverage;
+		} else {
+			this.allowPartialCoverage = false;
+		}
+	}
+
+	@Override
+	protected boolean computeSufficientCoverage(List<QueryAlignedSegment> queryToRefSegs) {
+		if(this.allowPartialCoverage) {
+			return true;
+		}
+		return super.computeSufficientCoverage(queryToRefSegs);
 	}
 
 

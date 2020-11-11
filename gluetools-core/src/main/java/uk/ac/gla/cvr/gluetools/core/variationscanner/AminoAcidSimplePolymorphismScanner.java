@@ -47,6 +47,7 @@ public class AminoAcidSimplePolymorphismScanner extends BaseAminoAcidVariationSc
 
 	private static final List<VariationMetatagType> allowedMetatagTypes = 
 			Arrays.asList(VariationMetatagType.SIMPLE_AA_PATTERN, 
+							VariationMetatagType.ALLOW_PARTIAL_COVERAGE,
 							VariationMetatagType.MIN_COMBINED_TRIPLET_FRACTION);
 	private static final List<VariationMetatagType> requiredMetatagTypes = 
 			Arrays.asList(VariationMetatagType.SIMPLE_AA_PATTERN);
@@ -63,6 +64,7 @@ public class AminoAcidSimplePolymorphismScanner extends BaseAminoAcidVariationSc
 	// if this is greater than minCombinedTripletFraction, it is considered a match. 
 	// Default is 1.0 (no ambiguity).
 	private Double minCombinedTripletFraction;
+	private Boolean allowPartialCoverage;
 	private Translator translator;
 
 
@@ -78,10 +80,22 @@ public class AminoAcidSimplePolymorphismScanner extends BaseAminoAcidVariationSc
 		if(this.minCombinedTripletFraction == null) {
 			this.minCombinedTripletFraction = 1.0;
 		}
+		Boolean configuredAllowPartialCoverage = getBooleanMetatagValue(VariationMetatagType.ALLOW_PARTIAL_COVERAGE);
+		if(configuredAllowPartialCoverage != null) {
+			this.allowPartialCoverage = configuredAllowPartialCoverage;
+		} else {
+			this.allowPartialCoverage = false;
+		}
 		this.translator = new CommandContextTranslator(cmdContext);
 	}
 
-
+	@Override
+	protected boolean computeSufficientCoverage(List<QueryAlignedSegment> queryToRefSegs) {
+		if(this.allowPartialCoverage) {
+			return true;
+		}
+		return super.computeSufficientCoverage(queryToRefSegs);
+	}
 
 	@Override
 	protected VariationScanResult<AminoAcidSimplePolymorphismMatchResult> scanInternal(

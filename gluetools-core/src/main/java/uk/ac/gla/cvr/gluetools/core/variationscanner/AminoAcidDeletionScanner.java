@@ -44,6 +44,7 @@ public class AminoAcidDeletionScanner extends BaseAminoAcidVariationScanner<Amin
 
 	private static final List<VariationMetatagType> allowedMetatagTypes = 
 			Arrays.asList(VariationMetatagType.FLANKING_AAS, 
+							VariationMetatagType.ALLOW_PARTIAL_COVERAGE,
 							VariationMetatagType.MIN_DELETION_LENGTH_AAS,
 							VariationMetatagType.MAX_DELETION_LENGTH_AAS);
 	private static final List<VariationMetatagType> requiredMetatagTypes = Arrays.asList();
@@ -51,6 +52,7 @@ public class AminoAcidDeletionScanner extends BaseAminoAcidVariationScanner<Amin
 	private int flankingAas;
 	private Integer minDeletionLengthAas;
 	private Integer maxDeletionLengthAas;
+	private Boolean allowPartialCoverage;
 	private String referenceNucleotides;
 	private TIntObjectMap<LabeledCodon> startRefNtToLabeledCodon;
 	private TIntObjectMap<LabeledCodon> endRefNtToLabeledCodon;
@@ -86,6 +88,12 @@ public class AminoAcidDeletionScanner extends BaseAminoAcidVariationScanner<Amin
 		} else {
 			this.maxDeletionLengthAas = null;
 		}
+		Boolean configuredAllowPartialCoverage = getBooleanMetatagValue(VariationMetatagType.ALLOW_PARTIAL_COVERAGE);
+		if(configuredAllowPartialCoverage != null) {
+			this.allowPartialCoverage = configuredAllowPartialCoverage;
+		} else {
+			this.allowPartialCoverage = false;
+		}
 	}
 	
 	@Override
@@ -106,7 +114,13 @@ public class AminoAcidDeletionScanner extends BaseAminoAcidVariationScanner<Amin
 		return Math.min(getVariation().getRefEnd()+(this.flankingAas*3), this.referenceNucleotides.length());
 	}
 
-
+	@Override
+	protected boolean computeSufficientCoverage(List<QueryAlignedSegment> queryToRefSegs) {
+		if(this.allowPartialCoverage) {
+			return true;
+		}
+		return super.computeSufficientCoverage(queryToRefSegs);
+	}
 
 	@Override
 	protected VariationScanResult<AminoAcidDeletionMatchResult> scanInternal(

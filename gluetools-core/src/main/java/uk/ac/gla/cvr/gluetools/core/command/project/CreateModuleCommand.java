@@ -28,7 +28,6 @@ package uk.ac.gla.cvr.gluetools.core.command.project;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -69,7 +68,7 @@ import uk.ac.gla.cvr.gluetools.utils.GlueXmlUtils;
 				"\nIf no <moduleName> is specified, a name is auto-generated from the supplied <moduleType> or from the "+
 				"file part of <fileName> path, without the '.xml' extension. The module name is given a numeric suffix if "+
 				"necessary to ensure it is unique. \nWARNING: The --loadResources (or -r) option is no longer necessary in "+ 
-				"version 1.1.105. Resources will always be loaded when applicable.\n",
+				"version 1.1.105 and later. Resources will always be loaded when applicable.\n",
 		metaTags={ CmdMeta.consoleOnly } ) 
 	
 public class CreateModuleCommand extends Command<CreateResult> {

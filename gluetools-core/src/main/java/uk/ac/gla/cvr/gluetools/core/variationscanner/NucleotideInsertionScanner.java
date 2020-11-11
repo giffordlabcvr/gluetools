@@ -84,7 +84,7 @@ public class NucleotideInsertionScanner extends BaseNucleotideVariationScanner<N
 		if(configuredAllowPartialCoverage != null) {
 			this.allowPartialCoverage = configuredAllowPartialCoverage;
 		} else {
-			this.allowPartialCoverage = null;
+			this.allowPartialCoverage = false;
 		}
 
 	}
@@ -92,10 +92,7 @@ public class NucleotideInsertionScanner extends BaseNucleotideVariationScanner<N
 	public List<ReferenceSegment> getSegmentsToCover() {
 		Integer flankingStart = computeFlankingStart();
 		Integer flankingEnd = computeFlankingEnd();
-		Integer refStart = getVariation().getRefStart();
-		Integer refEnd = getVariation().getRefEnd();
-		return Arrays.asList(new ReferenceSegment(flankingStart, refStart-1),
-						new ReferenceSegment(refEnd+1, flankingEnd));
+		return Arrays.asList(new ReferenceSegment(flankingStart, flankingEnd));
 	}
 
 	private Integer computeFlankingStart() {
