@@ -14,7 +14,6 @@ hs_err_pid*
 RemoteSystemsTempFiles
 .gradle/
 gluetools-web/build
-.settings
 export.fasta
 build
 gluetools-web/WebContent/www/gluetoolsApp/downloads
