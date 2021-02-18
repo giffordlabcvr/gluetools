@@ -12,7 +12,6 @@
 hs_err_pid*
 
 .gradle/
-.settings/
 build/
 bin/exceptionMessages
 bin/freemarker
