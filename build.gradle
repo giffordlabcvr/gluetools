@@ -1,21 +1,21 @@
 apply plugin: 'java'
 apply plugin: 'eclipse-wtp'
 apply plugin: 'pl.allegro.tech.build.axion-release'
-//apply plugin: 'com.palantir.docker'
+apply plugin: 'com.palantir.docker'
 
 project('gluetools-core') {
 	apply plugin: 'java'
 	apply plugin: 'eclipse-wtp'
 	apply plugin: 'maven'
-//	apply plugin: 'com.palantir.docker'
+	apply plugin: 'com.palantir.docker'
 }
 
-/*
+
 project('gluetools-mysql-docker') {
 	apply plugin: 'java'
 	apply plugin: 'com.palantir.docker'
 }
-*/
+
 
 project('gluetools-ws') {
 	apply plugin: 'war'
@@ -40,7 +40,7 @@ task deployAll(dependsOn: [
 	':gluetools-web:install', 
 	':gluetools-ws:install', 
 	':gluetoolsApp:cargoRedeployRemote',
-/*	':gluetools-mysql-docker:docker', 
+	':gluetools-mysql-docker:docker', 
 	':gluetools-mysql-docker:dockerTag', 
 	':gluetools-mysql-docker:dockerPush', 
 	':gluetools-mysql-docker:dockerTagLatest', 
@@ -48,7 +48,7 @@ task deployAll(dependsOn: [
 	':gluetools-core:dockerTag', 
 	':gluetools-core:dockerPush', 
 	':gluetools-core:dockerTagLatest', 
-	':gluetools-core:dockerPushLatest', */
+	':gluetools-core:dockerPushLatest', 
 	]) {
 }
 
@@ -114,13 +114,13 @@ buildscript {
     repositories {
         mavenCentral()
 		// for palantir docker plugin
-        /*maven {
+        maven {
          	url 'http://repo.spring.io/plugins-release/'
-        } */
+        } 
     }
     dependencies {
   		classpath group: 'pl.allegro.tech.build', name: 'axion-release-plugin', version: '1.9.3'
-  	//	classpath group: 'com.palantir.gradle.docker', name: 'gradle-docker', version: '0.20.1'
+  		classpath group: 'com.palantir.gradle.docker', name: 'gradle-docker', version: '0.20.1'
     }
 }
 

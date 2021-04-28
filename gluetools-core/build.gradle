@@ -165,7 +165,7 @@ task glueInstallDirZip(type: Zip) {
     }
 }
 
-/*
+
 docker {
     name 'cvrbioinformatics/gluetools:'+project.version
     tags 'latest'
@@ -176,7 +176,7 @@ docker {
 
 tasks.docker.dependsOn { tasks.initDockerContext }
 tasks.docker.dependsOn { tasks.jar }
-*/
+
  task initDockerContext(type: Copy, dependsOn: ['exampleProjectZip','jar']) {
      from('build/libs/') {
          include 'gluetools-core-'+project.version+'.jar'
