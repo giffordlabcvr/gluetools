@@ -32,7 +32,7 @@ sourceCompatibility = 1.8
 remotes {
   gluetools_cvr {
     host = 'glue-tools.cvr.gla.ac.uk'
-    user = 'ok16n'
+    user = 'am589p'
     identity = file('/Users/imacadmin/.ssh/glue_tools_id_rsa')
   }  
 }
