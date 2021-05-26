@@ -333,6 +333,10 @@
 <regex>^/project/rabv</regex>
 </modePathRegexFilter>
 
+<!-- FLU-GLUE -->
+<modePathRegexFilter>
+<regex>^/project/flu</regex>
+</modePathRegexFilter>
 
 <!-- HBV-GLUE -->
 <modePathRegexFilter>
