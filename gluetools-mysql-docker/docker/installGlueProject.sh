@@ -16,6 +16,9 @@ case "${1}" in
 "btv_glue")
     URL_PREFIX=http://btv-glue.cvr.gla.ac.uk/btv_glue_dbs
     ;;
+"flu_glue")
+    URL_PREFIX=http://alpha.cvr.gla.ac.uk/home2/giff01r
+    ;;
 *)
     echo Unknown GLUE project ${1}
     exit 1
