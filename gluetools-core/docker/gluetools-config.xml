@@ -2,7 +2,7 @@
 	<database>
 		<username>gluetools</username>
 		<password>glue12345</password>
-		<jdbcUrl>jdbc:mysql://gluetools-mysql:3306/GLUE_TOOLS?characterEncoding=UTF-8</jdbcUrl>
+		<jdbcUrl>jdbc:mysql://gluetools-mysql:3306/GLUE_TOOLS?characterEncoding=UTF-8&amp;useSSL=false</jdbcUrl>
 	</database>
 	<properties>
 		<!-- BLAST related config -->
