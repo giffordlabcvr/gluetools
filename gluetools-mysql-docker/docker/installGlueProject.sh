@@ -16,8 +16,8 @@ case "${1}" in
 "btv_glue")
     URL_PREFIX=http://btv-glue.cvr.gla.ac.uk/btv_glue_dbs
     ;;
-"flu_glue")
-    URL_PREFIX=http://alpha.cvr.gla.ac.uk/home2/giff01r
+"flu-glue")
+   URL_PREFIX=http://hcv-glue.cvr.gla.ac.uk/hcv_glue_dbs
     ;;
 *)
     echo Unknown GLUE project ${1}
@@ -36,7 +36,8 @@ echo "create database $GLUETOOLS_DB character set UTF8;" | mysql --user=${GLUETO
 
 echo "Retrieving $DB_FILE"
  rm -rf ${GLUE_HOME}/tmp/${DB_FILE}
-wget -P ${GLUE_HOME}/tmp ${URL_PREFIX}/${DB_FILE}
+ wget -P ${GLUE_HOME}/tmp ${URL_PREFIX}/${DB_FILE}
+
 RESULT=$?
 if [ $RESULT -eq 0 ]; then
     echo "Loading MySQL database from file /tmp/${DB_FILE} into GLUE_TOOLS"
