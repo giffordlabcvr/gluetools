@@ -45,6 +45,8 @@ The GLUE team is very open to new commands and modules contributed by the commun
 
 Feel free to put forward any such ideas on the [GLUE support forum](https://groups.google.com/forum/#!forum/glue-support).
 
+[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](code_of_conduct.md) 
+
 ## Credits
 
 The GLUE software was written by Josh Singer. The copyright is held by the University of Glasgow.
