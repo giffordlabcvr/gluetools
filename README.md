@@ -39,6 +39,10 @@ Please contact the team if you are interested in building / running the web serv
 
 We suggest importing the `gluetools-core` project into Eclipse 4.4 or later for development.
 
+## Contact
+
+For questions, issues, or feedback, please contact us at [gluetools@gmail.com](mailto:gluetools@gmail.com) or open an issue on the [GitHub repository](https://github.com/giffordlabcvr/gluetools/issues).
+
 ## Contributing
 
 The GLUE team is very open to new commands and modules contributed by the community. It is probably worth raising any ideas you have with the team before embarking on development. Then we can discuss the design, and other aspects such as whether the required functionality belongs in the GLUE engine or if it can for example be introduced as project-specific scripting. 
