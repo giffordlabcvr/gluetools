@@ -1,10 +1,14 @@
 # GLUE
 
-## Description
+<img src="md/glue-logo.png" align="right" alt="" width="220" />
 
-GLUE (**G**enes **L**inked by **U**nderlying **E**volution) is a data-centric bioinformatics environment for virus sequence data, with a focus on variation, evolution and sequence interpretation.
+Welcome to the GitHub repository for the **GLUE** software framework!
 
-You can learn more about it on the GLUE web site: [http://tools.glue.cvr.ac.uk](http://tools.glue.cvr.ac.uk)
+GLUE (**G**enes **L**inked by **U**nderlying **E**volution) is an open, integrated software toolkit implemented in Java™ that provides functionality for storage, management, and analysis of sequence data 
+
+GLUE provides a framework for the development of sequence data-oriented ‘projects’ that focus on a specific genome features, or small genomes (e.g. viral genomes), and contain the data items required for performing comparative genomics investigations (e.g., sequences, genome feature annotations, alignments, and phylogenies, and any other relevant data).
+
+For more information, please visit the GLUE web site: [http://tools.glue.cvr.ac.uk](http://tools.glue.cvr.ac.uk)
 
 ## Build instructions
 
