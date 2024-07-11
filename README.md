@@ -1,6 +1,6 @@
 # GLUE
 
-<img src="md/glue-logo.png" align="right" alt="" width="220" />
+<img src="md/glue-logo.png" align="right" alt="" width="280" />
 
 Welcome to the GitHub repository for the **GLUE** software framework!
 
