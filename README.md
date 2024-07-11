@@ -4,7 +4,7 @@
 
 Welcome to the GitHub repository for the **GLUE** software framework!
 
-GLUE (**G**enes **L**inked by **U**nderlying **E**volution) is an open, integrated software toolkit implemented in Java™ that provides functionality for storage, management, and analysis of sequence data 
+GLUE (**G**enes **L**inked by **U**nderlying **E**volution) is an open, integrated software toolkit, implemented in Java™, that provides functionality for storage, management, and analysis of sequence data 
 
 GLUE provides a framework for the development of sequence data-oriented ‘projects’ that focus on a specific genome features, or small genomes (e.g. viral genomes), and contain the data items required for performing comparative genomics investigations (e.g., sequences, genome feature annotations, alignments, and phylogenies, and any other relevant data).
 
