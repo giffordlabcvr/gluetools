@@ -8,6 +8,8 @@ GLUE (**G**enes **L**inked by **U**nderlying **E**volution) is an open, integrat
 
 GLUE provides a framework for the development of sequence data-oriented ‘projects’ that focus on a specific genome features, or small genomes (e.g. viral genomes), and contain the data items required for performing comparative genomics investigations (e.g., sequences, genome feature annotations, alignments, and phylogenies, and any other relevant data).
 
+For more information, please visit the GLUE web site: [http://tools.glue.cvr.ac.uk](http://tools.glue.cvr.ac.uk).
+
 ## Key Features of GLUE:
 
 -   **Evolutionary Data Organization**: Virus nucleotide and protein sequences are structured along evolutionary lines, facilitating comparative genomics and systematic studies of viral diversity.
@@ -23,8 +25,6 @@ GLUE provides a framework for the development of sequence data-oriented ‘proje
 -   **Collaborative Project Management**: GLUE's tight integration with GitHub enables decentralized project development, allowing teams to work independently and merge data or analysis workflows when necessary.
 
 -   **Integrated Phylogenetics & Sequence Analysis**: Phylogenetic tree generation, sequence variation analyses, and metadata-driven querying provide powerful tools for evolutionary and epidemiological investigations, supported by standardized and custom datasets.
-
-For more information, please visit the GLUE web site: [http://tools.glue.cvr.ac.uk](http://tools.glue.cvr.ac.uk)
 
 ## Build instructions
 
