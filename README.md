@@ -12,7 +12,7 @@ For more information, please visit the GLUE web site: [http://tools.glue.cvr.ac.
 
 ## Key Features of GLUE:
 
--   **Evolutionary Data Organisation**: Stored virus nucleotide sequences are organised along evolutionary lines, facilitating comparative genomics and systematic studies of viral diversity.
+-   **Data Organisation**: Stored virus nucleotide sequences are organised along evolutionary lines, facilitating comparative genomics and systematic studies of viral diversity.
 
 -   **Customizable Bioinformatics Workflows**: GLUE supports integration with standard bioinformatics tools such as BLAST, RAxML, and MAFFT, and users can create custom analysis workflows tailored to specific research needs, from simple analyses to complex pipelines.
 
