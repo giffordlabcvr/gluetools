@@ -8,6 +8,22 @@ GLUE (**G**enes **L**inked by **U**nderlying **E**volution) is an open, integrat
 
 GLUE provides a framework for the development of sequence data-oriented ‘projects’ that focus on a specific genome features, or small genomes (e.g. viral genomes), and contain the data items required for performing comparative genomics investigations (e.g., sequences, genome feature annotations, alignments, and phylogenies, and any other relevant data).
 
+## Key Features of GLUE:
+
+-   **Evolutionary Data Organization**: Virus nucleotide and protein sequences are structured along evolutionary lines, facilitating comparative genomics and systematic studies of viral diversity.
+
+-   **Customizable Bioinformatics Workflows**: GLUE supports integration with standard bioinformatics tools such as BLAST, RAxML, and MAFFT, and users can create custom analysis workflows tailored to specific research needs, from simple analyses to complex pipelines.
+
+-   **Flexible Data Schema**: The underlying data schema can be extended to represent additional biological, epidemiological, or clinical data. GLUE allows custom annotations, metadata integration, and comprehensive data queries through its powerful command layer.
+
+-   **Reference-Constrained Alignments**: GLUE offers robust handling of reference-constrained alignments, capturing coding features at the nucleotide and amino acid levels, providing high precision for evolutionary and structural analyses.
+
+-   **Seamless Containerization & Web Services**: Projects can be rapidly developed offline and published as part of web services or microservices architectures, benefiting from GLUE's containerization support for ease of deployment and reproducibility.
+
+-   **Collaborative Project Management**: GLUE's tight integration with GitHub enables decentralized project development, allowing teams to work independently and merge data or analysis workflows when necessary.
+
+-   **Integrated Phylogenetics & Sequence Analysis**: Phylogenetic tree generation, sequence variation analyses, and metadata-driven querying provide powerful tools for evolutionary and epidemiological investigations, supported by standardized and custom datasets.
+
 For more information, please visit the GLUE web site: [http://tools.glue.cvr.ac.uk](http://tools.glue.cvr.ac.uk)
 
 ## Build instructions
