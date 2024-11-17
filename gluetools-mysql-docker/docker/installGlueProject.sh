@@ -80,6 +80,11 @@ ervdb)
     URL_PREFIX=https://github.com/giffordlabcvr/ERVdb/raw/refs/heads/main/
     DB_FILE=ervdb.sql.gz
     ;;
+deltaretrovirus_glue)
+    # Use the raw GitHub URL without appending DB_FILE again
+    URL_PREFIX=https://github.com/giffordlabcvr/Deltaretrovirus-GLUE/raw/refs/heads/master/
+    DB_FILE=deltaretrovirus_glue.sql.gz
+    ;;   
 srlv_glue)
     # Use the raw GitHub URL without appending DB_FILE again
     URL_PREFIX=https://github.com/giffordlabcvr/Lentivirus-GLUE-SRLV/raw/refs/heads/main/
