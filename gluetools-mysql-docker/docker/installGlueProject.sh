@@ -3,6 +3,7 @@
 DB_FILE=${1}.sql.gz
 
 case "${1}" in
+# CVR projects
 hcv_glue|ncbi_hcv_glue)
     URL_PREFIX=http://hcv-glue.cvr.gla.ac.uk/hcv_glue_dbs
     ;;
@@ -15,19 +16,75 @@ rabv_glue|ncbi_rabv_glue)
 btv_glue)
     URL_PREFIX=http://btv-glue.cvr.gla.ac.uk/btv_glue_dbs
     ;;
-flu_glue)
-    URL_PREFIX=http://hcv-glue.cvr.gla.ac.uk/hcv_glue_dbs
+# Rob Gifford projects: virus diversity
+flavivirus_glue)
+    # Use the raw GitHub URL without appending DB_FILE again
+    URL_PREFIX=https://github.com/giffordlabcvr/Parvovirus-GLUE/raw/refs/heads/master/
+    DB_FILE=flavivirus_glue.sql.gz
     ;;
 parvovirus_glue)
     # Use the raw GitHub URL without appending DB_FILE again
     URL_PREFIX=https://github.com/giffordlabcvr/Parvovirus-GLUE/raw/refs/heads/master/
     DB_FILE=parvovirus_glue.sql.gz
     ;;
+hepadnavirus_glue)
+    # Use the raw GitHub URL without appending DB_FILE again
+    URL_PREFIX=https://github.com/giffordlabcvr/Hepadnaviridae-GLUE/raw/refs/heads/master/
+    DB_FILE=hepadnavirus_glue.sql.gz
+    ;;
+cress_glue)
+    # Use the raw GitHub URL without appending DB_FILE again
+    URL_PREFIX=https://github.com/giffordlabcvr/CRESS-GLUE/raw/refs/heads/master/
+    DB_FILE=cress_glue.sql.gz
+    ;;  
+filovirus_glue)
+    # Use the raw GitHub URL without appending DB_FILE again
+    URL_PREFIX=https://github.com/giffordlabcvr/Filovirus-GLUE/raw/refs/heads/master/
+    DB_FILE=filovirus_glue.sql.gz
+    ;;  
+# Rob Gifford projects: arboviruses 
 dengue_glue)
     # Use the raw GitHub URL without appending DB_FILE again
     URL_PREFIX=https://github.com/giffordlabcvr/Dengue-GLUE/raw/refs/heads/main/
     DB_FILE=dengue_glue.sql.gz
     ;;
+chikv_glue)
+    # Use the raw GitHub URL without appending DB_FILE again
+    URL_PREFIX=https://github.com/giffordlabcvr/CHIKV-GLUE/raw/refs/heads/main/
+    DB_FILE=chikv_glue.sql.gz
+    ;;
+yfv_glue)
+    # Use the raw GitHub URL without appending DB_FILE again
+    URL_PREFIX=https://github.com/giffordlabcvr/YFV-GLUE/raw/refs/heads/main/
+    DB_FILE=yfv_glue.sql.gz
+    ;;
+wnv_glue)
+    # Use the raw GitHub URL without appending DB_FILE again
+    URL_PREFIX=https://github.com/giffordlabcvr/WNV-GLUE/raw/refs/heads/main/
+    DB_FILE=wnv_glue.sql.gz
+    ;;
+# Rob Gifford projects: respiratory viruses 
+flu_glue)
+    # Use the raw GitHub URL without appending DB_FILE again
+    URL_PREFIX=https://github.com/giffordlabcvr/Flu-GLUE/raw/refs/heads/main/
+    DB_FILE=flu_glue.sql.gz
+    ;;
+# Rob Gifford projects: retroviruses 
+rvdb)
+    # Use the raw GitHub URL without appending DB_FILE again
+    URL_PREFIX=https://github.com/giffordlabcvr/RVdb/raw/refs/heads/main/
+    DB_FILE=rvdb.sql.gz
+    ;;
+ervdb)
+    # Use the raw GitHub URL without appending DB_FILE again
+    URL_PREFIX=https://github.com/giffordlabcvr/ERVdb/raw/refs/heads/main/
+    DB_FILE=ervdb.sql.gz
+    ;;
+srlv_glue)
+    # Use the raw GitHub URL without appending DB_FILE again
+    URL_PREFIX=https://github.com/giffordlabcvr/Lentivirus-GLUE-SRLV/raw/refs/heads/main/
+    DB_FILE=srlv_glue.sql.gz
+    ;;   
 *)
     echo "Unknown GLUE project ${1}"
     exit 1
