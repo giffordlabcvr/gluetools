@@ -16,6 +16,12 @@ rabv_glue|ncbi_rabv_glue)
 btv_glue)
     URL_PREFIX=http://btv-glue.cvr.gla.ac.uk/btv_glue_dbs
     ;;
+# Rob Gifford projects: hepatitis E (CVR carried over)
+hev_glue)
+    # Use the raw GitHub URL without appending DB_FILE again
+    URL_PREFIX=https://github.com/giffordlabcvr/HEV-GLUE/raw/refs/heads/master/
+    DB_FILE=hev_glue.sql.gz
+    ;;
 # Rob Gifford projects: virus diversity
 flavivirus_glue)
     # Use the raw GitHub URL without appending DB_FILE again
