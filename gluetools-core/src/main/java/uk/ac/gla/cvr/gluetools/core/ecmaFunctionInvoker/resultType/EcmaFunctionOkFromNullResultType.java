@@ -17,15 +17,14 @@
  *
  *    Contact details:
  *    MRC-University of Glasgow Centre for Virus Research
- *    Sir Michael Stoker Building, Garscube Campus, 464 Bearsden Road, 
+ *    Sir Michael Stoker Building, Garscube Campus, 464 Bearsden Road,
  *    Glasgow G61 1QH, United Kingdom
- *    
+ *
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
 */
 package uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker.resultType;
 
-import jdk.nashorn.internal.runtime.Undefined;
 import uk.ac.gla.cvr.gluetools.core.command.result.OkResult;
 import uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker.EcmaFunctionInvoker;
 import uk.ac.gla.cvr.gluetools.core.logging.GlueLogger;
@@ -34,17 +33,25 @@ import uk.ac.gla.cvr.gluetools.core.plugins.PluginClass;
 @PluginClass(elemName="okFromNullResultType")
 public class EcmaFunctionOkFromNullResultType extends EcmaFunctionResultType<OkResult>  {
 
-	@Override
-	public OkResult glueResultFromReturnObject(
-			EcmaFunctionInvoker ecmaFunctionInvoker, String functionName,
-			Object returnObj) {
-		if(returnObj != null && !(returnObj instanceof Undefined)) {
-			GlueLogger.getGlueLogger().warning("Casting non-null object to OK result (function "+
-					functionName+", module "+ecmaFunctionInvoker.getModuleName()+")");
-			GlueLogger.getGlueLogger().warning("For other result types consider "+
-					"<documentResultType> or <tableFromObjectsResultType> in the module config");
-		}
-		return new OkResult();
-	}
+    @Override
+    public OkResult glueResultFromReturnObject(
+            EcmaFunctionInvoker ecmaFunctionInvoker, String functionName,
+            Object returnObj) {
+        // Replace the Undefined check with null-equivalent check
+        if(returnObj != null && !isUndefined(returnObj)) {
+            GlueLogger.getGlueLogger().warning("Casting non-null object to OK result (function "+
+                    functionName+", module "+ecmaFunctionInvoker.getModuleName()+")");
+            GlueLogger.getGlueLogger().warning("For other result types consider "+
+                    "<documentResultType> or <tableFromObjectsResultType> in the module config");
+        }
+        return new OkResult();
+    }
 
+    /**
+     * Custom method to determine if the object is equivalent to Undefined.
+     */
+    private boolean isUndefined(Object obj) {
+        // Treat null as Undefined; extend logic if needed for other Undefined-like values.
+        return obj == null;
+    }
 }
