@@ -5,159 +5,147 @@ apply plugin: 'com.bmuschko.cargo'
 ssh.settings { knownHosts = allowAnyHosts }
 
 remotes {
-  gluetools_cvr {
-    host = 'glue-tools.cvr.gla.ac.uk'
-	user = 'am589p'
-    identity = file('/Users/imacadmin/.ssh/glue_tools_id_rsa')
-  }  
+    gluetools_cvr {
+        host = 'glue-tools.cvr.gla.ac.uk'
+        user = 'am589p'
+        identity = file('/Users/imacadmin/.ssh/glue_tools_id_rsa')
+    }
 }
 
 repositories {
-	mavenLocal()
-	// cargo
-    mavenCentral()
+    mavenLocal()
+    mavenCentral() // for cargo and other dependencies
 }
 
 configurations {
-	gluetoolsWebWar
-	gluetoolsWsWar
+    gluetoolsWebWar
+    gluetoolsWsWar
 }
 
 dependencies {
     gluetoolsWebWar group: 'cvr.ac.uk', name: 'gluetools-web', version: version
     gluetoolsWsWar group: 'cvr.ac.uk', name: 'gluetools-ws', version: version
     cargo group: 'org.codehaus.cargo', name: 'cargo-core-uberjar', version: '1.7.4'
-	cargo group: 'org.codehaus.cargo', name: 'cargo-ant', version: '1.7.4'
+    cargo group: 'org.codehaus.cargo', name: 'cargo-ant', version: '1.7.4'
 }
 
 buildscript {
-  repositories {
-    // for ssh-deploy stuff, cargo
-    jcenter()
-  }
-  dependencies {
-    classpath group: 'org.hidetake', name: 'gradle-ssh-plugin', version: '1.1.3'
-    classpath group: 'commons-io', name: 'commons-io', version: '1.3.2'
-    classpath group: 'com.bmuschko', name: 'gradle-cargo-plugin', version:'2.6'   
-  }
+    repositories {
+        jcenter() // for ssh-deploy stuff and cargo
+    }
+    dependencies {
+        classpath group: 'org.hidetake', name: 'gradle-ssh-plugin', version: '1.1.3'
+        classpath group: 'commons-io', name: 'commons-io', version: '1.3.2'
+        classpath group: 'com.bmuschko', name: 'gradle-cargo-plugin', version: '2.6'
+    }
 }
 
-task deployDeps(dependsOn: ['copyGluetoolsWebWar', 
-	'gluetoolsWsWithContextWar', 'deployGluetoolsConfigGluetoolsCVR',
-	':gluetools-core:install', 
-	':gluetools-web:install', 
-	':gluetools-ws:install'])
+task deployDeps(dependsOn: [
+    'copyGluetoolsWebWar',
+    'gluetoolsWsWithContextWar',
+    'deployGluetoolsConfigGluetoolsCVR',
+    ':gluetools-core:install',
+    ':gluetools-web:install',
+    ':gluetools-ws:install'
+])
 
 cargoRedeployRemote.dependsOn deployDeps
 
 cargo {
     containerId = 'tomcat7x'
     port = 80
-    
+
     deployable {
-    	file = new File(buildDir, 'runtimeWars/gluetools-ws.war')
+        file = new File(buildDir, 'runtimeWars/gluetools-ws.war')
         context = '/gluetools-ws'
     }
     deployable {
-    	file = new File(buildDir, 'runtimeWars/gluetools-web.war')
+        file = new File(buildDir, 'runtimeWars/gluetools-web.war')
         context = '/gluetools-web'
     }
-
-	// gluetoolsApp war has context path /
     deployable {
-        context = '/'
+        context = '/' // gluetoolsApp war has context path '/'
     }
 
     remote {
         hostname = 'glue-tools.cvr.gla.ac.uk'
-        // credentials in ~/.gradle/gradle.properties
         username = System.getProperty("glue_tools.tomcat.mgmt.username")
         password = System.getProperty("glue_tools.tomcat.mgmt.password")
     }
 }
 
 war {
-	webAppDirName = 'WebContent'
-	archiveName 'gluetoolsApp.war'
-	dependsOn 'copyStaticContent'
+    webAppDirName = 'WebContent'
+    archiveFileName.set('gluetoolsApp.war') // Fixed deprecated archiveName
+    dependsOn 'copyStaticContent'
 }
 
 task copyGluetoolsWebWar(type: Copy) {
     dependsOn ':gluetools-web:install'
     from configurations.gluetoolsWebWar
     into "$buildDir/runtimeWars"
-    rename('gluetools-web-'+version+'.war', 'gluetools-web.war')
+    rename("gluetools-web-${version}.war", 'gluetools-web.war')
 }
 
 task copyGluetoolsWsWar(type: Copy) {
     dependsOn ':gluetools-ws:install'
     from configurations.gluetoolsWsWar
     into "$buildDir/runtimeWars"
-    rename('gluetools-ws-'+version+'.war', 'gluetools-ws-without-context.war')
+    rename("gluetools-ws-${version}.war", 'gluetools-ws-without-context.war')
 }
 
 task gluetoolsWsWithContextWar(type: Jar, dependsOn: copyGluetoolsWsWar) {
-    destinationDir = new File(buildDir, 'runtimeWars')
-    archiveName = 'gluetools-ws.war' 
+    destinationDirectory.set(new File(buildDir, 'runtimeWars'))
+    archiveFileName.set('gluetools-ws.war') // Fixed deprecated archiveName
     from zipTree(new File(buildDir, 'runtimeWars/gluetools-ws-without-context.war'))
-    from(file("gluetools_cvr/gluetools-ws-context.xml")) {
-        into ('META-INF')
-        rename("gluetools-ws-context.xml", "context.xml")
+    from(file('gluetools_cvr/gluetools-ws-context.xml')) {
+        into 'META-INF'
+        rename('gluetools-ws-context.xml', 'context.xml')
     }
 }
 
-
-// gluetools xml config for CVR vm 
-task deployGluetoolsConfigGluetoolsCVR() {
-  ext.file = new File(projectDir, '/gluetools_cvr/gluetoolsApp-gluetools-config.xml')
-  ext.touchfile = new File(buildDir, '/deployGluetoolsConfigGluetoolsCVR.touchfile')
-  inputs.file file
-  outputs.file touchfile
-  doLast {
-	  println "Uploading "+file.name
-	  ssh.run {
-	    session(remotes.gluetools_cvr) {
-	      put from: file.absolutePath, into: '/tmp/gluetoolsApp-gluetools-config.xml'
-	      execute 'mv /tmp/gluetoolsApp-gluetools-config.xml /opt/gluetools/conf'
-	    }
-	  }
-	  touchfile.delete()
-	  buildDir.mkdirs()
-	  touchfile.createNewFile()
-  }
+task deployGluetoolsConfigGluetoolsCVR {
+    ext.file = new File(projectDir, '/gluetools_cvr/gluetoolsApp-gluetools-config.xml')
+    ext.touchfile = new File(buildDir, '/deployGluetoolsConfigGluetoolsCVR.touchfile')
+    inputs.file file
+    outputs.file touchfile
+    doLast {
+        println "Uploading ${file.name}"
+        ssh.run {
+            session(remotes.gluetools_cvr) {
+                put from: file.absolutePath, into: '/tmp/gluetoolsApp-gluetools-config.xml'
+                execute 'mv /tmp/gluetoolsApp-gluetools-config.xml /opt/gluetools/conf'
+            }
+        }
+        touchfile.delete()
+        buildDir.mkdirs()
+        touchfile.createNewFile()
+    }
 }
 
 task copyStaticContent(dependsOn: ['cleanStaticContent', 'copyDownloads', 'copyExampleProject'])
 
-task copyDownloads(dependsOn: [':gluetools-core:jar', ':gluetools-core:exampleProjectZip', ':gluetools-core:glueInstallDirZip', ], type: Copy) {
-    from '../gluetools-core/build/libs/gluetools-core-'+version+'.jar'
-    from '../gluetools-core/build/distributions/exampleProject-'+version+'.zip'
-    from '../gluetools-core/build/distributions/glueInstallDir-'+version+'.zip'
+task copyDownloads(type: Copy, dependsOn: [
+    ':gluetools-core:jar',
+    ':gluetools-core:exampleProjectZip',
+    ':gluetools-core:glueInstallDirZip'
+]) {
+    from "../gluetools-core/build/libs/gluetools-core-${version}.jar"
+    from "../gluetools-core/build/distributions/exampleProject-${version}.zip"
+    from "../gluetools-core/build/distributions/glueInstallDir-${version}.zip"
     from '../gluetools-core/gluetools/conf/gluetools-config.xml'
     into 'WebContent/downloads'
 }
 
-task copyExampleProject(dependsOn: [], type: Copy) {
+task copyExampleProject(type: Copy) {
     from '../gluetools-core/exampleProject'
     into 'WebContent/exampleProject'
 }
 
-
 task cleanStaticContent(type: Delete) {
-	delete fileTree(dir: 'WebContent/downloads').matching { include 'gluetools-core-*.jar' }
-	delete fileTree(dir: 'WebContent/downloads').matching { include 'exampleProject-*.zip' }
-	delete fileTree(dir: 'WebContent/downloads').matching { include 'glueInstallDir-*.zip' }
-	delete fileTree(dir: 'WebContent/downloads').matching { include 'gluetools-config.xml' }
-	delete fileTree(dir: 'WebContent/exampleProject').matching { include '*' }
+    delete fileTree(dir: 'WebContent/downloads').matching { include 'gluetools-core-*.jar' }
+    delete fileTree(dir: 'WebContent/downloads').matching { include 'exampleProject-*.zip' }
+    delete fileTree(dir: 'WebContent/downloads').matching { include 'glueInstallDir-*.zip' }
+    delete fileTree(dir: 'WebContent/downloads').matching { include 'gluetools-config.xml' }
+    delete fileTree(dir: 'WebContent/exampleProject').matching { include '*' }
 }
-
-
-
-
-
-
-
-
-
-
-
