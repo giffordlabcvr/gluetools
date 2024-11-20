@@ -22,6 +22,5 @@ buildscript {
 }
 
 war {
-	webAppDirName = 'WebContent'
-	archiveName 'gluetools-web.war'
+    archiveFileName.set('gluetools-web.war')
 }
