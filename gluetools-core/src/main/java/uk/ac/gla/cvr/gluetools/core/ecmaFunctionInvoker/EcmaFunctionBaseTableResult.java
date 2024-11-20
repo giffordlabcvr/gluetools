@@ -17,60 +17,65 @@
  *
  *    Contact details:
  *    MRC-University of Glasgow Centre for Virus Research
- *    Sir Michael Stoker Building, Garscube Campus, 464 Bearsden Road, 
+ *    Sir Michael Stoker Building, Garscube Campus, 464 Bearsden Road,
  *    Glasgow G61 1QH, United Kingdom
- *    
+ *
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
-*/
+ */
 package uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker;
 
 import java.util.List;
-
-import jdk.nashorn.internal.runtime.Undefined;
+import jdk.nashorn.api.scripting.ScriptUtils; // Public API for Nashorn
 import uk.ac.gla.cvr.gluetools.core.command.result.BaseTableResult;
 import uk.ac.gla.cvr.gluetools.core.command.result.TableColumn;
 import uk.ac.gla.cvr.gluetools.core.ecmaFunctionInvoker.EcmaFunctionInvokerException.Code;
 import uk.ac.gla.cvr.gluetools.utils.DateUtils;
 
 public abstract class EcmaFunctionBaseTableResult<D> extends BaseTableResult<D> {
+    
+    @SafeVarargs
+    public EcmaFunctionBaseTableResult(String rootDocumentName, List<D> rowObjects,
+                                       TableColumn<D>... tableColumns) {
+        super(rootDocumentName, rowObjects, tableColumns);
+    }
+    
+    public static Object jsValueToGlueDocValue(EcmaFunctionInvoker ecmaFunctionInvoker, String functionName,
+                                               Object value) {
+        Object glueDocValue;
+        if (value == null ||  isUndefined(value)) { // Changed to use ScriptUtils.isUndefined
+            glueDocValue = null;
+        } else if (value instanceof String) {
+            String string = (String) value;
+            if (DateUtils.isDateString(string)) {
+                glueDocValue = DateUtils.parse(string);
+            } else {
+                glueDocValue = string;
+            }
+        } else if (value instanceof Boolean) {
+            glueDocValue = value;
+        } else if (value instanceof Number) {
+            Number num = (Number) value;
+            // JavaScript does not have integers, only floats
+            // here we force integer if the number is mathematically an integer.
+            double doubleVal = Math.round(num.doubleValue());
+            if (doubleVal == num.doubleValue()) {
+                glueDocValue = num.intValue();
+            } else {
+                glueDocValue = num.doubleValue();
+            }
+        } else {
+            throw new EcmaFunctionInvokerException(Code.FUNCTION_RESULT_EXCEPTION,
+                                                   ecmaFunctionInvoker.getModuleName(), functionName,
+                                                   "Cannot translate JavaScript value of type " + value.getClass().getSimpleName()
+                                                   + " to a simple GLUE document value");
+        }
+        return glueDocValue;
+    }
+    
 
-	@SafeVarargs
-	public EcmaFunctionBaseTableResult(String rootDocumentName, List<D> rowObjects,
-			TableColumn<D>... tableColumns) {
-		super(rootDocumentName, rowObjects, tableColumns);
-	}
-
-	public static Object jsValueToGlueDocValue(EcmaFunctionInvoker ecmaFunctionInvoker, String functionName,
-			Object value) {
-		Object glueDocValue;
-		if(value == null || value instanceof Undefined){
-			glueDocValue = null;
-		} else if(value instanceof String) {
-			String string = (String) value;
-			if(DateUtils.isDateString(string)) {
-				glueDocValue = DateUtils.parse(string);
-			} else {
-				glueDocValue = string;
-			}
-		} else if(value instanceof Boolean) {
-			glueDocValue = (Boolean) value;
-		} else if(value instanceof Number) {
-			Number num = (Number) value;
-			// javascript does not have integers, only floats
-			// here we force integer if the number is mathematically an integer.
-			double doubleVal = Math.round(num.doubleValue());
-			if(doubleVal == num.doubleValue()) {
-				glueDocValue = num.intValue();
-			} else {
-				glueDocValue = num.doubleValue();
-			}
-		} else {
-			throw new EcmaFunctionInvokerException(Code.FUNCTION_RESULT_EXCEPTION, 
-					ecmaFunctionInvoker.getModuleName(), functionName, 
-					"Cannot translate JavaScript value of type "+value.getClass().getSimpleName()+" to a simple GLUE document value");
-		}
-		return glueDocValue;
-	}
-
+    private static boolean isUndefined(Object value) {
+        return value == null || value.toString().equals("undefined");
+    }
 }
+
