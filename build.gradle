@@ -1,108 +1,98 @@
 apply plugin: 'java'
 apply plugin: 'eclipse-wtp'
 apply plugin: 'pl.allegro.tech.build.axion-release'
-apply plugin: 'com.palantir.docker'
 
 project('gluetools-core') {
-	apply plugin: 'java'
-	apply plugin: 'eclipse-wtp'
-	apply plugin: 'maven'
-	apply plugin: 'com.palantir.docker'
+    apply plugin: 'java'
+    apply plugin: 'eclipse-wtp'
+    apply plugin: 'maven-publish'
+    apply plugin: 'com.bmuschko.docker-remote-api'
 }
-
 
 project('gluetools-mysql-docker') {
-	apply plugin: 'java'
-	apply plugin: 'com.palantir.docker'
+    apply plugin: 'java'
+    apply plugin: 'com.bmuschko.docker-remote-api'
 }
 
-
 project('gluetools-ws') {
-	apply plugin: 'war'
-	apply plugin: 'java'
-	apply plugin: 'eclipse-wtp'
-	apply plugin: 'maven'
+    apply plugin: 'war'
+    apply plugin: 'java'
+    apply plugin: 'eclipse-wtp'
+    apply plugin: 'maven-publish'
 }
 
 project('gluetools-web') {
-	apply plugin: 'war'
-	apply plugin: 'maven'
+    apply plugin: 'war'
+    apply plugin: 'maven-publish'
 }
 
 project('gluetoolsApp') {
-	apply plugin: 'war'
+    apply plugin: 'war'
 }
 
-// docker dependencies commented out for the minute as these don't work within the VPN.
-
+// Unified deployment task
 task deployAll(dependsOn: [
-	':gluetools-core:install', 
-	':gluetools-web:install', 
-	':gluetools-ws:install', 
-	':gluetoolsApp:cargoRedeployRemote',
-	':gluetools-mysql-docker:docker', 
-	':gluetools-mysql-docker:dockerTag', 
-	':gluetools-mysql-docker:dockerPush', 
-	':gluetools-mysql-docker:dockerTagLatest', 
-	':gluetools-mysql-docker:dockerPushLatest', 
-	':gluetools-core:dockerTag', 
-	':gluetools-core:dockerPush', 
-	':gluetools-core:dockerTagLatest', 
-	':gluetools-core:dockerPushLatest', 
-	]) {
+    ':gluetools-core:install',
+    ':gluetools-web:install',
+    ':gluetools-ws:install',
+    ':gluetoolsApp:cargoRedeployRemote',
+    ':gluetools-mysql-docker:buildMySqlDockerImage',
+    ':gluetools-mysql-docker:pushMySqlDockerImage',
+    ':gluetools-core:buildCoreDockerImage',
+    ':gluetools-core:pushCoreDockerImage',
+]) {
 }
 
-configure(subprojects.findAll {it.name != 'gluetools-web'}) {
+configure(subprojects.findAll { it.name != 'gluetools-web' }) {
 
-	dependencies {
-	    compile group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.4.1'
-	    compile group: 'org.apache.cayenne', name: 'cayenne-server', version:'3.1.1'
-	    compile group: 'org.apache.cayenne', name: 'cayenne-project', version:'3.1.1'
-	    compile group: 'commons-io', name: 'commons-io', version: '1.3.2'
-	    compile group: 'org.freemarker', name: 'freemarker', version: '2.3.25-incubating'
-	    compile group: 'commons-collections', name: 'commons-collections', version: '3.2'
-	    compile group: 'mysql', name: 'mysql-connector-java', version: '8.0.13'
-	    compile group: 'jline', name: 'jline', version: '2.14.5'
-	    compile group: 'com.brsanthu', name: 'data-exporter', version: '1.0.4'
-	    compile group: 'com.offbytwo', name:'docopt', version:'0.6.0.20150202'
-	    compile group: 'javax.json', name:'javax.json-api', version:'1.0'
-	    compile group: 'org.glassfish', name:'javax.json', version:'1.0.4'
-	    compile group: 'com.github.samtools', name:'htsjdk', version:'2.0.1'
-	    compile group: 'net.sf.trove4j', name:'trove4j', version:'3.0.3'
-	    compile group: 'org.apache.commons', name:'commons-lang3', version:'3.0'
-	    compile group: 'org.apache.bcel', name:'bcel', version:'6.0'
-	    compile group: 'org.slf4j', name:'slf4j-nop', version:'1.7.0'
+    dependencies {
+        implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.4.1'
+        implementation group: 'org.apache.cayenne', name: 'cayenne-server', version: '3.1.1'
+        implementation group: 'org.apache.cayenne', name: 'cayenne-project', version: '3.1.1'
+        implementation group: 'commons-io', name: 'commons-io', version: '1.3.2'
+        implementation group: 'org.freemarker', name: 'freemarker', version: '2.3.25-incubating'
+        implementation group: 'commons-collections', name: 'commons-collections', version: '3.2'
+        implementation group: 'mysql', name: 'mysql-connector-java', version: '8.0.13'
+        implementation group: 'jline', name: 'jline', version: '2.14.5'
+        implementation group: 'com.brsanthu', name: 'data-exporter', version: '1.0.4'
+        implementation group: 'com.offbytwo', name: 'docopt', version: '0.6.0.20150202'
+        implementation group: 'javax.json', name: 'javax.json-api', version: '1.0'
+        implementation group: 'org.glassfish', name: 'javax.json', version: '1.0.4'
+        implementation group: 'com.github.samtools', name: 'htsjdk', version: '2.0.1'
+        implementation group: 'net.sf.trove4j', name: 'trove4j', version: '3.0.3'
+        implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.0'
+        implementation group: 'org.apache.bcel', name: 'bcel', version: '6.0'
+        implementation group: 'org.slf4j', name: 'slf4j-nop', version: '1.7.0'
 
-        annotationProcessor group: 'org.apache.logging.log4j', name:'log4j-core', version:'2.1'
+        annotationProcessor group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.1'
 
-	    compile group: 'junit', name: 'junit', version: '4.+'
-	}
+        testImplementation group: 'junit', name: 'junit', version: '4.+'
+    }
 }
 
 def scmCustomKey = System.getProperty("user.name").equals('imacadmin') ? '/Users/imacadmin/.ssh/github_id_rsa' : '/opt/bitnami/apps/jenkins/jenkins_home/.ssh/github_id_rsa'
 
 scmVersion {
-	hooks {
-        pre 'fileUpdate', [file: 'gluetools-core/src/main/resources/gluecore.properties', pattern: {v, c -> /version=$v/}, replacement: {v, c -> "version=$v"}]
-        pre 'fileUpdate', [file: 'gluetoolsApp/WebContent/pages/download/page.html', pattern: {v, c -> /$v/}, replacement: {v, c -> "$v"}]
-        pre 'fileUpdate', [file: 'gluetoolsApp/WebContent/pages/userGuide/installation/page.html', pattern: {v, c -> /$v/}, replacement: {v, c -> "$v"}]
-        pre 'fileUpdate', [file: 'gluetoolsApp/WebContent/pages/userGuide/exampleProject/page.html', pattern: {v, c -> /$v/}, replacement: {v, c -> "$v"}]
-		pre 'commit', {v, p -> "Release version $v"}
+    hooks {
+        pre 'fileUpdate', [file: 'gluetools-core/src/main/resources/gluecore.properties', pattern: { v, c -> /version=$v/ }, replacement: { v, c -> "version=$v" }]
+        pre 'fileUpdate', [file: 'gluetoolsApp/WebContent/pages/download/page.html', pattern: { v, c -> /$v/ }, replacement: { v, c -> "$v" }]
+        pre 'fileUpdate', [file: 'gluetoolsApp/WebContent/pages/userGuide/installation/page.html', pattern: { v, c -> /$v/ }, replacement: { v, c -> "$v" }]
+        pre 'fileUpdate', [file: 'gluetoolsApp/WebContent/pages/userGuide/exampleProject/page.html', pattern: { v, c -> /$v/ }, replacement: { v, c -> "$v" }]
+        pre 'commit', { v, p -> "Release version $v" }
     }
 
     scmVersion {
         versionCreator 'versionWithBranch'
-	    repository {
-	        def scmCustomKeyFile = new File( scmCustomKey )
-	    	if(scmCustomKeyFile.exists()) {
-	        	customKey = scmCustomKeyFile
-	        }
-	    }
-	    tag {
-	        prefix = 'gluetools'
-	    }
+        repository {
+            def scmCustomKeyFile = new File(scmCustomKey)
+            if (scmCustomKeyFile.exists()) {
+                customKey = scmCustomKeyFile
+            }
+        }
+        tag {
+            prefix = 'gluetools'
+        }
     }
-
 }
 
 allprojects {
@@ -113,14 +103,10 @@ allprojects {
 buildscript {
     repositories {
         mavenCentral()
-		// for palantir docker plugin
-        maven {
-         	url 'http://repo.spring.io/plugins-release/'
-        } 
+        gradlePluginPortal() // Required for modern Gradle plugins
     }
     dependencies {
-  		classpath group: 'pl.allegro.tech.build', name: 'axion-release-plugin', version: '1.9.3'
-  		classpath group: 'com.palantir.gradle.docker', name: 'gradle-docker', version: '0.20.1'
+        classpath group: 'pl.allegro.tech.build', name: 'axion-release-plugin', version: '1.9.3'
+        classpath group: 'com.bmuschko', name: 'gradle-docker-plugin', version: '9.3.2'
     }
 }
-
