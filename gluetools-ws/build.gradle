@@ -22,12 +22,10 @@
  *    
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
-*/
+ */
 apply plugin: 'java'
 apply plugin: 'eclipse-wtp'
 apply plugin: 'war'
-
-
 apply plugin: 'org.hidetake.ssh'
 
 remotes {
@@ -36,7 +34,6 @@ remotes {
     user = 'ubuntu'
     identity = file('/Users/joshsinger/.ssh/gluehome-aws.pem')
   }
-  
 }
 
 buildscript {
@@ -50,28 +47,17 @@ buildscript {
 }
 
 war {
-	archiveName 'gluetools-ws.war'
+    archiveFileName.set('gluetools-ws.war')
 }
 
-
-buildscript {
-  repositories {
-    // for ssh-deploy stuff
-    jcenter()
-  }
-  dependencies {
-    classpath group: 'org.hidetake', name: 'gradle-ssh-plugin', version: '1.1.3'
-  }
-}
- 
 repositories {
     mavenCentral()
 }
- 
+
 dependencies {
-	compile project(':gluetools-core')
-	compile group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: '2.19'
-	compile group: 'org.glassfish.jersey.media', name: 'jersey-media-multipart', version: '2.19' 
- 	compile group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.0.1'
-	providedCompile group: 'javax.servlet', name: 'javax.servlet-api', version: '3.0.1'
+    implementation project(':gluetools-core') // Replace compile with implementation
+    implementation group: 'org.glassfish.jersey.containers', name: 'jersey-container-servlet', version: '2.19'
+    implementation group: 'org.glassfish.jersey.media', name: 'jersey-media-multipart', version: '2.19' 
+    implementation group: 'javax.ws.rs', name: 'javax.ws.rs-api', version: '2.0.1'
+    providedRuntime group: 'javax.servlet', name: 'javax.servlet-api', version: '3.0.1' // Replace providedCompile
 }
