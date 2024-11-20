@@ -8,10 +8,12 @@ RUN apt-get install --no-install-recommends -y debconf-utils \
 	python-software-properties \
 	software-properties-common	    
 	    
-# OpenJDK
-RUN apt-get install --no-install-recommends -y default-jre
-
-# various stuff required for MAFFT, RAxML 
+# Add repository for OpenJDK 11
+RUN add-apt-repository ppa:openjdk-r/ppa && \
+    apt-get update && \
+    apt-get install --no-install-recommends -y openjdk-11-jre
+    
+# various stuff required for MAFFT, RAxML
 RUN apt-get install --no-install-recommends -y git
 RUN apt-get install --no-install-recommends -y make 
 RUN apt-get install --no-install-recommends -y gcc
