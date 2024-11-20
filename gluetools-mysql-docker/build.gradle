@@ -22,13 +22,15 @@
  *    
  *    Josh Singer: josh.singer@glasgow.ac.uk
  *    Rob Gifford: robert.gifford@glasgow.ac.uk
-*/
-docker {
-    name 'cvrbioinformatics/gluetools-mysql:'+project.version
-    tags 'latest'
-    dockerfile file('Dockerfile')
-	copySpec.from("docker").into("docker")
-	buildArgs([glueVersion: project.version])
+ */
+
+task buildDockerImage(type: com.bmuschko.gradle.docker.tasks.image.DockerBuildImage) {
+    inputDir.set(file(".")) // Use current directory as the Docker context
+    images.add("cvrbioinformatics/gluetools-mysql:${project.version}")
+    images.add("cvrbioinformatics/gluetools-mysql:latest")
 }
 
-
+task pushDockerImage(type: com.bmuschko.gradle.docker.tasks.image.DockerPushImage) {
+    images.add("cvrbioinformatics/gluetools-mysql:${project.version}")
+    images.add("cvrbioinformatics/gluetools-mysql:latest")
+}
