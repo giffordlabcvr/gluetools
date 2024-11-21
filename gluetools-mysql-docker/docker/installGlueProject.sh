@@ -91,10 +91,30 @@ deltaretrovirus_glue)
     URL_PREFIX=https://github.com/giffordlabcvr/Deltaretrovirus-GLUE/raw/refs/heads/master/
     DB_FILE=deltaretrovirus_glue.sql.gz
     ;;   
-srlv_glue)
+lentivirus_glue)
+    # Use the raw GitHub URL without appending DB_FILE again
+    URL_PREFIX=https://github.com/giffordlabcvr/Lentivirus-GLUE/raw/refs/heads/master/
+    DB_FILE=lentivirus_glue.sql.gz
+    ;;    
+lentivirus_glue_srlv)
     # Use the raw GitHub URL without appending DB_FILE again
     URL_PREFIX=https://github.com/giffordlabcvr/Lentivirus-GLUE-SRLV/raw/refs/heads/main/
-    DB_FILE=srlv_glue.sql.gz
+    DB_FILE=lentivirus_glue_srlv.sql.gz
+    ;;
+lentivirus_glue_hiv)
+    # Use the raw GitHub URL without appending DB_FILE again
+    URL_PREFIX=https://github.com/giffordlabcvr/Lentivirus-GLUE-Primates/raw/refs/heads/main/
+    DB_FILE=lentivirus_glue_hiv.sql.gz
+    ;; 
+lentivirus_glue_eiav)
+    # Use the raw GitHub URL without appending DB_FILE again
+    URL_PREFIX=https://github.com/giffordlabcvr/Lentivirus-GLUE-Equine/raw/refs/heads/main/
+    DB_FILE=lentivirus_glue_eiav.sql.gz
+    ;;
+lentivirus_glue_erv)
+    # Use the raw GitHub URL without appending DB_FILE again
+    URL_PREFIX=https://github.com/giffordlabcvr/Lentivirus-GLUE-ERV/raw/refs/heads/main/
+    DB_FILE=lentivirus_glue_erv.sql.gz
     ;;   
 *)
     echo "Unknown GLUE project ${1}"
