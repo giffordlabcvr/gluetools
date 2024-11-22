@@ -30,7 +30,7 @@ For more information, please visit the **[User Guide](https://github.com/gifford
 
 **NOTE: The vast majority of GLUE users probably do not need to build GLUE from source, and should install the binary distribution.**
 
-You can find detailed instructions on how to install GLUE from its binary distribution here: [http://tools.glue.cvr.ac.uk/#/installation](http://tools.glue.cvr.ac.uk/#/installation).
+You can find detailed instructions on how to install GLUE from its binary distribution in the **[User Guide](https://github.com/giffordlabcvr/gluetools/wiki/Native-Installation)**.
 
 Building from source is only required if you intend to fix bugs, develop new GLUE features, or understand in detail how GLUE works. 
 
