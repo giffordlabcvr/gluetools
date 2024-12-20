@@ -83,7 +83,7 @@ flu_glue)
 # Gifford Lab: gene therapy vectors 
 aav_atlas)
     URL_PREFIX=https://github.com/giffordlabcvr/AAV-Atlas/raw/refs/heads/main/
-    DB_FILE=aav_atlas.sql.gz
+    DB_FILE=aav_atlas.sql
     ;;
 # Gifford Lab: retroviruses 
 rvdb)
@@ -140,6 +140,7 @@ echo "drop database $GLUETOOLS_DB;" | mysql --user="${GLUETOOLS_USER}" --passwor
 echo "Creating new GLUE database $GLUETOOLS_DB ..."
 echo "create database $GLUETOOLS_DB character set UTF8;" | mysql --user="${GLUETOOLS_USER}" --password="glue12345"
 
+
 if [[ -n "${URL_PREFIX}" ]]; then
     echo "Retrieving $DB_FILE"
     rm -rf "${GLUE_HOME}/tmp/${DB_FILE}"
@@ -148,7 +149,7 @@ if [[ -n "${URL_PREFIX}" ]]; then
     RESULT=$?
     if [ $RESULT -eq 0 ]; then
         echo "Loading MySQL database from file ${GLUE_HOME}/tmp/${DB_FILE} into GLUE_TOOLS"
-        gunzip -c "${GLUE_HOME}/tmp/${DB_FILE}" | mysql --user="${GLUETOOLS_USER}" --password="glue12345" $GLUETOOLS_DB
+        mysql --user="${GLUETOOLS_USER}" --password="glue12345" $GLUETOOLS_DB < "${GLUE_HOME}/tmp/${DB_FILE}"  # Use the uncompressed file directly
         rm "${GLUE_HOME}/tmp/${DB_FILE}"
     else
         echo "Retrieval failed"
