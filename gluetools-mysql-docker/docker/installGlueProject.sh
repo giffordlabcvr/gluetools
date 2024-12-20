@@ -16,13 +16,13 @@ rabv_glue|ncbi_rabv_glue)
 btv_glue)
     URL_PREFIX=http://btv-glue.cvr.gla.ac.uk/btv_glue_dbs
     ;;
-# Rob Gifford projects: hepatitis E (CVR carried over)
+# Gifford Lab: hepatitis E (CVR carried over)
 hev_glue)
     # Use the raw GitHub URL without appending DB_FILE again
     URL_PREFIX=https://github.com/giffordlabcvr/HEV-GLUE/raw/refs/heads/master/
     DB_FILE=hev_glue.sql.gz
     ;;
-# Rob Gifford projects: virus diversity
+# Gifford Lab: virus diversity
 flavivirus_glue)
     # Use the raw GitHub URL without appending DB_FILE again
     URL_PREFIX=https://github.com/giffordlabcvr/Parvovirus-GLUE/raw/refs/heads/master/
@@ -53,7 +53,7 @@ filovirus_glue)
     URL_PREFIX=https://github.com/giffordlabcvr/Filovirus-GLUE/raw/refs/heads/master/
     DB_FILE=filovirus_glue.sql.gz
     ;;  
-# Rob Gifford projects: arboviruses 
+# Gifford Lab: arboviruses 
 dengue_glue)
     URL_PREFIX=https://github.com/giffordlabcvr/Dengue-GLUE/raw/refs/heads/main/
     DB_FILE=dengue_glue.sql.gz
@@ -75,12 +75,17 @@ wnv_glue)
     URL_PREFIX=https://github.com/giffordlabcvr/WNV-GLUE/raw/refs/heads/main/
     DB_FILE=wnv_glue.sql.gz
     ;;
-# Rob Gifford projects: respiratory viruses 
+# Gifford Lab: respiratory viruses 
 flu_glue)
     URL_PREFIX=https://github.com/giffordlabcvr/Flu-GLUE/raw/refs/heads/main/
     DB_FILE=flu_glue.sql.gz
     ;;
-# Rob Gifford projects: retroviruses 
+# Gifford Lab: gene therapy vectors 
+aav_atlas)
+    URL_PREFIX=https://github.com/giffordlabcvr/AAV-Atlas/raw/refs/heads/main/
+    DB_FILE=aav_atlas.sql.gz
+    ;;
+# Gifford Lab: retroviruses 
 rvdb)
     URL_PREFIX=https://github.com/giffordlabcvr/RVdb/raw/refs/heads/main/
     DB_FILE=rvdb.sql.gz
