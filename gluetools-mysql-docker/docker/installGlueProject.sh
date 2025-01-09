@@ -16,13 +16,13 @@ rabv_glue|ncbi_rabv_glue)
 btv_glue)
     URL_PREFIX=http://btv-glue.cvr.gla.ac.uk/btv_glue_dbs
     ;;
-# Gifford Lab: hepatitis E (CVR carried over)
+# Gifford Lab projects: hepatitis E (CVR carried over)
 hev_glue)
     # Use the raw GitHub URL without appending DB_FILE again
     URL_PREFIX=https://github.com/giffordlabcvr/HEV-GLUE/raw/refs/heads/master/
     DB_FILE=hev_glue.sql.gz
     ;;
-# Gifford Lab: virus diversity
+# Gifford Lab projects: virus diversity
 flavivirus_glue)
     # Use the raw GitHub URL without appending DB_FILE again
     URL_PREFIX=https://github.com/giffordlabcvr/Parvovirus-GLUE/raw/refs/heads/master/
@@ -53,7 +53,7 @@ filovirus_glue)
     URL_PREFIX=https://github.com/giffordlabcvr/Filovirus-GLUE/raw/refs/heads/master/
     DB_FILE=filovirus_glue.sql.gz
     ;;  
-# Gifford Lab: arboviruses 
+# Gifford Lab projects: arboviruses 
 dengue_glue)
     URL_PREFIX=https://github.com/giffordlabcvr/Dengue-GLUE/raw/refs/heads/main/
     DB_FILE=dengue_glue.sql.gz
@@ -75,17 +75,22 @@ wnv_glue)
     URL_PREFIX=https://github.com/giffordlabcvr/WNV-GLUE/raw/refs/heads/main/
     DB_FILE=wnv_glue.sql.gz
     ;;
-# Gifford Lab: respiratory viruses 
+# Gifford Lab projects: gene therapy
+aav_atlas)
+    # Use the raw GitHub URL without appending DB_FILE again
+    URL_PREFIX=https://github.com/giffordlabcvr/AAV-Atlas/raw/refs/heads/main/
+    DB_FILE=aav_atlas.sql.gz
+    ;;
+# Gifford Lab projects: respiratory viruses
 flu_glue)
     URL_PREFIX=https://github.com/giffordlabcvr/Flu-GLUE/raw/refs/heads/main/
     DB_FILE=flu_glue.sql.gz
     ;;
-# Gifford Lab: gene therapy vectors 
-aav_atlas)
-    URL_PREFIX=https://github.com/giffordlabcvr/AAV-Atlas/raw/refs/heads/main/
-    DB_FILE=aav_atlas.sql
+hmpv_glue)
+    URL_PREFIX=https://github.com/giffordlabcvr/HMPV-GLUE/raw/refs/heads/main/
+    DB_FILE=hmpv_glue.sql.gz
     ;;
-# Gifford Lab: retroviruses 
+# Gifford Lab projects: retroviruses
 rvdb)
     URL_PREFIX=https://github.com/giffordlabcvr/RVdb/raw/refs/heads/main/
     DB_FILE=rvdb.sql.gz
@@ -140,7 +145,6 @@ echo "drop database $GLUETOOLS_DB;" | mysql --user="${GLUETOOLS_USER}" --passwor
 echo "Creating new GLUE database $GLUETOOLS_DB ..."
 echo "create database $GLUETOOLS_DB character set UTF8;" | mysql --user="${GLUETOOLS_USER}" --password="glue12345"
 
-
 if [[ -n "${URL_PREFIX}" ]]; then
     echo "Retrieving $DB_FILE"
     rm -rf "${GLUE_HOME}/tmp/${DB_FILE}"
@@ -149,7 +153,7 @@ if [[ -n "${URL_PREFIX}" ]]; then
     RESULT=$?
     if [ $RESULT -eq 0 ]; then
         echo "Loading MySQL database from file ${GLUE_HOME}/tmp/${DB_FILE} into GLUE_TOOLS"
-        mysql --user="${GLUETOOLS_USER}" --password="glue12345" $GLUETOOLS_DB < "${GLUE_HOME}/tmp/${DB_FILE}"  # Use the uncompressed file directly
+        gunzip -c "${GLUE_HOME}/tmp/${DB_FILE}" | mysql --user="${GLUETOOLS_USER}" --password="glue12345" $GLUETOOLS_DB
         rm "${GLUE_HOME}/tmp/${DB_FILE}"
     else
         echo "Retrieval failed"
