@@ -99,6 +99,10 @@ ervdb)
     URL_PREFIX=https://github.com/giffordlabcvr/ERVdb/raw/refs/heads/main/
     DB_FILE=ervdb.sql.gz
     ;;
+hervdb)
+    URL_PREFIX=https://github.com/giffordlabcvr/ERVdb-HomoSapiens/blob/main/
+    DB_FILE=hervdb.sql.gz
+    ;;
 deltaretrovirus_glue)
     URL_PREFIX=https://github.com/giffordlabcvr/Deltaretrovirus-GLUE/raw/refs/heads/master/
     DB_FILE=deltaretrovirus_glue.sql.gz
