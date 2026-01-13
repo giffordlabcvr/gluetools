@@ -10,6 +10,10 @@ hcv_glue|ncbi_hcv_glue)
 hbv_glue|ncbi_hbv_glue)
     URL_PREFIX=http://hbv-glue.cvr.gla.ac.uk/hbv_glue_dbs
     ;;
+hbv_drug_res)
+    URL_PREFIX=https://github.com/giffordlabcvr/HBV_DRUG_RESISTANCE/raw/refs/heads/master/
+    DB_FILE=hbv_drug_res.sql.gz
+    ;;
 rabv_glue|ncbi_rabv_glue)
     URL_PREFIX=http://rabv-glue.cvr.gla.ac.uk/rabv_glue_dbs
     ;;
@@ -25,17 +29,13 @@ hev_glue)
 # Gifford Lab projects: virus diversity
 flavivirus_glue)
     # Use the raw GitHub URL without appending DB_FILE again
-    URL_PREFIX=https://github.com/giffordlabcvr/Parvovirus-GLUE/raw/refs/heads/master/
+    URL_PREFIX=https://github.com/giffordlabcvr/Flavivirus-GLUE/raw/refs/heads/master/
     DB_FILE=flavivirus_glue.sql.gz
     ;;
 parvovirus_glue)
     # Use the raw GitHub URL without appending DB_FILE again
     URL_PREFIX=https://github.com/giffordlabcvr/Parvovirus-GLUE/raw/refs/heads/master/
     DB_FILE=parvovirus_glue.sql.gz
-    ;;
-parvovirus_glue_ppv)
-    URL_PREFIX=https://github.com/giffordlabcvr/Parvovirus-GLUE/raw/refs/heads/master/
-    DB_FILE=parvovirus_glue_ppv.sql.gz
     ;;
 parvovirus_glue_cpv)
     URL_PREFIX=https://github.com/giffordlabcvr/Parvovirus-GLUE/raw/refs/heads/master/
@@ -81,6 +81,17 @@ aav_atlas)
     URL_PREFIX=https://github.com/giffordlabcvr/AAV-Atlas/raw/refs/heads/main/
     DB_FILE=aav_atlas.sql.gz
     ;;
+# Gifford Lab projects: host immune genes
+ifnl_evolution)
+    # Use the raw GitHub URL without appending DB_FILE again
+    URL_PREFIX=https://github.com/giffordlabcvr/IFNL-Evolution/raw/refs/heads/main/
+    DB_FILE=ifnl_evolution.sql.gz
+    ;;
+ifne_evolution)
+    # Use the raw GitHub URL without appending DB_FILE again
+    URL_PREFIX=https://github.com/giffordlabcvr/MSc-IFNE-Evolution/raw/refs/heads/main/
+    DB_FILE=ifne_evolution.sql.gz
+    ;;
 # Gifford Lab projects: respiratory viruses
 flu_glue)
     URL_PREFIX=https://github.com/giffordlabcvr/Flu-GLUE/raw/refs/heads/main/
@@ -99,9 +110,9 @@ ervdb)
     URL_PREFIX=https://github.com/giffordlabcvr/ERVdb/raw/refs/heads/main/
     DB_FILE=ervdb.sql.gz
     ;;
-hervdb)
-    URL_PREFIX=https://github.com/giffordlabcvr/ERVdb-HomoSapiens/blob/main/
-    DB_FILE=hervdb.sql.gz
+ervdb_homo_sapiens)
+    URL_PREFIX=https://github.com/giffordlabcvr/ERVdb-HomoSapiens/raw/refs/heads/main/
+    DB_FILE=ervdb_homo_sapiens.sql.gz
     ;;
 deltaretrovirus_glue)
     URL_PREFIX=https://github.com/giffordlabcvr/Deltaretrovirus-GLUE/raw/refs/heads/master/
